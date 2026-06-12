@@ -29,101 +29,59 @@ docs/
 
 ---
 
-# Backend Setup
+# Backend Setup (Golang)
 
 ## Instalasi
 
 ### 1. Install Dependencies
 
 ```bash
-# TODO
+go mod tidy
 ```
 
-### 2. Konfigurasi Environment
+### 2. Menjalankan Aplikasi
 
 ```bash
-# TODO
-```
-
-### 3. Menjalankan Aplikasi
-
-```bash
-# TODO
+go run cmd/main.go
 ```
 
 ---
 
-# Web Setup
-
-
-## Instalasi
-
-
-### 1. Install Dependencies
-
-```bash
-# TODO
-```
-
-### 2. Konfigurasi Environment
-
-```bash
-# TODO
-```
-
-### 3. Menjalankan Aplikasi
-
-```bash
-# TODO
-```
-
----
-
-# Mobile Setup
+# Web Setup (React.js)
 
 ## Instalasi
 
 ### 1. Install Dependencies
 
 ```bash
-# TODO
+npm install
 ```
 
-### 2. Konfigurasi Environment
+### 2. Menjalankan Aplikasi
 
 ```bash
-# TODO
-```
-
-### 3. Menjalankan Aplikasi
-
-```bash
-# TODO
+npm run dev
 ```
 
 ---
 
-# Environment Variables
+# Mobile Setup (Flutter)
 
-## Backend
+## Instalasi
 
-```env
-# TODO
+### 1. Install Dependencies
+
+```bash
+flutter pub get
 ```
 
-## Web
+### 2. Menjalankan Aplikasi
 
-```env
-# TODO
+```bash
+flutter run
 ```
 
-## Mobile
 
-```env
-# TODO
-```
-
----
 
 # Git Workflow
 
