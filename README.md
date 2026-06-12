@@ -145,26 +145,35 @@ docs/
 6. Pull Request wajib mendapatkan persetujuan minimal 1 anggota tim lain sebelum di-merge.
 7. Setelah disetujui, branch fitur dapat di-merge ke `dev`.
 
-## Contoh
+## Commit Convention
 
-```bash
-git checkout dev
-git pull origin dev
-
-git checkout -b feat/auth-user-management
-
-# melakukan pengembangan
-
-git add .
-git commit -m "Add authentication feature"
-git push -u origin feat/auth-user-management
-```
-
-Kemudian buat Pull Request:
+Gunakan format commit berikut:
 
 ```text
-feat/auth-user-management → dev
+[type] deskripsi singkat
 ```
+
+### Tipe Commit
+
+| Tipe   | Deskripsi                              |
+| ------ | -------------------------------------- |
+| `feat` | Menambahkan fitur baru                 |
+| `fix`  | Memperbaiki bug atau kesalahan         |
+| `docs` | Perubahan dokumentasi                  |
+| `test` | Menambahkan atau memperbarui pengujian |
+
+### Contoh
+
+```bash
+git commit -m "[feat] add authentication feature"
+
+git commit -m "[fix] resolve login validation issue"
+
+git commit -m "[docs] update README"
+
+git commit -m "[test] add user service unit test"
+```
+
 
 ## Struktur Branch
 
