@@ -1,0 +1,18 @@
+✅ BERHASIL KONEK KE DATABASE
+
+2026/04/27 09:09:31 [32mD:/Perkuliahan/PA 3/Edukasi/TA-PA2-PA3-Project/backend/monolith/go-template-main/app/models/migration.go:95 [33mSLOW SQL >= 200ms
+[0m[31;1m[202.647ms] [33m[rows:1][35m SELECT count(*) FROM information_schema.tables WHERE table_schema = CURRENT_SCHEMA() AND table_name = 'edukasi_imd' AND table_type = 'BASE TABLE'[0m
+
+2026/04/27 09:09:31 [32mD:/Perkuliahan/PA 3/Edukasi/TA-PA2-PA3-Project/backend/monolith/go-template-main/app/models/migration.go:95 [33mSLOW SQL >= 200ms
+[0m[31;1m[220.663ms] [33m[rows:0][35m CREATE TABLE "edukasi_imd" ("id" serial,"judul" varchar(255) NOT NULL,"gambar_url" text,"isi" text,"created_at" timestamptz,"updated_at" timestamptz,PRIMARY KEY ("id"))[0m
+
+   ____    __
+  / __/___/ /  ___
+ / _// __/ _ \/ _ \
+/___/\__/_//_/\___/ v4.15.0
+High performance, minimalist Go web framework
+https://echo.labstack.com
+____________________________________O/_______
+                                    O\
+⇨ http server started on [::]:8081
+{"time":"2026-04-27T09:09:35.9695415+07:00","id":"","remote_ip":"::1","host":"localhost:8081","method":"GET","uri":"/health","user_agent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.18362.1171","status":200,"error":"","latency":111400,"latency_human":"111.4µs","bytes_in":0,"bytes_out":16}

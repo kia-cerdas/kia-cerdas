@@ -1,0 +1,125 @@
+-- SQL Migration: Create Kategori Umur, Periode, Jenis Pelayanan, Aturan, Neonatus, Gigi, LiLA, and Keluhan Anak tables
+-- Run this in your Supabase SQL Editor if AutoMigrate does not run or encounters PgBouncer pooler errors.
+
+BEGIN;
+
+CREATE TABLE IF NOT EXISTS "Kategori_umur" (
+    id SERIAL PRIMARY KEY,
+    kategori_umur VARCHAR(255) NOT NULL UNIQUE,
+    min_value INTEGER NOT NULL,
+    max_value INTEGER NOT NULL,
+    unit VARCHAR(10) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP WITH TIME ZONE
+);
+
+CREATE TABLE IF NOT EXISTS periode_kunjungan (
+    id SERIAL PRIMARY KEY,
+    nama VARCHAR(255) NOT NULL,
+    kategori_umur_id INTEGER NOT NULL,
+    min_value INTEGER NOT NULL,
+    max_value INTEGER NOT NULL,
+    unit VARCHAR(10) NOT NULL,
+    urutan INTEGER NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP WITH TIME ZONE
+);
+
+CREATE TABLE IF NOT EXISTS jenis_pelayanan (
+    id SERIAL PRIMARY KEY,
+    nama VARCHAR(255) NOT NULL,
+    tipe_input VARCHAR(20) NOT NULL,
+    group_name VARCHAR(100),
+    section VARCHAR(100),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP WITH TIME ZONE
+);
+
+CREATE TABLE IF NOT EXISTS jenis_pelayanan_kategori (
+    id SERIAL PRIMARY KEY,
+    jenis_pelayanan_id INTEGER NOT NULL,
+    kategori_umur_id INTEGER NOT NULL,
+    periode_id INTEGER,
+    urutan INTEGER NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP WITH TIME ZONE
+);
+
+CREATE TABLE IF NOT EXISTS aturan_pelayanans (
+    id SERIAL PRIMARY KEY,
+    jenis_pelayanan_id INTEGER NOT NULL,
+    umur_min_bulan INTEGER NOT NULL,
+    umur_max_bulan INTEGER NOT NULL,
+    bulan INTEGER NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP WITH TIME ZONE
+);
+
+CREATE TABLE IF NOT EXISTS "Neonatus" (
+    id SERIAL PRIMARY KEY,
+    anak_id INTEGER NOT NULL,
+    tanggal TIMESTAMP WITH TIME ZONE NOT NULL,
+    kategori_umur_id INTEGER NOT NULL,
+    periode_id INTEGER NOT NULL,
+    tenaga_kesehatan_id INTEGER NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP WITH TIME ZONE
+);
+
+CREATE TABLE IF NOT EXISTS detail_pelayanan_neonatus (
+    id SERIAL PRIMARY KEY,
+    neonatus_id INTEGER NOT NULL,
+    jenis_pelayanan_id INTEGER NOT NULL,
+    nilai VARCHAR(255) NOT NULL,
+    keterangan VARCHAR(255),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP WITH TIME ZONE
+);
+
+CREATE TABLE IF NOT EXISTS periksa_gigi (
+    id SERIAL PRIMARY KEY,
+    anak_id INTEGER NOT NULL,
+    bulan INTEGER NOT NULL,
+    tanggal TIMESTAMP WITH TIME ZONE NOT NULL,
+    jumlah_gigi INTEGER NOT NULL DEFAULT 0,
+    gigi_berlubang INTEGER NOT NULL,
+    status_plak VARCHAR(10) NOT NULL,
+    resiko_gigi_berlubang VARCHAR(10) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP WITH TIME ZONE
+);
+
+CREATE TABLE IF NOT EXISTS pengukuran_lila (
+    id SERIAL PRIMARY KEY,
+    anak_id INTEGER NOT NULL,
+    bulan INTEGER NOT NULL,
+    tanggal TIMESTAMP WITH TIME ZONE NOT NULL,
+    hasil_lila DECIMAL(5,2) NOT NULL,
+    kategori_risiko VARCHAR(20) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP WITH TIME ZONE
+);
+
+CREATE TABLE IF NOT EXISTS keluhan_anak (
+    id SERIAL PRIMARY KEY,
+    anak_id INTEGER NOT NULL,
+    tanggal DATE NOT NULL,
+    keluhan TEXT NOT NULL,
+    tindakan TEXT,
+    pemeriksa VARCHAR(100),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP WITH TIME ZONE
+);
+
+COMMIT;

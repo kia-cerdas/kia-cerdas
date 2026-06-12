@@ -1,0 +1,52 @@
+// src/services/catatanNifas.js
+import api from './api';
+
+export const createCatatanNifas = async (data) => {
+  try {
+    const cleanData = { ...data };
+    delete cleanData.id_catatan_nifas;
+    delete cleanData.id;
+    
+    // PERBAIKI: tenaga-kesehatan (bukan tengaa-kesehatan)
+    const response = await api.post('/tenaga-kesehatan/catatan-pelayanan-nifas', cleanData);
+    console.log('CREATE - Response:', response.data);
+    
+    return response.data?.data || response.data;
+  } catch (error) {
+    console.error('CREATE - Error:', error.response?.data);
+    throw error;
+  }
+};
+
+export const getCatatanNifasByKehamilanId = async (kehamilanId) => {
+  try {
+    const response = await api.get('/tenaga-kesehatan/catatan-pelayanan-nifas', {
+      params: { kehamilan_id: kehamilanId }
+    });
+    return response.data?.data || response.data || [];
+  } catch (error) {
+    console.error('Error:', error);
+    return [];
+  }
+};
+
+export const updateCatatanNifas = async (id, data) => {
+  try {
+    const { id_catatan_nifas, ...cleanData } = data;
+    const response = await api.put(`/tenaga-kesehatan/catatan-pelayanan-nifas/${id}`, cleanData);
+    return response.data?.data || response.data;
+  } catch (error) {
+    console.error('Update Error:', error);
+    throw error;
+  }
+};
+
+export const deleteCatatanNifas = async (id) => {
+  try {
+    const response = await api.delete(`/tenaga-kesehatan/catatan-pelayanan-nifas/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Delete Error:', error);
+    throw error;
+  }
+};
