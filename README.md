@@ -20,7 +20,7 @@ Backend menyediakan API yang digunakan oleh aplikasi web dan mobile untuk mengak
 
 Backend KIA Cerdas mengadopsi pola **Clean Architecture** untuk memisahkan *concern* dan memastikan aplikasi mudah diskalakan serta dikelola.
 
-![Arsitektur Layer](architecture%20layer.jpeg)
+![Arsitektur Layer](docs/img/architecture%20layer.jpeg)
 
 **Alur Layer Sistem:**
 `Router` → `Controller` → `Usecase` → `Repository` → `DB`
