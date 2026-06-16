@@ -16,6 +16,25 @@ KIA Cerdas terdiri dari tiga komponen utama:
 
 Backend menyediakan API yang digunakan oleh aplikasi web dan mobile untuk mengakses serta mengelola data secara terpusat.
 
+## Dokumentasi Arsitektur Backend (Clean Architecture)
+
+Backend KIA Cerdas mengadopsi pola **Clean Architecture** untuk memisahkan *concern* dan memastikan aplikasi mudah diskalakan serta dikelola.
+
+![Arsitektur Layer](/kia-cerdas/docs/img/architecture%20layer.jpeg)
+
+**Alur Layer Sistem:**
+`Router` → `Controller` → `Usecase` → `Repository` → `DB`
+
+* **Router**: Mendefinisikan endpoint API dan meneruskan permintaan ke Controller yang sesuai.
+* **Controller**: Menerima HTTP request, melakukan validasi dasar, dan meneruskannya ke Usecase.
+* **Usecase**: Menyimpan inti dari aturan bisnis (business logic) aplikasi tanpa bergantung pada antarmuka luar.
+* **Repository**: Berfungsi sebagai jembatan antara aplikasi dan database (akses data, operasi CRUD).
+* **DB**: Sistem manajemen basis data tempat menyimpan data persisten.
+
+> Diagram arsitektur secara komprehensif terdapat di dalam dokumen laporan Bab 2/3. Pola interaksi antar layer (`Controller` - `Usecase` - `Repository`) juga telah digambarkan di dalam **Sequence Diagram**.
+> Penjelasan detail tiap layer beserta contoh kode dapat Anda pelajari lebih lanjut di sini:
+> 👉 [Dokumentasi Arsitektur Backend Lengkap](docs/architecture/backend-architecture.md)
+
 ---
 
 # Struktur Repository
