@@ -115,3 +115,8 @@ func (r *AbsensiKelasIbuHamilRepository) FindByID(id int32) (*models.AbsensiKela
 func (r *AbsensiKelasIbuHamilRepository) Update(data *models.AbsensiKelasIbuHamil) error {
 	return r.db.Save(data).Error
 }
+
+
+func (r *AbsensiKelasIbuHamilRepository) Create(data *models.AbsensiKelasIbuHamil) error {
+	return r.db.Create(data).Error
+}

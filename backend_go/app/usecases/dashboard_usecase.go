@@ -5,7 +5,6 @@ import (
 	"log"
 	"monitoring-service/app/middlewares"
 	"monitoring-service/app/models"
-	"monitoring-service/app/utils"
 	"os"
 	"time"
 )
@@ -109,15 +108,21 @@ func (u *dashboardUsecase) GetJumlahPerKelompokUsia(desaID *int32, role string) 
 
 	// Proses penduduk (usia >= 10 tahun dari tabel penduduk)
 	for _, p := range penduduks {
-		umur := utils.HitungUmur(p.TanggalLahir)
+		fiveYearsLater := p.TanggalLahir.AddDate(5, 0, 0)
+		tenYearsLater := p.TanggalLahir.AddDate(10, 0, 0)
+		nineteenYearsLater := p.TanggalLahir.AddDate(19, 0, 0)
+		sixtyYearsLater := p.TanggalLahir.AddDate(60, 0, 0)
+
+		now := time.Now()
+
 		switch {
-		case umur <= BALITA_MAX:
+		case !p.TanggalLahir.After(now) && !now.After(fiveYearsLater):
 			// Balita dari tabel anak, diabaikan di sini
-		case isAnak(umur):
+		case now.After(fiveYearsLater) && !now.After(tenYearsLater):
 			// Anak dari tabel anak, diabaikan di sini
-		case isRemaja(umur):
+		case now.After(tenYearsLater) && !now.After(nineteenYearsLater):
 			result.Remaja++
-		case umur <= DEWASA_MAX:
+		case now.After(nineteenYearsLater) && !now.After(sixtyYearsLater):
 			result.Dewasa++
 		default:
 			result.Lansia++
@@ -135,10 +140,14 @@ func (u *dashboardUsecase) GetJumlahPerKelompokUsia(desaID *int32, role string) 
 		if parseErr != nil {
 			continue
 		}
-		umur := utils.HitungUmur(tglLahir)
-		if umur <= BALITA_MAX {
+		
+		fiveYearsLater := tglLahir.AddDate(5, 0, 0)
+		tenYearsLater := tglLahir.AddDate(10, 0, 0)
+		
+		now := time.Now()
+		if !tglLahir.After(now) && !now.After(fiveYearsLater) {
 			result.Balita++
-		} else if isAnak(umur) {
+		} else if now.After(fiveYearsLater) && !now.After(tenYearsLater) {
 			result.Anak++
 		}
 	}
@@ -164,18 +173,23 @@ func (u *dashboardUsecase) GetKesehatanPerKelompok(desaID *int32, role string) (
 
 	// PROSES PENDUDUK (usia >= 10 tahun dari tabel penduduk)
 	for _, p := range penduduks {
-		umur := utils.HitungUmur(p.TanggalLahir)
+		fiveYearsLater := p.TanggalLahir.AddDate(5, 0, 0)
+		tenYearsLater := p.TanggalLahir.AddDate(10, 0, 0)
+		nineteenYearsLater := p.TanggalLahir.AddDate(19, 0, 0)
+		sixtyYearsLater := p.TanggalLahir.AddDate(60, 0, 0)
+
+		now := time.Now()
 		id := p.IDKependudukan
 
 		switch {
-		case umur <= BALITA_MAX:
+		case !p.TanggalLahir.After(now) && !now.After(fiveYearsLater):
 			// Balita dari tabel anak, abaikan di sini
-		case isAnak(umur):
-			// Anak (6-9 tahun) dari penduduk - dimasukkan
+		case now.After(fiveYearsLater) && !now.After(tenYearsLater):
+			// Anak (5-9 tahun) dari penduduk - dimasukkan
 			kelompokIDMap["anak"][id] = true
-		case isRemaja(umur):
+		case now.After(tenYearsLater) && !now.After(nineteenYearsLater):
 			kelompokIDMap["remaja"][id] = true
-		case umur <= DEWASA_MAX:
+		case now.After(nineteenYearsLater) && !now.After(sixtyYearsLater):
 			kelompokIDMap["dewasa"][id] = true
 		default:
 			kelompokIDMap["lansia"][id] = true
@@ -197,14 +211,18 @@ func (u *dashboardUsecase) GetKesehatanPerKelompok(desaID *int32, role string) (
 		if parseErr != nil {
 			continue
 		}
-		umur := utils.HitungUmur(tglLahir)
+		
+		fiveYearsLater := tglLahir.AddDate(5, 0, 0)
+		tenYearsLater := tglLahir.AddDate(10, 0, 0)
+		
+		now := time.Now()
 
-		logContent += fmt.Sprintf("Anak: Nama=%s, Umur=%d, PendudukID=%d, StatusPrediksi='%s'\n",
-			a.Nama, umur, a.PendudukID, a.StatusPrediksi)
+		logContent += fmt.Sprintf("Anak: Nama=%s, TglLahir=%s, PendudukID=%d, StatusPrediksi='%s'\n",
+			a.Nama, a.TanggalLahir, a.PendudukID, a.StatusPrediksi)
 
-		if umur <= BALITA_MAX {
+		if !tglLahir.After(now) && !now.After(fiveYearsLater) {
 			kelompokIDMap["balita"][a.PendudukID] = true
-		} else if isAnak(umur) {
+		} else if now.After(fiveYearsLater) && !now.After(tenYearsLater) {
 			kelompokIDMap["anak"][a.PendudukID] = true
 		}
 	}
@@ -232,8 +250,10 @@ func (u *dashboardUsecase) GetKesehatanPerKelompok(desaID *int32, role string) (
 				if parseErr != nil {
 					continue
 				}
-				umur := utils.HitungUmur(tglLahir)
-				if umur <= BALITA_MAX {
+				
+				fiveYearsLater := tglLahir.AddDate(5, 0, 0)
+				
+				if !time.Now().After(fiveYearsLater) {
 					switch a.StatusPrediksi {
 					case "Stunting":
 						balitaRisk["Tinggi"]++
@@ -294,18 +314,23 @@ func (u *dashboardUsecase) GetCakupanPemeriksaan(desaID *int32, role string) ([]
 
 	// PROSES PENDUDUK (usia >= 10 tahun dari tabel penduduk)
 	for _, p := range penduduks {
-		umur := utils.HitungUmur(p.TanggalLahir)
+		fiveYearsLater := p.TanggalLahir.AddDate(5, 0, 0)
+		tenYearsLater := p.TanggalLahir.AddDate(10, 0, 0)
+		nineteenYearsLater := p.TanggalLahir.AddDate(19, 0, 0)
+		sixtyYearsLater := p.TanggalLahir.AddDate(60, 0, 0)
+
+		now := time.Now()
 		id := p.IDKependudukan
 
 		switch {
-		case umur <= BALITA_MAX:
+		case !p.TanggalLahir.After(now) && !now.After(fiveYearsLater):
 			// Balita dari tabel anak, abaikan di sini
-		case isAnak(umur):
-			// Anak (6-9 tahun) dari penduduk - dimasukkan
+		case now.After(fiveYearsLater) && !now.After(tenYearsLater):
+			// Anak (5-9 tahun) dari penduduk - dimasukkan
 			kelompokIDMap["anak"][id] = true
-		case isRemaja(umur):
+		case now.After(tenYearsLater) && !now.After(nineteenYearsLater):
 			kelompokIDMap["remaja"][id] = true
-		case umur <= DEWASA_MAX:
+		case now.After(nineteenYearsLater) && !now.After(sixtyYearsLater):
 			kelompokIDMap["dewasa"][id] = true
 		default:
 			kelompokIDMap["lansia"][id] = true
@@ -323,11 +348,15 @@ func (u *dashboardUsecase) GetCakupanPemeriksaan(desaID *int32, role string) ([]
 		if parseErr != nil {
 			continue
 		}
-		umur := utils.HitungUmur(tglLahir)
+		
+		fiveYearsLater := tglLahir.AddDate(5, 0, 0)
+		tenYearsLater := tglLahir.AddDate(10, 0, 0)
+		
+		now := time.Now()
 
-		if umur <= BALITA_MAX {
+		if !tglLahir.After(now) && !now.After(fiveYearsLater) {
 			kelompokIDMap["balita"][a.PendudukID] = true
-		} else if isAnak(umur) {
+		} else if now.After(fiveYearsLater) && !now.After(tenYearsLater) {
 			kelompokIDMap["anak"][a.PendudukID] = true
 		}
 	}

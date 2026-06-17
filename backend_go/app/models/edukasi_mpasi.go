@@ -35,6 +35,7 @@ type AturanPorsiMPASI struct {
 	ID        int32          `json:"id" gorm:"primaryKey;autoIncrement"`
 	BulanMin  int            `json:"bulan_min" gorm:"not null"`
 	BulanMax  int            `json:"bulan_max" gorm:"not null"`
+	GambarURL string         `json:"gambar_url" gorm:"type:text"`
 	Tekstur   string         `json:"tekstur" gorm:"type:text;not null"`
 	Frekuensi string         `json:"frekuensi" gorm:"type:text;not null"`
 	Porsi     string         `json:"porsi" gorm:"type:text;not null"`
@@ -52,6 +53,7 @@ type JadwalHarianMPASI struct {
 	ID        int32          `json:"id" gorm:"primaryKey;autoIncrement"`
 	BulanMin  int            `json:"bulan_min" gorm:"not null"`
 	BulanMax  int            `json:"bulan_max" gorm:"not null"`
+	GambarURL string         `json:"gambar_url" gorm:"type:text"`
 	Waktu     string         `json:"waktu" gorm:"type:varchar(10);not null"`
 	Aktivitas string         `json:"aktivitas" gorm:"type:varchar(100);not null"`
 	CreatedAt time.Time      `json:"created_at"`

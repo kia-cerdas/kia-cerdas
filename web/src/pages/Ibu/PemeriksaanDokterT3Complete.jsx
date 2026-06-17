@@ -186,6 +186,9 @@ export default function PemeriksaanDokterT3Complete() {
   const [canAccessT3, setCanAccessT3] = useState(true);
   const [usiaKehamilanSaatIni, setUsiaKehamilanSaatIni] = useState(0);
   const [usiaKehamilanError, setUsiaKehamilanError] = useState(null);
+  // VALIDASI: Cek kelengkapan T1 untuk sequence validation
+  const [t1Complete, setT1Complete] = useState(false);
+  const [sequenceMessage, setSequenceMessage] = useState("");
   // Fungsi untuk menghitung usia kehamilan dari HPHT
   const hitungUsiaKehamilanDariHPHT = (hpht, tanggalPeriksa = null) => {
     if (!hpht) return null;
@@ -313,6 +316,9 @@ export default function PemeriksaanDokterT3Complete() {
     kebutuhan_konseling: "Tidak",
     penjelasan: "",
     kesimpulan_rekomendasi_tempat_melahirkan: "",
+    tanggal_periksa_stamp_paraf: "",
+    keluhan_pemeriksaan_tindakan_saran: "",
+    tanggal_kembali: "",
   });
 
   /* ── Fetch data ─────────────────────────────────────────────────────── */
@@ -358,6 +364,24 @@ export default function PemeriksaanDokterT3Complete() {
 
         setCanAccessT3(true);
         setUsiaKehamilanError(null);
+
+        // VALIDASI: Cek kelengkapan T1 untuk sequence validation
+        try {
+          const t1Data = await getDokterT1CompleteByKehamilanId(aktif.id);
+          
+          // Cek apakah T1 lengkap (minimal tanggal_periksa terisi)
+          if (t1Data && t1Data.dokter && t1Data.dokter.tanggal_periksa) {
+            setT1Complete(true);
+            setSequenceMessage("");
+          } else {
+            setT1Complete(false);
+            setSequenceMessage("Pemeriksaan Trimester 1 belum lengkap. Silakan lengkapi data pemeriksaan Trimester 1 terlebih dahulu sebelum mengisi Trimester 3.");
+          }
+        } catch (seqErr) {
+          console.warn("Gagal mengecek kelengkapan T1:", seqErr);
+          setT1Complete(false);
+          setSequenceMessage("Gagal memverifikasi kelengkapan data pemeriksaan sebelumnya.");
+        }
 
         const res = await getDokterT3CompleteByKehamilanId(aktif.id);
         if (res && res.dokter) {
@@ -534,6 +558,14 @@ export default function PemeriksaanDokterT3Complete() {
               lanjutan?.kesimpulan_rekomendasi_tempat_melahirkan ||
               d.kesimpulan_rekomendasi_tempat_melahirkan ||
               "",
+            tanggal_periksa_stamp_paraf: d.tanggal_periksa_stamp_paraf
+              ? d.tanggal_periksa_stamp_paraf.split("T")[0]
+              : "",
+            keluhan_pemeriksaan_tindakan_saran:
+              d.keluhan_pemeriksaan_tindakan_saran || "",
+            tanggal_kembali: d.tanggal_kembali
+              ? d.tanggal_kembali.split("T")[0]
+              : "",
           }));
 
           // Jika ada gambar USG, tampilkan preview
@@ -750,6 +782,17 @@ export default function PemeriksaanDokterT3Complete() {
         icon: "warning",
         title: "Belum Memasuki Trimester 3",
         text: `Pemeriksaan Trimester 3 hanya dapat dilakukan saat usia kehamilan minimal 28 minggu.\nSaat ini: ${usiaKehamilanSaatIni} minggu.`,
+        confirmButtonColor: "#4f46e5",
+      });
+      return;
+    }
+
+    // VALIDASI: Cek sequence T1 -> T3 sebelum mengizinkan submit
+    if (!t1Complete) {
+      Swal.fire({
+        icon: "warning",
+        title: "Urutan Pemeriksaan Tidak Sesuai",
+        text: sequenceMessage || "Pemeriksaan Trimester 1 harus lengkap sebelum dapat mengisi Trimester 3.",
         confirmButtonColor: "#4f46e5",
       });
       return;
@@ -1018,6 +1061,35 @@ export default function PemeriksaanDokterT3Complete() {
     );
   }
 
+  // VALIDASI: Tampilkan pesan sequence validation jika T1/T2 belum lengkap
+  if (sequenceMessage && !existingData) {
+    return (
+      <MainLayout>
+        <div className="p-6 max-w-2xl mx-auto mt-10">
+          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-8 text-center">
+            <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <AlertCircle className="text-amber-600" size={32} />
+            </div>
+            <h2 className="text-xl font-bold text-amber-700 mb-2">
+              Urutan Pemeriksaan Tidak Sesuai
+            </h2>
+            <div className="text-gray-600 mb-6 text-sm whitespace-pre-line">
+              {sequenceMessage}
+            </div>
+            <div className="flex gap-3 justify-center">
+              <button
+                onClick={() => navigate(`/data-ibu/${id}`)}
+                className="bg-gray-100 text-gray-700 px-5 py-2 rounded-lg text-sm font-medium hover:bg-gray-200"
+              >
+                Kembali ke Profil Ibu
+              </button>
+            </div>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
+
   // Loading state
   if (loading) {
     return (
@@ -1149,12 +1221,12 @@ export default function PemeriksaanDokterT3Complete() {
               const Icon = stepIcons[step - 1];
               const color = stepColors[step - 1];
               const bgColor = isActive
-                ? `bg-${color}-500 text-white shadow-lg scale-110`
+                ? `bg-${color}-100 text-${color}-600 shadow-lg scale-110`
                 : isCompleted
                   ? "bg-emerald-500 text-white"
                   : "bg-gray-200 text-gray-500";
               const titleColor = isActive
-                ? `text-${color}-600`
+                ? `text-${color}-600 font-bold`
                 : isCompleted
                   ? "text-emerald-600"
                   : "text-gray-500";
@@ -1777,12 +1849,13 @@ export default function PemeriksaanDokterT3Complete() {
 
           {/* ══ STEP 4: Skrining Jiwa & Rencana Lanjutan ══ */}
           {currentStep === 4 && (
-            <Section
-              icon={Brain}
-              title="Skrining Jiwa & Rencana Lanjutan"
-              color="rose"
-              defaultOpen={true}
-            >
+            <>
+              <Section
+                icon={Brain}
+                title="Skrining Jiwa & Rencana Lanjutan"
+                color="rose"
+                defaultOpen={true}
+              >
               {/* Skrining Jiwa Lanjutan (dari tabel dokter T3) */}
               <div className="mb-5">
                 <h3 className="text-xs font-bold text-rose-600 uppercase tracking-widest mb-3">
@@ -1990,6 +2063,42 @@ export default function PemeriksaanDokterT3Complete() {
                 </Field>
               </div>
             </Section>
+
+            <Section icon={Save} title="Catatan Pemeriksaan" color="amber">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                <Field label="Tanggal Periksa / Stempel / Paraf">
+                  <input
+                    type="date"
+                    name="tanggal_periksa_stamp_paraf"
+                    value={form.tanggal_periksa_stamp_paraf}
+                    onChange={handleChange}
+                    className={inputCls}
+                  />
+                </Field>
+                <Field label="Tanggal Kembali">
+                  <input
+                    type="date"
+                    name="tanggal_kembali"
+                    value={form.tanggal_kembali}
+                    onChange={handleChange}
+                    className={inputCls}
+                  />
+                </Field>
+              </div>
+              <div className="mt-4">
+                <Field label="Keluhan / Pemeriksaan / Tindakan / Saran">
+                  <textarea
+                    name="keluhan_pemeriksaan_tindakan_saran"
+                    value={form.keluhan_pemeriksaan_tindakan_saran}
+                    onChange={handleChange}
+                    placeholder="Tuliskan keluhan, hasil pemeriksaan, tindakan yang dilakukan, dan saran untuk pasien..."
+                    className={inputCls}
+                    rows={4}
+                  />
+                </Field>
+              </div>
+            </Section>
+            </>
           )}
 
           {/* Navigation Buttons */}

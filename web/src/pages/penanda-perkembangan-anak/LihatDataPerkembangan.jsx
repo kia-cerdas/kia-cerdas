@@ -30,11 +30,24 @@ export default function LihatDataPerkembangan() {
       ]);
 
       const listAnak = resAnak.data || resAnak;
+      const balitaList = listAnak.filter((c) => {
+        if (c.usia_bulan !== undefined) {
+          return c.usia_bulan < 60;
+        }
+        if (!c.tanggal_lahir) return false;
+        const birthDate = new Date(c.tanggal_lahir);
+        if (isNaN(birthDate.getTime())) return false;
+        const currentDate = new Date();
+        const limitDate = new Date(birthDate);
+        limitDate.setFullYear(birthDate.getFullYear() + 5);
+        return currentDate <= limitDate;
+      });
+
       const totalIndikator = Array.isArray(kategoriList) ? kategoriList.length : 0;
 
       // Untuk setiap anak, ambil data perawatan yang sudah diisi
       const processedData = await Promise.all(
-        listAnak.map(async (anak) => {
+        balitaList.map(async (anak) => {
           let tercapai = 0;
 
           try {

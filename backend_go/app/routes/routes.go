@@ -1,4 +1,4 @@
-﻿package routes
+package routes
 
 import (
 	"fmt"
@@ -45,7 +45,7 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	// auth.POST("/register/ortu", controller.RegisterOrangTua) // registrasi khusus orang tua
 	secured := auth.Group("")
 	secured.Use(middlewares.JWTAuth(controller.JWTSecret()))
-	secured.Use(middlewares.AuditTrail(controller.AuditTrail))
+	// secured.Use(middlewares.AuditTrail(controller.AuditTrail))
 	secured.GET("/me", controller.Me)
 	secured.POST("/logout", controller.Logout)
 
@@ -119,6 +119,20 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	superadmin.PATCH("/users/:id/aktif", controller.ActivateUser)
 	superadmin.GET("/posyandu", controller.SuperadminListPosyandu)
 
+	// Kelola Puskesmas
+	superadmin.GET("/puskesmas", controller.Puskesmas.GetAll)
+	superadmin.GET("/puskesmas/:id", controller.Puskesmas.GetByID)
+	superadmin.POST("/puskesmas", controller.Puskesmas.Create)
+	superadmin.PUT("/puskesmas/:id", controller.Puskesmas.Update)
+	superadmin.DELETE("/puskesmas/:id", controller.Puskesmas.Delete)
+
+	// Kelola Posyandu
+	superadmin.GET("/posyandu-manage", controller.Posyandu.GetAll)
+	superadmin.GET("/posyandu-manage/:id", controller.Posyandu.GetByID)
+	superadmin.POST("/posyandu-manage", controller.Posyandu.Create)
+	superadmin.PUT("/posyandu-manage/:id", controller.Posyandu.Update)
+	superadmin.DELETE("/posyandu-manage/:id", controller.Posyandu.Delete)
+
 	// ==================== MODUL BIDAN ====================
 
 	bidan := e.Group("/bidan")
@@ -141,13 +155,19 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	bidan.GET("/dashboard/jadwal-layanan/:id", controller.JadwalLayanan.GetByID)
 	bidan.PUT("/dashboard/jadwal-layanan/:id", controller.JadwalLayanan.Update)
 	bidan.DELETE("/dashboard/jadwal-layanan/:id", controller.JadwalLayanan.Delete)
-	// Vaksin routes - TAMBAHKAN INI (gunakan controller.Vaksin)
+	// Vaksin routes - CRUD (Bidan)
 	bidan.GET("/vaksin", controller.Vaksin.GetAll)
 	bidan.GET("/vaksin/:id", controller.Vaksin.GetByID)
+	bidan.POST("/vaksin", controller.Vaksin.Create)
+	bidan.PUT("/vaksin/:id", controller.Vaksin.Update)
+	bidan.DELETE("/vaksin/:id", controller.Vaksin.Delete)
 
-	// Dosis Vaksin routes - TAMBAHKAN
+	// Dosis Vaksin routes - CRUD (Bidan)
 	bidan.GET("/dosis-vaksin", controller.DosisVaksin.GetAll)
 	bidan.GET("/dosis-vaksin/by-vaksin/:vaksin_id", controller.DosisVaksin.GetByVaksinID)
+	bidan.POST("/dosis-vaksin", controller.DosisVaksin.Create)
+	bidan.PUT("/dosis-vaksin/:id", controller.DosisVaksin.Update)
+	bidan.DELETE("/dosis-vaksin/:id", controller.DosisVaksin.Delete)
 
 	bidan.GET("/request-perubahan-jadwal-imunisasi", controller.GetAllRequestPerubahanJadwal)
 	bidan.PUT("/request-perubahan-jadwal-imunisasi/:id/approve", controller.ApproveRequestPerubahanJadwal)
@@ -156,7 +176,14 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	// Imunisasi - Dashboard Bidan
 	bidan.GET("/imunisasi/anak/:anak_id", controller.GetJadwalImunisasiByAnakIDBidan)
 	bidan.PUT("/imunisasi/:id/selesai", controller.SetJadwalSelesaiBidan)
+	bidan.PUT("/imunisasi/:id/batal-paraf", controller.BatalParafBidan)
 	bidan.GET("/imunisasi/:id", controller.GetJadwalImunisasiByIDBidan)
+	bidan.GET("/aturan-vaksin-anak", controller.GetAturanVaksinAnak)
+
+	// Pencatatan Imunisasi (Web)
+	bidan.POST("/pencatatan-imunisasi", controller.PencatatanImunisasi.Create)
+	bidan.GET("/pencatatan-imunisasi/anak/:anak_id", controller.PencatatanImunisasi.GetByAnakID)
+	bidan.PUT("/pencatatan-imunisasi/:id/selesai", controller.PencatatanImunisasi.SetSelesai)
 
 	// Kader Management dipindahkan ke superadmin
 
@@ -416,8 +443,8 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	tenaga.DELETE("/pemantauan-indikator/:id", controller.PemantauanIndikator.Delete)
 
 	// ==================== ADMIN AKUN BIDAN & KADER ====================
-	// admin.POST("/bidan/:id/akun", controller.AdminCreateAkunBidan)  // belum diimplementasi
 	// admin.POST("/kader/:id/akun", controller.AdminCreateAkunKader)  // belum diimplementasi
+	// admin.POST("/bidan/:id/akun", controller.AdminCreateAkunBidan)  // belum diimplementasi
 	// ==================== PERAWATAN ANAK (MILESTONE/PERKEMBANGAN) ====================
 	tenaga.GET("/kategori-capaian", controller.GetAllKategoriCapaian)
 	tenaga.POST("/kategori-capaian", controller.CreateKategoriCapaian)
@@ -626,6 +653,12 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	tenaga.PUT("/skrining-pemantauan/:id", controller.SkriningPemantauan.Update)
 	tenaga.DELETE("/skrining-pemantauan/:id", controller.SkriningPemantauan.Delete)
 
+	// ==================== DETEKSI GEJALA DARURAT ANAK ====================
+	gejalaDarurat := e.Group("/gejala-darurat")
+	gejalaDarurat.Use(middlewares.JWTAuth(controller.JWTSecret()))
+	gejalaDarurat.POST("/deteksi", controller.GejalaDaruratAnak.ProsesDeteksi)
+	gejalaDarurat.GET("/riwayat/:anak_id", controller.GejalaDaruratAnak.GetRiwayatAnak)
+
 	// ==================== KARTU KELUARGA ====================
 	// tenaga.GET("/kartu-keluarga", controller.KartuKeluarga.GetAll)
 	// tenaga.POST("/kartu-keluarga", controller.KartuKeluarga.Create)
@@ -667,6 +700,18 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	// untuk laporan anak
 	tenaga.GET("/laporan/anak/preview", controller.LaporanAnak.Preview)
 	tenaga.GET("/laporan/anak/export/excel", controller.LaporanAnak.ExportExcel)
+
+	// untuk laporan remaja
+	tenaga.GET("/laporan/remaja/preview", controller.LaporanRemaja.Preview)
+	tenaga.GET("/laporan/remaja/export/excel", controller.LaporanRemaja.ExportExcel)
+
+	// untuk laporan dewasa
+	tenaga.GET("/laporan/dewasa/preview", controller.LaporanDewasa.Preview)
+	tenaga.GET("/laporan/dewasa/export/excel", controller.LaporanDewasa.ExportExcel)
+
+	// untuk laporan lansia
+	tenaga.GET("/laporan/lansia/preview", controller.LaporanLansia.Preview)
+	tenaga.GET("/laporan/lansia/export/excel", controller.LaporanLansia.ExportExcel)
 
 	//==== IBU ====
 	ibu := e.Group("/ibu")
@@ -719,10 +764,11 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 
 	// Pemeriksaan Kehamilan
 	ibuk.GET("/pemeriksaan-kehamilan/me", controller.PemeriksaanKehamilan.GetMine)
+	ibuk.GET("/evaluasi-kesehatan-ibu/kehamilan/:id", controller.EvaluasiKesehatanIbu.GetByKehamilanID)
 	ibuk.GET("/pemeriksaan-kehamilan/:id", controller.PemeriksaanKehamilan.GetByIDForOrangtua)
 
 	// Skrining Preeklampsia
-	ibuk.GET("/skrining-preeklampsia/me", controller.SkriningPreeklampsia.GetMine)
+	ibuk .GET("/skrining-preeklampsia/me", controller.SkriningPreeklampsia.GetMine)
 	ibuk.GET("/skrining-preeklampsia/:id", controller.SkriningPreeklampsia.GetByIDForOrangtua)
 
 	ibuk.GET("/rujukan/:id", controller.Rujukan.GetByIDForOrangtua)
@@ -789,10 +835,20 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	// Pelayanan Ibu Nifas
 	ibuk.GET("/pelayanan-ibu-nifas/me", controller.PelayananIbuNifas.GetMine)
 	ibuk.GET("/catatan-pelayanan-nifas/me", controller.CatatanPelayananNifas.GetMine)
+
+	ibuk.GET("/catatan-pelayanan-kehamilan/me", controller.CatatanPelayananKehamilan.GetMine)
+	
 	// Profile
 	ibuk.GET("/profil", controller.ProfilIbu.GetProfilSaya)
 	ibuk.GET("/neonatus/anak/:anak_id", controller.Neonatus.GetByAnakIDForIbu)
 	ibuk.GET("/neonatus/:id", controller.Neonatus.GetByIDForIbu)
+		// Riwayat Kehamilan Ibu
+	ibuk.GET("/kehamilan/:id/detail", controller.DetailKehamilanIbu.GetDetail) 
+
+	ibuk.GET("/kehamilan/:id/evaluasi-kesehatan-ibu", controller.EvaluasiKesehatanIbu.GetByKehamilanIDForOrangtua)
+	// Profil pemantauan ibu hamil
+	ibuk.GET("/pemantauan-ibu-hamil/by-kehamilan/:kehamilan_id", controller.PemantauanIbuHamil.GetByKehamilanID)
+
 
 	// ibu := e.Group("/ibu")
 	ibu.Use(middlewares.JWTAuth(controller.JWTSecret()))
@@ -849,6 +905,9 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	kader := e.Group("/kader")
 	kader.Use(middlewares.JWTAuth(controller.JWTSecret()))
 	kader.Use(middlewares.Kader())
+	kader.GET("/imunisasi-terlewat", controller.GetJadwalImunisasiTerlewat)
+	kader.GET("/imunisasi-terlewat/:jadwal_id", controller.GetJadwalImunisasiTerlewatByID)
+	kader.POST("/kunjungan-imunisasi", controller.CreateKunjunganImunisasi)
 	kader.GET("/kunjungan-imunisasi", controller.GetAllKunjunganImunisasi)
 	kader.GET("/kunjungan-imunisasi/:id", controller.GetKunjunganImunisasiByID)
 	kader.PUT("/kunjungan-imunisasi/:id/status", controller.UpdateStatusKunjungan)
@@ -984,4 +1043,26 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 
 	//bidan create akun ibu
 	tenaga.POST("/users", controller.CreateIbuUser)
+
+	// ==================== MODUL PUSKESMAS (Bidan Puskesmas & Dokter) ====================
+	puskesmas := e.Group("/puskesmas")
+	puskesmas.Use(middlewares.JWTAuth(controller.JWTSecret()))
+	puskesmas.Use(middlewares.PuskesmasAccess())
+
+	// Dashboard Puskesmas (multi-desa recap)
+	puskesmas.GET("/dashboard", controller.PuskesmasDashboard.GetDashboard)
+
+	// CRUD Vaksin
+	puskesmas.GET("/vaksin", controller.Vaksin.GetAll)
+	puskesmas.GET("/vaksin/:id", controller.Vaksin.GetByID)
+	puskesmas.POST("/vaksin", controller.Vaksin.Create)
+	puskesmas.PUT("/vaksin/:id", controller.Vaksin.Update)
+	puskesmas.DELETE("/vaksin/:id", controller.Vaksin.Delete)
+
+	// CRUD Dosis Vaksin
+	puskesmas.GET("/dosis-vaksin", controller.DosisVaksin.GetAll)
+	puskesmas.GET("/dosis-vaksin/by-vaksin/:vaksin_id", controller.DosisVaksin.GetByVaksinID)
+	puskesmas.POST("/dosis-vaksin", controller.DosisVaksin.Create)
+	puskesmas.PUT("/dosis-vaksin/:id", controller.DosisVaksin.Update)
+	puskesmas.DELETE("/dosis-vaksin/:id", controller.DosisVaksin.Delete)
 }

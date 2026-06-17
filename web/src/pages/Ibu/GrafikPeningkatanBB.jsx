@@ -8,6 +8,7 @@ import {
 } from "../../services/grafikBB";
 import { Line } from "react-chartjs-2";
 import { Save, ArrowLeft } from "lucide-react";
+import Swal from "sweetalert2";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -90,7 +91,12 @@ export default function GrafikPeningkatanBB() {
     e.preventDefault();
 
     if (!formBB.minggu_kehamilan || !formBB.berat_badan) {
-      alert("Field wajib diisi");
+      Swal.fire({
+        icon: "warning",
+        title: "Data Belum Lengkap",
+        text: "Field wajib diisi",
+        confirmButtonColor: "#10b981",
+      });
       return;
     }
 
@@ -116,7 +122,12 @@ export default function GrafikPeningkatanBB() {
       setShowModal(false);
     } catch (err) {
       console.error(err);
-      alert("Gagal menyimpan data");
+      Swal.fire({
+        icon: "error",
+        title: "Gagal Menyimpan Data",
+        text: "Terjadi kesalahan saat menyimpan data",
+        confirmButtonColor: "#10b981",
+      });
     } finally {
       setSaving(false);
     }

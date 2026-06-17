@@ -30,6 +30,7 @@ export default function PemeriksaanDokterT1() {
     usg_jumlah_bayi: "", usg_crl_cm: "", usg_crl_minggu: "", usg_crl_hari: "",
     usg_letak_produk_kehamilan: "", usg_pulsasi_jantung: "",
     usg_kecurigaan_temuan_abnormal: "Tidak", usg_keterangan_temuan_abnormal: "",
+    tanggal_periksa_stamp_paraf: "", keluhan_pemeriksaan_tindakan_saran: "", tanggal_kembali: "",
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -67,6 +68,9 @@ export default function PemeriksaanDokterT1() {
               usg_pulsasi_jantung: d.usg_pulsasi_jantung || "",
               usg_kecurigaan_temuan_abnormal: d.usg_kecurigaan_temuan_abnormal || "Tidak",
               usg_keterangan_temuan_abnormal: d.usg_keterangan_temuan_abnormal || "",
+              tanggal_periksa_stamp_paraf: d.tanggal_periksa_stamp_paraf ? new Date(d.tanggal_periksa_stamp_paraf).toISOString().split("T")[0] : "",
+              keluhan_pemeriksaan_tindakan_saran: d.keluhan_pemeriksaan_tindakan_saran || "",
+              tanggal_kembali: d.tanggal_kembali ? new Date(d.tanggal_kembali).toISOString().split("T")[0] : "",
             });
           }
         }
@@ -171,6 +175,18 @@ export default function PemeriksaanDokterT1() {
               <div><label className="block text-sm font-medium mb-1">Pulsasi Jantung</label><input name="usg_pulsasi_jantung" value={form.usg_pulsasi_jantung} onChange={handleChange} className="w-full border rounded-lg px-3 py-2" /></div>
               <div><label className="block text-sm font-medium mb-1">Kecurigaan Abnormal</label><select name="usg_kecurigaan_temuan_abnormal" value={form.usg_kecurigaan_temuan_abnormal} onChange={handleChange} className="w-full border rounded-lg px-3 py-2"><option>Tidak</option><option>Ya</option></select></div>
               <div><label className="block text-sm font-medium mb-1">Keterangan Abnormal</label><input name="usg_keterangan_temuan_abnormal" value={form.usg_keterangan_temuan_abnormal} onChange={handleChange} className="w-full border rounded-lg px-3 py-2" /></div>
+            </div>
+          </div>
+
+          <div>
+            <h3 className="font-semibold mb-3 text-indigo-700">Catatan Pemeriksaan</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div><label className="block text-sm font-medium mb-1">Tanggal Periksa / Stempel / Paraf</label><input type="date" name="tanggal_periksa_stamp_paraf" value={form.tanggal_periksa_stamp_paraf} onChange={handleChange} className="w-full border rounded-lg px-3 py-2" /></div>
+              <div><label className="block text-sm font-medium mb-1">Tanggal Kembali</label><input type="date" name="tanggal_kembali" value={form.tanggal_kembali} onChange={handleChange} className="w-full border rounded-lg px-3 py-2" /></div>
+            </div>
+            <div className="mt-4">
+              <label className="block text-sm font-medium mb-1">Keluhan / Pemeriksaan / Tindakan / Saran</label>
+              <textarea name="keluhan_pemeriksaan_tindakan_saran" value={form.keluhan_pemeriksaan_tindakan_saran} onChange={handleChange} className="w-full border rounded-lg px-3 py-2" rows="3" placeholder="Tuliskan keluhan, hasil pemeriksaan, tindakan yang dilakukan, dan saran untuk pasien..." />
             </div>
           </div>
 

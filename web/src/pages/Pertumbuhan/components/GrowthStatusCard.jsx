@@ -10,8 +10,8 @@ export function GrowthStatusCard({ status, label, zScore, description }) {
     
     const lower = statusText.toLowerCase();
     
-    // Hijau - Gizi Baik
-    if (lower.includes('baik') || lower.includes('normal')) {
+    // Hijau - Normal / Gizi Baik / Tinggi
+    if (lower.includes('baik') || lower.includes('normal') || lower === 'tinggi') {
       return { 
         bg: 'bg-emerald-50', 
         text: 'text-emerald-700', 
@@ -21,25 +21,25 @@ export function GrowthStatusCard({ status, label, zScore, description }) {
       };
     }
     
-    // Kuning/Oranye - Gizi Kurang atau Risiko
-    if (lower.includes('kurang') || lower.includes('risiko') || lower.includes('pendek')) {
-      return { 
-        bg: 'bg-amber-50', 
-        text: 'text-amber-700', 
-        icon: 'text-amber-500',
-        border: 'border-amber-200',
-        color: '#f59e0b'
-      };
-    }
-    
-    // Merah - Gizi Buruk atau Sangat Kurang
-    if (lower.includes('buruk') || lower.includes('sangat') || lower.includes('stunting') || lower.includes('obesitas')) {
+    // Merah - Kondisi kritis (prioritas lebih tinggi dari kurang/risiko)
+    if (lower.includes('buruk') || lower.includes('sangat') || lower.includes('stunting') || lower.includes('obesitas') || lower.includes('lebih')) {
       return { 
         bg: 'bg-red-50', 
         text: 'text-red-700', 
         icon: 'text-red-500',
         border: 'border-red-200',
         color: '#ef4444'
+      };
+    }
+    
+    // Kuning/Oranye - Gizi Kurang atau Risiko
+    if (lower.includes('kurang') || lower.includes('risiko') || lower.includes('berisiko') || lower.includes('pendek')) {
+      return { 
+        bg: 'bg-amber-50', 
+        text: 'text-amber-700', 
+        icon: 'text-amber-500',
+        border: 'border-amber-200',
+        color: '#f59e0b'
       };
     }
     

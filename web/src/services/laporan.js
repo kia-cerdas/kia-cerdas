@@ -40,3 +40,66 @@ export const exportLaporanAnak = async (startDate, endDate) => {
   });
   return res.data;
 };
+
+// Laporan remaja
+export const previewLaporanRemaja = async (startDate, endDate) => {
+  let url = "/tenaga-kesehatan/laporan/remaja/preview";
+  if (startDate && endDate) {
+    url += `?start_date=${startDate}&end_date=${endDate}`;
+  }
+  const response = await api.get(url);
+  return response.data;
+};
+
+export const exportLaporanRemaja = async (startDate, endDate) => {
+  let url = "/tenaga-kesehatan/laporan/remaja/export/excel";
+  if (startDate && endDate) {
+    url += `?start_date=${startDate}&end_date=${endDate}`;
+  }
+  const res = await api.get(url, {
+    responseType: "blob",
+  });
+  return res.data;
+};
+
+// Laporan dewasa
+export const previewLaporanDewasa = async (startDate, endDate) => {
+  let url = "/tenaga-kesehatan/laporan/dewasa/preview";
+  if (startDate && endDate) {
+    url += `?start_date=${startDate}&end_date=${endDate}`;
+  }
+  const response = await api.get(url);
+  return response.data;
+};
+
+export const exportLaporanDewasa = async (startDate, endDate) => {
+  let url = "/tenaga-kesehatan/laporan/dewasa/export/excel";
+  if (startDate && endDate) {
+    url += `?start_date=${startDate}&end_date=${endDate}`;
+  }
+  const res = await api.get(url, {
+    responseType: "blob",
+  });
+  return res.data;
+};
+
+// Laporan lansia
+export const previewLaporanLansia = async (startDate, endDate) => {
+  let url = "/tenaga-kesehatan/laporan/lansia/preview";
+  if (startDate && endDate) {
+    url += `?start_date=${startDate}&end_date=${endDate}`;
+  }
+  const response = await api.get(url);
+  return response.data;
+};
+
+export const exportLaporanLansia = async (startDate, endDate) => {
+  let url = "/tenaga-kesehatan/laporan/lansia/export/excel";
+  if (startDate && endDate) {
+    url += `?start_date=${startDate}&end_date=${endDate}`;
+  }
+  const res = await api.get(url, {
+    responseType: "blob",
+  });
+  return res.data;
+};

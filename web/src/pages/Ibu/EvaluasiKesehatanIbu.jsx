@@ -1059,7 +1059,7 @@ export default function EvaluasiKesehatanIbu() {
 
         // Nama dokter dari localStorage
         const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
-        const dokterNama = storedUser.nama || "";
+        const dokterNama = storedUser.name || "";
 
         // Ambil evaluasi
         const evalData = await getEvaluasiByKehamilanId(targetKehamilan.id);
@@ -1299,7 +1299,7 @@ export default function EvaluasiKesehatanIbu() {
       const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
       setForm((prev) => ({
         ...prev,
-        nama_dokter: storedUser.nama || "",
+        nama_dokter: storedUser.name || "",
         tanggal_periksa: new Date().toISOString().split("T")[0],
         fasilitas_kesehatan: "",
         tb_cm: "",
@@ -1412,13 +1412,13 @@ export default function EvaluasiKesehatanIbu() {
 
           {/* Status banner */}
           {!isActive && (
-            <div className="bg-[#FAEEDA] border-l-4 border-[#BA7517] rounded-lg p-4 text-[#633806] text-base flex items-center gap-2">
-              <EyeOff size={18} /> Kehamilan ini sudah selesai (NON-AKTIF). Hanya mode baca.
+            <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg text-blue-700 text-base flex items-center gap-2">
+              <EyeOff size={16} /> Kehamilan ini sudah selesai (NON-AKTIF). Data hanya dapat dilihat, tidak dapat diubah.
             </div>
           )}
           {!canEdit && isActive && (
-            <div className="bg-blue-50 border-l-4 border-[#185FA5] rounded-lg p-4 text-[#185FA5] text-base flex items-center gap-2">
-              <Eye size={18} /> Anda dalam mode baca. Data hanya dapat dilihat.
+            <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg text-blue-700 text-base flex items-center gap-2">
+              <Eye size={16} /> Anda dalam mode baca (Dokter). Data hanya dapat dilihat, tidak dapat diubah.
             </div>
           )}
 

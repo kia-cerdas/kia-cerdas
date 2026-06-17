@@ -24,12 +24,12 @@ type CatatanPertumbuhan struct {
 	StatusBBTB string `gorm:"column:status_bb_tb;type:varchar" db:"status_bb_tb" json:"status_bb_tb,omitempty"`
 	StatusLKU  string `gorm:"column:status_lk_u;type:varchar" db:"status_lk_u" json:"status_lk_u,omitempty"`
 
-	// Z-Score (hasil perhitungan)
-	ZScoreBBU  float64 `gorm:"column:z_score_bb_u;type:decimal(5,2)" db:"z_score_bb_u" json:"z_score_bb_u,omitempty"`
-	ZScoreTBU  float64 `gorm:"column:z_score_tb_u;type:decimal(5,2)" db:"z_score_tb_u" json:"z_score_tb_u,omitempty"`
-	ZScoreIMTU float64 `gorm:"column:z_score_imt_u;type:decimal(5,2)" db:"z_score_imt_u" json:"z_score_imt_u,omitempty"`
-	ZScoreBBTB float64 `gorm:"column:z_score_bb_tb;type:decimal(5,2)" db:"z_score_bb_tb" json:"z_score_bb_tb,omitempty"`
-	ZScoreLKU  float64 `gorm:"column:z_score_lk_u;type:decimal(5,2)" db:"z_score_lk_u" json:"z_score_lk_u,omitempty"`
+	// Z-Score (hasil perhitungan) - tidak pakai omitempty agar nilai 0.0 tetap dikirim
+	ZScoreBBU  float64 `gorm:"column:z_score_bb_u;type:decimal(5,2)" db:"z_score_bb_u" json:"z_score_bb_u"`
+	ZScoreTBU  float64 `gorm:"column:z_score_tb_u;type:decimal(5,2)" db:"z_score_tb_u" json:"z_score_tb_u"`
+	ZScoreIMTU float64 `gorm:"column:z_score_imt_u;type:decimal(5,2)" db:"z_score_imt_u" json:"z_score_imt_u"`
+	ZScoreBBTB float64 `gorm:"column:z_score_bb_tb;type:decimal(5,2)" db:"z_score_bb_tb" json:"z_score_bb_tb"`
+	ZScoreLKU  float64 `gorm:"column:z_score_lk_u;type:decimal(5,2)" db:"z_score_lk_u" json:"z_score_lk_u"`
 
 	// simpan di DB
 	UsiaUkurBulan int    `gorm:"column:usia_ukur_bulan;type:int;not null;index" db:"usia_ukur_bulan" json:"usia_ukur_bulan"`

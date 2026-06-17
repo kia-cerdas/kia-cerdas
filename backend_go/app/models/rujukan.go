@@ -16,6 +16,7 @@ type Rujukan struct {
 	RujukanBalikResumePemeriksaanTatalaksana string     `json:"rujukan_balik_resume_pemeriksaan_tatalaksana"`
 
 	AnjuranRekomendasiTempatMelahirkan string `gorm:"type:varchar(50)" json:"anjuran_rekomendasi_tempat_melahirkan"`
+	Source                             string `gorm:"type:varchar(50);default:anc" json:"source,omitempty"` // preeklampsia, anc, dm_gestasional, etc.
 
 	CreatedAt time.Time `json:"created_at"`
 }

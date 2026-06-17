@@ -138,3 +138,6 @@ func (r *checklistPemantauanIbuNifasRepository) FindByID(id int32) (*models.Chec
 func (r *checklistPemantauanIbuNifasRepository) UpdateVerifikasi(data *models.ChecklistPemantauanIbuNifas) error {
 	return r.db.Save(data).Error
 }
+
+
+

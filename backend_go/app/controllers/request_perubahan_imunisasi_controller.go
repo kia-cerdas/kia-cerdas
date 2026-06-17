@@ -77,7 +77,7 @@ func (m *Main) RequestPerubahanJadwal(
 			RequestPerubahanJadwal(
 				claims.UserID,
 				uint(jadwalID),
-				req.TanggalBaru,
+				req.JadwalLayananID,
 				req.Alasan,
 			)
 

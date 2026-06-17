@@ -40,6 +40,7 @@ type Main struct {
 	CatatanPelayananTrimester2    *CatatanPelayananTrimester2Controller
 	CatatanPelayananTrimester3    *CatatanPelayananTrimester3Controller
 	CatatanPelayananNifas         *CatatanPelayananNifasController
+	CatatanPelayananKehamilan     *CatatanPelayananKehamilanController
 	GrafikPeningkatanBB           *GrafikPeningkatanBBController
 	PenjelasanHasilGrafik         *PenjelasanHasilGrafikController
 	RencanaPersalinan             *RencanaPersalinanController
@@ -58,6 +59,7 @@ type Main struct {
 	KategoriUmur                  *KategoriUmurController
 	Kader                         *KaderController
 	AuditTrail                    *AuditTrailController
+	GejalaDaruratAnak             *GejalaDaruratAnakController
 
 	// Controller tambahan
 	PemantauanAnak      *PemantauanAnakController
@@ -97,12 +99,18 @@ type Main struct {
 	JadwalLayanan            *JadwalLayananController
 	Vaksin                   *VaksinController      // ← TAMBAHKAN INI
 	DosisVaksin              *DosisVaksinController // ← TAMBAHKAN
+	Puskesmas                *PuskesmasController   // Kelola Puskesmas
+	Posyandu                 *PosyanduController    // Kelola Posyandu
 	LaporanAnak              *LaporanAnakController
+	LaporanRemaja            *LaporanRemajaController
+	LaporanDewasa            *LaporanDewasaController
+	LaporanLansia            *LaporanLansiaController
 	PemeriksaanAnak          *PemeriksaanAnakController
 	PemeriksaanRemaja        *PemeriksaanRemajaController
 	PemeriksaanDewasa        *PemeriksaanDewasaController
 	PemeriksaanLansia        *PemeriksaanLansiaController
 	Dashboard                *DashboardController
+	PuskesmasDashboard       *PuskesmasDashboardController
 	PendudukRisk             *PendudukRiskController
 	RiwayatCard              *RiwayatCardController
 	Pencatatan               *PencatatanController
@@ -111,6 +119,10 @@ type Main struct {
 	Pemeriksaan              *PemeriksaanController
 
 	ProfilIbu *ProfilIbuController
+	DetailKehamilanIbu *DetailKehamilanIbuController
+
+	// Pencatatan Imunisasi (Web)
+	PencatatanImunisasi *PencatatanImunisasiController
 }
 
 type Options struct {
@@ -157,6 +169,7 @@ func Init(opts Options) *Main {
 	m.CatatanPelayananTrimester2 = NewCatatanPelayananTrimester2Controller(opts.UseCases.CatatanPelayananTrimester2)
 	m.CatatanPelayananTrimester3 = NewCatatanPelayananTrimester3Controller(opts.UseCases.CatatanPelayananTrimester3)
 	m.CatatanPelayananNifas = NewCatatanPelayananNifasController(opts.UseCases.CatatanPelayananNifas)
+	m.CatatanPelayananKehamilan = NewCatatanPelayananKehamilanController(opts.UseCases.CatatanPelayananKehamilan)
 	m.GrafikEvaluasiKehamilan = NewGrafikEvaluasiKehamilanController(opts.UseCases.GrafikEvaluasiKehamilan)
 	m.GrafikPeningkatanBB = NewGrafikPeningkatanBBController(opts.UseCases.GrafikPeningkatanBB)
 	m.PenjelasanHasilGrafik = NewPenjelasanHasilGrafikController(opts.UseCases.PenjelasanHasilGrafik)
@@ -186,6 +199,7 @@ func Init(opts Options) *Main {
 		opts.UseCases.PemeriksaanDokterTrimester1,
 		opts.UseCases.PemeriksaanDokterTrimester3,
 	)
+	m.GejalaDaruratAnak = NewGejalaDaruratAnakController(opts.UseCases.GejalaDaruratAnak)
 
 	// Controller tambahan
 	m.KeluhanAnak = NewKeluhanAnakController(opts.UseCases.KeluhanAnak)
@@ -212,10 +226,15 @@ func Init(opts Options) *Main {
 	m.EdukasiResepMPASI = NewResepMPASIController(opts.UseCases.EdukasiResepMPASI)
 	m.LaporanIbu = NewLaporanIbuController(opts.UseCases.LaporanIbu)
 	m.LaporanAnak = NewLaporanAnakController(opts.UseCases.LaporanAnak)
+	m.LaporanRemaja = NewLaporanRemajaController(opts.UseCases.LaporanRemaja)
+	m.LaporanDewasa = NewLaporanDewasaController(opts.UseCases.LaporanDewasa)
+	m.LaporanLansia = NewLaporanLansiaController(opts.UseCases.LaporanLansia)
 
 	m.JadwalLayanan = NewJadwalLayananController(opts.UseCases.JadwalLayanan)
-	m.Vaksin = NewVaksinController(opts.DB)
-	m.DosisVaksin = NewDosisVaksinController(m.db) // ← TAMBAHKAN
+	m.Vaksin = NewVaksinController(opts.UseCases.Vaksin)
+	m.DosisVaksin = NewDosisVaksinController(opts.UseCases.DosisVaksin, opts.UseCases.Vaksin)
+	m.Puskesmas = &PuskesmasController{Main: m}
+	m.Posyandu = &PosyanduController{Main: m}
 	m.PemeriksaanAnak = NewPemeriksaanAnakController(opts.UseCases.PemeriksaanAnak, opts.UseCases.Kependudukan)
 	m.PemeriksaanRemaja = NewPemeriksaanRemajaController(opts.UseCases.PemeriksaanRemaja, opts.UseCases.Kependudukan)
 	m.PemeriksaanDewasa = NewPemeriksaanDewasaController(opts.UseCases.PemeriksaanDewasa, opts.UseCases.Kependudukan)
@@ -227,6 +246,10 @@ func Init(opts Options) *Main {
 		opts.UseCases.Anak,
 	)
 	m.Dashboard = NewDashboardController(dashboardUsecase)
+
+	// Puskesmas Dashboard Controller (multi-desa recap)
+	m.PuskesmasDashboard = NewPuskesmasDashboardController(opts.UseCases.PuskesmasDashboard)
+
 	m.PendudukRisk = NewPendudukRiskController(opts.UseCases.PendudukRisk)
 	m.RiwayatCard = NewRiwayatCardController(opts.UseCases.RiwayatCard)
 	m.Pencatatan = NewPencatatanController(opts.UseCases.Pencatatan)
@@ -252,6 +275,11 @@ func Init(opts Options) *Main {
 	m.ProfilIbu = NewProfilIbuController(opts.UseCases.ProfilIbu)
 	m.GrafikEvaluasiKehamilan = NewGrafikEvaluasiKehamilanController(opts.UseCases.GrafikEvaluasiKehamilan)
 
+	// Riwayat kehamilan ibu 
+	m.DetailKehamilanIbu = NewDetailKehamilanIbuController(opts.UseCases.DetailKehamilanIbu)
+	// Pencatatan Imunisasi (Web)
+	m.PencatatanImunisasi = NewPencatatanImunisasiController(opts.UseCases.PencatatanImunisasi)
+
 	return m
 }
 
@@ -261,4 +289,8 @@ func (m *Main) JWTSecret() string {
 
 func (m *Main) GetUseCases() *usecases.Main {
 	return m.usecases
+}
+
+func (m *Main) DB() *gorm.DB {
+	return m.db
 }

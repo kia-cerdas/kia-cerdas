@@ -372,7 +372,15 @@ func (m *Main) AddCatatanPertumbuhan(req *models.CreatePertumbuhanRequest) (*mod
 	
 	gender := sanitizeGender(rawGender)
 
-	catatan.UsiaUkurBulan = catatan.HitungUsiaBulan(tanggalLahir)
+	catSimple := catatan.HitungUsiaBulan(tanggalLahir)
+	if catSimple < 60 {
+		for _, record := range existing {
+			if record.UsiaUkurBulan >= 60 {
+				return nil, customerror.NewBadRequestError("Kunjungan sudah mencapai usia 60 bulan ke atas. Tidak dapat melakukan pengisian untuk usia di bawah 60 bulan.")
+			}
+		}
+	}
+	catatan.UsiaUkurBulan = catSimple
 	m.recalculateAntropometri(catatan, gender)
 
 	stdIMTU, _ := m.repository.GetStandarAntropometri(ParamIMTU, gender, float64(catatan.UsiaUkurBulan))
@@ -435,6 +443,143 @@ func (m *Main) AddCatatanPertumbuhan(req *models.CreatePertumbuhanRequest) (*mod
 	}
 
 	return prediksi, nil
+}
+
+// CreateInitialGrowthRecord membuat catatan pertumbuhan pertama (usia 0 bulan) dari data lahir anak,
+// dan otomatis memicu prediksi stunting pertama.
+func (m *Main) CreateInitialGrowthRecord(anakID int32) error {
+	fmt.Printf("[DEBUG] CreateInitialGrowthRecord: Memulai untuk AnakID %d\n", anakID)
+	dataAnak, err := m.repository.Anak.FindByID(anakID)
+	if err != nil {
+		fmt.Printf("[DEBUG] CreateInitialGrowthRecord: Gagal mencari anak ID %d: %v\n", anakID, err)
+		return err
+	}
+
+	if dataAnak == nil {
+		fmt.Printf("[DEBUG] CreateInitialGrowthRecord: Anak ID %d tidak ditemukan\n", anakID)
+		return nil
+	}
+
+	// ✅ Guard: jika sudah ada catatan pertumbuhan, skip agar tidak membuat duplikat
+	existing, _ := m.repository.GetRiwayatPertumbuhanByAnakID(uint(anakID))
+	if len(existing) > 0 {
+		fmt.Printf("[DEBUG] CreateInitialGrowthRecord: Anak ID %d sudah punya %d catatan pertumbuhan, skip.\n", anakID, len(existing))
+		return nil
+	}
+
+	fmt.Printf("[DEBUG] CreateInitialGrowthRecord: Data anak ditemukan. BeratLahir: %v, TinggiLahir: %v, LingkarKepala: %v\n",
+		dataAnak.BeratLahirKg, dataAnak.TinggiLahirCm, dataAnak.LingkarKepalaCm)
+
+	// Default fallbacks jika data lahir kosong atau <= 0
+	beratBadan := 3.0
+	if dataAnak.BeratLahirKg != nil && *dataAnak.BeratLahirKg > 0 {
+		beratBadan = *dataAnak.BeratLahirKg
+	}
+	
+	tinggiBadan := 50.0
+	if dataAnak.TinggiLahirCm != nil && *dataAnak.TinggiLahirCm > 0 {
+		tinggiBadan = *dataAnak.TinggiLahirCm
+	}
+
+	lingkarKepala := 34.0
+	if dataAnak.LingkarKepalaCm != nil && *dataAnak.LingkarKepalaCm > 0 {
+		lingkarKepala = *dataAnak.LingkarKepalaCm
+	}
+
+	// Untuk LILA, karena tidak diukur saat lahir, gunakan default safe value 10.0
+	hasilLila := 10.0
+
+	var tglUkur time.Time
+	if dataAnak.Penduduk != nil && !dataAnak.Penduduk.TanggalLahir.IsZero() {
+		tglUkur = dataAnak.Penduduk.TanggalLahir
+	} else {
+		tglUkur = time.Now()
+	}
+
+	catatan := &models.CatatanPertumbuhan{
+		AnakID:        anakID,
+		TglUkur:       tglUkur,
+		BeratBadan:    beratBadan,
+		TinggiBadan:   tinggiBadan,
+		LingkarKepala: lingkarKepala,
+		HasilLila:     hasilLila,
+		CatatanNakes:  "Pengukuran saat lahir (otomatis)",
+		UsiaUkurBulan: 0,
+	}
+
+	// Hitung IMT
+	catatan.IMT = catatan.HitungIMT()
+
+	// Ambil jenis kelamin untuk perhitungan Z-score
+	var rawGender string
+	if dataAnak.Penduduk != nil {
+		rawGender = dataAnak.Penduduk.JenisKelamin
+	}
+	gender := sanitizeGender(rawGender)
+
+	m.recalculateAntropometri(catatan, gender)
+
+	stdIMTU, _ := m.repository.GetStandarAntropometri(ParamIMTU, gender, 0)
+	if stdIMTU != nil {
+		catatan.ZScoreIMTU = hitungZScore(catatan.IMT, stdIMTU)
+		catatan.StatusIMTU = interpretasiStatusIMTU(catatan.ZScoreIMTU)
+	}
+
+	if catatan.LingkarKepala > 0 {
+		stdLKU, _ := m.repository.GetStandarAntropometri(ParamLKU, gender, 0)
+		if stdLKU != nil {
+			catatan.ZScoreLKU = hitungZScore(catatan.LingkarKepala, stdLKU)
+			catatan.StatusLKU = interpretasiStatusLKU(catatan.ZScoreLKU)
+		}
+	}
+
+	if err := m.repository.CreateCatatanPertumbuhan(catatan); err != nil {
+		return err
+	}
+
+	// Otomatis jalankan Prediksi Stunting
+	prediksiReq := &models.PrediksiStuntingRequest{
+		AnakID:        anakID,
+		BeratBadan:    beratBadan,
+		TinggiBadan:   tinggiBadan,
+		LingkarKepala: lingkarKepala,
+		HasilLila:     hasilLila,
+		UsiaUkurBulan: 0,
+		JenisKelamin:  normalizeGenderStr(gender),
+		BeratLahirKg:  beratBadan,
+		TinggiLahirCm: tinggiBadan,
+	}
+
+	prediksi, errPred := m.PrediksiStunting.PredictStunting(context.Background(), prediksiReq)
+	if errPred != nil {
+		fmt.Println("Warning: Gagal melakukan prediksi otomatis saat lahir (ML service offline/error):", errPred)
+		
+		// Fallback: Tentukan status stunting berdasarkan Z-score TB/U (Standar Antropometri WHO)
+		fallbackStatus := "Normal"
+		if catatan.ZScoreTBU < -2.0 {
+			fallbackStatus = "Stunting"
+		}
+
+		mockPrediksi := &models.PrediksiStunting{
+			AnakID:         anakID,
+			BeratBadan:     beratBadan,
+			TinggiBadan:    tinggiBadan,
+			LingkarKepala:  lingkarKepala,
+			HasilLila:      hasilLila,
+			UsiaUkurBulan:  0,
+			StatusPrediksi: fallbackStatus,
+			Classification: fallbackStatus,
+			ZScoreTBU:      catatan.ZScoreTBU,
+			StatusTBU:      catatan.StatusTBU,
+			Rekomendasi:    "Prediksi otomatis dialihkan menggunakan perhitungan Z-Score TB/U (Standar Antropometri WHO) karena ML Service offline.",
+		}
+		
+		_ = m.repository.PrediksiStunting.SavePrediction(mockPrediksi)
+		return nil
+	}
+
+	_ = prediksi
+	return nil
 }
 
 
@@ -667,7 +812,18 @@ func (m *Main) UpdateCatatanPertumbuhan(id uint, req *models.UpdatePertumbuhanRe
 	}
 	gender := sanitizeGender(rawGender)
 
-	data.UsiaUkurBulan = data.HitungUsiaBulan(tanggalLahir)
+	catSimple := data.HitungUsiaBulan(tanggalLahir)
+	if catSimple < 60 {
+		existing, err := m.repository.GetRiwayatPertumbuhanByAnakID(uint(data.AnakID))
+		if err == nil {
+			for _, record := range existing {
+				if record.ID != data.ID && record.UsiaUkurBulan >= 60 {
+					return customerror.NewBadRequestError("Kunjungan sudah mencapai usia 60 bulan ke atas. Tidak dapat melakukan pengisian untuk usia di bawah 60 bulan.")
+				}
+			}
+		}
+	}
+	data.UsiaUkurBulan = catSimple
 	data.IMT = data.HitungIMT()
 	m.recalculateAntropometri(data, gender)
 
@@ -689,6 +845,106 @@ func (m *Main) UpdateCatatanPertumbuhan(id uint, req *models.UpdatePertumbuhanRe
 
 func (m *Main) DeleteCatatanPertumbuhan(id uint) error {
 	return m.repository.DeleteCatatanPertumbuhan(id)
+}
+
+// EnsurePrediksiForAnak memastikan anak memiliki data prediksi stunting.
+// Jika anak sudah punya catatan pertumbuhan tapi belum punya prediksi,
+// akan dibuat prediksi dari catatan pertumbuhan terbaru.
+// Jika anak belum punya catatan pertumbuhan, akan dibuat catatan awal dari data lahir.
+func (m *Main) EnsurePrediksiForAnak(anakID int32) error {
+	// Cek apakah sudah punya prediksi
+	existing, _ := m.repository.PrediksiStunting.GetLatestPredictionByAnakID(anakID)
+	if existing != nil {
+		return nil // Sudah punya prediksi, tidak perlu apa-apa
+	}
+
+	// Cek apakah sudah punya catatan pertumbuhan
+	riwayat, _ := m.repository.GetRiwayatPertumbuhanByAnakID(uint(anakID))
+	if len(riwayat) == 0 {
+		// Belum punya catatan pertumbuhan — buat dari data lahir
+		return m.CreateInitialGrowthRecord(anakID)
+	}
+
+	// Sudah punya catatan pertumbuhan tapi belum punya prediksi
+	// Ambil catatan terbaru
+	latest := riwayat[len(riwayat)-1]
+
+	dataAnak, err := m.repository.GetAnakByID(uint(anakID))
+	if err != nil {
+		return err
+	}
+
+	_, rawGender, errGender := extractAnakTanggalLahirDanGender(dataAnak)
+	gender := "M" // default fallback
+	if errGender == nil {
+		gender = sanitizeGender(rawGender)
+	}
+
+	// Hitung ulang z-score TB/U dari standar WHO untuk memastikan akurasi
+	// (data lama mungkin belum punya z-score)
+	zScoreTBU := latest.ZScoreTBU
+	statusTBU := latest.StatusTBU
+	if zScoreTBU == 0 && latest.TinggiBadan > 0 && latest.UsiaUkurBulan >= 0 {
+		stdTBU, errStd := m.repository.GetStandarAntropometri(ParamTBU, gender, float64(latest.UsiaUkurBulan))
+		if errStd == nil && stdTBU != nil {
+			zScoreTBU = hitungZScore(latest.TinggiBadan, stdTBU)
+			statusTBU = interpretasiStatusTBU(zScoreTBU)
+		}
+	}
+
+	// Tentukan status prediksi dari z-score TB/U (standar WHO untuk stunting)
+	makeFallbackPrediksi := func(reason string) *models.PrediksiStunting {
+		fallbackStatus := "Normal"
+		classification := "NORMAL"
+		if zScoreTBU < -3.0 {
+			fallbackStatus = "Stunting"
+			classification = "STUNTING"
+		} else if zScoreTBU < -2.0 {
+			fallbackStatus = "Stunting"
+			classification = "STUNTING"
+		}
+		return &models.PrediksiStunting{
+			AnakID:         anakID,
+			BeratBadan:     latest.BeratBadan,
+			TinggiBadan:    latest.TinggiBadan,
+			LingkarKepala:  latest.LingkarKepala,
+			HasilLila:      latest.HasilLila,
+			UsiaUkurBulan:  latest.UsiaUkurBulan,
+			StatusPrediksi: fallbackStatus,
+			Classification: classification,
+			ZScoreTBU:      zScoreTBU,
+			StatusTBU:      statusTBU,
+			Rekomendasi:    reason,
+		}
+	}
+
+	if errGender != nil {
+		// Data gender tidak tersedia — gunakan z-score fallback
+		return m.repository.PrediksiStunting.SavePrediction(
+			makeFallbackPrediksi("Status dihitung dari Z-Score TB/U (data gender tidak tersedia)."),
+		)
+	}
+
+	// Coba prediksi via ML service
+	prediksiReq := &models.PrediksiStuntingRequest{
+		AnakID:        anakID,
+		BeratBadan:    latest.BeratBadan,
+		TinggiBadan:   latest.TinggiBadan,
+		LingkarKepala: latest.LingkarKepala,
+		HasilLila:     latest.HasilLila,
+		UsiaUkurBulan: latest.UsiaUkurBulan,
+		JenisKelamin:  normalizeGenderStr(gender),
+	}
+
+	_, errPred := m.PrediksiStunting.PredictStunting(context.Background(), prediksiReq)
+	if errPred != nil {
+		fmt.Printf("[EnsurePrediksi] ML service offline untuk anak ID %d, pakai fallback z-score: %v\n", anakID, errPred)
+		return m.repository.PrediksiStunting.SavePrediction(
+			makeFallbackPrediksi("Prediksi dialihkan menggunakan Z-Score TB/U (ML Service offline)."),
+		)
+	}
+
+	return nil
 }
 
 func (m *Main) IsAnakMilikOrangtua(userID, anakID uint) (bool, error) {

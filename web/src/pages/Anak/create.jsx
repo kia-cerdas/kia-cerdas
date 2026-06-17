@@ -150,11 +150,10 @@ export default function CreateAnak() {
                     name="ibu_id"
                     value={form.ibu_id}
                     onChange={handleIbuChange}
-                    className={`w-full p-4 bg-white border rounded-xl outline-none transition-all ${
-                      errors.ibu_id
-                        ? "border-red-500 focus:ring-red-200"
-                        : "border-gray-200 focus:ring-blue-500 focus:ring-2"
-                    }`}
+                    className={`w-full p-4 bg-white border rounded-xl outline-none transition-all ${errors.ibu_id
+                      ? "border-red-500 focus:ring-red-200"
+                      : "border-gray-200 focus:ring-blue-500 focus:ring-2"
+                      }`}
                   >
                     <option value="">-- Pilih Ibu --</option>
                     {Array.isArray(ibuList) &&
@@ -192,11 +191,10 @@ export default function CreateAnak() {
                         name="kehamilan_id"
                         value={form.kehamilan_id}
                         onChange={handleChange}
-                        className={`w-full p-4 bg-white border rounded-xl outline-none transition-all ${
-                          errors.kehamilan_id
-                            ? "border-red-500 focus:ring-red-200"
-                            : "border-gray-200 focus:ring-blue-500 focus:ring-2"
-                        }`}
+                        className={`w-full p-4 bg-white border rounded-xl outline-none transition-all ${errors.kehamilan_id
+                          ? "border-red-500 focus:ring-red-200"
+                          : "border-gray-200 focus:ring-blue-500 focus:ring-2"
+                          }`}
                       >
                         <option value="">-- Pilih Kehamilan --</option>
                         {kehamilanList.map((kehamilan) => (
@@ -229,11 +227,10 @@ export default function CreateAnak() {
                   placeholder="Masukkan nama"
                   value={form.nama}
                   onChange={handleChange}
-                  className={`w-full p-4 bg-gray-50 border rounded-xl outline-none transition-all ${
-                    errors.nama
-                      ? "border-red-500 focus:ring-red-200"
-                      : "border-gray-200 focus:ring-blue-500 focus:ring-2"
-                  }`}
+                  className={`w-full p-4 bg-gray-50 border rounded-xl outline-none transition-all ${errors.nama
+                    ? "border-red-500 focus:ring-red-200"
+                    : "border-gray-200 focus:ring-blue-500 focus:ring-2"
+                    }`}
                 />
                 {errors.nama && (
                   <p className="mt-1 text-xs text-red-500 font-medium flex items-center gap-1">
@@ -266,11 +263,10 @@ export default function CreateAnak() {
                     type="date"
                     value={form.tanggal_lahir}
                     onChange={handleChange}
-                    className={`w-full p-4 bg-gray-50 border rounded-xl outline-none transition-all ${
-                      errors.tanggal_lahir
-                        ? "border-red-500 focus:ring-red-200"
-                        : "border-gray-200 focus:ring-blue-500 focus:ring-2"
-                    }`}
+                    className={`w-full p-4 bg-gray-50 border rounded-xl outline-none transition-all ${errors.tanggal_lahir
+                      ? "border-red-500 focus:ring-red-200"
+                      : "border-gray-200 focus:ring-blue-500 focus:ring-2"
+                      }`}
                   />
                   {errors.tanggal_lahir && (
                     <p className="mt-1 text-xs text-red-500 font-medium flex items-center gap-1">
@@ -299,13 +295,12 @@ export default function CreateAnak() {
                               jenis_kelamin: "",
                             }));
                         }}
-                        className={`flex-1 py-4 rounded-xl border text-sm font-medium transition-all ${
-                          form.jenis_kelamin === jk.toLowerCase()
-                            ? "bg-white border-blue-500 text-blue-600 shadow-sm"
-                            : errors.jenis_kelamin
-                              ? "border-red-300 text-gray-400"
-                              : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
-                        }`}
+                        className={`flex-1 py-4 rounded-xl border text-sm font-medium transition-all ${form.jenis_kelamin === jk.toLowerCase()
+                          ? "bg-white border-blue-500 text-blue-600 shadow-sm"
+                          : errors.jenis_kelamin
+                            ? "border-red-300 text-gray-400"
+                            : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
+                          }`}
                       >
                         {jk}
                       </button>

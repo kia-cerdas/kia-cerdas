@@ -18,7 +18,20 @@ export default function PelayananLilaGlobalList() {
       try {
         setLoading(true);
         const res = await getAnak();
-        setChildren(res.data || []);
+        const list = res.data || [];
+        const balitaList = list.filter((c) => {
+          if (c.usia_bulan !== undefined) {
+            return c.usia_bulan < 60;
+          }
+          if (!c.tanggal_lahir) return false;
+          const birthDate = new Date(c.tanggal_lahir);
+          if (isNaN(birthDate.getTime())) return false;
+          const currentDate = new Date();
+          const limitDate = new Date(birthDate);
+          limitDate.setFullYear(birthDate.getFullYear() + 5);
+          return currentDate <= limitDate;
+        });
+        setChildren(balitaList);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {

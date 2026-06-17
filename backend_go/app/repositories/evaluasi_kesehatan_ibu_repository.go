@@ -121,3 +121,41 @@ func (r *EvaluasiKesehatanIbuRepository) FindMineByUserID(userID int32) (*models
 
 	return &e, err
 }
+
+
+
+
+
+// Untuk hasil evaluasi kehamilan bagian Profil 
+
+func (r *EvaluasiKesehatanIbuRepository) IsKehamilanOwnedByUser(kehamilanID int32, userID int32) (bool, error) {
+	var count int64
+ 
+	err := r.db.
+		Table("kehamilan k").
+		Joins("JOIN ibu i ON i.id = k.ibu_id").
+		Joins("JOIN penduduk p ON p.id = i.penduduk_id").
+		Joins("JOIN pengguna u ON u.penduduk_id = p.id").
+		Where("k.id = ? AND u.id = ?", kehamilanID, userID).
+		Count(&count).Error
+ 
+	return count > 0, err
+}
+
+func (r *EvaluasiKesehatanIbuRepository) FindLatestByKehamilanID(kehamilanID int32) (*models.EvaluasiKesehatanIbu, error) {
+	var e models.EvaluasiKesehatanIbu
+ 
+	err := r.db.
+		Where("kehamilan_id = ?", kehamilanID).
+		Order("created_at DESC, id DESC").
+		First(&e).Error
+ 
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+ 
+	return &e, nil
+}

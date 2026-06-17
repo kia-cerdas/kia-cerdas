@@ -5,6 +5,7 @@ import Swal from "sweetalert2";
 import MainLayout from "../../components/Layout/MainLayout";
 import { getKehamilanByIbuId } from "../../services/kehamilan";
 import { getPemeriksaanKehamilanByKehamilanId } from "../../services/pemeriksaanKehamilan";
+import { getSkriningByKehamilanId } from "../../services/skrining";
 import {
   getRujukanByKehamilanId,
   createRujukan,
@@ -64,6 +65,58 @@ const hitungStatusRisiko = (exam) => {
 };
 
 // ─────────────────────────────────────────────
+// Helper: hitung status risiko dari skrining preeklampsia
+// ─────────────────────────────────────────────
+const hitungStatusRisikoPreeklampsia = (skrining) => {
+  if (!skrining) return { status_risiko: "-", ringkasan: "-", faktor: [] };
+  const faktor = [];
+
+  const risikoSedang = [
+    skrining.anamnesis_multipara_pasangan_baru_sedang,
+    skrining.anamnesis_teknologi_reproduksi_berbantu_sedang,
+    skrining.anamnesis_umur_diatas_35_tahun_sedang,
+    skrining.anamnesis_nulipara_sedang,
+    skrining.anamnesis_jarak_kehamilan_diatas_10_tahun_sedang,
+    skrining.anamnesis_riwayat_preeklampsia_keluarga_sedang,
+    skrining.anamnesis_obesitas_imt_diatas_30_sedang,
+  ].filter(Boolean).length;
+
+  const risikoTinggi = [
+    skrining.anamnesis_riwayat_preeklampsia_sebelumnya_tinggi,
+    skrining.anamnesis_kehamilan_multipel_tinggi,
+    skrining.anamnesis_diabetes_dalam_kehamilan_tinggi,
+    skrining.anamnesis_hipertensi_kronik_tinggi,
+    skrining.anamnesis_penyakit_ginjal_tinggi,
+    skrining.anamnesis_penyakit_autoimun_sle_tinggi,
+    skrining.anamnesis_anti_phospholipid_syndrome_tinggi,
+  ].filter(Boolean).length;
+
+  const map = skrining.fisik_map_diatas_90_mmhg;
+  const protein = skrining.fisik_proteinuria_urin_celup;
+
+  if (skrining.anamnesis_multipara_pasangan_baru_sedang) faktor.push("Multipara dengan pasangan baru");
+  if (skrining.anamnesis_teknologi_reproduksi_berbantu_sedang) faktor.push("Teknologi reproduksi berbantu");
+  if (skrining.anamnesis_umur_diatas_35_tahun_sedang) faktor.push("Umur ≥ 35 tahun");
+  if (skrining.anamnesis_nulipara_sedang) faktor.push("Nulipara");
+  if (skrining.anamnesis_jarak_kehamilan_diatas_10_tahun_sedang) faktor.push("Jarak kehamilan > 10 tahun");
+  if (skrining.anamnesis_riwayat_preeklampsia_keluarga_sedang) faktor.push("Riwayat keluarga preeklampsia");
+  if (skrining.anamnesis_obesitas_imt_diatas_30_sedang) faktor.push("Obesitas (IMT > 30)");
+  if (skrining.anamnesis_riwayat_preeklampsia_sebelumnya_tinggi) faktor.push("Riwayat preeklampsia sebelumnya");
+  if (skrining.anamnesis_kehamilan_multipel_tinggi) faktor.push("Kehamilan multipel");
+  if (skrining.anamnesis_diabetes_dalam_kehamilan_tinggi) faktor.push("Diabetes dalam kehamilan");
+  if (skrining.anamnesis_hipertensi_kronik_tinggi) faktor.push("Hipertensi kronik");
+  if (skrining.anamnesis_penyakit_ginjal_tinggi) faktor.push("Penyakit ginjal");
+  if (skrining.anamnesis_penyakit_autoimun_sle_tinggi) faktor.push("Penyakit autoimun (SLE)");
+  if (skrining.anamnesis_anti_phospholipid_syndrome_tinggi) faktor.push("Anti phospholipid syndrome");
+  if (map) faktor.push("MAP > 90 mmHg");
+  if (protein) faktor.push("Proteinuria (urin celup > +1)");
+
+  const statusRisiko = (risikoTinggi >= 1 || risikoSedang >= 2 || map || protein) ? "PERLU RUJUKAN" : "TIDAK PERLU RUJUKAN";
+
+  return { status_risiko: statusRisiko, faktor };
+};
+
+// ─────────────────────────────────────────────
 // Sub-komponen: kartu kondisi ibu (auto dari data)
 // ─────────────────────────────────────────────
 const KondisiIbuCard = ({ exam, risiko }) => {
@@ -117,6 +170,83 @@ const KondisiIbuCard = ({ exam, risiko }) => {
 };
 
 // ─────────────────────────────────────────────
+// Sub-komponen: kartu skrining preeklampsia
+// ─────────────────────────────────────────────
+const SkriningPreeklampsiaCard = ({ skrining, risiko }) => {
+  if (!skrining) return null;
+  return (
+    <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 space-y-3">
+      <h3 className="font-semibold text-purple-800 flex items-center gap-2">
+        <AlertTriangle size={16} /> Hasil Skrining Preeklampsia
+      </h3>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+        {/* Risiko Sedang */}
+        <div className="space-y-1">
+          <p className="text-xs font-semibold text-yellow-700">Faktor Risiko Sedang:</p>
+          <div className="space-y-0.5">
+            {skrining.anamnesis_multipara_pasangan_baru_sedang && <p className="text-xs text-gray-700">• Multipara dengan pasangan baru</p>}
+            {skrining.anamnesis_teknologi_reproduksi_berbantu_sedang && <p className="text-xs text-gray-700">• Teknologi reproduksi berbantu</p>}
+            {skrining.anamnesis_umur_diatas_35_tahun_sedang && <p className="text-xs text-gray-700">• Umur ≥ 35 tahun</p>}
+            {skrining.anamnesis_nulipara_sedang && <p className="text-xs text-gray-700">• Nulipara</p>}
+            {skrining.anamnesis_jarak_kehamilan_diatas_10_tahun_sedang && <p className="text-xs text-gray-700">• Jarak kehamilan &gt; 10 tahun</p>}
+            {skrining.anamnesis_riwayat_preeklampsia_keluarga_sedang && <p className="text-xs text-gray-700">• Riwayat keluarga preeklampsia</p>}
+            {skrining.anamnesis_obesitas_imt_diatas_30_sedang && <p className="text-xs text-gray-700">• Obesitas (IMT &gt; 30)</p>}
+          </div>
+        </div>
+        
+        {/* Risiko Tinggi */}
+        <div className="space-y-1">
+          <p className="text-xs font-semibold text-red-700">Faktor Risiko Tinggi:</p>
+          <div className="space-y-0.5">
+            {skrining.anamnesis_riwayat_preeklampsia_sebelumnya_tinggi && <p className="text-xs text-gray-700">• Riwayat preeklampsia sebelumnya</p>}
+            {skrining.anamnesis_kehamilan_multipel_tinggi && <p className="text-xs text-gray-700">• Kehamilan multipel</p>}
+            {skrining.anamnesis_diabetes_dalam_kehamilan_tinggi && <p className="text-xs text-gray-700">• Diabetes dalam kehamilan</p>}
+            {skrining.anamnesis_hipertensi_kronik_tinggi && <p className="text-xs text-gray-700">• Hipertensi kronik</p>}
+            {skrining.anamnesis_penyakit_ginjal_tinggi && <p className="text-xs text-gray-700">• Penyakit ginjal</p>}
+            {skrining.anamnesis_penyakit_autoimun_sle_tinggi && <p className="text-xs text-gray-700">• Penyakit autoimun (SLE)</p>}
+            {skrining.anamnesis_anti_phospholipid_syndrome_tinggi && <p className="text-xs text-gray-700">• Anti phospholipid syndrome</p>}
+          </div>
+        </div>
+      </div>
+
+      {/* Pemeriksaan Fisik */}
+      <div className="space-y-1">
+        <p className="text-xs font-semibold text-purple-700">Pemeriksaan Fisik:</p>
+        <div className="flex gap-4 text-xs">
+          <span className={skrining.fisik_map_diatas_90_mmhg ? "text-red-700 font-semibold" : "text-gray-400"}>
+            MAP &gt; 90 mmHg: {skrining.fisik_map_diatas_90_mmhg ? "Ya" : "Tidak"}
+          </span>
+          <span className={skrining.fisik_proteinuria_urin_celup ? "text-red-700 font-semibold" : "text-gray-400"}>
+            Proteinuria: {skrining.fisik_proteinuria_urin_celup ? "Ya" : "Tidak"}
+          </span>
+        </div>
+      </div>
+
+      {skrining.kesimpulan_skrining_preeklampsia && (
+        <div className="pt-2 border-t border-purple-200">
+          <p className="text-xs font-semibold text-purple-700 mb-1">Kesimpulan Klinis:</p>
+          <p className="text-xs text-gray-700">{skrining.kesimpulan_skrining_preeklampsia}</p>
+        </div>
+      )}
+
+      {risiko.faktor.length > 0 && (
+        <div className="mt-2 pt-2 border-t border-purple-200">
+          <p className="text-xs font-semibold text-red-700 mb-1">Indikator Risiko Terdeteksi:</p>
+          <ul className="space-y-0.5">
+            {risiko.faktor.map((f, i) => (
+              <li key={i} className="text-xs text-red-700 flex items-start gap-1">
+                <AlertTriangle size={11} className="mt-0.5 flex-shrink-0" /> {f}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ─────────────────────────────────────────────
 // Sub-komponen: label detail
 // ─────────────────────────────────────────────
 const DetailItem = ({ label, value }) => (
@@ -133,6 +263,7 @@ export default function Rujukan() {
   const { id: ibuId } = useParams();
   const [searchParams] = useSearchParams();
   const kehamilanIdParam = searchParams.get("kehamilan_id");
+  const sourceParam = searchParams.get("source"); // 'preeklampsia' or undefined (default ANC)
   const navigate = useNavigate();
 
   const user     = getCurrentUser();
@@ -142,6 +273,7 @@ export default function Rujukan() {
   const [kehamilan,    setKehamilan]    = useState(null);
   const [data,         setData]         = useState(null);   // data rujukan dari DB
   const [latestExam,   setLatestExam]   = useState(null);   // pemeriksaan terakhir
+  const [skriningPreeklampsia, setSkriningPreeklampsia] = useState(null); // skrining preeklampsia
   const [risiko,       setRisiko]       = useState({ status_risiko: "-", faktor: [] });
   const [mode,         setMode]         = useState("loading"); // loading | view | form-bidan | form-dokter
   const [loading,      setLoading]      = useState(true);
@@ -183,14 +315,30 @@ export default function Rujukan() {
         setKehamilan(selectedKehamilan);
         setIsActive((selectedKehamilan.status_kehamilan || "") !== "NON-AKTIF");
 
-        // Ambil pemeriksaan terakhir
-        const examList = await getPemeriksaanKehamilanByKehamilanId(selectedKehamilan.id);
-        const sorted   = (examList || []).sort(
-          (a, b) => new Date(b.tanggal_periksa) - new Date(a.tanggal_periksa)
-        );
-        const lastExam = sorted[0] || null;
-        setLatestExam(lastExam);
-        setRisiko(hitungStatusRisiko(lastExam));
+        // Cek source parameter untuk menentukan data apa yang diambil
+        if (sourceParam === "preeklampsia") {
+          // Ambil skrining preeklampsia
+          const skriningList = await getSkriningByKehamilanId(selectedKehamilan.id);
+          const skriningData = skriningList && skriningList.length > 0 ? skriningList[0] : null;
+          setSkriningPreeklampsia(skriningData);
+          setRisiko(hitungStatusRisikoPreeklampsia(skriningData));
+          
+          // Pre-fill alasan rujukan dengan data preeklampsia
+          if (skriningData && risiko.status_risiko === "PERLU RUJUKAN") {
+            const faktorList = hitungStatusRisikoPreeklampsia(skriningData).faktor;
+            const alasan = `Skrining Preeklampsia menunjukkan risiko tinggi. Faktor risiko terdeteksi: ${faktorList.join(", ")}. ${skriningData.kesimpulan_skrining_preeklampsia ? `Kesimpulan: ${skriningData.kesimpulan_skrining_preeklampsia}` : ""}`;
+            setFormBidan(prev => ({ ...prev, rujukan_alasan_dirujuk_ke_fkrtl: alasan }));
+          }
+        } else {
+          // Ambil pemeriksaan terakhir (default ANC)
+          const examList = await getPemeriksaanKehamilanByKehamilanId(selectedKehamilan.id);
+          const sorted   = (examList || []).sort(
+            (a, b) => new Date(b.tanggal_periksa) - new Date(a.tanggal_periksa)
+          );
+          const lastExam = sorted[0] || null;
+          setLatestExam(lastExam);
+          setRisiko(hitungStatusRisiko(lastExam));
+        }
 
         // Ambil data rujukan
         const result = await getRujukanByKehamilanId(selectedKehamilan.id);
@@ -211,7 +359,7 @@ export default function Rujukan() {
       }
     };
     fetchData();
-  }, [ibuId, kehamilanIdParam, navigate]);
+  }, [ibuId, kehamilanIdParam, navigate, sourceParam]);
 
   const populateFormBidan = (d) => {
     setFormBidan({
@@ -249,6 +397,7 @@ export default function Rujukan() {
         rujukan_balik_diagnosis_akhir:                data?.rujukan_balik_diagnosis_akhir                || "",
         rujukan_balik_resume_pemeriksaan_tatalaksana: data?.rujukan_balik_resume_pemeriksaan_tatalaksana || "",
         anjuran_rekomendasi_tempat_melahirkan:        data?.anjuran_rekomendasi_tempat_melahirkan        || "",
+        source: sourceParam || "anc", // Track referral source: preeklampsia, anc, etc.
       };
 
       let saved;
@@ -305,6 +454,7 @@ export default function Rujukan() {
         rujukan_balik_diagnosis_akhir:                formDokter.rujukan_balik_diagnosis_akhir,
         rujukan_balik_resume_pemeriksaan_tatalaksana: formDokter.rujukan_balik_resume_pemeriksaan_tatalaksana,
         anjuran_rekomendasi_tempat_melahirkan:        formDokter.anjuran_rekomendasi_tempat_melahirkan,
+        source: data?.source || sourceParam || "anc", // Maintain existing source or use current source
       };
 
       await updateRujukan(data.id, payload);
@@ -365,7 +515,7 @@ export default function Rujukan() {
             </button>
             <div className="flex-1">
               <div className="flex items-center gap-3 flex-wrap">
-                <h1 className="text-2xl font-bold text-gray-900">Rujukan Medis</h1>
+                <h1 className="text-[28px] font-bold text-gray-900">Rujukan Medis</h1>
                 <RisikoBadge />
               </div>
               <p className="text-gray-500 text-sm">Alur rujukan bidan → dokter → respon balik</p>
@@ -374,13 +524,17 @@ export default function Rujukan() {
 
           {/* Banner kehamilan non-aktif */}
           {!isActive && (
-            <div className="bg-gray-100 border-l-4 border-gray-400 p-3 rounded text-gray-700 text-sm flex items-center gap-2">
-              <EyeOff size={15} /> Kehamilan ini sudah selesai (NON-AKTIF). Data hanya dapat dilihat.
+            <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg text-blue-700 text-base flex items-center gap-2">
+              <EyeOff size={16} /> Kehamilan ini sudah selesai (NON-AKTIF). Data hanya dapat dilihat, tidak dapat diubah.
             </div>
           )}
 
           {/* Kondisi ibu otomatis */}
-          <KondisiIbuCard exam={latestExam} risiko={risiko} />
+          {sourceParam === "preeklampsia" ? (
+            <SkriningPreeklampsiaCard skrining={skriningPreeklampsia} risiko={risiko} />
+          ) : (
+            <KondisiIbuCard exam={latestExam} risiko={risiko} />
+          )}
 
           {/* ══════════════════════════════════════════
               MODE: EMPTY — belum ada rujukan sama sekali
@@ -390,13 +544,13 @@ export default function Rujukan() {
               <div className="p-4 bg-indigo-50 rounded-full w-fit mx-auto">
                 <Plus size={40} className="text-indigo-600" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-800">Belum Ada Permintaan Rujukan</h3>
+              <h3 className="text-[22px] font-semibold text-[#185FA5]">Belum Ada Permintaan Rujukan</h3>
               {isBidan && isActive && (
                 <>
                   <p className="text-gray-500 text-sm">Buat permintaan rujukan jika ibu ini memerlukan penanganan lebih lanjut oleh dokter.</p>
                   <button
                     onClick={() => setMode("form-bidan")}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 mx-auto font-semibold transition"
+                    className="bg-[#185FA5] text-white rounded-lg px-5 py-2.5 font-semibold flex items-center gap-2 text-base mx-auto"
                   >
                     <Plus size={18} /> Buat Permintaan Rujukan
                   </button>
@@ -420,7 +574,7 @@ export default function Rujukan() {
                   <div className="flex items-center gap-2 text-indigo-700 font-semibold">
                     <User size={16} /> Permintaan Rujukan (Bidan)
                   </div>
-                  {isBidan && isActive && (
+                  {isBidan && isActive && !data.rujukan_resume_pemeriksaan_tatalaksana && (
                     <button
                       onClick={() => setMode("form-bidan")}
                       className="flex items-center gap-1.5 text-xs text-indigo-600 border border-indigo-300 px-3 py-1.5 rounded-lg hover:bg-indigo-50 font-semibold"
@@ -507,47 +661,51 @@ export default function Rujukan() {
               </div>
               <div className="p-5 space-y-5">
                 {/* Kondisi otomatis — read only */}
-                <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Kondisi Ibu (terisi otomatis)</p>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
-                    <div>
-                      <p className="text-gray-400 text-xs">Tekanan Darah</p>
-                      <p className="font-semibold">{latestExam?.sistole || "-"}/{latestExam?.diastole || "-"} mmHg</p>
+                {sourceParam === "preeklampsia" ? (
+                  <SkriningPreeklampsiaCard skrining={skriningPreeklampsia} risiko={risiko} />
+                ) : (
+                  <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Kondisi Ibu (terisi otomatis)</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
+                      <div>
+                        <p className="text-gray-400 text-xs">Tekanan Darah</p>
+                        <p className="font-semibold">{latestExam?.sistole || "-"}/{latestExam?.diastole || "-"} mmHg</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-400 text-xs">DJJ</p>
+                        <p className="font-semibold">{latestExam?.denyut_jantung_janin || "-"} bpm</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-400 text-xs">Hb</p>
+                        <p className="font-semibold">{latestExam?.tes_lab_hb || "-"} g/dL</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-400 text-xs">Gula Darah</p>
+                        <p className="font-semibold">{latestExam?.tes_lab_gula_darah || "-"} mg/dL</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-400 text-xs">Protein Urine</p>
+                        <p className="font-semibold">{latestExam?.tes_lab_protein_urine || "-"}</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-400 text-xs">Minggu Kehamilan</p>
+                        <p className="font-semibold">{latestExam?.minggu_kehamilan || "-"} minggu</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-gray-400 text-xs">DJJ</p>
-                      <p className="font-semibold">{latestExam?.denyut_jantung_janin || "-"} bpm</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-400 text-xs">Hb</p>
-                      <p className="font-semibold">{latestExam?.tes_lab_hb || "-"} g/dL</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-400 text-xs">Gula Darah</p>
-                      <p className="font-semibold">{latestExam?.tes_lab_gula_darah || "-"} mg/dL</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-400 text-xs">Protein Urine</p>
-                      <p className="font-semibold">{latestExam?.tes_lab_protein_urine || "-"}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-400 text-xs">Minggu Kehamilan</p>
-                      <p className="font-semibold">{latestExam?.minggu_kehamilan || "-"} minggu</p>
-                    </div>
+                    {risiko.faktor.length > 0 && (
+                      <div className="pt-2 border-t border-gray-200">
+                        <p className="text-xs text-red-600 font-semibold mb-1">Indikator risiko:</p>
+                        {risiko.faktor.map((f, i) => (
+                          <p key={i} className="text-xs text-red-600">• {f}</p>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  {risiko.faktor.length > 0 && (
-                    <div className="pt-2 border-t border-gray-200">
-                      <p className="text-xs text-red-600 font-semibold mb-1">Indikator risiko:</p>
-                      {risiko.faktor.map((f, i) => (
-                        <p key={i} className="text-xs text-red-600">• {f}</p>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                )}
 
                 {/* Alasan rujukan — diisi bidan */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     Alasan Dirujuk ke Dokter / FKRTL <span className="text-red-500">*</span>
                   </label>
                   <textarea
@@ -604,7 +762,7 @@ export default function Rujukan() {
                 {/* Resume & Diagnosis */}
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1">Resume Pemeriksaan & Tatalaksana</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Resume Pemeriksaan & Tatalaksana</label>
                     <textarea
                       value={formDokter.rujukan_resume_pemeriksaan_tatalaksana}
                       onChange={e => setFormDokter(p => ({ ...p, rujukan_resume_pemeriksaan_tatalaksana: e.target.value }))}
@@ -614,7 +772,7 @@ export default function Rujukan() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1">Diagnosis Akhir</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Diagnosis Akhir</label>
                     <input
                       value={formDokter.rujukan_diagnosis_akhir}
                       onChange={e => setFormDokter(p => ({ ...p, rujukan_diagnosis_akhir: e.target.value }))}
@@ -626,19 +784,20 @@ export default function Rujukan() {
 
                 {/* Rujukan Balik */}
                 <div className="border-t pt-4 space-y-4">
-                  <p className="text-sm font-semibold text-gray-700">Rujukan Balik</p>
+                  <p className="text-sm font-medium text-gray-700">Rujukan Balik</p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-600 mb-1">Tanggal Rujukan Balik</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Tanggal Rujukan Balik</label>
                       <input
                         type="date"
                         value={formDokter.rujukan_balik_tanggal}
                         onChange={e => setFormDokter(p => ({ ...p, rujukan_balik_tanggal: e.target.value }))}
+                        min={new Date().toISOString().split('T')[0]}
                         className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-green-500 focus:ring-1 focus:ring-green-500"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-600 mb-1">Diagnosis Akhir (dari RS)</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Diagnosis Akhir (dari RS)</label>
                       <input
                         value={formDokter.rujukan_balik_diagnosis_akhir}
                         onChange={e => setFormDokter(p => ({ ...p, rujukan_balik_diagnosis_akhir: e.target.value }))}
@@ -648,7 +807,7 @@ export default function Rujukan() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-1">Resume dari RS</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Resume dari RS</label>
                     <textarea
                       value={formDokter.rujukan_balik_resume_pemeriksaan_tatalaksana}
                       onChange={e => setFormDokter(p => ({ ...p, rujukan_balik_resume_pemeriksaan_tatalaksana: e.target.value }))}
@@ -661,7 +820,7 @@ export default function Rujukan() {
 
                 {/* Anjuran */}
                 <div className="border-t pt-4">
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">Rekomendasi Tempat Melahirkan</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Rekomendasi Tempat Melahirkan</label>
                   <input
                     value={formDokter.anjuran_rekomendasi_tempat_melahirkan}
                     onChange={e => setFormDokter(p => ({ ...p, anjuran_rekomendasi_tempat_melahirkan: e.target.value }))}

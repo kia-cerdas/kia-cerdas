@@ -13,6 +13,7 @@ import (
 type PerawatanUsecase interface {
 	// Perawatan operations
 	CreatePerawatan(req models.CreatePerawatanRequest) (*models.Perawatan, error)
+	CreateBulkPerawatan(req models.BulkPerawatanRequest) ([]models.Perawatan, error)
 	GetPerawatanByID(id uint) (*models.Perawatan, error)
 	GetPerawatanByAnakID(anakID int32) ([]models.Perawatan, error)
 	GetPerawatanByAnakIDAndRentangUsia(anakID int32, rentangUsia string) ([]models.Perawatan, error)
@@ -28,6 +29,7 @@ type PerawatanUsecase interface {
 
 	// Access control operations for ibu
 	CreatePerawatanForIbu(req models.CreatePerawatanRequest, userID int32) (*models.Perawatan, error)
+	CreateBulkPerawatanForIbu(req models.BulkPerawatanRequest, userID int32) ([]models.Perawatan, error)
 	GetPerawatanByAnakIDForIbu(anakID int32, userID int32) ([]models.Perawatan, error)
 	GetPerawatanByAnakIDAndRentangUsiaForIbu(anakID int32, rentangUsia string, userID int32) ([]models.Perawatan, error)
 	UpdatePerawatanForIbu(id uint, req models.UpdatePerawatanRequest, userID int32) (*models.Perawatan, error)
@@ -115,6 +117,67 @@ func (u *perawatanUsecase) CreatePerawatan(req models.CreatePerawatanRequest) (*
 
 	// Reload with relations
 	return u.repo.Perawatan.GetPerawatanByID(perawatan.ID)
+}
+
+// CreateBulkPerawatan handles bulk creation/update
+func (u *perawatanUsecase) CreateBulkPerawatan(req models.BulkPerawatanRequest) ([]models.Perawatan, error) {
+	if req.AnakID == 0 {
+		return nil, errors.New("anak_id tidak boleh kosong")
+	}
+
+	exists, err := u.repo.Perawatan.IsAnakExist(req.AnakID)
+	if err != nil {
+		return nil, err
+	}
+	if !exists {
+		return nil, errors.New("anak tidak ditemukan")
+	}
+
+	var results []models.Perawatan
+	now := time.Now()
+
+	for _, item := range req.Data {
+		if item.KategoriCapaianID == 0 {
+			continue // skip invalid
+		}
+
+		// check if exists
+		existing, err := u.repo.Perawatan.GetPerawatanByAnakAndKategori(req.AnakID, item.KategoriCapaianID)
+		if err != nil {
+			continue
+		}
+
+		tanggalPeriksa, _ := parsePerawatanTanggalPeriksa(item.TanggalPeriksa)
+		if tanggalPeriksa == nil {
+			tanggalPeriksa = &now
+		}
+
+		if existing != nil {
+			// update existing
+			existing.Jawaban = item.Jawaban
+			existing.TanggalPeriksa = tanggalPeriksa
+			existing.UpdatedAt = now
+			
+			if err := u.repo.Perawatan.UpdatePerawatan(existing); err == nil {
+				results = append(results, *existing)
+			}
+		} else {
+			// create new
+			perawatan := &models.Perawatan{
+				AnakID:            req.AnakID,
+				KategoriCapaianID: item.KategoriCapaianID,
+				Jawaban:           item.Jawaban,
+				TanggalPeriksa:    tanggalPeriksa,
+				CreatedAt:         now,
+				UpdatedAt:         now,
+			}
+			if err := u.repo.Perawatan.CreatePerawatan(perawatan); err == nil {
+				results = append(results, *perawatan)
+			}
+		}
+	}
+
+	return results, nil
 }
 
 // GetPerawatanByID retrieves a perawatan by ID
@@ -351,6 +414,72 @@ func (u *perawatanUsecase) CreatePerawatanForIbu(req models.CreatePerawatanReque
 
 	// Reload with relations
 	return u.repo.Perawatan.GetPerawatanByID(perawatan.ID)
+}
+
+// CreateBulkPerawatanForIbu handles bulk creation/update with ownership check
+func (u *perawatanUsecase) CreateBulkPerawatanForIbu(req models.BulkPerawatanRequest, userID int32) ([]models.Perawatan, error) {
+	if req.AnakID == 0 {
+		return nil, errors.New("anak_id tidak boleh kosong")
+	}
+
+	exists, err := u.repo.Perawatan.IsAnakExist(req.AnakID)
+	if err != nil {
+		return nil, err
+	}
+	if !exists {
+		return nil, errors.New("anak tidak ditemukan")
+	}
+
+	owned, err := u.repo.Perawatan.IsAnakOwnedByIbu(req.AnakID, userID)
+	if err != nil {
+		return nil, err
+	}
+	if !owned {
+		return nil, errors.New("Anda tidak memiliki akses ke anak ini")
+	}
+
+	var results []models.Perawatan
+	now := time.Now()
+
+	for _, item := range req.Data {
+		if item.KategoriCapaianID == 0 {
+			continue // skip invalid
+		}
+
+		existing, err := u.repo.Perawatan.GetPerawatanByAnakAndKategori(req.AnakID, item.KategoriCapaianID)
+		if err != nil {
+			continue
+		}
+
+		tanggalPeriksa, _ := parsePerawatanTanggalPeriksa(item.TanggalPeriksa)
+		if tanggalPeriksa == nil {
+			tanggalPeriksa = &now
+		}
+
+		if existing != nil {
+			existing.Jawaban = item.Jawaban
+			existing.TanggalPeriksa = tanggalPeriksa
+			existing.UpdatedAt = now
+			
+			if err := u.repo.Perawatan.UpdatePerawatan(existing); err == nil {
+				results = append(results, *existing)
+			}
+		} else {
+			perawatan := &models.Perawatan{
+				AnakID:            req.AnakID,
+				KategoriCapaianID: item.KategoriCapaianID,
+				Jawaban:           item.Jawaban,
+				TanggalPeriksa:    tanggalPeriksa,
+				CreatedAt:         now,
+				UpdatedAt:         now,
+			}
+			if err := u.repo.Perawatan.CreatePerawatan(perawatan); err == nil {
+				results = append(results, *perawatan)
+			}
+		}
+	}
+
+	return results, nil
 }
 
 // GetPerawatanByAnakIDForIbu retrieves perawatan with ownership check

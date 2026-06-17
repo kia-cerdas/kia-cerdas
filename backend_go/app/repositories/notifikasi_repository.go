@@ -1,8 +1,8 @@
 package repositories
 
 import (
-	"time"
 	"monitoring-service/app/models"
+	"time"
 )
 
 func (r *Main) GetJadwalForReminder() ([]models.JadwalImunisasiJoin, error) {
@@ -26,8 +26,7 @@ func (r *Main) GetJadwalForReminder() ([]models.JadwalImunisasiJoin, error) {
 		Joins("JOIN dosis_vaksin dv ON dv.id = j.id_dosis_vaksin").
 		Joins("JOIN status_jadwal s ON s.id = j.id_status_jadwal").
 		Where("j.tanggal_estimasi IS NOT NULL").
-		Where("id_status_jadwal IN ?", []int{1, 2}).
-		Find(&data).Error
+		Where("id_status_jadwal NOT IN ?", []int{6}).Error
 
 	return data, err
 }
@@ -132,13 +131,12 @@ func (r *Main) GetFCMTokensByAnakID(anakID uint) ([]string, error) {
 	return tokens, err
 }
 
-
 // Notifikasi Kontrol
 func (r *Main) IsKontrolNotifAlreadySentToday(userID uint, date time.Time) (bool, error) {
 	var count int64
- 
+
 	dateStr := date.Format("2006-01-02")
- 
+
 	err := r.postgres.
 		Table("notifikasi").
 		Where("id_pengguna = ?", userID).
@@ -146,13 +144,14 @@ func (r *Main) IsKontrolNotifAlreadySentToday(userID uint, date time.Time) (bool
 		Where("DATE(created_at) = ?", dateStr).
 		Where("deleted_at IS NULL").
 		Count(&count).Error
- 
+
 	if err != nil {
 		return false, err
 	}
- 
+
 	return count > 0, nil
 }
+
 // IbuReminderRow adalah struct hasil query ibu aktif untuk keperluan reminder.
 // Berisi user_id, nama_ibu, kehamilan_id, dan HPHT dalam format string.
 type IbuReminderRow struct {
@@ -161,13 +160,13 @@ type IbuReminderRow struct {
 	KehamilanID uint
 	HPHTStr     string // format "2006-01-02"
 }
- 
+
 // GetActiveIbuForTTDReminder mengambil semua ibu dengan kehamilan aktif
 // (status TRIMESTER 1/2/3) yang memiliki HPHT, beserta user_id dan nama ibu.
 // Digunakan bersama oleh TTD reminder maupun Kontrol reminder.
 func (r *Main) GetActiveIbuForTTDReminder() ([]IbuReminderRow, error) {
 	var rows []IbuReminderRow
- 
+
 	err := r.postgres.
 		Table("kehamilan k").
 		Select(`
@@ -187,7 +186,6 @@ func (r *Main) GetActiveIbuForTTDReminder() ([]IbuReminderRow, error) {
 		Where("k.hpht IS NOT NULL").
 		Where("k.deleted_at IS NULL").
 		Scan(&rows).Error
- 
+
 	return rows, err
 }
- 

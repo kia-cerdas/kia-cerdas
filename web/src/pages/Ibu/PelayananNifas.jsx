@@ -3,244 +3,43 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import MainLayout from "../../components/Layout/MainLayout";
 import { getKehamilanByIbuId, updateStatusKehamilan } from "../../services/kehamilan";
-import { getNifasByKehamilanId, createNifas, updateNifas } from "../../services/nifas";
-import { 
-  getCatatanNifasByKehamilanId, 
-  createCatatanNifas, 
-  updateCatatanNifas, 
-  deleteCatatanNifas 
-} from "../../services/catatanNifas";
+import { getNifasByKehamilanId, createNifas, updateNifas, deleteNifas } from "../../services/nifas";
+import { getCurrentUser, isBidanUser, isDokterUser } from "../../services/auth";
 import Swal from "sweetalert2";
-import { Save, ArrowLeft, Edit2, CheckCircle, FileText, X, Trash2, Plus, Home, AlertCircle, EyeOff } from "lucide-react";
+import { Save, ArrowLeft, Edit2, CheckCircle, X, Plus, Home, AlertCircle, EyeOff, Eye, Lock, Trash2 } from "lucide-react";
 
 // ============================================================
 // KOMPONEN EMPTY STATE
 // ============================================================
-const EmptyState = ({ title, message, onAdd }) => (
+const EmptyState = ({ title, message, onAdd, canEdit, isLocked }) => (
   <div className="bg-white rounded-xl shadow-sm p-8 text-center">
     <div className="flex flex-col items-center gap-4">
-      <div className="p-4 bg-indigo-50 rounded-full">
-        <Plus size={40} className="text-indigo-400" />
+      <div className={`p-4 rounded-full ${isLocked ? "bg-gray-100" : "bg-indigo-50"}`}>
+        {isLocked ? <Lock size={40} className="text-gray-400" /> : <Plus size={40} className="text-indigo-400" />}
       </div>
       <h3 className="text-xl font-semibold text-gray-800">{title}</h3>
       <p className="text-gray-500 max-w-md">{message}</p>
-      <button
-        onClick={onAdd}
-        className="bg-indigo-600 text-white px-6 py-2.5 rounded-lg font-semibold flex items-center gap-2 hover:bg-indigo-700 transition"
-      >
-        <Plus size={18} /> Tambah Data
-      </button>
+      {isLocked && (
+        <p className="text-sm text-gray-400 mt-2 flex items-center gap-2">
+          <Lock size={14} />
+          Tahapan ini terkunci dan akan dibuka saat waktunya tiba
+        </p>
+      )}
+      {!isLocked && canEdit && (
+        <button
+          onClick={onAdd}
+          className="bg-indigo-600 text-white px-6 py-2.5 rounded-lg font-semibold flex items-center gap-2 hover:bg-indigo-700 transition"
+        >
+          <Plus size={18} /> Tambah Data
+        </button>
+      )}
+      {!isLocked && !canEdit && (
+        <p className="text-xs text-gray-400 mt-2">Hanya Bidan yang dapat menambahkan data Pelayanan Nifas.</p>
+      )}
     </div>
   </div>
 );
 
-// ============================================================
-// KOMPONEN MODAL CATATAN
-// ============================================================
-const ModalCatatan = ({ isOpen, onClose, catatanData, onSave, onDelete, kunjunganLabel, saving }) => {
-  const [formCatatan, setFormCatatan] = useState({
-    tanggal_periksa_stamp_paraf: "",
-    keluhan_pemeriksaan_tindakan_saran: "",
-    tanggal_kembali: "",
-  });
-
-  useEffect(() => {
-    if (catatanData) {
-      setFormCatatan({
-        tanggal_periksa_stamp_paraf: catatanData.tanggal_periksa_stamp_paraf || "",
-        keluhan_pemeriksaan_tindakan_saran: catatanData.keluhan_pemeriksaan_tindakan_saran || "",
-        tanggal_kembali: catatanData.tanggal_kembali || "",
-      });
-    } else {
-      setFormCatatan({
-        tanggal_periksa_stamp_paraf: new Date().toISOString().split("T")[0],
-        keluhan_pemeriksaan_tindakan_saran: "",
-        tanggal_kembali: "",
-      });
-    }
-  }, [catatanData, isOpen]);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormCatatan(prev => ({ ...prev, [name]: value }));
-  };
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl mx-4">
-        <div className="flex justify-between items-center p-4 border-b">
-          <h3 className="text-lg font-semibold text-gray-900">
-            {catatanData ? "Edit" : "Tambah"} Catatan Pelayanan Nifas - {kunjunganLabel}
-          </h3>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <X size={20} />
-          </button>
-        </div>
-        
-        <div className="p-4 space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Tanggal Periksa / Stamp / Paraf <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="date"
-              name="tanggal_periksa_stamp_paraf"
-              value={formCatatan.tanggal_periksa_stamp_paraf}
-              onChange={handleChange}
-              className="w-full border rounded-lg px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
-              required
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Keluhan / Pemeriksaan / Tindakan / Saran
-            </label>
-            <textarea
-              name="keluhan_pemeriksaan_tindakan_saran"
-              value={formCatatan.keluhan_pemeriksaan_tindakan_saran}
-              onChange={handleChange}
-              rows={6}
-              placeholder="Catatan keluhan ibu, hasil pemeriksaan, tindakan yang dilakukan, dan saran yang diberikan..."
-              className="w-full border rounded-lg px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none"
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Tanggal Kembali (Kontrol Ulang)
-            </label>
-            <input
-              type="date"
-              name="tanggal_kembali"
-              value={formCatatan.tanggal_kembali}
-              onChange={handleChange}
-              className="w-full border rounded-lg px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              Kosongkan jika tidak ada jadwal kontrol
-            </p>
-          </div>
-        </div>
-        
-        <div className="flex justify-between gap-2 p-4 border-t">
-          {catatanData && (
-            <button
-              onClick={() => onDelete(catatanData.id_catatan_nifas)}
-              className="px-4 py-2 text-red-600 border border-red-300 rounded-lg hover:bg-red-50 flex items-center gap-2"
-              disabled={saving}
-            >
-              <Trash2 size={16} />
-              Hapus
-            </button>
-          )}
-          <div className="flex gap-2 ml-auto">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
-              disabled={saving}
-            >
-              Batal
-            </button>
-            <button
-              onClick={() => onSave(formCatatan)}
-              disabled={saving}
-              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 flex items-center gap-2"
-            >
-              <Save size={16} />
-              {saving ? "Menyimpan..." : "Simpan Catatan"}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// ============================================================
-// KOMPONEN CARD RIWAYAT CATATAN
-// ============================================================
-const RiwayatCatatanCard = ({ catatan, onEdit, onDelete }) => {
-  return (
-    <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-      <div className="flex justify-between items-start">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-2">
-            <FileText size={16} className="text-blue-500" />
-            <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
-              {catatan.tanggal_periksa_stamp_paraf}
-            </span>
-          </div>
-          <p className="text-sm text-gray-700 whitespace-pre-wrap">
-            {catatan.keluhan_pemeriksaan_tindakan_saran}
-          </p>
-          {catatan.tanggal_kembali && (
-            <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
-              <span>📅 Kontrol kembali:</span>
-              <span className="font-medium">{catatan.tanggal_kembali}</span>
-            </p>
-          )}
-        </div>
-        <div className="flex gap-1 ml-2">
-          <button
-            onClick={() => onEdit(catatan)}
-            className="p-1 text-gray-400 hover:text-indigo-600 transition-colors"
-            title="Edit catatan"
-          >
-            <Edit2 size={16} />
-          </button>
-          <button
-            onClick={() => onDelete(catatan.id_catatan_nifas)}
-            className="p-1 text-gray-400 hover:text-red-600 transition-colors"
-            title="Hapus catatan"
-          >
-            <Trash2 size={16} />
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// ============================================================
-// KOMPONEN DAFTAR RIWAYAT CATATAN
-// ============================================================
-const DaftarRiwayatCatatan = ({ catatanList, onEdit, onDelete, kunjunganLabel }) => {
-  if (!catatanList || catatanList.length === 0) {
-    return (
-      <div className="bg-gray-50 rounded-lg p-6 text-center">
-        <FileText size={32} className="text-gray-300 mx-auto mb-2" />
-        <p className="text-sm text-gray-500">Belum ada catatan untuk kunjungan {kunjunganLabel}</p>
-        <p className="text-xs text-gray-400 mt-1">Klik tombol "Tambah Catatan" untuk menambahkan</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-2 mb-3">
-        <FileText size={18} className="text-gray-500" />
-        <h3 className="text-md font-semibold text-gray-700">Riwayat Catatan</h3>
-        <span className="text-xs text-gray-400">({catatanList.length} catatan)</span>
-      </div>
-      <div className="space-y-3">
-        {catatanList.map((catatan) => (
-          <RiwayatCatatanCard
-            key={catatan.id_catatan_nifas}
-            catatan={catatan}
-            onEdit={onEdit}
-            onDelete={onDelete}
-          />
-        ))}
-      </div>
-    </div>
-  );
-};
 
 // ============================================================
 // KOMPONEN DETAIL ITEM
@@ -255,28 +54,32 @@ const DetailItem = ({ label, value }) => (
 // ============================================================
 // KOMPONEN DETAIL NIFAS
 // ============================================================
-const DetailNifas = ({ data, onEdit, onOpenCatatan, kunjunganLabel }) => (
-  <div className="bg-white rounded-xl shadow-sm p-6 space-y-5">
+const DetailNifas = ({ data, onEdit, onDelete, kunjunganLabel, canEdit }) => (
+  <div className="bg-white rounded-xl shadow-sm p-5 space-y-5">
     <div className="flex justify-between items-center">
       <div className="flex items-center gap-2 text-green-600">
         <CheckCircle size={20} />
         <h2 className="text-lg font-semibold text-gray-800">
-          Data Pelayanan Nifas - {kunjunganLabel}
+          Data Pelayanan Nifas {kunjunganLabel}
         </h2>
       </div>
       <div className="flex gap-2">
-        <button 
-          onClick={onOpenCatatan}
-          className="flex items-center gap-2 text-sm text-blue-600 border border-blue-300 px-3 py-1.5 rounded-lg hover:bg-blue-50"
-        >
-          <Plus size={14} /> Tambah Catatan
-        </button>
-        <button 
-          onClick={onEdit}
-          className="flex items-center gap-2 text-sm text-indigo-600 border border-indigo-300 px-3 py-1.5 rounded-lg hover:bg-indigo-50"
-        >
-          <Edit2 size={14} /> Edit Data
-        </button>
+        {canEdit && (
+          <>
+            <button 
+              onClick={onEdit}
+              className="flex items-center gap-2 text-sm text-indigo-600 border border-indigo-300 px-3 py-1.5 rounded-lg hover:bg-indigo-50"
+            >
+              <Edit2 size={14} /> Edit Data
+            </button>
+            <button 
+              onClick={onDelete}
+              className="flex items-center gap-2 text-sm text-red-600 border border-red-300 px-3 py-1.5 rounded-lg hover:bg-red-50"
+            >
+              <Trash2 size={14} /> Hapus Data
+            </button>
+          </>
+        )}
       </div>
     </div>
     
@@ -296,6 +99,7 @@ const DetailNifas = ({ data, onEdit, onOpenCatatan, kunjunganLabel }) => (
       <DetailItem label="Penanganan Risiko Malaria" value={data.pelayanan_penanganan_risiko_malaria} />
       <DetailItem label="Komplikasi Nifas" value={data.komplikasi_nifas} />
       <DetailItem label="Tindakan/Saran" value={data.tindakan_saran} />
+      <DetailItem label="Keluhan/Pemeriksaan/Tindakan/Saran" value={data.keluhan_pemeriksaan_tindakan_saran} />
       <DetailItem label="Nama Pemeriksa/Paraf" value={data.nama_pemeriksa_paraf} />
       <DetailItem label="Tanggal Kembali" value={data.tanggal_kembali} />
     </div>
@@ -305,21 +109,27 @@ const DetailNifas = ({ data, onEdit, onOpenCatatan, kunjunganLabel }) => (
 export default function PelayananNifas() {
   const { id } = useParams();
   const navigate = useNavigate();
+  
+  // Role-based access control
+  const user = getCurrentUser();
+  const isBidan = isBidanUser(user);
+  const isDokter = isDokterUser(user);
+  
+  // Pelayanan Nifas: bidan mengelola, dokter hanya melihat
+  const canEdit = isBidan;
+  
   const [kehamilan, setKehamilan] = useState(null);
   const [nifas, setNifas] = useState([]);
-  const [catatanList, setCatatanList] = useState([]);
   const [mode, setMode] = useState("empty"); // "empty", "form", "detail"
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [savingCatatan, setSavingCatatan] = useState(false);
   const [selectedKunjungan, setSelectedKunjungan] = useState("KF1");
   const [currentData, setCurrentData] = useState(null);
-  const [selectedCatatan, setSelectedCatatan] = useState(null);
-  const [isModalCatatanOpen, setIsModalCatatanOpen] = useState(false);
   
   // ========== TAMBAHKAN STATE INI ==========
   const [canAccessNifas, setCanAccessNifas] = useState(false);
   const [accessMessage, setAccessMessage] = useState("");
+  const [tanggalMelahirkan, setTanggalMelahirkan] = useState(null);
   
   // ========== TAMBAHKAN FUNGSI UNTUK CEK AKSES ==========
   const isAllowedStatus = (status) => {
@@ -335,6 +145,130 @@ export default function PelayananNifas() {
     } else {
       return "Status kehamilan tidak valid untuk mengakses pelayanan nifas.";
     }
+  };
+
+  // ========== FUNGSI UNTUK MENENTUKAN STAGE NIFAS SAAT INI ==========
+  const getCurrentNifasStage = () => {
+    if (!tanggalMelahirkan) return null;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const birthDate = new Date(tanggalMelahirkan);
+    birthDate.setHours(0, 0, 0, 0);
+    
+    const diffTime = today - birthDate;
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays <= 2) return "KF1"; // 6-48 Jam
+    if (diffDays >= 3 && diffDays <= 7) return "KF2"; // 3-7 Hari
+    if (diffDays >= 8 && diffDays <= 28) return "KF3"; // 8-28 Hari
+    if (diffDays >= 29 && diffDays <= 42) return "KF4"; // 29-42 Hari
+    return null; // Di luar masa nifas
+  };
+
+  // ========== FUNGSI CEK APAKAH KUNJUNGAN TERKUNCI ==========
+  const isKunjunganLocked = (kunjunganKe) => {
+    // Cek apakah kunjungan sudah diisi sebelumnya
+    const hasData = nifas.some(n => n.kunjungan_ke === kunjunganKe);
+    if (hasData) return false; // Jika sudah ada data, tidak terkunci (bisa dilihat)
+
+    // Jika tidak ada tanggal melahirkan, terkunci
+    if (!tanggalMelahirkan) return true;
+
+    // Gunakan canAccessKunjungan untuk menentukan apakah bisa diakses
+    return !canAccessKunjungan(kunjunganKe);
+  };
+
+  // ========== FUNGSI VALIDASI KUNJUNGAN BERDASARKAN TANGGAL ==========
+  const canAccessKunjungan = (kunjunganKe) => {
+    if (!tanggalMelahirkan) return true; // Jika tidak ada tanggal melahirkan, izinkan akses
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const birthDate = new Date(tanggalMelahirkan);
+    birthDate.setHours(0, 0, 0, 0);
+    
+    const diffTime = today - birthDate;
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+    // Cek apakah kunjungan sebelumnya sudah diisi
+    const previousKunjunganFilled = (kunjungan) => {
+      return nifas.some(n => n.kunjungan_ke === kunjungan);
+    };
+
+    switch (kunjunganKe) {
+      case "KF1": // 6-48 Jam (0-2 hari)
+        return diffDays <= 2;
+      case "KF2": // 3-7 Hari
+        // Hanya bisa diisi jika KF1 sudah diisi dan masih dalam rentang 3-7 hari
+        return previousKunjunganFilled("KF1") && diffDays >= 3 && diffDays <= 7;
+      case "KF3": // 8-28 Hari
+        // Hanya bisa diisi jika KF2 sudah diisi dan masih dalam rentang 8-28 hari
+        return previousKunjunganFilled("KF2") && diffDays >= 8 && diffDays <= 28;
+      case "KF4": // 29-42 Hari
+        // Hanya bisa diisi jika KF3 sudah diisi dan masih dalam rentang 29-42 hari
+        return previousKunjunganFilled("KF3") && diffDays >= 29 && diffDays <= 42;
+      default:
+        return true;
+    }
+  };
+
+  const getKunjunganAccessMessage = (kunjunganKe) => {
+    if (!tanggalMelahirkan) return "";
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const birthDate = new Date(tanggalMelahirkan);
+    birthDate.setHours(0, 0, 0, 0);
+    
+    const diffTime = today - birthDate;
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+    const previousKunjunganFilled = (kunjungan) => {
+      return nifas.some(n => n.kunjungan_ke === kunjungan);
+    };
+
+    switch (kunjunganKe) {
+      case "KF1":
+        if (diffDays > 2) {
+          return `Masa 6-48 jam telah terlewati (${diffDays} hari sejak melahirkan). Tidak dapat mengisi data untuk periode ini.`;
+        }
+        break;
+      case "KF2":
+        if (!previousKunjunganFilled("KF1")) {
+          return "Harap isi data kunjungan KF1 (6-48 Jam) terlebih dahulu.";
+        }
+        if (diffDays < 3) {
+          return `Belum memasuki masa 3-7 hari (${diffDays} hari sejak melahirkan).`;
+        }
+        if (diffDays > 7) {
+          return `Masa 3-7 hari telah terlewati (${diffDays} hari sejak melahirkan). Tidak dapat mengisi data untuk periode ini.`;
+        }
+        break;
+      case "KF3":
+        if (!previousKunjunganFilled("KF2")) {
+          return "Harap isi data kunjungan KF2 (3-7 Hari) terlebih dahulu.";
+        }
+        if (diffDays < 8) {
+          return `Belum memasuki masa 8-28 hari (${diffDays} hari sejak melahirkan).`;
+        }
+        if (diffDays > 28) {
+          return `Masa 8-28 hari telah terlewati (${diffDays} hari sejak melahirkan). Tidak dapat mengisi data untuk periode ini.`;
+        }
+        break;
+      case "KF4":
+        if (!previousKunjunganFilled("KF3")) {
+          return "Harap isi data kunjungan KF3 (8-28 Hari) terlebih dahulu.";
+        }
+        if (diffDays < 29) {
+          return `Belum memasuki masa 29-42 hari (${diffDays} hari sejak melahirkan).`;
+        }
+        if (diffDays > 42) {
+          return `Masa 29-42 hari telah terlewati (${diffDays} hari sejak melahirkan). Tidak dapat mengisi data untuk periode ini.`;
+        }
+        break;
+    }
+    return "";
   };
 
   const [form, setForm] = useState({
@@ -354,12 +288,11 @@ export default function PelayananNifas() {
     pelayanan_penanganan_risiko_malaria: "",
     komplikasi_nifas: "",
     tindakan_saran: "",
-    nama_pemeriksa_paraf: "",
+    nama_pemeriksa_paraf: user?.name || "",
     tanggal_kembali: "",
+    keluhan_pemeriksaan_tindakan_saran: "",
   });
 
-  // Filter catatan berdasarkan kunjungan yang dipilih
-  const catatanForSelectedKunjungan = catatanList.filter((c) => c.kunjungan_ke === selectedKunjungan);
 
   // Fungsi populate form
   const populateForm = (data) => {
@@ -382,6 +315,7 @@ export default function PelayananNifas() {
       tindakan_saran: data.tindakan_saran || "",
       nama_pemeriksa_paraf: data.nama_pemeriksa_paraf || "",
       tanggal_kembali: data.tanggal_kembali ? new Date(data.tanggal_kembali).toISOString().split("T")[0] : "",
+      keluhan_pemeriksaan_tindakan_saran: data.keluhan_pemeriksaan_tindakan_saran || "",
     });
   };
 
@@ -403,8 +337,9 @@ export default function PelayananNifas() {
       pelayanan_penanganan_risiko_malaria: "",
       komplikasi_nifas: "",
       tindakan_saran: "",
-      nama_pemeriksa_paraf: "",
+      nama_pemeriksa_paraf: user?.name || "",
       tanggal_kembali: "",
+      keluhan_pemeriksaan_tindakan_saran: "",
     });
   };
 
@@ -438,6 +373,11 @@ export default function PelayananNifas() {
           const aktif = kehamilanList[0];
           setKehamilan(aktif);
 
+          // Set tanggal melahirkan dari data kehamilan
+          if (aktif.tanggal_lahir) {
+            setTanggalMelahirkan(aktif.tanggal_lahir);
+          }
+
             // ========== CEK STATUS AKSES ==========
         const allowed = isAllowedStatus(aktif.status_kehamilan);
         setCanAccessNifas(allowed);
@@ -448,14 +388,23 @@ export default function PelayananNifas() {
           return;
         }
         // =====================================
+
+          // Jika status NIFAS tapi tidak ada tanggal_lahir, coba ambil dari ringkasan persalinan
+          if (aktif.status_kehamilan === "NIFAS" && !aktif.tanggal_lahir) {
+            try {
+              const { getRingkasanPersalinanByKehamilanId } = await import("../../services/prosesMelahirkan");
+              const ringkasanList = await getRingkasanPersalinanByKehamilanId(aktif.id);
+              if (ringkasanList && ringkasanList.length > 0 && ringkasanList[0].tanggal_melahirkan) {
+                setTanggalMelahirkan(ringkasanList[0].tanggal_melahirkan);
+              }
+            } catch (err) {
+              console.error("Gagal mengambil tanggal melahirkan dari ringkasan:", err);
+            }
+          }
           
           const dataNifas = await getNifasByKehamilanId(aktif.id);
           const nifasArray = Array.isArray(dataNifas) ? dataNifas : [];
           setNifas(nifasArray);
-          
-          const dataCatatan = await getCatatanNifasByKehamilanId(aktif.id);
-          const catatanArray = Array.isArray(dataCatatan) ? dataCatatan : [];
-          setCatatanList(catatanArray);
           
           // Cek data untuk kunjungan default (KF1)
           const existingNifas = nifasArray.find((n) => n.kunjungan_ke === "KF1");
@@ -495,8 +444,20 @@ export default function PelayananNifas() {
     });
     return;
   }
+  
+  if (!canEdit) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Akses Ditolak',
+      text: 'Hanya Bidan yang dapat mengedit data Pelayanan Nifas. Dokter hanya dapat melihat data.',
+      confirmButtonColor: '#4f46e5'
+    });
+    return;
+  }
   // ====================================
 
+    // Allow editing of existing data regardless of time period
+    // Only restrict NEW data entry based on time
     setMode("form");
   };
 
@@ -510,114 +471,9 @@ export default function PelayananNifas() {
     }
   };
 
-  const handleOpenTambahCatatan = () => {
-     // ========== VALIDASI AKSES ==========
-  if (!canAccessNifas) {
-    Swal.fire({
-      icon: 'warning',
-      title: 'Akses Ditolak',
-      text: accessMessage || 'Pelayanan Nifas hanya dapat diakses jika status kehamilan adalah NIFAS atau NON-AKTIF.',
-      confirmButtonColor: '#4f46e5'
-    });
-    return;
-  }
-  // ====================================
-    setSelectedCatatan(null);
-    setIsModalCatatanOpen(true);
-  };
 
-  const handleEditCatatan = (catatan) => {
-     // ========== VALIDASI AKSES ==========
-  if (!canAccessNifas) {
-    Swal.fire({
-      icon: 'warning',
-      title: 'Akses Ditolak',
-      text: accessMessage || 'Pelayanan Nifas hanya dapat diakses jika status kehamilan adalah NIFAS atau NON-AKTIF.',
-      confirmButtonColor: '#4f46e5'
-    });
-    return;
-  }
-  // ====================================
 
-    setSelectedCatatan(catatan);
-    setIsModalCatatanOpen(true);
-  };
-
-  // Fungsi untuk menyimpan catatan
-  const handleSaveCatatan = async (catatanForm) => {
-    if (!kehamilan) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Data kehamilan tidak ditemukan!'
-      });
-      return;
-    }
-    
-    setSavingCatatan(true);
-    try {
-      const payload = {
-        kehamilan_id: kehamilan.id,
-        kunjungan_ke: selectedKunjungan,
-        tanggal_periksa_stamp_paraf: catatanForm.tanggal_periksa_stamp_paraf,
-        keluhan_pemeriksaan_tindakan_saran: catatanForm.keluhan_pemeriksaan_tindakan_saran,
-        tanggal_kembali: catatanForm.tanggal_kembali || null,
-      };
-      
-      delete payload.id_catatan_nifas;
-      delete payload.id;
-      
-      if (selectedCatatan && selectedCatatan.id_catatan_nifas) {
-        await updateCatatanNifas(selectedCatatan.id_catatan_nifas, payload);
-      } else {
-        await createCatatanNifas(payload);
-      }
-      
-      // Refresh data
-      const dataCatatan = await getCatatanNifasByKehamilanId(kehamilan.id);
-      setCatatanList(dataCatatan);
-      
-      alert("Catatan berhasil disimpan!");
-      setIsModalCatatanOpen(false);
-      setSelectedCatatan(null);
-      
-    } catch (err) {
-      console.error("Error:", err);
-      alert("Gagal menyimpan catatan: " + (err.response?.data?.message || err.message));
-    } finally {
-      setSavingCatatan(false);
-    }
-  };
   
-  // Fungsi untuk menghapus catatan
-  const handleDeleteCatatan = async (idCatatan) => {
-     // ========== VALIDASI AKSES ==========
-  if (!canAccessNifas) {
-    Swal.fire({
-      icon: 'warning',
-      title: 'Akses Ditolak',
-      text: accessMessage || 'Pelayanan Nifas hanya dapat diakses jika status kehamilan adalah NIFAS atau NON-AKTIF.',
-      confirmButtonColor: '#4f46e5'
-    });
-    return;
-  }
-  // ====================================
-    if (!confirm("Apakah Anda yakin ingin menghapus catatan ini?")) return;
-    
-    setSavingCatatan(true);
-    try {
-      await deleteCatatanNifas(idCatatan);
-      setCatatanList(prev => prev.filter(c => c.id_catatan_nifas !== idCatatan));
-      alert("Catatan berhasil dihapus!");
-      setIsModalCatatanOpen(false);
-      setSelectedCatatan(null);
-    } catch (err) {
-      console.error("Error menghapus catatan:", err);
-      alert("Gagal menghapus catatan");
-    } finally {
-      setSavingCatatan(false);
-    }
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -632,7 +488,62 @@ export default function PelayananNifas() {
     });
     return;
   }
+  
+  if (!canEdit) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Akses Ditolak',
+      text: 'Hanya Bidan yang dapat menyimpan data Pelayanan Nifas. Dokter hanya dapat melihat data.',
+      confirmButtonColor: '#4f46e5'
+    });
+    return;
+  }
   // ====================================
+
+    // ========== VALIDASI KUNJUNGAN BERDASARKAN TANGGAL ==========
+  // Only apply time restrictions for NEW data entry, not for editing existing data
+  const existing = nifas.find((n) => n.kunjungan_ke === selectedKunjungan);
+  if (!existing && !canAccessKunjungan(selectedKunjungan)) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Kunjungan Tidak Dapat Diakses',
+      text: getKunjunganAccessMessage(selectedKunjungan),
+      confirmButtonColor: '#4f46e5'
+    });
+    return;
+  }
+  // =========================================================
+
+    // ========== VALIDASI SEMUA FIELD ==========
+  const requiredFields = [
+    'tanggal_periksa',
+    'tanda_vital_tekanan_darah',
+    'tanda_vital_suhu_tubuh',
+    'pelayanan_involusi_uteri',
+    'pelayanan_cairan_pervaginam',
+    'pelayanan_periksa_jalan_lahir',
+    'pelayanan_periksa_payudara',
+    'pelayanan_asi_eksklusif',
+    'pelayanan_skrining_depresi_nifas',
+    'pelayanan_kontrasepsi_pasca_persalinan',
+    'pelayanan_penanganan_risiko_malaria',
+    'komplikasi_nifas',
+    'tindakan_saran',
+    'nama_pemeriksa_paraf',
+    'keluhan_pemeriksaan_tindakan_saran'
+  ];
+
+  const emptyFields = requiredFields.filter(field => !form[field] || form[field].trim() === '');
+  if (emptyFields.length > 0) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Data Belum Lengkap',
+      text: 'Harap isi semua field yang wajib diisi sebelum menyimpan data.',
+      confirmButtonColor: '#4f46e5'
+    });
+    return;
+  }
+  // ==========================================
 
     if (!kehamilan) {
       Swal.fire('Error', 'Data kehamilan tidak ditemukan!', 'error');
@@ -660,6 +571,7 @@ export default function PelayananNifas() {
         tindakan_saran: form.tindakan_saran || "",
         nama_pemeriksa_paraf: form.nama_pemeriksa_paraf || "",
         tanggal_kembali: form.tanggal_kembali || null,
+        keluhan_pemeriksaan_tindakan_saran: form.keluhan_pemeriksaan_tindakan_saran || "",
       };
       
       Object.keys(payload).forEach(key => {
@@ -732,20 +644,121 @@ if (selectedKunjungan === "KF4") {
     }
   };
 
+  const handleDelete = async () => {
+    // ========== VALIDASI AKSES ==========
+    if (!canAccessNifas) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Akses Ditolak',
+        text: accessMessage || 'Pelayanan Nifas hanya dapat diakses jika status kehamilan adalah NIFAS atau NON-AKTIF.',
+        confirmButtonColor: '#4f46e5'
+      });
+      return;
+    }
+
+    if (!canEdit) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Akses Ditolak',
+        text: 'Hanya Bidan yang dapat menghapus data Pelayanan Nifas. Dokter hanya dapat melihat data.',
+        confirmButtonColor: '#4f46e5'
+      });
+      return;
+    }
+    // ====================================
+
+    const result = await Swal.fire({
+      title: 'Hapus Data?',
+      text: 'Data pelayanan nifas akan dihapus permanen. Apakah Anda yakin?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Ya, Hapus',
+      cancelButtonText: 'Batal'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await deleteNifas(currentData.id);
+        
+        // Refresh data nifas
+        const refreshedData = await getNifasByKehamilanId(kehamilan.id);
+        const nifasArray = Array.isArray(refreshedData) ? refreshedData : [];
+        setNifas(nifasArray);
+        
+        // Reset to empty state
+        setCurrentData(null);
+        setMode("empty");
+        resetForm(selectedKunjungan);
+        
+        await Swal.fire({
+          icon: 'success',
+          title: 'Terhapus',
+          text: 'Data pelayanan nifas berhasil dihapus',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      } catch (err) {
+        console.error("Error deleting:", err);
+        Swal.fire('Gagal Menghapus', err.response?.data?.message || err.message, 'error');
+      }
+    }
+  };
+
   const handleKunjunganChange = (kunjungan) => {
-    setSelectedKunjungan(kunjungan);
-    
     const existingNifas = nifas.find((n) => n.kunjungan_ke === kunjungan);
     
+    // Allow navigation if:
+    // 1. Data already exists (for viewing/editing), OR
+    // 2. User is bidan and wants to add new data (subject to time restrictions)
     if (existingNifas) {
+      // Allow navigation to view/edit existing data regardless of time period
+      setSelectedKunjungan(kunjungan);
       setCurrentData(existingNifas);
       setMode("detail");
       populateForm(existingNifas);
-    } else {
-      setCurrentData(null);
-      setMode("empty");
-      resetForm(kunjungan);
+      return;
     }
+    
+    // For NEW data entry, apply time restrictions
+    // ========== VALIDASI KUNJUNGAN BERDASARKAN STAGE ==========
+    if (isKunjunganLocked(kunjungan)) {
+      const kunjunganLabel = kunjungan === "KF1" ? "6-48 Jam" : kunjungan === "KF2" ? "3-7 Hari" : kunjungan === "KF3" ? "8-28 Hari" : "29-42 Hari";
+      const currentStageLabel = getCurrentNifasStage() === "KF1" ? "6-48 Jam" : getCurrentNifasStage() === "KF2" ? "3-7 Hari" : getCurrentNifasStage() === "KF3" ? "8-28 Hari" : getCurrentNifasStage() === "KF4" ? "29-42 Hari" : "Di luar masa nifas";
+      
+      Swal.fire({
+        icon: 'warning',
+        title: 'Tahapan Terkunci',
+        text: `Data untuk ${kunjunganLabel} masih terkunci. Ibu saat ini berada dalam masa ${currentStageLabel}. Silakan tunggu hingga memasuki masa yang sesuai.`,
+        confirmButtonColor: '#4f46e5'
+      });
+      return;
+    }
+    // =========================================================
+
+    // ========== VALIDASI KUNJUNGAN BERDASARKAN TANGGAL ==========
+    if (!canAccessKunjungan(kunjungan)) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Kunjungan Tidak Dapat Diakses',
+        text: getKunjunganAccessMessage(kunjungan),
+        confirmButtonColor: '#4f46e5'
+      });
+      return;
+    }
+    // =========================================================
+
+    setSelectedKunjungan(kunjungan);
+    setCurrentData(null);
+    // Only bidan can switch to empty mode (which allows adding data)
+    if (canEdit) {
+      setMode("empty");
+    } else {
+      // For dokter, show empty state but without add button
+      setMode("empty");
+    }
+    resetForm(kunjungan);
   };
 
   const getKunjunganLabel = () => {
@@ -777,56 +790,34 @@ if (selectedKunjungan === "KF4") {
             <ArrowLeft size={20} />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Pelayanan Nifas</h1>
+            <h1 className="text-[28px] font-bold text-gray-900">Pelayanan Nifas</h1>
             <p className="text-gray-500">Pencatatan pelayanan masa nifas ibu.</p>
           </div>
         </div>
         
           {/* Banner Peringatan jika tidak dapat akses */}
       {!canAccessNifas && kehamilan && (
-        <div className="mb-6 bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-r-lg">
-          <div className="flex items-start gap-3">
-            <div className="flex-shrink-0">
-              <AlertCircle size={20} className="text-yellow-600" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-yellow-800">
-                ⚠️ Akses Pelayanan Nifas Dibatasi
-              </p>
-              <p className="text-sm text-yellow-700 mt-1">{accessMessage}</p>
-              <p className="text-xs text-yellow-600 mt-2">
-                Status kehamilan saat ini: <strong>{kehamilan.status_kehamilan}</strong>
-              </p>
-            </div>
-          </div>
+        <div className="mb-6 bg-blue-50 border border-blue-200 p-3 rounded-lg text-blue-700 text-base flex items-center gap-2">
+          <AlertCircle size={16} /> {accessMessage}
         </div>
       )}
        {/* Banner Info untuk status NIFAS */}
       {canAccessNifas && kehamilan && kehamilan.status_kehamilan === "NIFAS" && (
-        <div className="mb-6 bg-green-50 border-l-4 border-green-500 p-4 rounded-r-lg">
-          <div className="flex items-start gap-3">
-            <div className="flex-shrink-0">
-              <CheckCircle size={20} className="text-green-600" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-green-800">✅ Status Kehamilan: NIFAS</p>
-              <p className="text-sm text-green-700 mt-1">Ibu sedang dalam masa nifas. Anda dapat melakukan pencatatan pelayanan nifas.</p>
-            </div>
-          </div>
+        <div className="mb-6 bg-blue-50 border border-blue-200 p-3 rounded-lg text-blue-700 text-base flex items-center gap-2">
+          <CheckCircle size={16} /> Status Kehamilan: NIFAS - Ibu sedang dalam masa nifas. Anda dapat melakukan pencatatan pelayanan nifas.
         </div>
       )}
        {/* Banner Info untuk status NON-AKTIF */}
       {canAccessNifas && kehamilan && kehamilan.status_kehamilan === "NON-AKTIF" && (
-        <div className="mb-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
-          <div className="flex items-start gap-3">
-            <div className="flex-shrink-0">
-              <FileText size={20} className="text-blue-600" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-blue-800">📋 Status Kehamilan: NON-AKTIF (Selesai)</p>
-              <p className="text-sm text-blue-700 mt-1">Masa nifas telah selesai. Anda masih dapat melihat data pelayanan nifas yang sudah tercatat.</p>
-            </div>
-          </div>
+        <div className="mb-6 bg-blue-50 border border-blue-200 p-3 rounded-lg text-blue-700 text-base flex items-center gap-2">
+          <CheckCircle size={16} /> Status Kehamilan: NON-AKTIF (Selesai) - Masa nifas telah selesai. Anda masih dapat melihat data pelayanan nifas yang sudah tercatat.
+        </div>
+      )}
+      
+      {/* Banner Info untuk role Dokter (view-only) */}
+      {canAccessNifas && isDokter && (
+        <div className="mb-6 bg-blue-50 border border-blue-200 p-3 rounded-lg text-blue-700 text-base flex items-center gap-2">
+          <Eye size={16} /> Anda dalam mode baca (Dokter). Data hanya dapat dilihat, tidak dapat diubah.
         </div>
       )}
       
@@ -836,16 +827,16 @@ if (selectedKunjungan === "KF4") {
           <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <EyeOff size={40} className="text-gray-400" />
           </div>
-          <h2 className="text-xl font-semibold text-gray-700 mb-2">Akses Tidak Diizinkan</h2>
+          <h2 className="text-[22px] font-semibold text-[#185FA5] mb-2">Akses Tidak Diizinkan</h2>
           <p className="text-gray-500 max-w-md mx-auto">
             {accessMessage || "Pelayanan Nifas hanya dapat diakses setelah ibu melahirkan (status NIFAS)."}
           </p>
-          <button
+          {/* <button
             onClick={() => navigate(`/data-ibu/${id}`)}
-            className="mt-6 bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition"
+            className="mt-6 bg-[#185FA5] text-white rounded-lg px-5 py-2.5 font-semibold flex items-center gap-2 text-base"
           >
             Kembali ke Detail Ibu
-          </button>
+          </button> */}
         </div>
       )}
          {canAccessNifas && (
@@ -854,38 +845,80 @@ if (selectedKunjungan === "KF4") {
         <div className="flex gap-2 mb-6 flex-wrap">
           {["KF1", "KF2", "KF3", "KF4"].map((k) => {
             const hasData = nifas.some((n) => n.kunjungan_ke === k);
-            const hasCatatan = catatanList.some((c) => c.kunjungan_ke === k);
             const kunjunganLabel = k === "KF1" ? "6-48 Jam" : k === "KF2" ? "3-7 Hari" : k === "KF3" ? "8-28 Hari" : "29-42 Hari";
+            const locked = isKunjunganLocked(k);
+            const currentStage = getCurrentNifasStage();
+            
+            // Enable button if:
+            // 1. Data already exists (for viewing/editing), OR
+            // 2. Not locked (for adding new data)
+            const isDisabled = locked && !hasData;
             
             return (
               <button 
                 key={k} 
                 type="button"
                 onClick={() => handleKunjunganChange(k)} 
+                disabled={isDisabled}
                 className={`px-4 py-2 rounded-lg transition-colors flex items-center gap-2 ${
                   selectedKunjungan === k 
                     ? "bg-indigo-600 text-white" 
                     : hasData 
                       ? "bg-green-100 text-green-700 border border-green-300" 
-                      : "bg-gray-100 text-gray-700"
+                      : isDisabled
+                        ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                        : "bg-gray-100 text-gray-700"
                 }`}
+                title={isDisabled ? `Terkunci - Belum memasuki masa ${kunjunganLabel}` : hasData ? `Data tersedia - Klik untuk melihat/edit` : `Klik untuk menambah data`}
               >
                 {kunjunganLabel}
                 {hasData && selectedKunjungan !== k && <CheckCircle size={14} />}
-                {hasCatatan && selectedKunjungan !== k && (
-                  <FileText size={12} className="text-blue-500" />
-                )}
+                {isDisabled && <Lock size={14} />}
               </button>
             );
           })}
         </div>
         
+        {/* Banner info untuk stage saat ini */}
+        {tanggalMelahirkan && (
+          <div className="mb-6 bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded-r-lg">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0">
+                <AlertCircle size={20} className="text-indigo-600" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-indigo-800">
+                  Masa Nifas Saat Ini: {getCurrentNifasStage() === "KF1" ? "6-48 Jam" : getCurrentNifasStage() === "KF2" ? "3-7 Hari" : getCurrentNifasStage() === "KF3" ? "8-28 Hari" : getCurrentNifasStage() === "KF4" ? "29-42 Hari" : "Di luar masa nifas"}
+                </p>
+                <p className="text-sm text-indigo-700 mt-1">
+                  Hanya tahapan yang sesuai dengan masa nifas saat ini yang dapat diisi. Tahapan lain akan terkunci hingga waktunya tiba.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+        
         {/* Tampilan berdasarkan mode */}
         {mode === "empty" && (
           <EmptyState
-            title={`Belum Ada Data Pelayanan Nifas - ${getKunjunganLabel()}`}
+            title={`Belum Ada Data Pelayanan Nifas ${getKunjunganLabel()}`}
             message="Silakan isi data pelayanan nifas untuk kunjungan ini."
-            onAdd={() => setMode("form")}
+            onAdd={() => {
+              if (isKunjunganLocked(selectedKunjungan)) {
+                const kunjunganLabel = getKunjunganLabel();
+                const currentStageLabel = getCurrentNifasStage() === "KF1" ? "6-48 Jam" : getCurrentNifasStage() === "KF2" ? "3-7 Hari" : getCurrentNifasStage() === "KF3" ? "8-28 Hari" : getCurrentNifasStage() === "KF4" ? "29-42 Hari" : "Di luar masa nifas";
+                Swal.fire({
+                  icon: 'warning',
+                  title: 'Tahapan Terkunci',
+                  text: `Data untuk ${kunjunganLabel} masih terkunci. Ibu saat ini berada dalam masa ${currentStageLabel}. Silakan tunggu hingga memasuki masa yang sesuai.`,
+                  confirmButtonColor: '#4f46e5'
+                });
+                return;
+              }
+              setMode("form");
+            }}
+            canEdit={canEdit}
+            isLocked={isKunjunganLocked(selectedKunjungan)}
           />
         )}
         
@@ -893,7 +926,7 @@ if (selectedKunjungan === "KF4") {
           <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm p-6 space-y-4">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold text-indigo-700">
-                Form Pelayanan Nifas - {getKunjunganLabel()}
+                Form Pelayanan Nifas {getKunjunganLabel()}
               </h2>
               <div className="flex gap-2">
                 {currentData && (
@@ -910,29 +943,31 @@ if (selectedKunjungan === "KF4") {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Tanggal Periksa</label>
+                <label className="block text-sm font-medium mb-1">Tanggal Periksa <span className="text-red-500">*</span></label>
                 <input 
                   type="date" 
                   name="tanggal_periksa" 
                   value={form.tanggal_periksa} 
                   onChange={handleChange} 
-                  className="w-full border rounded-lg px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500" 
+                  className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500" 
+                  required
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium mb-1">Tekanan Darah</label>
+                <label className="block text-sm font-medium mb-1">Tekanan Darah <span className="text-red-500">*</span></label>
                 <input 
                   name="tanda_vital_tekanan_darah" 
                   value={form.tanda_vital_tekanan_darah} 
                   onChange={handleChange} 
                   placeholder="Contoh: 120/80"
-                  className="w-full border rounded-lg px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500" 
+                  className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500" 
+                  required
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium mb-1">Suhu Tubuh (°C)</label>
+                <label className="block text-sm font-medium mb-1">Suhu Tubuh (°C) <span className="text-red-500">*</span></label>
                 <input 
                   type="number" 
                   step="0.1" 
@@ -940,17 +975,19 @@ if (selectedKunjungan === "KF4") {
                   value={form.tanda_vital_suhu_tubuh} 
                   onChange={handleChange} 
                   placeholder="Contoh: 36.5"
-                  className="w-full border rounded-lg px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500" 
+                  className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500" 
+                  required
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium mb-1">Involusi Uteri</label>
+                <label className="block text-sm font-medium mb-1">Involusi Uteri <span className="text-red-500">*</span></label>
                 <select 
                   name="pelayanan_involusi_uteri" 
                   value={form.pelayanan_involusi_uteri} 
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                  required
                 >
                   <option value="">-- Pilih --</option>
                   <option value="baik">Baik (normal)</option>
@@ -960,12 +997,13 @@ if (selectedKunjungan === "KF4") {
               </div>
               
               <div>
-                <label className="block text-sm font-medium mb-1">Cairan Pervaginam (Lochia)</label>
+                <label className="block text-sm font-medium mb-1">Cairan Pervaginam (Lochia) <span className="text-red-500">*</span></label>
                 <select 
                   name="pelayanan_cairan_pervaginam" 
                   value={form.pelayanan_cairan_pervaginam} 
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                  required
                 >
                   <option value="">-- Pilih --</option>
                   <option value="normal">Normal (tidak berbau)</option>
@@ -976,12 +1014,13 @@ if (selectedKunjungan === "KF4") {
               </div>
               
               <div>
-                <label className="block text-sm font-medium mb-1">Periksa Jalan Lahir</label>
+                <label className="block text-sm font-medium mb-1">Periksa Jalan Lahir <span className="text-red-500">*</span></label>
                 <select 
                   name="pelayanan_periksa_jalan_lahir" 
                   value={form.pelayanan_periksa_jalan_lahir} 
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                  required
                 >
                   <option value="">-- Pilih --</option>
                   <option value="normal">Normal (baik)</option>
@@ -991,12 +1030,13 @@ if (selectedKunjungan === "KF4") {
               </div>
               
               <div>
-                <label className="block text-sm font-medium mb-1">Periksa Payudara</label>
+                <label className="block text-sm font-medium mb-1">Periksa Payudara <span className="text-red-500">*</span></label>
                 <select 
                   name="pelayanan_periksa_payudara" 
                   value={form.pelayanan_periksa_payudara} 
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                  required
                 >
                   <option value="">-- Pilih --</option>
                   <option value="normal">Normal</option>
@@ -1007,12 +1047,13 @@ if (selectedKunjungan === "KF4") {
               </div>
               
               <div>
-                <label className="block text-sm font-medium mb-1">ASI Eksklusif</label>
+                <label className="block text-sm font-medium mb-1">ASI Eksklusif <span className="text-red-500">*</span></label>
                 <select 
                   name="pelayanan_asi_eksklusif" 
                   value={form.pelayanan_asi_eksklusif} 
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                  required
                 >
                   <option value="">-- Pilih --</option>
                   <option value="ya">Ya</option>
@@ -1042,17 +1083,18 @@ if (selectedKunjungan === "KF4") {
                   value={form.pemberian_tablet_tambah_darah_jumlah} 
                   onChange={handleChange} 
                   placeholder="Jumlah tablet"
-                  className="w-full border rounded-lg px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500" 
+                  className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500" 
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium mb-1">Skrining Depresi Nifas</label>
+                <label className="block text-sm font-medium mb-1">Skrining Depresi Nifas <span className="text-red-500">*</span></label>
                 <select 
                   name="pelayanan_skrining_depresi_nifas" 
                   value={form.pelayanan_skrining_depresi_nifas} 
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                  required
                 >
                   <option value="">-- Pilih --</option>
                   <option value="negatif">Negatif (skor &lt; 10)</option>
@@ -1062,12 +1104,13 @@ if (selectedKunjungan === "KF4") {
               </div>
               
               <div>
-                <label className="block text-sm font-medium mb-1">Kontrasepsi Pasca Persalinan (KB)</label>
+                <label className="block text-sm font-medium mb-1">Kontrasepsi Pasca Persalinan (KB) <span className="text-red-500">*</span></label>
                 <select 
                   name="pelayanan_kontrasepsi_pasca_persalinan" 
                   value={form.pelayanan_kontrasepsi_pasca_persalinan} 
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                  required
                 >
                   <option value="">-- Pilih --</option>
                   <option value="tidak_ada">Tidak ada</option>
@@ -1080,12 +1123,13 @@ if (selectedKunjungan === "KF4") {
               </div>
               
               <div>
-                <label className="block text-sm font-medium mb-1">Penanganan Risiko Malaria</label>
+                <label className="block text-sm font-medium mb-1">Penanganan Risiko Malaria <span className="text-red-500">*</span></label>
                 <select 
                   name="pelayanan_penanganan_risiko_malaria" 
                   value={form.pelayanan_penanganan_risiko_malaria} 
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                  required
                 >
                   <option value="">-- Pilih --</option>
                   <option value="tidak">Tidak</option>
@@ -1095,12 +1139,13 @@ if (selectedKunjungan === "KF4") {
               </div>
               
               <div>
-                <label className="block text-sm font-medium mb-1">Komplikasi Nifas</label>
+                <label className="block text-sm font-medium mb-1">Komplikasi Nifas <span className="text-red-500">*</span></label>
                 <select 
                   name="komplikasi_nifas" 
                   value={form.komplikasi_nifas} 
                   onChange={handleChange}
-                  className="w-full border rounded-lg px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                  required
                 >
                   <option value="">-- Pilih --</option>
                   <option value="tidak_ada">Tidak ada</option>
@@ -1112,25 +1157,40 @@ if (selectedKunjungan === "KF4") {
               </div>
               
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium mb-1">Tindakan/Saran</label>
+                <label className="block text-sm font-medium mb-1">Tindakan/Saran <span className="text-red-500">*</span></label>
                 <textarea 
                   name="tindakan_saran" 
                   value={form.tindakan_saran} 
                   onChange={handleChange} 
                   rows="2"
                   placeholder="Contoh: Istirahat cukup, konsumsi makanan bergizi, perbanyak ASI"
-                  className="w-full border rounded-lg px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500" 
+                  className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500" 
+                  required
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium mb-1">Keluhan / Pemeriksaan / Tindakan / Saran <span className="text-red-500">*</span></label>
+                <textarea 
+                  name="keluhan_pemeriksaan_tindakan_saran" 
+                  value={form.keluhan_pemeriksaan_tindakan_saran} 
+                  onChange={handleChange} 
+                  rows="4"
+                  placeholder="Catatan keluhan ibu, hasil pemeriksaan, tindakan yang dilakukan, dan saran yang diberikan..."
+                  className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500" 
+                  required
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium mb-1">Nama Pemeriksa/Paraf</label>
+                <label className="block text-sm font-medium mb-1">Nama Pemeriksa/Paraf <span className="text-red-500">*</span></label>
                 <input 
                   name="nama_pemeriksa_paraf" 
                   value={form.nama_pemeriksa_paraf} 
                   onChange={handleChange} 
                   placeholder="dr. Siti Aminah"
-                  className="w-full border rounded-lg px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500" 
+                  className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500" 
+                  required
                 />
               </div>
               
@@ -1163,31 +1223,10 @@ if (selectedKunjungan === "KF4") {
           <div className="space-y-6">
             <DetailNifas 
               data={currentData} 
-              onEdit={handleEdit} 
-              onOpenCatatan={handleOpenTambahCatatan}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
               kunjunganLabel={getKunjunganLabel()}
-            />
-            
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <DaftarRiwayatCatatan 
-                catatanList={catatanForSelectedKunjungan}
-                onEdit={handleEditCatatan}
-                onDelete={handleDeleteCatatan}
-                kunjunganLabel={getKunjunganLabel()}
-              />
-            </div>
-            
-            <ModalCatatan
-              isOpen={isModalCatatanOpen}
-              onClose={() => {
-                setIsModalCatatanOpen(false);
-                setSelectedCatatan(null);
-              }}
-              catatanData={selectedCatatan}
-              onSave={handleSaveCatatan}
-              onDelete={handleDeleteCatatan}
-              kunjunganLabel={getKunjunganLabel()}
-              saving={savingCatatan}
+              canEdit={canEdit}
             />
           </div>
         )}

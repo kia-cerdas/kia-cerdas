@@ -57,6 +57,19 @@ type UpdatePerawatanRequest struct {
 	TanggalPeriksa string `json:"tanggal_periksa,omitempty"`
 }
 
+// BulkPerawatanItem represents a single item in the bulk request
+type BulkPerawatanItem struct {
+	KategoriCapaianID uint   `json:"kategori_capaian_id" validate:"required"`
+	Jawaban           *bool  `json:"jawaban"`
+	TanggalPeriksa    string `json:"tanggal_periksa,omitempty"`
+}
+
+// BulkPerawatanRequest is body request for POST /perawatan/bulk
+type BulkPerawatanRequest struct {
+	AnakID int32               `json:"anak_id" validate:"required"`
+	Data   []BulkPerawatanItem `json:"data" validate:"required,min=1"`
+}
+
 // ─────────────────────────────────────────────────────────
 // KATEGORI CAPAIAN REQUEST
 // ─────────────────────────────────────────────────────────

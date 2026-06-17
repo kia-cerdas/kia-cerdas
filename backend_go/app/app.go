@@ -72,6 +72,20 @@ func (m *Main) startCronJob() {
 		} else {
 			log.Println("[CRON] reminder kontrol selesai")
 		}
+
+		// 4. Update status jadwal imunisasi
+		if err := m.usecase.UpdateStatusJadwal(); err != nil {
+			log.Printf("[CRON] update status jadwal imunisasi error: %v", err)
+		} else {
+			log.Println("[CRON] update status jadwal imunisasi selesai")
+		}
+
+		// 5. Update overdue kunjungan imunisasi
+		if err := m.usecase.ProcessOverdueKunjunganImunisasi(); err != nil {
+			log.Printf("[CRON] overdue kunjungan imunisasi error: %v", err)
+		} else {
+			log.Println("[CRON] overdue kunjungan imunisasi selesai")
+		}
 	})
 	if err != nil {
 		log.Fatalf("[CRON] Gagal menjadwalkan job: %v", err)
@@ -103,6 +117,23 @@ func (m *Main) Init() (err error) {
 		panic("❌ Gagal konek ke database: " + err.Error())
 	}
 	fmt.Println("✅ BERHASIL KONEK KE DATABASE")
+
+	// Patch kolom yang terlalu pendek (one-time idempotent fix)
+	fixQueries := []string{
+		`ALTER TABLE prediksi_stunting ALTER COLUMN status_tbu TYPE varchar(100)`,
+		`ALTER TABLE prediksi_stunting ALTER COLUMN status_prediksi TYPE varchar(50)`,
+		`ALTER TABLE prediksi_stunting ALTER COLUMN classification TYPE varchar(30)`,
+		`ALTER TABLE aturan_porsi_mpasi ADD COLUMN IF NOT EXISTS gambar_url text`,
+		`ALTER TABLE jadwal_harian_mpasi ADD COLUMN IF NOT EXISTS gambar_url text`,
+	}
+	for _, q := range fixQueries {
+		if execErr := m.database.Postgres.Exec(q).Error; execErr != nil {
+			// Abaikan error jika kolom tidak ada atau sudah sesuai
+			fmt.Printf("[MIGRATION] Skipped: %v\n", execErr)
+		} else {
+			fmt.Printf("[MIGRATION] OK: %s\n", q)
+		}
+	}
 
 	// // Migrate only the specific tables needed to ensure rentang_usia_id exists
 	// _ = m.database.Postgres.AutoMigrate(&models.RentangUsia{}, &models.KategoriCapaian{})

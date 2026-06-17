@@ -142,9 +142,12 @@ const AdminAkunKeluargaCreate = () => {
         keterangan: member.keterangan.trim(),
         kecamatan: member.kecamatan.trim(),
         desa_id: member.desa_id ? parseInt(member.desa_id, 10) : null,
-        is_non_ktp: member.is_non_ktp === "true",
+        // is_non_ktp: false = KTP Warga Setempat (default)
+        // is_non_ktp: true = BUKAN KTP Warga Setempat
+        is_non_ktp: member.is_non_ktp === "false",
         tanggal_penambahan: member.tanggal_penambahan,
         tanggal_pengurangan: member.tanggal_pengurangan,
+        telepon: member.telepon.trim(),
       })),
     };
   };
@@ -323,10 +326,10 @@ const AdminAkunKeluargaCreate = () => {
                       <input type="text" value={member.kecamatan} onChange={(e) => setMemberField(index, "kecamatan", e.target.value)} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" />
                     </div>
                     <div>
-                      <label className="text-sm text-slate-600">KTP Warga Setempat?</label>
+                      <label className="text-sm text-slate-600">Status KTP</label>
                       <select value={member.is_non_ktp} onChange={(e) => setMemberField(index, "is_non_ktp", e.target.value)} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2">
-                        <option value="false">Ya</option>
-                        <option value="true">Tidak</option>
+                        <option value="false">KTP Warga Setempat</option>
+                        <option value="true">Bukan KTP Warga Setempat</option>
                       </select>
                     </div>
                     <div>

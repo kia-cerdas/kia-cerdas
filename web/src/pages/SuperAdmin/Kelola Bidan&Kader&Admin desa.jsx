@@ -428,7 +428,7 @@ const UserManagement = () => {
                   <button
                     type="button"
                     onClick={() => setShowCreateMenu((prev) => !prev)}
-                    className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+                    className="inline-flex items-center gap-2 rounded-2xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
                   >
                     <Plus size={16} />
                     Tambah User
@@ -479,7 +479,7 @@ const UserManagement = () => {
                 </select>
               </div>
               <div className="md:col-span-3 flex gap-3">
-                <button type="submit" className="inline-flex items-center gap-2 rounded-2xl bg-cyan-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-cyan-700">
+                <button type="submit" className="inline-flex items-center gap-2 rounded-2xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700">
                   <Search size={16} />
                   Terapkan Filter
                 </button>
@@ -646,7 +646,7 @@ const UserManagement = () => {
                 <button type="button" onClick={closeCreateModal} className="rounded-lg border border-slate-300 px-4 py-2 text-slate-700 hover:bg-slate-50">
                   Batal
                 </button>
-                <button type="submit" disabled={submitting} className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-white hover:bg-slate-800 disabled:opacity-60">
+                <button type="submit" disabled={submitting} className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700 disabled:opacity-60">
                   {submitting ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
                   Simpan
                 </button>
@@ -680,7 +680,7 @@ const UserManagement = () => {
                 <button type="button" onClick={() => setShowResetModal(false)} className="rounded-2xl bg-slate-100 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-200">
                   Batal
                 </button>
-                <button type="submit" disabled={submitting} className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60">
+                <button type="submit" disabled={submitting} className="inline-flex items-center gap-2 rounded-2xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60">
                   {submitting ? <Loader2 size={16} className="animate-spin" /> : <KeyRound size={16} />}
                   Simpan Password
                 </button>
@@ -740,7 +740,7 @@ const UserManagement = () => {
             </div>
 
             <div className="mt-6 flex justify-end">
-              <button type="button" onClick={clearMessages} className="rounded-2xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">
+              <button type="button" onClick={clearMessages} className="rounded-2xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700">
                 Tutup
               </button>
             </div>
