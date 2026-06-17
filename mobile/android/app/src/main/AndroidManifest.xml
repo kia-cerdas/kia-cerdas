@@ -23,7 +23,7 @@
     </queries>
 
     <application
-        android:label="Sobat Imun"
+        android:label="KIA Cerdas"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

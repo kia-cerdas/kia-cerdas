@@ -20,13 +20,55 @@ class _InputWarnaTinjaScreenState extends State<InputWarnaTinjaScreen> {
   ];
 
   final List<Map<String, dynamic>> _warnaTinja = [
-    {'nama': 'Kuning (Normal)', 'color': const Color(0xFFFCD34D), 'status': 'Normal', 'desc': 'Tinja kuning merupakan warna normal pada bayi yang disusui ASI eksklusif.'},
-    {'nama': 'Hijau Kuning', 'color': const Color(0xFF86EFAC), 'status': 'Normal', 'desc': 'Tinja hijau-kuning masih termasuk normal, terutama pada minggu-minggu pertama.'},
-    {'nama': 'Hijau', 'color': const Color(0xFF22C55E), 'status': 'Perhatian', 'desc': 'Tinja hijau bisa terjadi karena konsumsi ASI foremilk yang berlebihan.'},
-    {'nama': 'Coklat', 'color': const Color(0xFF92400E), 'status': 'Normal', 'desc': 'Tinja coklat umumnya normal, terutama jika bayi sudah mendapat MPASI.'},
-    {'nama': 'Merah/Pink', 'color': const Color(0xFFEF4444), 'status': 'Bahaya', 'desc': 'Tinja merah atau pink menandakan adanya darah. Segera ke puskesmas!'},
-    {'nama': 'Hitam (Meconium)', 'color': const Color(0xFF1F2937), 'status': 'Normal (0-3 hari)', 'desc': 'Tinja hitam hanya normal pada 2-3 hari pertama kehidupan. Setelah itu, segera konsultasi.'},
-    {'nama': 'Putih/Pucat', 'color': const Color(0xFFF5F5F4), 'status': 'Bahaya', 'desc': 'Tinja putih/pucat menandakan masalah pada hati. Segera ke rumah sakit!'},
+    {
+      'nama': 'Kuning (Normal)',
+      'color': const Color(0xFFFCD34D),
+      'status': 'Normal',
+      'desc':
+          'Tinja kuning merupakan warna normal pada bayi yang disusui ASI eksklusif.'
+    },
+    {
+      'nama': 'Hijau Kuning',
+      'color': const Color(0xFF86EFAC),
+      'status': 'Normal',
+      'desc':
+          'Tinja hijau-kuning masih termasuk normal, terutama pada minggu-minggu pertama.'
+    },
+    {
+      'nama': 'Hijau',
+      'color': const Color(0xFF22C55E),
+      'status': 'Perhatian',
+      'desc':
+          'Tinja hijau bisa terjadi karena konsumsi ASI foremilk yang berlebihan.'
+    },
+    {
+      'nama': 'Coklat',
+      'color': const Color(0xFF92400E),
+      'status': 'Normal',
+      'desc':
+          'Tinja coklat umumnya normal, terutama jika bayi sudah mendapat MPASI.'
+    },
+    {
+      'nama': 'Merah/Pink',
+      'color': const Color(0xFFEF4444),
+      'status': 'Bahaya',
+      'desc':
+          'Tinja merah atau pink menandakan adanya darah. Segera ke puskesmas!'
+    },
+    {
+      'nama': 'Hitam (Meconium)',
+      'color': const Color(0xFF1F2937),
+      'status': 'Normal (0-3 hari)',
+      'desc':
+          'Tinja hitam hanya normal pada 2-3 hari pertama kehidupan. Setelah itu, segera konsultasi.'
+    },
+    {
+      'nama': 'Putih/Pucat',
+      'color': const Color(0xFFF5F5F4),
+      'status': 'Bahaya',
+      'desc':
+          'Tinja putih/pucat menandakan masalah pada hati. Segera ke rumah sakit!'
+    },
   ];
 
   void _showResult() {
@@ -40,7 +82,8 @@ class _InputWarnaTinjaScreenState extends State<InputWarnaTinjaScreen> {
       return;
     }
 
-    final selectedData = _warnaTinja.firstWhere((w) => w['nama'] == _selectedWarna);
+    final selectedData =
+        _warnaTinja.firstWhere((w) => w['nama'] == _selectedWarna);
     final isBahaya = selectedData['status'] == 'Bahaya';
     final isPerhatian = selectedData['status'] == 'Perhatian';
 
@@ -313,9 +356,8 @@ class _InputWarnaTinjaScreenState extends State<InputWarnaTinjaScreen> {
                       vertical: 10,
                     ),
                     decoration: BoxDecoration(
-                      color: isSelected
-                          ? const Color(0xFFCA8A04)
-                          : Colors.white,
+                      color:
+                          isSelected ? const Color(0xFFCA8A04) : Colors.white,
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
                         color: isSelected
@@ -326,8 +368,10 @@ class _InputWarnaTinjaScreenState extends State<InputWarnaTinjaScreen> {
                     child: Text(
                       umur,
                       style: TextStyle(
-                        color: isSelected ? Colors.white : const Color(0xFF64748B),
-                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                        color:
+                            isSelected ? Colors.white : const Color(0xFF64748B),
+                        fontWeight:
+                            isSelected ? FontWeight.w600 : FontWeight.w400,
                       ),
                     ),
                   ),
@@ -356,9 +400,8 @@ class _InputWarnaTinjaScreenState extends State<InputWarnaTinjaScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: isSelected
-                          ? const Color(0xFFFEF9C3)
-                          : Colors.white,
+                      color:
+                          isSelected ? const Color(0xFFFEF9C3) : Colors.white,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: isSelected

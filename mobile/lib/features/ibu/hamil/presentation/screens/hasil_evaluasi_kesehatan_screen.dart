@@ -3,6 +3,7 @@ import 'package:ta_pa2_pa3_project/core/themes/app_colors.dart';
 import 'package:ta_pa2_pa3_project/features/ibu/hamil/data/models/evaluasi_kesehatan_ibu_model.dart';
 import 'package:ta_pa2_pa3_project/features/ibu/hamil/data/services/evaluasi_kesehatan_ibu_api_service.dart';
 import 'package:ta_pa2_pa3_project/features/edukasi/presentation/ibu/konten_edukasi_ibu_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HasilEvaluasiKesehatanScreen extends StatefulWidget {
   const HasilEvaluasiKesehatanScreen({super.key});
@@ -53,12 +54,189 @@ class _HasilEvaluasiKesehatanScreenState
     return '${date.day} ${months[date.month - 1]} ${date.year}';
   }
 
-  void _hubungiBidan() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Menghubungkan ke bidan..."),
-      ),
+  // =====================================
+  // KONFIRMASI HUBUNGI BIDAN
+  // =====================================
+
+  Future<void> _hubungiBidan() async {
+    const String namaBidan = "Bidan Desa";
+    const String nomorBidan = "0812-6482-593";
+
+    final result = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) {
+        return Container(
+          padding: const EdgeInsets.all(22),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(28),
+              topRight: Radius.circular(28),
+            ),
+          ),
+          child: SafeArea(
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+
+                  // HANDLE
+                  Container(
+                    width: 46,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+
+                  const SizedBox(height: 18),
+
+                  // ICON
+                  Container(
+                    width: 72,
+                    height: 72,
+                    decoration: BoxDecoration(
+                      color: Colors.green.shade50,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.support_agent,
+                      color: Colors.green.shade600,
+                      size: 36,
+                    ),
+                  ),
+
+                  const SizedBox(height: 18),
+
+                  const Text(
+                    "Hubungi Bidan",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  Text(
+                    "Ibu akan dihubungkan ke $namaBidan untuk mendapatkan bantuan dan arahan lebih lanjut.",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 13.5,
+                      color: Colors.grey.shade700,
+                      height: 1.5,
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  Text(
+                    nomorBidan,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey.shade700,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // WHATSAPP
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green.shade600,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.pop(context, "wa");
+                      },
+                      icon: const Icon(Icons.chat),
+                      label: const Text(
+                        "Chat via WhatsApp",
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // TELEPON
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.primary,
+                        side: BorderSide(color: AppColors.primary),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.pop(context, "call");
+                      },
+                      icon: const Icon(Icons.call_outlined),
+                      label: const Text(
+                        "Telepon Bidan",
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: TextButton(
+                      style: TextButton.styleFrom(
+                        backgroundColor: Colors.blueGrey.shade50,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: Text(
+                        "Batal",
+                        style: TextStyle(
+                          color: Colors.blueGrey.shade500,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
+
+    // =====================================
+    // AKSI SETELAH PILIH
+    // =====================================
+
+    if (result == "wa") {
+      final Uri url = Uri.parse('https://wa.me/6281264825931');
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    }
+
+    if (result == "call") {
+      final Uri url = Uri(scheme: 'tel', path: '081264825931');
+      await launchUrl(url);
+    }
   }
 
   void _pelajariLebihLanjut() {

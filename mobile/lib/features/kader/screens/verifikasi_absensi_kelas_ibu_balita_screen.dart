@@ -14,6 +14,8 @@ class VerifikasiAbsensiKelasIbuBalitaScreen extends StatefulWidget {
 class _VerifikasiAbsensiKelasIbuBalitaScreenState extends State<VerifikasiAbsensiKelasIbuBalitaScreen> {
   final AbsensiKelasIbuBalitaApiService _apiService = AbsensiKelasIbuBalitaApiService();
   List<AbsensiKelasIbuBalitaModel> _absensiList = [];
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
   bool _isLoading = true;
   String _errorMessage = '';
 
@@ -21,6 +23,17 @@ class _VerifikasiAbsensiKelasIbuBalitaScreenState extends State<VerifikasiAbsens
   void initState() {
     super.initState();
     _fetchData();
+    _searchController.addListener(() {
+      setState(() {
+        _searchQuery = _searchController.text;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _fetchData() async {
@@ -60,8 +73,10 @@ class _VerifikasiAbsensiKelasIbuBalitaScreenState extends State<VerifikasiAbsens
       Navigator.pop(context); // close loading
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Berhasil memverifikasi kehadiran'),
+        SnackBar(
+          content: Text(status == 'Diterima' 
+            ? 'Berhasil memverifikasi kehadiran' 
+            : 'Berhasil menolak kehadiran'),
           backgroundColor: Colors.green,
         ),
       );
@@ -117,6 +132,41 @@ class _VerifikasiAbsensiKelasIbuBalitaScreenState extends State<VerifikasiAbsens
     );
   }
 
+  String _getStatusText(String? status) {
+    switch(status) {
+      case 'Diterima':
+        return 'Diterima';
+      case 'Ditolak':
+        return 'Ditolak';
+      default:
+        return 'Menunggu Verifikasi';
+    }
+  }
+
+  Color _getStatusColor(String? status) {
+    switch(status) {
+      case 'Diterima':
+        return Colors.green;
+      case 'Ditolak':
+        return Colors.red;
+      default:
+        return Colors.orange;
+    }
+  }
+
+  bool _isVerified(AbsensiKelasIbuBalitaModel item) {
+    return item.status == 'Diterima';
+  }
+
+  bool _isRejected(AbsensiKelasIbuBalitaModel item) {
+    return item.status == 'Ditolak';
+  }
+
+  bool _isPending(AbsensiKelasIbuBalitaModel item) {
+    return item.status == null || item.status!.isEmpty || 
+           (item.status != 'Diterima' && item.status != 'Ditolak');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -124,128 +174,235 @@ class _VerifikasiAbsensiKelasIbuBalitaScreenState extends State<VerifikasiAbsens
         title: const Text('Verifikasi Kelas Ibu Balita'),
         backgroundColor: Colors.teal,
         foregroundColor: Colors.white,
+        elevation: 0,
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _errorMessage.isNotEmpty
-              ? Center(child: Text(_errorMessage, style: const TextStyle(color: Colors.red)))
-              : _absensiList.isEmpty
-                  ? const Center(child: Text('Belum ada log kehadiran.'))
-                  : ListView.builder(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: _absensiList.length,
-                      itemBuilder: (context, index) {
-                        final item = _absensiList[index];
-                        final isVerified = item.status == 'Diterima' || (item.namaKader.isNotEmpty && item.tanggalParaf.isNotEmpty && item.status != 'Ditolak');
-                        final isRejected = item.status == 'Ditolak';
-                        final isPending = !isVerified && !isRejected;
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                      const SizedBox(height: 16),
+                      Text(_errorMessage, style: const TextStyle(color: Colors.red)),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: _fetchData,
+                        child: const Text('Coba Lagi'),
+                      ),
+                    ],
+                  ),
+                )
+              : Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: TextField(
+                        controller: _searchController,
+                        decoration: InputDecoration(
+                          hintText: 'Cari nama ibu atau anak...',
+                          prefixIcon: const Icon(Icons.search),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+                          suffixIcon: _searchQuery.isNotEmpty
+                              ? IconButton(
+                                  icon: const Icon(Icons.clear),
+                                  onPressed: () {
+                                    _searchController.clear();
+                                  },
+                                )
+                              : null,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Builder(
+                        builder: (context) {
+                          final filteredList = _absensiList.where((item) {
+                            final q = _searchQuery.toLowerCase();
+                            return item.namaIbu.toLowerCase().contains(q) || 
+                                   item.namaAnak.toLowerCase().contains(q);
+                          }).toList();
 
-                        Color statusColor = Colors.orange;
-                        String statusText = 'Menunggu Verifikasi';
-                        
-                        if (isVerified) {
-                          statusColor = Colors.green;
-                          statusText = 'Diterima';
-                        } else if (isRejected) {
-                          statusColor = Colors.red;
-                          statusText = 'Ditolak';
-                        }
-
-                        return Card(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          elevation: 2,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        item.namaIbu.isNotEmpty ? 'Ibu ${item.namaIbu}' : 'Ibu (Data tidak lengkap)',
-                                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                                      ),
-                                    ),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                      decoration: BoxDecoration(
-                                        color: statusColor.withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(color: statusColor.withOpacity(0.5))
-                                      ),
-                                      child: Text(
-                                        statusText,
-                                        style: TextStyle(
-                                          color: statusColor,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-                                Text('Pertemuan ke: ${item.pertemuanKe}'),
-                                Text('Tanggal Hadir: ${item.tanggal}'),
-                                if (isVerified || isRejected) ...[
-                                  const SizedBox(height: 4),
-                                  Text(isRejected ? 'Ditolak oleh: ${item.namaKader}' : 'Diverifikasi oleh: ${item.namaKader}', style: const TextStyle(color: Colors.grey)),
-                                  Text('Tanggal: ${item.tanggalParaf}', style: const TextStyle(color: Colors.grey)),
+                          if (filteredList.isEmpty) {
+                            return const Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.history, size: 64, color: Colors.grey),
+                                  SizedBox(height: 16),
+                                  Text('Belum ada log kehadiran atau tidak ditemukan.'),
                                 ],
-                                  if (isPending) ...[
-                                    const SizedBox(height: 12),
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: OutlinedButton(
-                                            onPressed: () => _showConfirmationDialog(
-                                              context: context,
-                                              title: 'Tolak Verifikasi',
-                                              content: 'Apakah Anda yakin ingin menolak data absensi ini?',
-                                              onConfirm: () => _verify(item, 'Ditolak'),
+                              ),
+                            );
+                          }
+
+                          return ListView.builder(
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                            itemCount: filteredList.length,
+                            itemBuilder: (context, index) {
+                              final item = filteredList[index];
+                              final isVerified = _isVerified(item);
+                              final isRejected = _isRejected(item);
+                              final isPending = _isPending(item);
+                              final statusColor = _getStatusColor(item.status);
+                              final statusText = _getStatusText(item.status);
+
+                              return Card(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                elevation: 2,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  item.namaIbu.isNotEmpty 
+                                                    ? 'Ibu ${item.namaIbu}' 
+                                                    : 'Ibu (Data tidak lengkap)',
+                                                  style: const TextStyle(
+                                                    fontWeight: FontWeight.bold, 
+                                                    fontSize: 16,
+                                                  ),
+                                                ),
+                                                if (item.namaAnak.isNotEmpty) ...[
+                                                  const SizedBox(height: 4),
+                                                  Text(
+                                                    'Anak: ${item.namaAnak}',
+                                                    style: const TextStyle(
+                                                      fontSize: 14, 
+                                                      color: Colors.black87,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ],
                                             ),
-                                            style: OutlinedButton.styleFrom(
-                                              foregroundColor: Colors.red,
-                                              side: const BorderSide(color: Colors.red),
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 10, 
+                                              vertical: 6,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: statusColor.withOpacity(0.1),
+                                              borderRadius: BorderRadius.circular(8),
+                                              border: Border.all(
+                                                color: statusColor.withOpacity(0.5),
                                               ),
                                             ),
-                                            child: const Text('Tolak'),
+                                            child: Text(
+                                              statusText,
+                                              style: TextStyle(
+                                                color: statusColor,
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        'Pertemuan ke: ${item.pertemuanKe}',
+                                        style: const TextStyle(fontSize: 14),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'Tanggal Hadir: ${item.tanggal}',
+                                        style: const TextStyle(fontSize: 14),
+                                      ),
+                                      if (isVerified || isRejected) ...[
+                                        const SizedBox(height: 8),
+                                        const Divider(),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          isRejected 
+                                            ? 'Ditolak oleh: ${item.namaKader}' 
+                                            : 'Diverifikasi oleh: ${item.namaKader}', 
+                                          style: const TextStyle(
+                                            color: Colors.grey,
+                                            fontSize: 12,
                                           ),
                                         ),
-                                        const SizedBox(width: 10),
-                                        Expanded(
-                                          child: ElevatedButton(
-                                            onPressed: () => _showConfirmationDialog(
-                                              context: context,
-                                              title: 'Verifikasi Kehadiran',
-                                              content: 'Apakah Anda yakin ingin memverifikasi data absensi ini?',
-                                              onConfirm: () => _verify(item, 'Diterima'),
-                                            ),
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: const Color(0xFF185FA5),
-                                              foregroundColor: Colors.white,
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.circular(8),
-                                              ),
-                                              elevation: 1,
-                                            ),
-                                            child: const Text('Verifikasi'),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          'Tanggal Verifikasi: ${item.tanggalParaf}', 
+                                          style: const TextStyle(
+                                            color: Colors.grey,
+                                            fontSize: 12,
                                           ),
                                         ),
                                       ],
-                                    ),
-                                  ]
-                              ],
-                            ),
-                          ),
-                        );
-                      },
+                                      if (isPending) ...[
+                                        const SizedBox(height: 12),
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: OutlinedButton(
+                                                onPressed: () => _showConfirmationDialog(
+                                                  context: context,
+                                                  title: 'Tolak Verifikasi',
+                                                  content: 'Apakah Anda yakin ingin menolak data absensi ini?',
+                                                  onConfirm: () => _verify(item, 'Ditolak'),
+                                                ),
+                                                style: OutlinedButton.styleFrom(
+                                                  foregroundColor: Colors.red,
+                                                  side: const BorderSide(color: Colors.red),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius: BorderRadius.circular(8),
+                                                  ),
+                                                ),
+                                                child: const Text('Tolak'),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 10),
+                                            Expanded(
+                                              child: ElevatedButton(
+                                                onPressed: () => _showConfirmationDialog(
+                                                  context: context,
+                                                  title: 'Verifikasi Kehadiran',
+                                                  content: 'Apakah Anda yakin ingin memverifikasi data absensi ini?',
+                                                  onConfirm: () => _verify(item, 'Diterima'),
+                                                ),
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: const Color(0xFF185FA5),
+                                                  foregroundColor: Colors.white,
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius: BorderRadius.circular(8),
+                                                  ),
+                                                  elevation: 1,
+                                                ),
+                                                child: const Text('Verifikasi'),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      ),
                     ),
+                  ],
+                ),
     );
   }
 }

@@ -137,18 +137,40 @@ class ImunisasiDetailModel {
   }
 }
 
+class JadwalLayananModel {
+  final int id;
+  final String layanan;
+  final DateTime tanggal;
+
+  JadwalLayananModel({
+    required this.id,
+    required this.layanan,
+    required this.tanggal,
+  });
+
+  factory JadwalLayananModel.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    return JadwalLayananModel(
+      id: (json['id'] as num?)?.toInt() ?? 0,
+      layanan: json['layanan'] ?? '',
+      tanggal: DateTime.parse(json['tanggal']),
+    );
+  }
+}
+
 class RequestPerubahanJadwalRequest {
-  final String tanggalBaru;
+  final int jadwalLayananId;
   final String alasan;
 
   RequestPerubahanJadwalRequest({
-    required this.tanggalBaru,
+    required this.jadwalLayananId,
     required this.alasan,
   });
 
   Map<String, dynamic> toJson() {
     return {
-      "tanggal_estimasi": tanggalBaru,
+      "jadwal_layanan_id": jadwalLayananId,
       "alasan": alasan,
     };
   }

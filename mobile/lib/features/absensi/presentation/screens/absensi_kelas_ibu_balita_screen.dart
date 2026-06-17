@@ -47,7 +47,7 @@ class _AbsensiKelasIbuBalitaScreenState
 
   int get _totalHadir => _absensiList.length;
   int get _tervalidasi =>
-      _absensiList.where((a) => a.status == 'Terverifikasi').length;
+      _absensiList.where((a) => a.status == 'Diterima').length;
 
   /// Cek apakah ada data yang masih menunggu verifikasi
   bool get _adaYangBelumVerifikasi =>
@@ -308,39 +308,50 @@ class _AbsensiKelasIbuBalitaScreenState
 
   /// Badge chip status verifikasi
   Widget _buildStatusBadge(String status) {
-    final isVerified = status == 'Terverifikasi';
+    Color bgColor;
+    Color borderColor;
+    Color textColor;
+    IconData iconData;
+    String textLabel;
+
+    if (status == 'Diterima') {
+      bgColor = const Color(0xFFD1FAE5);
+      borderColor = const Color(0xFF10B981);
+      textColor = const Color(0xFF059669);
+      iconData = Icons.verified_rounded;
+      textLabel = 'Diterima';
+    } else if (status == 'Ditolak') {
+      bgColor = const Color(0xFFFEE2E2);
+      borderColor = const Color(0xFFEF4444);
+      textColor = const Color(0xFFB91C1C);
+      iconData = Icons.cancel_rounded;
+      textLabel = 'Ditolak';
+    } else {
+      bgColor = const Color(0xFFFEF3C7);
+      borderColor = const Color(0xFFF59E0B);
+      textColor = const Color(0xFFD97706);
+      iconData = Icons.hourglass_top_rounded;
+      textLabel = 'Menunggu';
+    }
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: isVerified
-            ? const Color(0xFFD1FAE5) // hijau muda
-            : const Color(0xFFFEF3C7), // kuning muda
+        color: bgColor,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: isVerified
-              ? const Color(0xFF10B981) // hijau
-              : const Color(0xFFF59E0B), // kuning
-        ),
+        border: Border.all(color: borderColor),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            isVerified ? Icons.verified_rounded : Icons.hourglass_top_rounded,
-            size: 11,
-            color: isVerified
-                ? const Color(0xFF059669)
-                : const Color(0xFFD97706),
-          ),
+          Icon(iconData, size: 11, color: textColor),
           const SizedBox(width: 4),
           Text(
-            isVerified ? 'Terverifikasi' : 'Menunggu',
+            textLabel,
             style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w600,
-              color: isVerified
-                  ? const Color(0xFF059669)
-                  : const Color(0xFFD97706),
+              color: textColor,
             ),
           ),
         ],

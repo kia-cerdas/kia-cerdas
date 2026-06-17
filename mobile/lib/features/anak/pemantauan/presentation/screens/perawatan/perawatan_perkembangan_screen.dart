@@ -196,39 +196,41 @@ class _PerawatanPerkembanganScreenState
     int failCount = 0;
     final errorMessages = <String>[];
 
+    final List<BulkPerawatanItem> itemsToSave = [];
+
     for (final kat in kategori) {
       final jawaban = checklist[kat.id];
       if (jawaban == null) continue;
 
-      try {
-        final existingId = ids[kat.id];
-        if (existingId != null) {
-          // Update
-          await _apiService.updatePerawatan(
-            existingId,
-            UpdatePerawatanRequest(
-              jawaban: jawaban,
-              tanggalPeriksa: _tanggalPeriksa,
-            ),
-          );
-        } else {
-          // Create
-          final result = await _apiService.createPerawatan(
-            CreatePerawatanRequest(
-              anakId: _anakId,
-              kategoriCapaianId: kat.id,
-              jawaban: jawaban,
-              tanggalPeriksa: _tanggalPeriksa,
-            ),
-          );
-          // Simpan ID untuk update berikutnya
-          ids[kat.id] = result.id;
-        }
-        successCount++;
-      } catch (e) {
-        failCount++;
-        errorMessages.add(e.toString());
+      itemsToSave.add(BulkPerawatanItem(
+        kategoriCapaianId: kat.id,
+        jawaban: jawaban,
+        tanggalPeriksa: _tanggalPeriksa,
+      ));
+    }
+
+    if (itemsToSave.isEmpty) {
+      setState(() => _submittingByRange[range] = false);
+      return;
+    }
+
+    try {
+      final request = BulkPerawatanRequest(
+        anakId: _anakId,
+        data: itemsToSave,
+      );
+
+      final response = await _apiService.createBulkPerawatan(request);
+
+      for (final peraw in response) {
+        ids[peraw.kategoriCapaianId] = peraw.id;
       }
+
+      successCount = response.length;
+      failCount = itemsToSave.length - response.length;
+    } catch (e) {
+      failCount = itemsToSave.length;
+      errorMessages.add(e.toString());
     }
 
     if (!mounted) return;

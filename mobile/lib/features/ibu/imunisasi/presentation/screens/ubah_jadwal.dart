@@ -23,6 +23,10 @@ class _UbahJadwalScreenState extends State<UbahJadwalScreen> {
 
   ImunisasiDetailModel? data;
 
+  List<JadwalLayananModel> jadwalLayanan = [];
+
+  JadwalLayananModel? selectedJadwal;
+
   DateTime? selectedDate;
   final TextEditingController tanggalController = TextEditingController();
   final TextEditingController alasanController = TextEditingController();
@@ -39,20 +43,33 @@ class _UbahJadwalScreenState extends State<UbahJadwalScreen> {
     super.dispose();
   }
 
+  Future<void> fetchJadwalLayanan() async {
+    try {
+      final result = await service.getJadwalLayananUpcoming();
+
+      setState(() {
+        jadwalLayanan = result;
+      });
+    } catch (e) {
+      debugPrint(
+        'Error getJadwalLayananUpcoming: $e',
+      );
+    }
+  }
+
   Future<void> fetchData() async {
     try {
-      final result = await service.getJadwalImunisasiById(widget.jadwalId);
+      final result = await service.getJadwalImunisasiById(
+        widget.jadwalId,
+      );
+
+      final layanan = await service.getJadwalLayananUpcoming();
 
       final jadwalItem = result.jadwal.isNotEmpty ? result.jadwal.first : null;
 
       setState(() {
         data = result;
-        selectedDate = jadwalItem?.tanggalEstimasi;
-
-        tanggalController.text = selectedDate != null
-            ? DateFormat('dd MMM yyyy').format(selectedDate!)
-            : '';
-
+        jadwalLayanan = layanan;
         isLoading = false;
       });
     } catch (e) {
@@ -62,32 +79,13 @@ class _UbahJadwalScreenState extends State<UbahJadwalScreen> {
     }
   }
 
-  Future<void> pickDate() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: selectedDate ?? DateTime.now(),
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2100),
-    );
-
-    if (picked != null) {
-      setState(() {
-        selectedDate = picked;
-
-        final formatted = DateFormat('yyyy-MM-dd').format(picked);
-
-        tanggalController.text = DateFormat('dd MMM yyyy').format(picked);
-      });
-    }
-  }
-
   Future<void> submitRequestPerubahan() async {
-    if (selectedDate == null) {
-      debugPrint("❌ selectedDate NULL");
+    if (selectedJadwal == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("Tanggal tidak boleh kosong"),
-          backgroundColor: Colors.red,
+          content: Text(
+            "Pilih jadwal posyandu terlebih dahulu",
+          ),
         ),
       );
       return;
@@ -104,16 +102,16 @@ class _UbahJadwalScreenState extends State<UbahJadwalScreen> {
       return;
     }
 
-    final tanggalBaru = DateFormat('yyyy-MM-dd').format(selectedDate!);
+    final tanggalBaru =
+        DateFormat('yyyy-MM-dd').format(selectedJadwal!.tanggal);
     setState(() => isSubmitting = true);
 
     try {
       await service.requestPerubahanJadwal(
         widget.jadwalId,
-        tanggalBaru,
+        selectedJadwal!.id,
         alasanController.text,
       );
-
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -248,21 +246,27 @@ class _UbahJadwalScreenState extends State<UbahJadwalScreen> {
                       _buildCard(
                         title: "Ubah Tanggal Estimasi",
                         children: [
-                          TextField(
-                            controller: tanggalController,
-                            readOnly: true,
-                            onTap: pickDate,
+                          DropdownButtonFormField<JadwalLayananModel>(
+                            value: selectedJadwal,
                             decoration: InputDecoration(
-                              hintText: "Pilih tanggal",
-                              prefixIcon: const Icon(Icons.date_range),
-                              suffixIcon: IconButton(
-                                icon: const Icon(Icons.calendar_month),
-                                onPressed: pickDate,
-                              ),
+                              labelText: "Pilih Jadwal Posyandu",
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),
+                            items: jadwalLayanan.map((item) {
+                              return DropdownMenuItem(
+                                value: item,
+                                child: Text(
+                                  "${DateFormat('dd MMM yyyy').format(item.tanggal)} - ${item.layanan}",
+                                ),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                selectedJadwal = value;
+                              });
+                            },
                           ),
                         ],
                       ),

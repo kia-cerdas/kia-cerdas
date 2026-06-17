@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:ta_pa2_pa3_project/core/network/app_http_client.dart';
 import 'package:ta_pa2_pa3_project/core/constants/api_constants.dart';
 import 'package:ta_pa2_pa3_project/core/services/auth_session.dart';
 import 'absensi_kelas_ibu_hamil_model.dart'; // <-- import model
@@ -8,7 +9,7 @@ class AbsensiKelasIbuHamilKaderApiService {
   final http.Client _client;
 
   AbsensiKelasIbuHamilKaderApiService({http.Client? client})
-      : _client = client ?? http.Client();
+      : _client = client ?? AppHttpClient();
 
   Map<String, String> get _headers {
     final token = AuthSession.token;
