@@ -5,6 +5,8 @@ import 'package:ta_pa2_pa3_project/core/services/auth_session.dart';
 import '../../data/models/checklist_pemantauan_ibu_nifas_model.dart';
 import '../../data/repositories/checklist_pemantauan_ibu_nifas_repository.dart';
 import '../../data/services/checklist_pemantauan_ibu_nifas_service.dart';
+// Untuk validasi
+import 'package:ta_pa2_pa3_project/core/widgets/confirm_helper.dart';
 
 // [SCOPE: modul-ibu / nifas]
 // Versi disederhanakan: tidak ada grid 42 kotak.
@@ -79,7 +81,38 @@ class _ChecklistPemantauanIbuNifasScreenState
   }
 
   Future<void> submitChecklist() async {
+
     if (isLoading || _sudahDiisiHariIni) return;
+
+    // ──────────────────────────────────────────────
+    // VALIDASI KONFIRMASI (BARU)
+    // ──────────────────────────────────────────────
+    final jumlahTandaBahaya = [
+      jantungBerdebar,
+      cairanJalanLahir,
+      napasPendek,
+      payudaraBermasalah,
+      gangguanBak,
+      kelaminBermasalah,
+      darahNifasBerbau,
+      pendarahanBerat,
+      keputihan,
+    ].where((e) => e).length;
+
+    final pesanTandaBahaya = jumlahTandaBahaya > 0
+        ? '\n\n⚠️ Perhatian: Terdapat $jumlahTandaBahaya tanda bahaya yang ditandai. Pastikan data sudah sesuai agar segera ditindaklanjuti.'
+        : '';
+
+    final confirmed = await context.showConfirm(
+      title: 'Simpan Checklist Nifas',
+      message: 'Apakah checklist pemantauan hari ke-${widget.hariNifasHariIni} sudah benar?$pesanTandaBahaya',
+      confirmText: 'Ya, Simpan',
+      cancelText: 'Periksa Lagi',
+    );
+
+    if (!confirmed) return;
+
+    // if (isLoading || _sudahDiisiHariIni) return;
 
     setState(() => isLoading = true);
 

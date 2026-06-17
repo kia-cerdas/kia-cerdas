@@ -353,6 +353,39 @@ const PelayananImunisasi = () => {
     return filtered;
   }, [jadwalLayananToday, jadwalList]);
 
+  // Calculate child's current age in days
+  const getUmurAnakHariIni = () => {
+    if (!dataAnak?.tanggal_lahir) return null;
+    const lahir = new Date(dataAnak.tanggal_lahir);
+    const sekarang = new Date();
+    const diffMs = sekarang - lahir;
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
+
+  // Check if child's age is appropriate for this vaccine dose
+  const isUsiaCukup = (dosisVaksinId) => {
+    const umurHari = getUmurAnakHariIni();
+    if (umurHari === null) return false;
+    
+    const aturan = findAturanByDosisId(dosisVaksinId);
+    if (!aturan || aturan.min_usia_hari == null) return true; // no age restriction
+    
+    // Child must be at least min_usia_hari old
+    return umurHari >= aturan.min_usia_hari;
+  };
+
+  // Check if child's age is beyond max allowed age for this vaccine
+  const isUsiaTerlambat = (dosisVaksinId) => {
+    const umurHari = getUmurAnakHariIni();
+    if (umurHari === null) return false;
+    
+    const aturan = findAturanByDosisId(dosisVaksinId);
+    if (!aturan || !aturan.max_usia_hari) return false; // no max age limit
+    
+    return umurHari > aturan.max_usia_hari;
+  };
+
   // Check if a jadwal item's prerequisite dose has been completed
   const isPreviousDoseComplete = (dosisVaksinId) => {
     if (!aturanVaksin.length || !dosisVaksinId) return true; // no aturan = no restriction
@@ -542,9 +575,24 @@ const PelayananImunisasi = () => {
               </Link>
               <h1 className="text-2xl font-bold text-gray-800">Pelayanan Imunisasi</h1>
               {dataAnak && (
-                <p className="text-gray-500 text-sm mt-1">
-                  {dataAnak.nama_anak} &bull; Lahir {formatTanggal(dataAnak.tanggal_lahir)}
-                </p>
+                <div className="mt-2 space-y-1">
+                  <p className="text-gray-500 text-sm">
+                    {dataAnak.nama_anak} &bull; Lahir {formatTanggal(dataAnak.tanggal_lahir)}
+                  </p>
+                  {(() => {
+                    const umurHari = getUmurAnakHariIni();
+                    if (umurHari !== null) {
+                      const umurBulan = Math.floor(umurHari / 30);
+                      const sisaHari = umurHari % 30;
+                      return (
+                        <p className="text-blue-600 text-sm font-semibold">
+                          Umur saat ini: {umurBulan} bulan {sisaHari} hari ({umurHari} hari)
+                        </p>
+                      );
+                    }
+                    return null;
+                  })()}
+                </div>
               )}
             </div>
 
@@ -969,24 +1017,40 @@ const PelayananImunisasi = () => {
                       );
                       const prevDoseOk = isPreviousDoseComplete(jadwal.dosis_vaksin_id);
                       const prevDoseName = !prevDoseOk ? getPreviousDoseName(jadwal.dosis_vaksin_id) : '';
+                      const usiaCukup = isUsiaCukup(jadwal.dosis_vaksin_id);
+                      const usiaTerlambat = isUsiaTerlambat(jadwal.dosis_vaksin_id);
+                      const canBeSelected = prevDoseOk && usiaCukup;
+                      
+                      // Get minimum age requirement
+                      const aturan = findAturanByDosisId(jadwal.dosis_vaksin_id);
+                      const minUsiaBulan = aturan?.min_usia_hari ? Math.floor(aturan.min_usia_hari / 30) : 0;
 
                       return (
                         <div key={jadwal.jadwal_id} className="space-y-2">
                           <div
                             onClick={() => {
-                              if (!prevDoseOk) {
-                                Swal.fire({
-                                  icon: 'warning',
-                                  title: 'Belum Bisa Diberikan',
-                                  html: `<b>${jadwal.nama_dosis}</b> memerlukan dosis <b>${prevDoseName}</b> diselesaikan terlebih dahulu.`,
-                                  confirmButtonColor: '#2563eb'
-                                });
+                              if (!canBeSelected) {
+                                if (!prevDoseOk) {
+                                  Swal.fire({
+                                    icon: 'warning',
+                                    title: 'Belum Bisa Diberikan',
+                                    html: `<b>${jadwal.nama_dosis}</b> memerlukan dosis <b>${prevDoseName}</b> diselesaikan terlebih dahulu.`,
+                                    confirmButtonColor: '#2563eb'
+                                  });
+                                } else if (!usiaCukup) {
+                                  Swal.fire({
+                                    icon: 'warning',
+                                    title: 'Anak Belum Cukup Umur',
+                                    html: `<b>${jadwal.nama_dosis}</b> dapat diberikan minimal pada usia <b>${minUsiaBulan} bulan</b>.<br/><small class="text-gray-500">Anak ini belum mencapai usia minimal untuk vaksin tersebut.</small>`,
+                                    confirmButtonColor: '#2563eb'
+                                  });
+                                }
                                 return;
                               }
                               handleToggleJadwal(jadwal.jadwal_id);
                             }}
                             className={`flex items-center justify-between gap-3 p-3 rounded-lg border-2 transition-all cursor-pointer ${
-                              !prevDoseOk
+                              !canBeSelected
                                 ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed opacity-70'
                                 : isSelected
                                   ? 'bg-blue-600 text-white border-blue-600'
@@ -994,7 +1058,7 @@ const PelayananImunisasi = () => {
                             }`}
                           >
                             <div className="flex items-center gap-3">
-                              {!prevDoseOk ? (
+                              {!canBeSelected ? (
                                 <XCircle size={18} className="text-gray-400 flex-shrink-0" />
                               ) : isSelected ? (
                                 <CheckSquare size={18} />
@@ -1007,14 +1071,24 @@ const PelayananImunisasi = () => {
                                 </span>
                                 {!prevDoseOk && (
                                   <span className="text-[10px] text-red-500 mt-0.5">
-                                    Memerlukan {prevDoseName} selesai
+                                    ⚠️ Memerlukan {prevDoseName} selesai
+                                  </span>
+                                )}
+                                {prevDoseOk && !usiaCukup && (
+                                  <span className="text-[10px] text-amber-600 mt-0.5">
+                                    ⏳ Min. usia {minUsiaBulan} bulan
+                                  </span>
+                                )}
+                                {usiaTerlambat && (
+                                  <span className="text-[10px] text-orange-600 mt-0.5">
+                                    ⚠️ Terlambat dari jadwal ideal
                                   </span>
                                 )}
                               </div>
                             </div>
                             <CheckCircle2
                               size={16}
-                              className={isSelected ? 'text-white' : !prevDoseOk ? 'text-gray-300' : 'text-gray-300'}
+                              className={isSelected ? 'text-white' : !canBeSelected ? 'text-gray-300' : 'text-gray-300'}
                             />
                           </div>
 
