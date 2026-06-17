@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:ta_pa2_pa3_project/core/services/auth_session.dart';
 import 'package:ta_pa2_pa3_project/features/kader/screens/pilih_status_kunjungan.dart';
 import 'package:ta_pa2_pa3_project/features/kader/screens/imunisasi_terlewat.dart';
 import 'package:ta_pa2_pa3_project/features/kader/screens/profil_screen.dart';
+import 'package:ta_pa2_pa3_project/features/kader/screens/ringkasan_desa_api_service.dart';
+import 'package:ta_pa2_pa3_project/features/kader/screens/ringkasan_desa_model.dart';
 import 'package:ta_pa2_pa3_project/features/kader/widgets/dashboard_bottom_nav.dart';
 import 'package:ta_pa2_pa3_project/features/kader/widgets/dashboard_header.dart';
 
@@ -20,14 +23,106 @@ class DashboardKaderScreen extends StatefulWidget {
   State<DashboardKaderScreen> createState() => _DashboardKaderScreenState();
 }
 
+class _MenuLayananItem {
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final Color color;
+  final WidgetBuilder screenBuilder;
+
+  /// Jika diisi, baris kedua kartu menu akan menampilkan status verifikasi
+  /// dinamis (sudah/belum diverifikasi) yang dicocokkan dari data ringkasan desa
+  /// berdasarkan key ini, menggantikan [subtitle] statis.
+  final String? verifikasiKey;
+
+  const _MenuLayananItem({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.color,
+    required this.screenBuilder,
+    this.verifikasiKey,
+  });
+}
+
 class _DashboardKaderScreenState extends State<DashboardKaderScreen> {
   int _selectedNavIndex = 0;
 
   final List<String> allowedRoles = ['kader'];
 
+  final RingkasanDesaApiService _ringkasanService = RingkasanDesaApiService();
+  late Future<RingkasanDesaModel> _ringkasanFuture;
+
+  final List<_MenuLayananItem> _menuLayanan = [
+    _MenuLayananItem(
+      title: 'Kelas Ibu Balita',
+      subtitle: 'Verifikasi kehadiran',
+      icon: Icons.checklist_rtl_rounded,
+      color: Colors.teal,
+      screenBuilder: (_) => const VerifikasiAbsensiKelasIbuBalitaScreen(),
+      verifikasiKey: 'kelas_ibu_balita',
+    ),
+    _MenuLayananItem(
+      title: 'TTD/MMS Ibu Hamil',
+      subtitle: 'Rekap kepatuhan suplemen',
+      icon: Icons.medication_liquid_outlined,
+      color: Colors.pink,
+      screenBuilder: (_) => const RekapTTDMMSKaderScreen(),
+    ),
+    _MenuLayananItem(
+      title: 'Kelas Ibu Hamil',
+      subtitle: 'Verifikasi kehadiran',
+      icon: Icons.pregnant_woman_rounded,
+      color: Colors.purple,
+      screenBuilder: (_) => const VerifikasiAbsensiKelasIbuHamilScreen(),
+      verifikasiKey: 'kelas_ibu_hamil',
+    ),
+    _MenuLayananItem(
+      title: 'Pemantauan Ibu Hamil',
+      subtitle: 'Tinjau keluhan mingguan',
+      icon: Icons.monitor_heart_outlined,
+      color: Colors.red,
+      screenBuilder: (_) => const VerifikasiPemantauanIbuHamilScreen(),
+      verifikasiKey: 'pemantauan_ibu_hamil',
+    ),
+    _MenuLayananItem(
+      title: 'Pemantauan Ibu Nifas',
+      subtitle: 'Tinjau keluhan harian',
+      icon: Icons.favorite_border_rounded,
+      color: const Color(0xFF7B52AB),
+      screenBuilder: (_) => const VerifikasiPemantauanIbuNifasScreen(),
+      verifikasiKey: 'pemantauan_ibu_nifas',
+    ),
+    _MenuLayananItem(
+      title: 'Imunisasi Terlewat',
+      subtitle: 'Daftar anak terlewat',
+      icon: Icons.vaccines_rounded,
+      color: Colors.orange,
+      screenBuilder: (_) => const DaftarImunisasiTerlewatScreen(),
+    ),
+  ];
+
   bool get isAllowed {
     final role = AuthSession.role?.trim().toLowerCase();
     return allowedRoles.contains(role);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _ringkasanFuture = _ringkasanService.getRingkasanDesa();
+  }
+
+  @override
+  void dispose() {
+    _ringkasanService.dispose();
+    super.dispose();
+  }
+
+  void _reloadRingkasan() {
+    setState(() {
+      _ringkasanFuture = _ringkasanService.getRingkasanDesa();
+    });
   }
 
   @override
@@ -96,313 +191,45 @@ class _DashboardKaderScreenState extends State<DashboardKaderScreen> {
   }
 
   Widget _buildHomeBody() {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          /// HEADER (BALIK LAGI)
-          const DashboardHeader(),
-
-          const SizedBox(height: 10),
-
-          Padding(
-            padding: const EdgeInsets.all(10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Tugas Hari Ini',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 12),
-
-                _buildTaskInfoCard(
-                  title: 'Posyandu Melati',
-                  subtitle: 'Pencatatan aktivitas kader',
-                  time: '08:30',
-                  icon: Icons.local_hospital_outlined,
-                  color: Colors.teal,
-                ),
-
-                const SizedBox(height: 24),
-
-                const Text(
-                  'Peringatan Jadwal',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-
-                const SizedBox(height: 10),
-
-                _buildEscalationCard(
-                  title: 'Ada jadwal kunjungan yang perlu dilakukan segera.',
-                  level: 'Sedang',
-                  icon: Icons.warning_amber_rounded,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const PilihStatusKunjunganScreen(),
-                      ),
-                    );
-                  },
-                ),
-
-
-
-                _buildFeatureActionCard(
-                  title: 'Verifikasi Kelas Ibu Balita.',
-                  subtitle:
-                      'Tinjau dan verifikasi kehadiran pada Kelas Ibu Balita.',
-                  icon: Icons.checklist_rtl_rounded,
-                  accentColor: Colors.teal,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const VerifikasiAbsensiKelasIbuBalitaScreen(),
-                      ),
-                    );
-                  },
-                ),
-
-                const SizedBox(height: 12),
-
-
-
-                _buildFeatureActionCard(
-                  title: 'Pemantauan TTD/MMS Ibu Hamil.',
-                  subtitle: 'Lihat rekap kepatuhan minum suplemen ibu hamil di wilayah kamu.',
-                  icon: Icons.medication_liquid_outlined,
-                  accentColor: Colors.pink,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const RekapTTDMMSKaderScreen(),
-                      ),
-                    );
-                  },
-                ),
-
-                const SizedBox(height: 12),
-
-                _buildFeatureActionCard(
-                  title: 'Verifikasi Kelas Ibu Hamil.',
-                  subtitle: 'Tinjau dan verifikasi kehadiran ibu hamil di kelas.',
-                  icon: Icons.pregnant_woman_rounded,
-                  accentColor: Colors.pink,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const VerifikasiAbsensiKelasIbuHamilScreen(),
-                      ),
-                    );
-                  },
-                ),
-
-                const SizedBox(height: 12),
-                  _buildFeatureActionCard(
-                    title: 'Pemantauan Ibu Hamil.',
-                    subtitle:
-                        'Tinjau laporan keluhan mingguan ibu hamil dan tandai sudah ditinjau.',
-                    icon: Icons.monitor_heart_outlined,
-                    accentColor: Colors.pink,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const VerifikasiPemantauanIbuHamilScreen(),
-                        ),
-                      );
-                    },
-                  ),
-
-                  const SizedBox(height: 12),
-                  _buildFeatureActionCard(
-                    title: 'Pemantauan Ibu Nifas.',
-                    subtitle:
-                        'Tinjau laporan keluhan harian ibu nifas dan tandai sudah ditinjau.',
-                    icon: Icons.favorite_border_rounded,
-                    accentColor: Color(0xFF7B52AB),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const VerifikasiPemantauanIbuNifasScreen(),
-                        ),
-                      );
-                    },
-                  ),
-
-                const SizedBox(height: 24),
-
-                const Text(
-                  'Ringkasan Desa',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-
-                const SizedBox(height: 12),
-
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildSummaryItem('Ibu Hamil', '12', Colors.pink),
-                      _buildSummaryItem('Anak', '45', Colors.blue),
-                      _buildSummaryItem('Perlu Tindak', '3', Colors.red),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// =========================
-  /// INFO CARD (NON CLICKABLE)
-  /// =========================
-  Widget _buildTaskInfoCard({
-    required String title,
-    required String subtitle,
-    required String time,
-    required IconData icon,
-    required Color color,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: color, size: 22),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title,
-                    style: const TextStyle(
-                        fontSize: 15, fontWeight: FontWeight.w600)),
-                const SizedBox(height: 4),
-                Text(subtitle,
-                    style:
-                        TextStyle(fontSize: 13, color: Colors.grey.shade600)),
-              ],
-            ),
-          ),
-          Text(
-            time,
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// =========================
-  /// ESCALATION CARD (CLICKABLE)
-  /// =========================
-  Widget _buildFeatureActionCard({
-    required String title,
-    required String subtitle,
-    required IconData icon,
-    required Color accentColor,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(18),
-      child: Container(
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              accentColor.withOpacity(0.12),
-              accentColor.withOpacity(0.05),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: accentColor.withOpacity(0.18)),
-          boxShadow: [
-            BoxShadow(
-              color: accentColor.withOpacity(0.08),
-              blurRadius: 18,
-              offset: const Offset(0, 6),
-            ),
-          ],
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return RefreshIndicator(
+      onRefresh: () async {
+        _reloadRingkasan();
+        await _ringkasanFuture;
+      },
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Column(
           children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.65),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Icon(icon, color: accentColor, size: 28),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
+            /// HEADER (BALIK LAGI)
+            const DashboardHeader(),
+
+            const SizedBox(height: 10),
+
+            Padding(
+              padding: const EdgeInsets.all(10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      color: Colors.black87,
-                      fontWeight: FontWeight.w800,
-                      fontSize: 15.5,
-                    ),
+                  _buildInfoHariIniSection(),
+
+                  const SizedBox(height: 24),
+
+                  const Text(
+                    'Menu Layanan',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      color: Colors.grey.shade700,
-                      fontSize: 12.5,
-                      height: 1.35,
-                    ),
-                  ),
+
                   const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Text(
-                        'Buka verifikasi',
-                        style: TextStyle(
-                          color: accentColor,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Icon(
-                        Icons.arrow_forward_rounded,
-                        size: 16,
-                        color: accentColor,
-                      ),
-                    ],
-                  ),
+
+                  _buildMenuLayananGrid(),
+
+                  const SizedBox(height: 24),
+
+                  _buildRingkasanDesaHeader(),
+
+                  const SizedBox(height: 12),
+
+                  _buildRingkasanDesaCard(),
                 ],
               ),
             ),
@@ -412,19 +239,391 @@ class _DashboardKaderScreenState extends State<DashboardKaderScreen> {
     );
   }
 
+  /// =========================
+  /// INFO HARI INI (dinamis, menggantikan "Tugas Hari Ini" + "Peringatan Jadwal")
+  /// Satu kartu aksi tunggal -- jumlah ibu hamil/anak sudah ditampilkan di
+  /// "Ringkasan Desa", jadi di sini cukup tampilkan hal yang perlu ditindak hari ini.
+  /// =========================
+  Widget _buildInfoHariIniSection() {
+    final today = DateFormat('EEEE, d MMMM yyyy', 'id_ID').format(DateTime.now());
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Info Hari Ini',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          today,
+          style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+        ),
+        const SizedBox(height: 12),
+        FutureBuilder<RingkasanDesaModel>(
+          future: _ringkasanFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return _buildInfoCardSkeleton();
+            }
+
+            if (snapshot.hasError) {
+              return _buildInfoCardError();
+            }
+
+            final jumlahPerluTindak = snapshot.data?.perluTindakLanjut ?? 0;
+            final hasWarning = jumlahPerluTindak > 0;
+
+            return _buildEscalationCard(
+              title: hasWarning
+                  ? '$jumlahPerluTindak kunjungan imunisasi perlu ditindak lanjut.'
+                  : 'Tidak ada kunjungan yang perlu ditindak lanjut saat ini.',
+              isWarning: hasWarning,
+              icon: hasWarning
+                  ? Icons.warning_amber_rounded
+                  : Icons.check_circle_outline_rounded,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const PilihStatusKunjunganScreen(),
+                  ),
+                );
+              },
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInfoCardSkeleton() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: const [
+          SizedBox(
+            width: 18,
+            height: 18,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+          SizedBox(width: 12),
+          Text(
+            'Memuat ringkasan desa...',
+            style: TextStyle(fontSize: 13, color: Colors.black54),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoCardError() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.red.withOpacity(0.06),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.red.withOpacity(0.2)),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.error_outline, color: Colors.red.shade400, size: 20),
+          const SizedBox(width: 10),
+          const Expanded(
+            child: Text(
+              'Gagal memuat ringkasan desa.',
+              style: TextStyle(fontSize: 12.5, color: Colors.black87),
+            ),
+          ),
+          TextButton(
+            onPressed: _reloadRingkasan,
+            child: const Text('Coba Lagi'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// =========================
+  /// MENU LAYANAN (grid rapi, scrollable bersama halaman)
+  /// =========================
+  Widget _buildMenuLayananGrid() {
+    return FutureBuilder<RingkasanDesaModel>(
+      future: _ringkasanFuture,
+      builder: (context, snapshot) {
+        final ringkasan = snapshot.data;
+
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: _menuLayanan.length,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            mainAxisSpacing: 10,
+            crossAxisSpacing: 10,
+            childAspectRatio: 2.05,
+          ),
+          itemBuilder: (context, index) {
+            final item = _menuLayanan[index];
+            return _buildMenuGridItem(item, ringkasan);
+          },
+        );
+      },
+    );
+  }
+
+  /// Membangun baris status menu: untuk menu yang punya [verifikasiKey], tampilkan
+  /// jumlah sudah/belum diverifikasi dari data ringkasan desa; selain itu pakai
+  /// subtitle statis bawaan menu.
+  Widget _buildMenuStatusLine(_MenuLayananItem item, RingkasanDesaModel? ringkasan) {
+    if (item.verifikasiKey == null) {
+      return Text(
+        item.subtitle,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+      );
+    }
+
+    if (ringkasan == null) {
+      return Text(
+        'Memuat...',
+        style: TextStyle(fontSize: 12, color: Colors.grey.shade400),
+      );
+    }
+
+    final status = ringkasan.verifikasiByKey(item.verifikasiKey!);
+    if (status == null || status.total == 0) {
+      return Text(
+        'Belum ada data',
+        style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+      );
+    }
+
+    final allVerified = status.belumVerifikasi == 0;
+    return Text(
+      '${status.sudahVerifikasi}/${status.total} terverifikasi',
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+        color: allVerified ? Colors.green.shade600 : Colors.orange.shade700,
+      ),
+    );
+  }
+
+  Widget _buildMenuGridItem(_MenuLayananItem item, RingkasanDesaModel? ringkasan) {
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: item.screenBuilder),
+        );
+      },
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: item.color.withOpacity(0.18)),
+          boxShadow: [
+            BoxShadow(
+              color: item.color.withOpacity(0.06),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(9),
+              decoration: BoxDecoration(
+                color: item.color.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(11),
+              ),
+              child: Icon(item.icon, color: item.color, size: 21),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    item.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13.5,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  _buildMenuStatusLine(item, ringkasan),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// =========================
+  /// RINGKASAN DESA (dinamis)
+  /// =========================
+  Widget _buildRingkasanDesaHeader() {
+    return FutureBuilder<RingkasanDesaModel>(
+      future: _ringkasanFuture,
+      builder: (context, snapshot) {
+        final namaDesa = snapshot.data?.namaDesa;
+        final title = (namaDesa != null && namaDesa.isNotEmpty)
+            ? 'Ringkasan Desa $namaDesa'
+            : 'Ringkasan Desa';
+
+        return Text(
+          title,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        );
+      },
+    );
+  }
+
+  Widget _buildRingkasanDesaCard() {
+    return FutureBuilder<RingkasanDesaModel>(
+      future: _ringkasanFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Center(
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          );
+        }
+
+        if (snapshot.hasError) {
+          return Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  'Gagal memuat ringkasan desa.',
+                  style: TextStyle(color: Colors.grey.shade600),
+                ),
+                const SizedBox(height: 8),
+                TextButton(
+                  onPressed: _reloadRingkasan,
+                  child: const Text('Coba Lagi'),
+                ),
+              ],
+            ),
+          );
+        }
+
+        final data = snapshot.data ?? RingkasanDesaModel.empty();
+
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildSummaryItem(
+                    'Ibu Hamil',
+                    '${data.ibuHamil.total}',
+                    Colors.pink,
+                  ),
+                  _buildSummaryItem(
+                    'Anak',
+                    '${data.jumlahAnak}',
+                    Colors.blue,
+                  ),
+                  _buildSummaryItem(
+                    'Perlu Tindak',
+                    '${data.perluTindakLanjut}',
+                    Colors.red,
+                  ),
+                ],
+              ),
+              if (data.ibuHamil.total > 0) ...[
+                const SizedBox(height: 16),
+                Divider(height: 1, color: Colors.grey.shade200),
+                const SizedBox(height: 12),
+                Text(
+                  'Ibu hamil per trimester',
+                  style: TextStyle(fontSize: 12.5, color: Colors.grey.shade500),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildTrimesterChip('Trimester 1', data.ibuHamil.trimester1),
+                    _buildTrimesterChip('Trimester 2', data.ibuHamil.trimester2),
+                    _buildTrimesterChip('Trimester 3', data.ibuHamil.trimester3),
+                  ],
+                ),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildTrimesterChip(String label, int value) {
+    return Column(
+      children: [
+        Text(
+          '$value',
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          label,
+          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+        ),
+      ],
+    );
+  }
+
+  /// =========================
+  /// ESCALATION CARD (CLICKABLE)
+  /// =========================
   Widget _buildEscalationCard({
     required String title,
-    required String level,
+    required bool isWarning,
     required IconData icon,
     required VoidCallback onTap,
   }) {
-    Color statusColor = level == 'Penting' ? Colors.red : Colors.orange;
+    final statusColor = isWarning ? Colors.red : Colors.green;
 
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(14),
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         decoration: BoxDecoration(
           color: statusColor.withOpacity(0.08),
           borderRadius: BorderRadius.circular(14),
@@ -434,7 +633,7 @@ class _DashboardKaderScreenState extends State<DashboardKaderScreen> {
         ),
         child: Row(
           children: [
-            Icon(icon, color: statusColor, size: 28),
+            Icon(icon, color: statusColor, size: 26),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -445,10 +644,11 @@ class _DashboardKaderScreenState extends State<DashboardKaderScreen> {
                     style: TextStyle(
                       color: statusColor,
                       fontWeight: FontWeight.bold,
-                      fontSize: 15,
+                      fontSize: 14.5,
+                      height: 1.3,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                   Row(
                     children: [
                       Icon(Icons.touch_app, size: 14, color: statusColor),
@@ -456,7 +656,7 @@ class _DashboardKaderScreenState extends State<DashboardKaderScreen> {
                       Text(
                         'Tap untuk lihat detail',
                         style: TextStyle(
-                          fontSize: 11,
+                          fontSize: 12.5,
                           color: statusColor,
                         ),
                       ),
@@ -478,10 +678,15 @@ class _DashboardKaderScreenState extends State<DashboardKaderScreen> {
         Text(
           value,
           style: TextStyle(
-              fontSize: 20, fontWeight: FontWeight.bold, color: color),
+              fontSize: 22, fontWeight: FontWeight.bold, color: color),
         ),
+        const SizedBox(height: 2),
         Text(label,
-            style: const TextStyle(fontSize: 12, color: Colors.black54)),
+            style: const TextStyle(
+              fontSize: 13,
+              color: Colors.black54,
+              fontWeight: FontWeight.w500,
+            )),
       ],
     );
   }

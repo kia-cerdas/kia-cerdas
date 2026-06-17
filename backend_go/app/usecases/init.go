@@ -152,6 +152,9 @@ type Main struct {
 
 	// Puskesmas Dashboard (multi-desa recap)
 	PuskesmasDashboard PuskesmasDashboardUsecase
+
+	// Ringkasan Desa (dashboard kader)
+	RingkasanDesa RingkasanDesaUsecase
 }
 
 type Options struct {
@@ -409,6 +412,9 @@ func Init(opts Options) *Main {
 
 	// Puskesmas Dashboard (multi-desa recap)
 	m.PuskesmasDashboard = NewPuskesmasDashboardUsecase(opts.Repository.PuskesmasDashboard)
+
+	// Ringkasan Desa (dashboard kader)
+	m.RingkasanDesa = NewRingkasanDesaUsecase(opts.Repository.RingkasanDesa)
 
 	return m
 }
