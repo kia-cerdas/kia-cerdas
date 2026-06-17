@@ -12,6 +12,31 @@ const getTodayDate = () => {
   return `${y}-${m}-${d}`;
 };
 
+// Dropdown options
+const GOLONGAN_DARAH_OPTIONS = ["", "A", "B", "AB", "O", "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+const AGAMA_OPTIONS = ["", "Islam", "Kristen Protestan", "Katolik", "Hindu", "Buddha", "Konghucu"];
+const PENDIDIKAN_OPTIONS = ["", "Tidak/Belum Sekolah", "Belum Tamat SD/Sederajat", "Tamat SD/Sederajat", "SLTP/Sederajat", "SLTA/Sederajat", "Diploma I/II", "Akademi/Diploma III/S.Muda", "Diploma IV/Strata I", "Strata II", "Strata III"];
+
+// Validation helpers
+const validateNIK = (nik) => {
+  if (!nik) return { valid: false, message: "NIK wajib diisi" };
+  if (!/^\d+$/.test(nik)) return { valid: false, message: "NIK hanya boleh berisi angka" };
+  if (nik.length !== 16) return { valid: false, message: "NIK harus 16 digit" };
+  return { valid: true, message: "" };
+};
+
+const validateNoKK = (noKK) => {
+  if (!noKK) return { valid: false, message: "No KK wajib diisi" };
+  if (!/^\d+$/.test(noKK)) return { valid: false, message: "No KK hanya boleh berisi angka" };
+  if (noKK.length !== 16) return { valid: false, message: "No KK harus 16 digit" };
+  return { valid: true, message: "" };
+};
+
+const handleNumericInput = (value, maxLength = 16) => {
+  // Remove non-digit characters and limit length
+  return value.replace(/\D/g, '').slice(0, maxLength);
+};
+
 const createEmptyMember = () => ({
   nik: "",
   nama_lengkap: "",
@@ -102,14 +127,21 @@ const AdminAkunKeluargaCreate = () => {
   };
 
   const validate = () => {
-    if (!form.no_kk.trim()) return "No KK wajib diisi";
+    // Validate No KK
+    const noKKValidation = validateNoKK(form.no_kk);
+    if (!noKKValidation.valid) return noKKValidation.message;
+    
     if (!form.tanggal_terbit) return "Tanggal terbit wajib diisi";
     if (form.anggota_keluarga.length === 0) return "Anggota keluarga minimal 1 orang";
 
     for (let i = 0; i < form.anggota_keluarga.length; i += 1) {
       const member = form.anggota_keluarga[i];
       const idx = i + 1;
-      if (!member.nik.trim()) return `NIK anggota #${idx} wajib diisi`;
+      
+      // Validate NIK
+      const nikValidation = validateNIK(member.nik);
+      if (!nikValidation.valid) return `Anggota #${idx}: ${nikValidation.message}`;
+      
       if (!member.nama_lengkap.trim()) return `Nama anggota #${idx} wajib diisi`;
       if (!member.tanggal_lahir) return `Tanggal lahir anggota #${idx} wajib diisi`;
       if (!member.kedudukan_keluarga.trim()) return `Kedudukan keluarga anggota #${idx} wajib diisi`;
@@ -202,15 +234,17 @@ const AdminAkunKeluargaCreate = () => {
             <h2 className="text-lg font-semibold text-slate-800">Data Kartu Keluarga</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
               <div>
-                <label className="text-sm text-slate-600">No KK</label>
+                <label className="text-sm text-slate-600">No KK <span className="text-red-500">*</span></label>
                 <input
                   type="text"
                   value={form.no_kk}
-                  onChange={(e) => setTopField("no_kk", e.target.value)}
+                  onChange={(e) => setTopField("no_kk", handleNumericInput(e.target.value, 16))}
                   className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="3201012026040006"
+                  placeholder="3201012026040006 (16 digit)"
+                  maxLength={16}
                   required
                 />
+                <p className="text-xs text-slate-500 mt-1">{form.no_kk.length}/16 digit</p>
               </div>
               <div>
                 <label className="text-sm text-slate-600">Tanggal Terbit</label>
@@ -256,8 +290,17 @@ const AdminAkunKeluargaCreate = () => {
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <label className="text-sm text-slate-600">NIK</label>
-                      <input type="text" value={member.nik} onChange={(e) => setMemberField(index, "nik", e.target.value)} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" required />
+                      <label className="text-sm text-slate-600">NIK <span className="text-red-500">*</span></label>
+                      <input 
+                        type="text" 
+                        value={member.nik} 
+                        onChange={(e) => setMemberField(index, "nik", handleNumericInput(e.target.value, 16))} 
+                        className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" 
+                        placeholder="16 digit angka"
+                        maxLength={16}
+                        required 
+                      />
+                      <p className="text-xs text-slate-500 mt-0.5">{member.nik.length}/16 digit</p>
                     </div>
                     <div>
                       <label className="text-sm text-slate-600">Nama Lengkap</label>
@@ -281,12 +324,32 @@ const AdminAkunKeluargaCreate = () => {
                     </div>
                     <div>
                       <label className="text-sm text-slate-600">Golongan Darah</label>
-                      <input type="text" value={member.golongan_darah} onChange={(e) => setMemberField(index, "golongan_darah", e.target.value)} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" placeholder="O+, A-, dst" />
+                      <select 
+                        value={member.golongan_darah} 
+                        onChange={(e) => setMemberField(index, "golongan_darah", e.target.value)} 
+                        className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2"
+                      >
+                        {GOLONGAN_DARAH_OPTIONS.map((option) => (
+                          <option key={option} value={option}>
+                            {option || "-- Pilih Golongan Darah --"}
+                          </option>
+                        ))}
+                      </select>
                     </div>
 
                     <div>
                       <label className="text-sm text-slate-600">Agama</label>
-                      <input type="text" value={member.agama} onChange={(e) => setMemberField(index, "agama", e.target.value)} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" />
+                      <select 
+                        value={member.agama} 
+                        onChange={(e) => setMemberField(index, "agama", e.target.value)} 
+                        className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2"
+                      >
+                        {AGAMA_OPTIONS.map((option) => (
+                          <option key={option} value={option}>
+                            {option || "-- Pilih Agama --"}
+                          </option>
+                        ))}
+                      </select>
                     </div>
                     <div>
                       <label className="text-sm text-slate-600">Status Perkawinan</label>
@@ -299,7 +362,17 @@ const AdminAkunKeluargaCreate = () => {
 
                     <div>
                       <label className="text-sm text-slate-600">Pendidikan Terakhir</label>
-                      <input type="text" value={member.pendidikan_terakhir} onChange={(e) => setMemberField(index, "pendidikan_terakhir", e.target.value)} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" />
+                      <select 
+                        value={member.pendidikan_terakhir} 
+                        onChange={(e) => setMemberField(index, "pendidikan_terakhir", e.target.value)} 
+                        className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2"
+                      >
+                        {PENDIDIKAN_OPTIONS.map((option) => (
+                          <option key={option} value={option}>
+                            {option || "-- Pilih Pendidikan Terakhir --"}
+                          </option>
+                        ))}
+                      </select>
                     </div>
                     <div>
                       <label className="text-sm text-slate-600">Baca Huruf</label>

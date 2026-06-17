@@ -14,21 +14,34 @@ class ImunisasiModel {
   });
 
   factory ImunisasiModel.fromJson(Map<String, dynamic> json) {
+    if (!json.containsKey('jadwal') && (json.containsKey('id_anak') || json.containsKey('id'))) {
+      return ImunisasiModel(
+        anakId: json['id_anak'] is int ? json['id_anak'] : (int.tryParse(json['id_anak']?.toString() ?? '') ?? 0),
+        namaAnak: json['nama_anak'] ?? '', 
+        tanggalLahir: json['tanggal_lahir'] != null ? DateTime.tryParse(json['tanggal_lahir'].toString()) : null,
+        jumlahTerlewat: 0,
+        jadwal: [JadwalImunisasiModel.fromJson(json)],
+      );
+    }
+
     return ImunisasiModel(
-      anakId: json['anak_id'] ?? 0,
+      anakId: json['anak_id'] is int ? json['anak_id'] : (int.tryParse(json['anak_id']?.toString() ?? '') ?? 0),
       namaAnak: json['nama_anak'] ?? '',
       tanggalLahir: json['tanggal_lahir'] != null
-          ? DateTime.parse(json['tanggal_lahir'])
+          ? DateTime.tryParse(json['tanggal_lahir'].toString())
           : null,
       jadwal: (json['jadwal'] as List?)
               ?.map(
                 (item) => JadwalImunisasiModel.fromJson(
-                  Map<String, dynamic>.from(item),
+                  Map<String, dynamic>.from(item as Map),
                 ),
               )
               .toList() ??
           [],
-      jumlahTerlewat: (json['jumlah_terlewat'] as num?)?.toInt() ?? 0,
+      // Mengamankan jumlah_terlewat dari String server
+      jumlahTerlewat: json['jumlah_terlewat'] is int 
+          ? json['jumlah_terlewat'] 
+          : (int.tryParse(json['jumlah_terlewat']?.toString() ?? '') ?? 0),
     );
   }
 
@@ -63,28 +76,76 @@ class JadwalImunisasiModel {
   });
 
   factory JadwalImunisasiModel.fromJson(Map<String, dynamic> json) {
+    // 1. Ambil ID Jadwal dan ID Status secara aman
+    final int idJadwal = json['jadwal_id'] is int 
+        ? json['jadwal_id'] 
+        : (int.tryParse(json['jadwal_id']?.toString() ?? json['id']?.toString() ?? '') ?? 0);
+
+    final int idStatus = json['status_id'] is int 
+        ? json['status_id'] 
+        : (int.tryParse(json['status_id']?.toString() ?? json['id_status_jadwal']?.toString() ?? '') ?? 0);
+
+    // 2. 🛠️ KUNCI UTAMA OFFLINE: Terjemahkan angka status ID dari SQLite menjadi teks yang dikenali oleh UI Screen
+    String textStatus = json['status']?.toString() ?? '';
+    if (textStatus.isEmpty) {
+      switch (idStatus) {
+        case 1:
+          textStatus = 'Mendekati';
+          break;
+        case 5:
+          textStatus = 'Krisis';
+          break;
+        case 6:
+          textStatus = 'Selesai';
+          break;
+        default:
+          textStatus = 'Mendekati'; // Fallback default aman
+      }
+    }
+
+    // 3. 🛠️ TERJEMAHKAN NAMA DOSIS BERDASARKAN ID JADWAL/DOSIS SAAT OFFLINE
+    String textDosis = json['nama_dosis']?.toString() ?? '';
+    if (textDosis.isEmpty) {
+      // Siasati rujukan nama dosis berdasarkan idJadwal agar UI tidak kosongan saat offline
+      switch (idJadwal) {
+        case 13: textDosis = 'HB-0'; break;
+        case 14: textDosis = 'BCG'; break;
+        case 15: textDosis = 'Polio OPV-1'; break;
+        case 16: textDosis = 'DPT-HB-Hib-1'; break;
+        case 17: textDosis = 'Polio OPV-2'; break;
+        case 18: textDosis = 'DPT-HB-Hib-2'; break;
+        case 19: textDosis = 'Polio OPV-3'; break;
+        case 20: textDosis = 'DPT-HB-Hib-3'; break;
+        case 21: textDosis = 'Polio OPV-4'; break;
+        case 22: textDosis = 'IPV'; break;
+        case 23: textDosis = 'DPT-HB-Hib Booster'; break;
+        default:
+          textDosis = 'Vaksin Imunisasi';
+      }
+    }
+
     return JadwalImunisasiModel(
-      jadwalId: (json['jadwal_id'] as num?)?.toInt() ?? 0,
-      namaDosis: json['nama_dosis'] ?? '',
+      jadwalId: idJadwal,
+      namaDosis: textDosis,
       tanggalEstimasi: json['tanggal_estimasi'] != null
-          ? DateTime.parse(json['tanggal_estimasi'])
+          ? DateTime.tryParse(json['tanggal_estimasi'].toString())
           : null,
-      statusId: (json['status_id'] as num?)?.toInt() ?? 0,
-      status: json['status'] ?? '',
-      deskripsi: json['deskripsi'] ?? '',
-      efekSamping: json['efek_samping'] ?? '',
+      statusId: idStatus,
+      status: textStatus, // Sekarang teks status dijamin terisi dan dikenali oleh fungsi .where() di UI Screen!
+      deskripsi: json['deskripsi'] ?? 'Membentuk antibodi anak.',
+      efekSamping: json['efek_samping'] ?? 'Demam ringan.',
     );
   }
 
-  Map<String, dynamic> toJson() {
+  Map<String, String> toJson() {
     return {
-      'jadwal_id': jadwalId,
+      'jadwal_id': jadwalId.toString(),
       'nama_dosis': namaDosis,
-      'tanggal_estimasi': tanggalEstimasi?.toIso8601String(),
-      'status_id': statusId,
+      'tanggal_estimasi': tanggalEstimasi?.toIso8601String() ?? '',
+      'status_id': statusId.toString(),
       'status': status,
       'deskripsi': deskripsi,
-      'efek_samping': efekSamping,
+      'efekSamping': efekSamping,
     };
   }
 }
@@ -111,7 +172,7 @@ class ImunisasiDetailModel {
 
     if (rawJadwal is List) {
       jadwalList = rawJadwal
-          .whereType<Map>() // amanin tipe
+          .whereType<Map>()
           .map((e) => JadwalImunisasiModel.fromJson(
                 Map<String, dynamic>.from(e),
               ))
@@ -119,10 +180,14 @@ class ImunisasiDetailModel {
     }
 
     return ImunisasiDetailModel(
-      anakId: (json['anak_id'] as num?)?.toInt() ?? 0,
+      anakId: json['anak_id'] is int 
+          ? json['anak_id'] 
+          : (int.tryParse(json['anak_id']?.toString() ?? json['id_anak']?.toString() ?? '') ?? 0),
       namaAnak: json['nama_anak'] ?? '',
       tanggalLahir: _parseDate(json['tanggal_lahir']),
-      jumlahTerlewat: (json['jumlah_terlewat'] as num?)?.toInt() ?? 0,
+      jumlahTerlewat: json['jumlah_terlewat'] is int 
+          ? json['jumlah_terlewat'] 
+          : (int.tryParse(json['jumlah_terlewat']?.toString() ?? '') ?? 0),
       jadwal: jadwalList,
     );
   }
@@ -130,7 +195,7 @@ class ImunisasiDetailModel {
   static DateTime? _parseDate(dynamic value) {
     if (value == null) return null;
     try {
-      return DateTime.parse(value);
+      return DateTime.parse(value.toString());
     } catch (_) {
       return null;
     }
@@ -152,9 +217,9 @@ class JadwalLayananModel {
     Map<String, dynamic> json,
   ) {
     return JadwalLayananModel(
-      id: (json['id'] as num?)?.toInt() ?? 0,
+      id: json['id'] is int ? json['id'] : (int.tryParse(json['id']?.toString() ?? '') ?? 0),
       layanan: json['layanan'] ?? '',
-      tanggal: DateTime.parse(json['tanggal']),
+      tanggal: DateTime.parse(json['tanggal'].toString()),
     );
   }
 }

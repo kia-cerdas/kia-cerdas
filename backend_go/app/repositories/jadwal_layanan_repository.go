@@ -10,13 +10,14 @@ import (
 
 type JadwalLayananRepository interface {
 	Create(data *models.JadwalLayanan, dosisVaksinIDs []uint) error
-	GetAll() ([]models.JadwalLayanan, error)
+	GetAll(desaID *int32) ([]models.JadwalLayanan, error)
 	GetByID(id int32) (*models.JadwalLayanan, error)
 	GetByPosyandu(posyanduID int32) ([]models.JadwalLayanan, error)
-	GetByDateRange(posyanduID *int32, from, to *time.Time) ([]models.JadwalLayanan, error)
-	GetUpcoming(limit int) ([]models.JadwalLayanan, error)
+	GetByDateRange(posyanduID *int32, from, to *time.Time, desaID *int32) ([]models.JadwalLayanan, error)
+	GetUpcoming(limit int, desaID *int32) ([]models.JadwalLayanan, error)
 	Update(id int32, data *models.JadwalLayanan, dosisVaksinIDs []uint) error
 	Delete(id int32) error
+	CheckExistsByDate(tanggal time.Time, excludeID *int32) (bool, error)
 }
 
 type jadwalLayananRepository struct {
@@ -48,14 +49,21 @@ func (r *jadwalLayananRepository) Create(data *models.JadwalLayanan, dosisVaksin
 	})
 }
 
-func (r *jadwalLayananRepository) GetAll() ([]models.JadwalLayanan, error) {
+func (r *jadwalLayananRepository) GetAll(desaID *int32) ([]models.JadwalLayanan, error) {
 	var data []models.JadwalLayanan
-	err := r.db.
+	query := r.db.
 		Preload("DosisVaksins").
 		Preload("DosisVaksins.Vaksin").
-		Preload("Posyandu").
-		Order("tanggal asc, waktu_mulai asc").
-		Find(&data).Error
+		Preload("Posyandu")
+	
+	// Filter by desa_id if provided (for bidan_desa/kader)
+	if desaID != nil {
+		// Use subquery to check if desa_id column exists first
+		query = query.Where("posyandu_id IN (?)", 
+			r.db.Table("posyandu").Select("id").Where("desa_id = ?", *desaID))
+	}
+	
+	err := query.Order("tanggal asc, waktu_mulai asc").Find(&data).Error
 	return data, err
 }
 
@@ -81,7 +89,7 @@ func (r *jadwalLayananRepository) GetByPosyandu(posyanduID int32) ([]models.Jadw
 	return data, err
 }
 
-func (r *jadwalLayananRepository) GetByDateRange(posyanduID *int32, from, to *time.Time) ([]models.JadwalLayanan, error) {
+func (r *jadwalLayananRepository) GetByDateRange(posyanduID *int32, from, to *time.Time, desaID *int32) ([]models.JadwalLayanan, error) {
 	var data []models.JadwalLayanan
 	q := r.db.Model(&models.JadwalLayanan{}).
 		Preload("DosisVaksins").
@@ -91,6 +99,13 @@ func (r *jadwalLayananRepository) GetByDateRange(posyanduID *int32, from, to *ti
 	if posyanduID != nil {
 		q = q.Where("posyandu_id = ?", *posyanduID)
 	}
+	
+	// Filter by desa_id if provided (for bidan_desa/kader)
+	if desaID != nil {
+		q = q.Where("posyandu_id IN (?)", 
+			r.db.Table("posyandu").Select("id").Where("desa_id = ?", *desaID))
+	}
+	
 	if from != nil && to != nil {
 		q = q.Where("tanggal BETWEEN ? AND ?", from.Format("2006-01-02"), to.Format("2006-01-02"))
 	} else if from != nil {
@@ -103,18 +118,25 @@ func (r *jadwalLayananRepository) GetByDateRange(posyanduID *int32, from, to *ti
 	return data, err
 }
 
-func (r *jadwalLayananRepository) GetUpcoming(limit int) ([]models.JadwalLayanan, error) {
+func (r *jadwalLayananRepository) GetUpcoming(limit int, desaID *int32) ([]models.JadwalLayanan, error) {
 	var data []models.JadwalLayanan
 	now := time.Now()
 	today := now.Format("2006-01-02")
 	nowTime := now.Format("15:04:05")
 
-	err := r.db.
+	query := r.db.
 		Preload("DosisVaksins").
 		Preload("DosisVaksins.Vaksin").
 		Preload("Posyandu").
-		Where("tanggal > ? OR (tanggal = ? AND (waktu_selesai IS NULL OR waktu_selesai >= ?))", today, today, nowTime).
-		Order("tanggal asc, waktu_mulai asc").
+		Where("tanggal > ? OR (tanggal = ? AND (waktu_selesai IS NULL OR waktu_selesai >= ?))", today, today, nowTime)
+	
+	// Filter by desa_id if provided (for bidan_desa/kader)
+	if desaID != nil {
+		query = query.Where("posyandu_id IN (?)", 
+			r.db.Table("posyandu").Select("id").Where("desa_id = ?", *desaID))
+	}
+	
+	err := query.Order("tanggal asc, waktu_mulai asc").
 		Limit(limit).
 		Find(&data).Error
 	return data, err
@@ -155,4 +177,22 @@ func (r *jadwalLayananRepository) Delete(id int32) error {
 		}
 		return nil
 	})
+}
+
+// CheckExistsByDate checks if a schedule already exists for the given date
+// excludeID is used for update operations to exclude the current record
+func (r *jadwalLayananRepository) CheckExistsByDate(tanggal time.Time, excludeID *int32) (bool, error) {
+	var count int64
+	dateStr := tanggal.Format("2006-01-02")
+	
+	query := r.db.Model(&models.JadwalLayanan{}).
+		Where("DATE(tanggal) = ?", dateStr)
+	
+	// Exclude specific ID when updating
+	if excludeID != nil {
+		query = query.Where("id != ?", *excludeID)
+	}
+	
+	err := query.Count(&count).Error
+	return count > 0, err
 }

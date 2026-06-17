@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"monitoring-service/app/helpers"
 	"monitoring-service/app/models"
 	"net/http"
 	"strconv"
@@ -13,6 +14,7 @@ type PosyanduController struct {
 }
 
 // GetAll - List semua posyandu dengan relasi puskesmas
+// Filtered by desa_id for bidan_desa/kader, all for admin/puskesmas
 func (ctrl *PosyanduController) GetAll(c echo.Context) error {
 	var posyandus []models.Posyandu
 	
@@ -23,6 +25,22 @@ func (ctrl *PosyanduController) GetAll(c echo.Context) error {
 		query = query.Where("id_puskesmas = ?", puskesmasID)
 	}
 	
+	// ✅ FILTER BY DESA (Role-based)
+	desaID, err := helpers.GetUserDesaID(c, ctrl.DB())
+	if err != nil {
+		// Return error with proper message instead of generic unauthorized
+		return c.JSON(http.StatusForbidden, map[string]interface{}{
+			"status":  "error",
+			"message": err.Error(),
+		})
+	}
+	
+	// If desaID is not nil, apply filter (user can only see their desa)
+	if desaID != nil {
+		query = query.Where("desa_id = ?", *desaID)
+	}
+	// If desaID is nil, user can see all desa (admin/puskesmas role)
+	
 	if err := query.Find(&posyandus).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
 			"status":  "error",
@@ -31,20 +49,30 @@ func (ctrl *PosyanduController) GetAll(c echo.Context) error {
 		})
 	}
 
-	// Preload puskesmas data
-	type PosyanduWithPuskesmas struct {
+	// Preload puskesmas and desa data
+	type PosyanduWithRelations struct {
 		models.Posyandu
 		NamaPuskesmas string `json:"nama_puskesmas,omitempty"`
+		NamaDesa      string `json:"nama_desa,omitempty"`
 	}
 
-	var result []PosyanduWithPuskesmas
+	var result []PosyanduWithRelations
 	for _, p := range posyandus {
 		var puskesmas models.Puskesmas
 		ctrl.DB().First(&puskesmas, p.IDPuskesmas)
 		
-		result = append(result, PosyanduWithPuskesmas{
+		var desa models.Desa
+		var namaDesa string
+		if p.DesaID != nil {
+			if err := ctrl.DB().First(&desa, *p.DesaID).Error; err == nil {
+				namaDesa = desa.NamaDesa
+			}
+		}
+		
+		result = append(result, PosyanduWithRelations{
 			Posyandu:      p,
 			NamaPuskesmas: puskesmas.Nama,
+			NamaDesa:      namaDesa,
 		})
 	}
 
@@ -73,16 +101,26 @@ func (ctrl *PosyanduController) GetByID(c echo.Context) error {
 		})
 	}
 
-	// Get puskesmas data
+	// Get puskesmas and desa data
 	var puskesmas models.Puskesmas
 	ctrl.DB().First(&puskesmas, posyandu.IDPuskesmas)
+
+	var desa models.Desa
+	var namaDesa string
+	if posyandu.DesaID != nil {
+		if err := ctrl.DB().First(&desa, *posyandu.DesaID).Error; err == nil {
+			namaDesa = desa.NamaDesa
+		}
+	}
 
 	result := struct {
 		models.Posyandu
 		NamaPuskesmas string `json:"nama_puskesmas"`
+		NamaDesa      string `json:"nama_desa,omitempty"`
 	}{
 		Posyandu:      posyandu,
 		NamaPuskesmas: puskesmas.Nama,
+		NamaDesa:      namaDesa,
 	}
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
@@ -96,6 +134,7 @@ func (ctrl *PosyanduController) GetByID(c echo.Context) error {
 func (ctrl *PosyanduController) Create(c echo.Context) error {
 	var req struct {
 		IDPuskesmas int32  `json:"id_puskesmas" validate:"required"`
+		DesaID      *int32 `json:"desa_id"`
 		Nama        string `json:"nama" validate:"required"`
 		Alamat      string `json:"alamat"`
 	}
@@ -131,8 +170,20 @@ func (ctrl *PosyanduController) Create(c echo.Context) error {
 		})
 	}
 
+	// Verify desa exists if provided
+	if req.DesaID != nil {
+		var desa models.Desa
+		if err := ctrl.DB().First(&desa, *req.DesaID).Error; err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]interface{}{
+				"status":  "error",
+				"message": "Desa tidak ditemukan",
+			})
+		}
+	}
+
 	posyandu := models.Posyandu{
 		IDPuskesmas: req.IDPuskesmas,
+		DesaID:      req.DesaID,
 		Nama:        req.Nama,
 		Alamat:      req.Alamat,
 	}
@@ -171,7 +222,8 @@ func (ctrl *PosyanduController) Update(c echo.Context) error {
 	}
 
 	var req struct {
-		IDPuskesmas int32  `json:"id_puskesmas"`
+		IDPuskesmas *int32 `json:"id_puskesmas"`
+		DesaID      *int32 `json:"desa_id"`
 		Nama        string `json:"nama"`
 		Alamat      string `json:"alamat"`
 	}
@@ -184,16 +236,30 @@ func (ctrl *PosyanduController) Update(c echo.Context) error {
 		})
 	}
 
-	if req.IDPuskesmas != 0 {
+	if req.IDPuskesmas != nil && *req.IDPuskesmas != 0 {
 		// Verify puskesmas exists
 		var puskesmas models.Puskesmas
-		if err := ctrl.DB().First(&puskesmas, req.IDPuskesmas).Error; err != nil {
+		if err := ctrl.DB().First(&puskesmas, *req.IDPuskesmas).Error; err != nil {
 			return c.JSON(http.StatusBadRequest, map[string]interface{}{
 				"status":  "error",
 				"message": "Puskesmas tidak ditemukan",
 			})
 		}
-		posyandu.IDPuskesmas = req.IDPuskesmas
+		posyandu.IDPuskesmas = *req.IDPuskesmas
+	}
+
+	if req.DesaID != nil {
+		// Verify desa exists if provided and not zero
+		if *req.DesaID != 0 {
+			var desa models.Desa
+			if err := ctrl.DB().First(&desa, *req.DesaID).Error; err != nil {
+				return c.JSON(http.StatusBadRequest, map[string]interface{}{
+					"status":  "error",
+					"message": "Desa tidak ditemukan",
+				})
+			}
+		}
+		posyandu.DesaID = req.DesaID
 	}
 
 	if req.Nama != "" {

@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import {
   createJadwalLayanan,
   getJadwalLayananById,
+  getJadwalLayananList,
   updateJadwalLayanan,
 } from "../../services/jadwalLayanan";
 import { listPosyanduForDropdown } from "../../services/adminTenagaKesehatan";
@@ -195,6 +196,7 @@ export default function JadwalLayananForm() {
   const [error, setError] = useState("");
   const [posyanduOptions, setPosyanduOptions] = useState([]);
   const [dosisVaksinOptions, setDosisVaksinOptions] = useState([]);
+  const [existingSchedules, setExistingSchedules] = useState([]);
 
   const [form, setForm] = useState({
     posyandu_id: "",
@@ -274,6 +276,20 @@ export default function JadwalLayananForm() {
     loadDosisVaksin();
   }, []);
 
+  // Load existing schedules for date validation
+  useEffect(() => {
+    const loadExistingSchedules = async () => {
+      try {
+        const data = await getJadwalLayananList();
+        const schedules = Array.isArray(data) ? data : [];
+        setExistingSchedules(schedules);
+      } catch (error) {
+        console.error("Failed to load existing schedules:", error);
+      }
+    };
+    loadExistingSchedules();
+  }, []);
+
   // Handler untuk semua input
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -303,6 +319,35 @@ export default function JadwalLayananForm() {
       // Validasi tanggal tidak boleh kurang dari hari ini
       if (selectedDate < today) {
         setError("Tanggal pelayanan tidak boleh kurang dari hari ini");
+        return;
+      }
+
+      // Check for duplicate schedule on the same date
+      const duplicateSchedule = existingSchedules.find(schedule => {
+        // Skip if editing and it's the same record
+        if (isEdit && schedule.id === parseInt(id)) {
+          return false;
+        }
+        
+        const scheduleDate = schedule.tanggal ? new Date(schedule.tanggal) : null;
+        if (!scheduleDate) return false;
+        
+        scheduleDate.setHours(0, 0, 0, 0);
+        return scheduleDate.getTime() === selectedDate.getTime();
+      });
+
+      if (duplicateSchedule) {
+        setError(`Jadwal layanan untuk tanggal ${value} sudah ada: "${duplicateSchedule.layanan}". Pilih tanggal lain atau edit jadwal yang sudah ada.`);
+        
+        Swal.fire({
+          icon: "warning",
+          title: "Jadwal Sudah Ada",
+          html: `Sudah ada jadwal layanan untuk tanggal ini:<br/><strong>"${duplicateSchedule.layanan}"</strong><br/><br/>Silakan pilih tanggal lain atau edit jadwal yang sudah ada.`,
+          confirmButtonText: "Mengerti",
+          confirmButtonColor: "#f59e0b",
+          background: "#fff",
+          customClass: { popup: "rounded-2xl", confirmButton: "rounded-xl px-5 py-2.5 font-semibold" },
+        });
         return;
       }
       
@@ -501,6 +546,27 @@ export default function JadwalLayananForm() {
       const apiErr = err?.response?.data;
       let errorMessage = "Gagal menyimpan data jadwal.";
       
+      // Handle duplicate schedule error from backend
+      if (apiErr?.error === "duplicate_schedule") {
+        errorMessage = apiErr.message || "Jadwal layanan untuk tanggal ini sudah ada.";
+        setError(errorMessage);
+        
+        Swal.fire({
+          icon: "error",
+          title: "Jadwal Sudah Ada",
+          text: errorMessage,
+          confirmButtonText: "OK",
+          confirmButtonColor: "#f59e0b",
+          background: "#fff",
+          backdrop: `rgba(0,0,0,0.4)`,
+          customClass: {
+            popup: "rounded-2xl",
+            confirmButton: "rounded-xl px-5 py-2.5 font-semibold",
+          },
+        });
+        return;
+      }
+      
       if (apiErr?.error === "validation" && Array.isArray(apiErr?.fields)) {
         errorMessage = apiErr.fields.map((f) => `${f.field}: ${f.message}`).join("; ");
       } else {
@@ -618,6 +684,7 @@ export default function JadwalLayananForm() {
                     name="tanggal"
                     value={form.tanggal}
                     onChange={handleTanggalChange}
+                    min={new Date().toISOString().split('T')[0]}
                     className={inputClass}
                     required
                   />

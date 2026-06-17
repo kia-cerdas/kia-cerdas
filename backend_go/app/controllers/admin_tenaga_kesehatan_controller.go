@@ -134,7 +134,8 @@ func (m *Main) AdminTambahPosyandu(c echo.Context) error {
 }
 
 func (m *Main) AdminListPosyandu(c echo.Context) error {
-	data, err := m.usecases.AdminTenagaKesehatan.ListPosyandu(c.QueryParam("search"))
+	// Admin can see all posyandu (no desa filter)
+	data, err := m.usecases.AdminTenagaKesehatan.ListPosyandu(c.QueryParam("search"), nil)
 	if err != nil {
 		return helpers.Response(c, customerror.GetStatusCode(err), []string{err.Error()})
 	}
