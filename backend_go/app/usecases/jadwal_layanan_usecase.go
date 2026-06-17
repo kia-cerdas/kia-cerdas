@@ -9,13 +9,14 @@ import (
 
 type JadwalLayananUsecase interface {
 	Create(data *models.JadwalLayanan, dosisVaksinIDs []uint) error
-	GetAll() ([]models.JadwalLayanan, error)
+	GetAll(desaID *int32) ([]models.JadwalLayanan, error)
 	GetByID(id int32) (*models.JadwalLayanan, error)
 	GetByPosyandu(posyanduID int32) ([]models.JadwalLayanan, error)
-	GetByDateRange(posyanduID *int32, from, to *time.Time) ([]models.JadwalLayanan, error)
-	GetUpcoming(limit int) ([]models.JadwalLayanan, error)
+	GetByDateRange(posyanduID *int32, from, to *time.Time, desaID *int32) ([]models.JadwalLayanan, error)
+	GetUpcoming(limit int, desaID *int32) ([]models.JadwalLayanan, error)
 	Update(id int32, data *models.JadwalLayanan, dosisVaksinIDs []uint) error
 	Delete(id int32) error
+	CheckExistsByDate(tanggal time.Time, excludeID *int32) (bool, error)
 }
 
 type jadwalLayananUsecase struct {
@@ -30,8 +31,8 @@ func (u *jadwalLayananUsecase) Create(data *models.JadwalLayanan, dosisVaksinIDs
 	return u.repo.Create(data, dosisVaksinIDs)
 }
 
-func (u *jadwalLayananUsecase) GetAll() ([]models.JadwalLayanan, error) {
-	return u.repo.GetAll()
+func (u *jadwalLayananUsecase) GetAll(desaID *int32) ([]models.JadwalLayanan, error) {
+	return u.repo.GetAll(desaID)
 }
 
 func (u *jadwalLayananUsecase) GetByID(id int32) (*models.JadwalLayanan, error) {
@@ -42,12 +43,12 @@ func (u *jadwalLayananUsecase) GetByPosyandu(posyanduID int32) ([]models.JadwalL
 	return u.repo.GetByPosyandu(posyanduID)
 }
 
-func (u *jadwalLayananUsecase) GetByDateRange(posyanduID *int32, from, to *time.Time) ([]models.JadwalLayanan, error) {
-	return u.repo.GetByDateRange(posyanduID, from, to)
+func (u *jadwalLayananUsecase) GetByDateRange(posyanduID *int32, from, to *time.Time, desaID *int32) ([]models.JadwalLayanan, error) {
+	return u.repo.GetByDateRange(posyanduID, from, to, desaID)
 }
 
-func (u *jadwalLayananUsecase) GetUpcoming(limit int) ([]models.JadwalLayanan, error) {
-	return u.repo.GetUpcoming(limit)
+func (u *jadwalLayananUsecase) GetUpcoming(limit int, desaID *int32) ([]models.JadwalLayanan, error) {
+	return u.repo.GetUpcoming(limit, desaID)
 }
 
 func (u *jadwalLayananUsecase) Update(id int32, data *models.JadwalLayanan, dosisVaksinIDs []uint) error {
@@ -56,4 +57,8 @@ func (u *jadwalLayananUsecase) Update(id int32, data *models.JadwalLayanan, dosi
 
 func (u *jadwalLayananUsecase) Delete(id int32) error {
 	return u.repo.Delete(id)
+}
+
+func (u *jadwalLayananUsecase) CheckExistsByDate(tanggal time.Time, excludeID *int32) (bool, error) {
+	return u.repo.CheckExistsByDate(tanggal, excludeID)
 }

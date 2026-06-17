@@ -6,18 +6,21 @@ import (
 	"strconv"
 	"time"
 
+	"monitoring-service/app/helpers"
 	"monitoring-service/app/models"
 	"monitoring-service/app/usecases"
 
 	"github.com/labstack/echo/v4"
+	"gorm.io/gorm"
 )
 
 type JadwalLayananController struct {
 	usecase usecases.JadwalLayananUsecase
+	db      *gorm.DB
 }
 
-func NewJadwalLayananController(u usecases.JadwalLayananUsecase) *JadwalLayananController {
-	return &JadwalLayananController{u}
+func NewJadwalLayananController(u usecases.JadwalLayananUsecase, db *gorm.DB) *JadwalLayananController {
+	return &JadwalLayananController{u, db}
 }
 
 func timePtrToDBString(t *time.Time) *string {
@@ -103,6 +106,26 @@ func (c *JadwalLayananController) Create(ctx echo.Context) error {
 		return ctx.JSON(http.StatusBadRequest, echo.Map{"error": "validation", "fields": fieldErrors})
 	}
 
+	// ✅ VALIDATE: Posyandu must belong to user's desa (for Create)
+	if in.PosyanduID != nil {
+		if err := helpers.ValidatePosyanduAccess(ctx, c.db, *in.PosyanduID); err != nil {
+			return ctx.JSON(http.StatusForbidden, echo.Map{
+				"error":   "access_denied",
+				"message": err.Error(),
+			})
+		}
+	}
+
+	// Check if schedule already exists for this date
+	if exists, err := c.usecase.CheckExistsByDate(*tanggalPtr, nil); err != nil {
+		return ctx.JSON(http.StatusInternalServerError, echo.Map{"error": "database_error", "details": err.Error()})
+	} else if exists {
+		return ctx.JSON(http.StatusConflict, echo.Map{
+			"error":   "duplicate_schedule",
+			"message": "Jadwal layanan untuk tanggal ini sudah ada. Silakan pilih tanggal lain atau edit jadwal yang sudah ada.",
+		})
+	}
+
 	// build model
 	model := models.JadwalLayanan{
 		PosyanduID: in.PosyanduID,
@@ -134,6 +157,18 @@ func (c *JadwalLayananController) GetAll(ctx echo.Context) error {
 	upcomingParam := ctx.QueryParam("upcoming")
 	limitParam := ctx.QueryParam("limit")
 
+	// ✅ GET USER DESA for filtering
+	desaID, err := helpers.GetUserDesaID(ctx, c.db)
+	if err != nil {
+		// Return error with proper message instead of generic unauthorized
+		return ctx.JSON(http.StatusForbidden, echo.Map{
+			"error":   "access_denied",
+			"message": err.Error(),
+		})
+	}
+	// If desaID is nil, user can see all desa (admin/puskesmas)
+	// If desaID is not nil, user sees only their desa (bidan_desa/kader)
+
 	if upcomingParam == "true" {
 		limit := 5
 		if limitParam != "" {
@@ -141,7 +176,7 @@ func (c *JadwalLayananController) GetAll(ctx echo.Context) error {
 				limit = v
 			}
 		}
-		data, err := c.usecase.GetUpcoming(limit)
+		data, err := c.usecase.GetUpcoming(limit, desaID)
 		if err != nil {
 			return ctx.JSON(http.StatusInternalServerError, echo.Map{"error": err.Error()})
 		}
@@ -170,14 +205,14 @@ func (c *JadwalLayananController) GetAll(ctx echo.Context) error {
 	}
 
 	if posyanduID != nil || fromTime != nil || toTime != nil {
-		data, err := c.usecase.GetByDateRange(posyanduID, fromTime, toTime)
+		data, err := c.usecase.GetByDateRange(posyanduID, fromTime, toTime, desaID)
 		if err != nil {
 			return ctx.JSON(http.StatusInternalServerError, echo.Map{"error": err.Error()})
 		}
 		return ctx.JSON(http.StatusOK, data)
 	}
 
-	data, err := c.usecase.GetAll()
+	data, err := c.usecase.GetAll(desaID)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, echo.Map{"error": err.Error()})
 	}
@@ -265,6 +300,29 @@ func (c *JadwalLayananController) Update(ctx echo.Context) error {
 
 	if len(fieldErrors) > 0 {
 		return ctx.JSON(http.StatusBadRequest, echo.Map{"error": "validation", "fields": fieldErrors})
+	}
+
+	// ✅ VALIDATE: Posyandu must belong to user's desa (for Update)
+	if in.PosyanduID != nil {
+		if err := helpers.ValidatePosyanduAccess(ctx, c.db, *in.PosyanduID); err != nil {
+			return ctx.JSON(http.StatusForbidden, echo.Map{
+				"error":   "access_denied",
+				"message": err.Error(),
+			})
+		}
+	}
+
+	// Check if schedule already exists for this date (excluding current record)
+	if tanggalPtr != nil {
+		excludeID := int32(id)
+		if exists, err := c.usecase.CheckExistsByDate(*tanggalPtr, &excludeID); err != nil {
+			return ctx.JSON(http.StatusInternalServerError, echo.Map{"error": "database_error", "details": err.Error()})
+		} else if exists {
+			return ctx.JSON(http.StatusConflict, echo.Map{
+				"error":   "duplicate_schedule",
+				"message": "Jadwal layanan untuk tanggal ini sudah ada. Silakan pilih tanggal lain.",
+			})
+		}
 	}
 
 	// build partial model for update

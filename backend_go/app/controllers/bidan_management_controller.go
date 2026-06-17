@@ -43,7 +43,14 @@ func (m *Main) BidanCreatePosyandu(c echo.Context) error {
 func (m *Main) BidanListPosyandu(c echo.Context) error {
 	search := c.QueryParam("search")
 
-	data, err := m.usecases.AdminTenagaKesehatan.ListPosyandu(search)
+	// ✅ GET USER DESA for filtering
+	desaID, err := helpers.GetUserDesaID(c, m.DB())
+	if err != nil {
+		// Return error with proper message
+		return helpers.Response(c, http.StatusForbidden, []string{err.Error()})
+	}
+
+	data, err := m.usecases.AdminTenagaKesehatan.ListPosyandu(search, desaID)
 	if err != nil {
 		return helpers.Response(c, customerror.GetStatusCode(err), []string{err.Error()})
 	}
