@@ -19,6 +19,10 @@ class _VerifikasiAbsensiKelasIbuBalitaScreenState extends State<VerifikasiAbsens
   bool _isLoading = true;
   String _errorMessage = '';
 
+  /// Filter status: null = semua, true = sudah diverifikasi (Diterima/Ditolak),
+  /// false = belum diverifikasi (Menunggu Verifikasi).
+  bool? _filterVerified;
+
   @override
   void initState() {
     super.initState();
@@ -94,6 +98,96 @@ class _VerifikasiAbsensiKelasIbuBalitaScreenState extends State<VerifikasiAbsens
     }
   }
 
+  /// Ringkasan Total / Belum / Sudah diverifikasi -- pola yang sama dengan
+  /// menu "Kelas Ibu Hamil" agar konsisten antar menu verifikasi kader.
+  Widget _buildSummaryRow() {
+    return Row(
+      children: [
+        _summaryPill(label: 'Semua', count: _absensiList.length, color: Colors.blueGrey),
+        const SizedBox(width: 8),
+        _summaryPill(label: 'Belum Verif', count: _jumlahBelumVerif, color: Colors.orange),
+        const SizedBox(width: 8),
+        _summaryPill(label: 'Sudah Diverifikasi', count: _jumlahSudahVerif, color: Colors.green),
+      ],
+    );
+  }
+
+  Widget _summaryPill({
+    required String label,
+    required int count,
+    required Color color,
+  }) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withOpacity(0.3)),
+        ),
+        child: Column(
+          children: [
+            Text(
+              '$count',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color),
+            ),
+            const SizedBox(height: 2),
+            Text(label, style: TextStyle(fontSize: 11, color: color), textAlign: TextAlign.center),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterChips() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          _filterChip(label: 'Semua (${_absensiList.length})', value: null),
+          const SizedBox(width: 8),
+          _filterChip(
+            label: 'Belum Verif ($_jumlahBelumVerif)',
+            value: false,
+            color: Colors.orange,
+          ),
+          const SizedBox(width: 8),
+          _filterChip(
+            label: 'Sudah Diverifikasi ($_jumlahSudahVerif)',
+            value: true,
+            color: Colors.green,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _filterChip({required String label, required bool? value, Color? color}) {
+    final isSelected = _filterVerified == value;
+    final activeColor = color ?? Colors.teal;
+    return GestureDetector(
+      onTap: () => setState(() => _filterVerified = value),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+        decoration: BoxDecoration(
+          color: isSelected ? activeColor : Colors.white,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(
+            color: isSelected ? activeColor : Colors.grey.shade300,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: isSelected ? Colors.white : Colors.grey.shade700,
+          ),
+        ),
+      ),
+    );
+  }
+
   void _showConfirmationDialog({
     required BuildContext context,
     required String title,
@@ -163,9 +257,13 @@ class _VerifikasiAbsensiKelasIbuBalitaScreenState extends State<VerifikasiAbsens
   }
 
   bool _isPending(AbsensiKelasIbuBalitaModel item) {
-    return item.status == null || item.status!.isEmpty || 
-           (item.status != 'Diterima' && item.status != 'Ditolak');
+    return item.status.isEmpty ||
+        (item.status != 'Diterima' && item.status != 'Ditolak');
   }
+
+  int get _jumlahBelumVerif => _absensiList.where(_isPending).length;
+  int get _jumlahSudahVerif =>
+      _absensiList.where((item) => !_isPending(item)).length;
 
   @override
   Widget build(BuildContext context) {
@@ -197,6 +295,15 @@ class _VerifikasiAbsensiKelasIbuBalitaScreenState extends State<VerifikasiAbsens
               : Column(
                   children: [
                     Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                      child: _buildSummaryRow(),
+                    ),
+                    const SizedBox(height: 12),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: _buildFilterChips(),
+                    ),
+                    Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: TextField(
                         controller: _searchController,
@@ -223,8 +330,11 @@ class _VerifikasiAbsensiKelasIbuBalitaScreenState extends State<VerifikasiAbsens
                         builder: (context) {
                           final filteredList = _absensiList.where((item) {
                             final q = _searchQuery.toLowerCase();
-                            return item.namaIbu.toLowerCase().contains(q) || 
-                                   item.namaAnak.toLowerCase().contains(q);
+                            final matchesSearch = item.namaIbu.toLowerCase().contains(q) ||
+                                item.namaAnak.toLowerCase().contains(q);
+                            final matchesFilter = _filterVerified == null ||
+                                _filterVerified == !_isPending(item);
+                            return matchesSearch && matchesFilter;
                           }).toList();
 
                           if (filteredList.isEmpty) {

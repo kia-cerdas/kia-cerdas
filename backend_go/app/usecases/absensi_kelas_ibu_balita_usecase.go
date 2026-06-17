@@ -88,8 +88,11 @@ func (u *absensiKelasIbuBalitaUsecase) Verify(id int32, namaKader string, tangga
 		return errors.New("data absensi tidak ditemukan")
 	}
 
-	if data.Status == "Terverifikasi" {
-		return errors.New("absensi ini sudah terverifikasi dan tidak dapat diubah kembali")
+	// Status terminal yang sebenarnya dipakai kader adalah "Diterima"/"Ditolak"
+	// (lihat VerifikasiAbsensiKelasIbuBalitaScreen di mobile), bukan "Terverifikasi" --
+	// jadi guard ini harus memeriksa status apa pun selain "Menunggu Verifikasi".
+	if data.Status != "" && data.Status != "Menunggu Verifikasi" {
+		return errors.New("absensi ini sudah diverifikasi dan tidak dapat diubah kembali")
 	}
 
 	data.NamaKader = namaKader
