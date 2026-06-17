@@ -4,8 +4,6 @@ Aplikasi terintegrasi untuk manajemen kesehatan ibu dan anak berbasis web, mobil
 
 ## 📁 Struktur Project
 
----
-
 # Arsitektur Sistem
 
 KIA Cerdas terdiri dari tiga komponen utama:
@@ -44,7 +42,7 @@ backend/
 web/
 mobile/
 docs/
-```
+
 .
 ├── backend_go/           # Backend API (Go/Fiber)
 ├── web/                  # Web Dashboard (React + Vite)
@@ -54,7 +52,7 @@ docs/
 │   └── ml-service/       # Stunting Prediction API
 ├── database/             # Database schemas & migrations
 └── docs/                 # Documentation
-```
+
 
 ## 🚀 Quick Start
 

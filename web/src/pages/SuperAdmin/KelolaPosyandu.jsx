@@ -9,16 +9,19 @@ import {
 	deletePosyandu,
 } from "../../services/posyandu";
 import { getAllPuskesmas } from "../../services/puskesmas";
+import { listDesa } from "../../services/desa";
 
 export default function KelolaPosyandu() {
 	const [posyandu, setPosyandu] = useState([]);
 	const [puskesmas, setPuskesmas] = useState([]);
+	const [desa, setDesa] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [showModal, setShowModal] = useState(false);
 	const [editMode, setEditMode] = useState(false);
 	const [currentPosyandu, setCurrentPosyandu] = useState(null);
 	const [formData, setFormData] = useState({
 		id_puskesmas: "",
+		desa_id: "",
 		nama: "",
 		alamat: "",
 	});
@@ -31,14 +34,16 @@ export default function KelolaPosyandu() {
 	const fetchData = async () => {
 		try {
 			setLoading(true);
-			const [posyanduData, puskesmasData] = await Promise.all([
+			const [posyanduData, puskesmasData, desaData] = await Promise.all([
 				getAllPosyandu(
 					filterPuskesmas ? { puskesmas_id: filterPuskesmas } : {}
 				),
 				getAllPuskesmas(),
+				listDesa(),
 			]);
 			setPosyandu(posyanduData || []);
 			setPuskesmas(puskesmasData || []);
+			setDesa(desaData || []);
 		} catch (error) {
 			console.error("Error fetching data:", error);
 			Swal.fire("Error", "Gagal memuat data", "error");
@@ -53,6 +58,7 @@ export default function KelolaPosyandu() {
 			setCurrentPosyandu(posyanduData);
 			setFormData({
 				id_puskesmas: posyanduData.id_puskesmas || "",
+				desa_id: posyanduData.desa_id || "",
 				nama: posyanduData.nama || "",
 				alamat: posyanduData.alamat || "",
 			});
@@ -61,6 +67,7 @@ export default function KelolaPosyandu() {
 			setCurrentPosyandu(null);
 			setFormData({
 				id_puskesmas: "",
+				desa_id: "",
 				nama: "",
 				alamat: "",
 			});
@@ -74,6 +81,7 @@ export default function KelolaPosyandu() {
 		setCurrentPosyandu(null);
 		setFormData({
 			id_puskesmas: "",
+			desa_id: "",
 			nama: "",
 			alamat: "",
 		});
@@ -92,10 +100,16 @@ export default function KelolaPosyandu() {
 			return;
 		}
 
+		if (!formData.desa_id) {
+			Swal.fire("Peringatan", "Desa wajib dipilih", "warning");
+			return;
+		}
+
 		try {
 			const payload = {
 				...formData,
 				id_puskesmas: parseInt(formData.id_puskesmas),
+				desa_id: parseInt(formData.desa_id),
 			};
 
 			if (editMode) {
@@ -199,6 +213,9 @@ export default function KelolaPosyandu() {
 												Nama Posyandu
 											</th>
 											<th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+												Desa
+											</th>
+											<th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
 												Puskesmas
 											</th>
 											<th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
@@ -225,6 +242,9 @@ export default function KelolaPosyandu() {
 															{item.nama}
 														</span>
 													</div>
+												</td>
+												<td className="px-6 py-4 text-sm text-gray-600">
+													{item.nama_desa || "-"}
 												</td>
 												<td className="px-6 py-4 text-sm text-gray-600">
 													{item.nama_puskesmas || "-"}
@@ -293,6 +313,27 @@ export default function KelolaPosyandu() {
 									{puskesmas.map((p) => (
 										<option key={p.id} value={p.id}>
 											{p.nama}
+										</option>
+									))}
+								</select>
+							</div>
+
+							<div>
+								<label className="block text-sm font-medium text-gray-700 mb-2">
+									Desa <span className="text-red-500">*</span>
+								</label>
+								<select
+									value={formData.desa_id}
+									onChange={(e) =>
+										setFormData({ ...formData, desa_id: e.target.value })
+									}
+									className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+									required
+								>
+									<option value="">Pilih Desa</option>
+									{desa.map((d) => (
+										<option key={d.id} value={d.id}>
+											{d.nama_desa}
 										</option>
 									))}
 								</select>

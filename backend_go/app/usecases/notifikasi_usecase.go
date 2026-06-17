@@ -357,7 +357,8 @@ func (u *Main) ProcessPosyanduReminder() error {
 	// normalisasi hanya tanggal
 	t := time.Date(target.Year(), target.Month(), target.Day(), 0, 0, 0, 0, time.Local)
 
-	jadwals, err := u.repository.JadwalLayanan.GetByDateRange(nil, &t, &t)
+	// Notifications should see all jadwal (no desa filter)
+	jadwals, err := u.repository.JadwalLayanan.GetByDateRange(nil, &t, &t, nil)
 	if err != nil {
 		return err
 	}

@@ -251,7 +251,7 @@ func (r *KependudukanRepository) CreatePosyandu(posyandu *models.Posyandu) error
 	return r.db.Create(posyandu).Error
 }
 
-func (r *KependudukanRepository) ListPosyandu(search string) ([]PosyanduItem, error) {
+func (r *KependudukanRepository) ListPosyandu(search string, desaID *int32) ([]PosyanduItem, error) {
 	search = strings.TrimSpace(search)
 
 	var list []PosyanduItem
@@ -259,6 +259,11 @@ func (r *KependudukanRepository) ListPosyandu(search string) ([]PosyanduItem, er
 		Select("p.id, p.id_puskesmas, p.nama, p.alamat, p.created_at").
 		Where("p.deleted_at IS NULL").
 		Order("p.nama ASC")
+
+	// ✅ Filter by desa_id if provided (role-based filtering)
+	if desaID != nil {
+		q = q.Where("p.desa_id = ?", *desaID)
+	}
 
 	if search != "" {
 		q = q.Where("p.nama ILIKE ? OR p.alamat ILIKE ?", "%"+search+"%", "%"+search+"%")

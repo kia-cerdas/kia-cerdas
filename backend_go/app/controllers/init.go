@@ -230,7 +230,7 @@ func Init(opts Options) *Main {
 	m.LaporanDewasa = NewLaporanDewasaController(opts.UseCases.LaporanDewasa)
 	m.LaporanLansia = NewLaporanLansiaController(opts.UseCases.LaporanLansia)
 
-	m.JadwalLayanan = NewJadwalLayananController(opts.UseCases.JadwalLayanan)
+	m.JadwalLayanan = NewJadwalLayananController(opts.UseCases.JadwalLayanan, opts.DB)
 	m.Vaksin = NewVaksinController(opts.UseCases.Vaksin)
 	m.DosisVaksin = NewDosisVaksinController(opts.UseCases.DosisVaksin, opts.UseCases.Vaksin)
 	m.Puskesmas = &PuskesmasController{Main: m}

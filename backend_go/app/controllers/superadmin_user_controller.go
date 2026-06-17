@@ -161,7 +161,8 @@ func (m *Main) DeactivateUser(c echo.Context) error {
 func (m *Main) SuperadminListPosyandu(c echo.Context) error {
 	search := c.QueryParam("search")
 
-	data, err := m.usecases.AdminTenagaKesehatan.ListPosyandu(search)
+	// Superadmin can see all posyandu (no desa filter)
+	data, err := m.usecases.AdminTenagaKesehatan.ListPosyandu(search, nil)
 	if err != nil {
 		return helpers.Response(c, customerror.GetStatusCode(err), []string{err.Error()})
 	}

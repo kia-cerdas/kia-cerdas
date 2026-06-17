@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import {
   Save, Syringe, CheckSquare, Square, Calendar,
-  CheckCircle2, RefreshCw, X, ArrowLeft, AlertTriangle, XCircle
+  CheckCircle2, RefreshCw, X, ArrowLeft, AlertTriangle, XCircle, CalendarClock
 } from 'lucide-react';
 import Swal from 'sweetalert2';
 import MainLayout from "../../components/Layout/MainLayout";
@@ -15,6 +15,7 @@ import {
   getPencatatanByAnakId,
   batalParafImunisasi
 } from "../../services/imunisasiBidanService";
+import { getJadwalLayananList } from "../../services/jadwalLayanan";
 
 const MONTHS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 18, 23, '23-59'];
 
@@ -35,6 +36,8 @@ const PelayananImunisasi = () => {
   const [dataAnak, setDataAnak] = useState(null);
   const [aturanVaksin, setAturanVaksin] = useState([]);
   const [pencatatanList, setPencatatanList] = useState([]);
+  const [jadwalLayananList, setJadwalLayananList] = useState([]);
+  const [jadwalLayananToday, setJadwalLayananToday] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -74,7 +77,7 @@ const PelayananImunisasi = () => {
         const list = Array.isArray(resPencatatan) ? resPencatatan : [];
         setPencatatanList(list);
         console.log('[DEBUG] Pencatatan data:', list.length, 'records');
-        console.log('[DEBUG] Pencatatan sample FULL:', JSON.stringify(list[0], null, 2)); // Log full JSON
+        console.log('[DEBUG] Pencatatan sample FULL:', JSON.stringify(list[0], null, 2));
         if (list.length > 0) {
           console.log('[DEBUG] Bidan petugas:', list[0]?.bidan_petugas);
           console.log('[DEBUG] id_bidan_petugas:', list[0]?.id_bidan_petugas);
@@ -82,6 +85,60 @@ const PelayananImunisasi = () => {
       } catch {
         setPencatatanList([]);
         console.log('[DEBUG] Pencatatan fetch failed');
+      }
+
+      // Fetch jadwal layanan
+      try {
+        const resJadwalLayanan = await getJadwalLayananList();
+        const jadwalLayananData = Array.isArray(resJadwalLayanan) ? resJadwalLayanan : [];
+        setJadwalLayananList(jadwalLayananData);
+        
+        console.log('[DEBUG] All jadwal layanan:', jadwalLayananData);
+        
+        // Find today's schedule with better date parsing
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Reset time to midnight
+        const todayStr = today.toISOString().split('T')[0]; // YYYY-MM-DD format
+        
+        console.log('[DEBUG] Today date string:', todayStr);
+        
+        const todaySchedule = jadwalLayananData.find(jl => {
+          if (!jl.tanggal) {
+            console.log('[DEBUG] Jadwal tanpa tanggal:', jl);
+            return false;
+          }
+          
+          // Parse schedule date - handle both ISO string and date-only format
+          const scheduleDate = new Date(jl.tanggal);
+          scheduleDate.setHours(0, 0, 0, 0); // Reset time
+          const scheduleDateStr = scheduleDate.toISOString().split('T')[0];
+          
+          console.log('[DEBUG] Comparing:', {
+            id: jl.id,
+            layanan: jl.layanan,
+            scheduleDateStr,
+            todayStr,
+            match: scheduleDateStr === todayStr,
+            rawTanggal: jl.tanggal,
+            dosisVaksinIds: jl.dosis_vaksin_ids
+          });
+          
+          return scheduleDateStr === todayStr;
+        });
+        
+        setJadwalLayananToday(todaySchedule);
+        console.log('[DEBUG] ✅ Jadwal layanan hari ini FOUND:', todaySchedule);
+        
+        if (todaySchedule) {
+          console.log('[DEBUG] Dosis vaksin IDs di jadwal:', todaySchedule.dosis_vaksin_ids);
+          console.log('[DEBUG] Dosis vaksins detail:', todaySchedule.dosis_vaksins);
+        } else {
+          console.log('[DEBUG] ❌ Tidak ada jadwal untuk hari ini');
+        }
+      } catch (err) {
+        console.error('[DEBUG] Failed to fetch jadwal layanan:', err);
+        setJadwalLayananList([]);
+        setJadwalLayananToday(null);
       }
     } catch (err) {
       setError(err.message || 'Gagal memuat data');
@@ -238,6 +295,63 @@ const PelayananImunisasi = () => {
 
   // All unfinished jadwal for modal
   const jadwalBelumSelesai = jadwalList.filter(j => j.status_id !== 6);
+
+  // Filter jadwal based on selected jadwal layanan
+  // Uses useMemo to recalculate whenever jadwalLayananToday or jadwalList changes
+  const availableJadwalToday = React.useMemo(() => {
+    if (!jadwalLayananToday) {
+      console.log('[DEBUG] ❌ No jadwal layanan selected');
+      return [];
+    }
+
+    // All unfinished jadwal
+    const jadwalBelumSelesai = jadwalList.filter(j => j.status_id !== 6);
+
+    // Extract dosis vaksin IDs from the preloaded relationship
+    // Backend returns: { dosis_vaksins: [{ id: 1, nama_dosis: "BCG", ... }, ...] }
+    let allowedDosisIds = [];
+    
+    if (jadwalLayananToday.dosis_vaksins && Array.isArray(jadwalLayananToday.dosis_vaksins)) {
+      // Extract IDs from the preloaded DosisVaksin objects
+      allowedDosisIds = jadwalLayananToday.dosis_vaksins.map(dv => dv.id);
+      console.log('[DEBUG] ✅ Extracted dosis IDs from dosis_vaksins:', allowedDosisIds);
+    } else if (jadwalLayananToday.DosisVaksins && Array.isArray(jadwalLayananToday.DosisVaksins)) {
+      // Fallback: capital D (some APIs use PascalCase)
+      allowedDosisIds = jadwalLayananToday.DosisVaksins.map(dv => dv.id);
+      console.log('[DEBUG] ✅ Extracted dosis IDs from DosisVaksins:', allowedDosisIds);
+    } else {
+      console.log('[DEBUG] ⚠️ No dosis_vaksins array found in jadwal layanan:', jadwalLayananToday);
+    }
+
+    if (allowedDosisIds.length === 0) {
+      console.log('[DEBUG] ⚠️ No dosis vaksin IDs in jadwal layanan');
+      console.log('[DEBUG] Jadwal structure:', Object.keys(jadwalLayananToday));
+      return [];
+    }
+
+    console.log('[DEBUG] 📋 Allowed dosis IDs from schedule:', allowedDosisIds);
+    console.log('[DEBUG] 📋 Available jadwal belum selesai:', jadwalBelumSelesai.length);
+
+    // Filter jadwal that match selected schedule AND not yet completed
+    const filtered = jadwalBelumSelesai.filter(j => {
+      const isAllowed = allowedDosisIds.includes(j.dosis_vaksin_id);
+      console.log('[DEBUG] 🔍 Checking:', {
+        nama_dosis: j.nama_dosis,
+        dosis_vaksin_id: j.dosis_vaksin_id,
+        jadwal_id: j.jadwal_id,
+        isAllowed,
+        allowedDosisIds
+      });
+      return isAllowed;
+    });
+
+    console.log('[DEBUG] ✅ Filtered available jadwal count:', filtered.length);
+    if (filtered.length > 0) {
+      console.log('[DEBUG] Available vaccines:', filtered.map(f => f.nama_dosis).join(', '));
+    }
+    
+    return filtered;
+  }, [jadwalLayananToday, jadwalList]);
 
   // Check if a jadwal item's prerequisite dose has been completed
   const isPreviousDoseComplete = (dosisVaksinId) => {
@@ -438,9 +552,54 @@ const PelayananImunisasi = () => {
               <span className="bg-green-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm">
                 Diisi oleh Tenaga Kesehatan
               </span>
+              
+              {/* Show schedule info */}
+              {jadwalLayananToday && jadwalLayananToday.dosis_vaksins && jadwalLayananToday.dosis_vaksins.length > 0 ? (
+                <div className="flex items-center gap-2 bg-blue-50 text-blue-700 text-xs font-semibold px-3 py-1.5 rounded-lg border border-blue-200">
+                  <CalendarClock size={14} />
+                  <span>Jadwal Hari Ini: {jadwalLayananToday.layanan || 'Imunisasi'}</span>
+                </div>
+              ) : jadwalLayananToday && jadwalLayananToday.DosisVaksins && jadwalLayananToday.DosisVaksins.length > 0 ? (
+                <div className="flex items-center gap-2 bg-blue-50 text-blue-700 text-xs font-semibold px-3 py-1.5 rounded-lg border border-blue-200">
+                  <CalendarClock size={14} />
+                  <span>Jadwal Hari Ini: {jadwalLayananToday.layanan || 'Imunisasi'}</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 bg-amber-50 text-amber-700 text-xs font-semibold px-3 py-1.5 rounded-lg border border-amber-200">
+                  <AlertTriangle size={14} />
+                  <span>Tidak Ada Jadwal Hari Ini</span>
+                </div>
+              )}
+
               <button
-                onClick={() => setIsModalOpen(true)}
-                disabled={jadwalBelumSelesai.length === 0}
+                onClick={() => {
+                  const hasSchedule = jadwalLayananToday && 
+                    ((jadwalLayananToday.dosis_vaksins && jadwalLayananToday.dosis_vaksins.length > 0) ||
+                     (jadwalLayananToday.DosisVaksins && jadwalLayananToday.DosisVaksins.length > 0));
+                  
+                  if (!hasSchedule) {
+                    Swal.fire({
+                      icon: 'warning',
+                      title: 'Tidak Ada Jadwal Layanan',
+                      html: 'Belum ada jadwal layanan untuk hari ini.<br/><small class="text-gray-500">Silakan buat jadwal layanan terlebih dahulu di menu <b>Jadwal Layanan</b>.</small>',
+                      confirmButtonColor: '#2563eb'
+                    });
+                    return;
+                  }
+                  
+                  if (availableJadwalToday.length === 0) {
+                    Swal.fire({
+                      icon: 'info',
+                      title: 'Tidak Ada Vaksin yang Tersedia',
+                      html: 'Semua vaksin dari jadwal hari ini sudah selesai diparaf,<br/>atau anak ini tidak memiliki jadwal vaksin yang sesuai dengan jadwal layanan hari ini.',
+                      confirmButtonColor: '#2563eb'
+                    });
+                    return;
+                  }
+                  
+                  setIsModalOpen(true);
+                }}
+                disabled={!jadwalLayananToday || availableJadwalToday.length === 0}
                 className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-bold text-sm shadow-md transition-all active:scale-95 disabled:bg-gray-300 disabled:cursor-not-allowed"
               >
                 <Syringe size={16} /> PARAF IMUNISASI
@@ -695,38 +854,116 @@ const PelayananImunisasi = () => {
             {/* Modal Form - Scrollable */}
             <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto">
               <div className="p-6 space-y-4">
-                {/* Tanggal */}
+                {/* Tanggal - Dropdown dari Jadwal Layanan */}
                 <div>
                   <label className="text-gray-500 mb-1 block text-xs font-bold uppercase tracking-wider">
                     Tanggal Pelayanan
                   </label>
                   <div className="flex items-center gap-2 border-b-2 focus-within:border-blue-600 pb-2">
                     <Calendar size={16} className="text-gray-400" />
-                    <input
-                      type="date"
-                      className="w-full outline-none font-bold text-sm bg-transparent"
+                    <select
+                      className="w-full outline-none font-bold text-sm bg-transparent cursor-pointer"
                       value={formData.tanggal}
-                      onChange={(e) =>
-                        setFormData({ ...formData, tanggal: e.target.value })
-                      }
+                      onChange={(e) => {
+                        const selectedDate = e.target.value;
+                        setFormData({ ...formData, tanggal: selectedDate });
+                        
+                        // Find jadwal for selected date and update available vaccines
+                        const selectedJadwal = jadwalLayananList.find(j => {
+                          const jadwalDate = j.tanggal ? new Date(j.tanggal).toISOString().split('T')[0] : '';
+                          return jadwalDate === selectedDate;
+                        });
+                        
+                        if (selectedJadwal) {
+                          setJadwalLayananToday(selectedJadwal);
+                          console.log('[DEBUG] Selected jadwal for date:', selectedDate, selectedJadwal);
+                        }
+                      }}
                       required
-                    />
+                    >
+                      <option value="">Pilih tanggal dari jadwal layanan...</option>
+                      {jadwalLayananList
+                        .filter(jadwal => jadwal.tanggal) // Only jadwal with valid date
+                        .map(jadwal => {
+                          const tanggalFormatted = new Date(jadwal.tanggal).toISOString().split('T')[0];
+                          const tanggalDisplay = new Date(jadwal.tanggal).toLocaleDateString('id-ID', {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          });
+                          const dosisCount = (jadwal.dosis_vaksins || jadwal.DosisVaksins || []).length;
+                          
+                          return (
+                            <option key={jadwal.id} value={tanggalFormatted}>
+                              {tanggalDisplay} - {jadwal.layanan} ({dosisCount} vaksin)
+                            </option>
+                          );
+                        })
+                      }
+                    </select>
                   </div>
+                  <p className="text-xs text-gray-400 mt-1">
+                    📅 Pilih dari jadwal layanan yang sudah dibuat
+                  </p>
+                  {jadwalLayananList.length === 0 && (
+                    <p className="text-xs text-amber-600 mt-2 flex items-center gap-1">
+                      <AlertTriangle size={12} />
+                      Belum ada jadwal layanan. Silakan buat jadwal terlebih dahulu di menu Jadwal Layanan.
+                    </p>
+                  )}
                 </div>
 
                 {/* Vaccine Selection */}
                 <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
                   <div className="flex justify-between items-center mb-3">
                     <label className="text-gray-400 text-[10px] font-bold uppercase tracking-widest">
-                      Vaksin yang Diberikan:
+                      Vaksin yang Diberikan Hari Ini:
                     </label>
                     <span className="text-[10px] text-gray-500">
-                      {jadwalBelumSelesai.length} tersedia
+                      {availableJadwalToday.length} tersedia dari jadwal
                     </span>
                   </div>
 
+                  {/* Jadwal Layanan Info */}
+                  {jadwalLayananToday && (
+                    <div className="mb-3 p-2 bg-blue-50 border border-blue-200 rounded-lg">
+                      <p className="text-[10px] text-blue-700 font-semibold flex items-center gap-1">
+                        <CalendarClock size={12} />
+                        Jadwal: {jadwalLayananToday.layanan || 'Imunisasi'}
+                      </p>
+                      <p className="text-[9px] text-blue-600 mt-0.5">
+                        {(jadwalLayananToday.dosis_vaksins || jadwalLayananToday.DosisVaksins) && 
+                         (jadwalLayananToday.dosis_vaksins || jadwalLayananToday.DosisVaksins).length > 0 
+                          ? (jadwalLayananToday.dosis_vaksins || jadwalLayananToday.DosisVaksins)
+                              .map(dv => `${dv.Vaksin?.nama || dv.vaksin?.nama || 'Vaksin'} - ${dv.nama_dosis}`)
+                              .join(', ')
+                          : 'Daftar vaksin tersedia'
+                        }
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Empty State Messages */}
+                  {!formData.tanggal && (
+                    <div className="text-center py-8">
+                      <Calendar size={32} className="text-gray-300 mx-auto mb-2" />
+                      <p className="text-sm text-gray-500">Pilih tanggal pelayanan terlebih dahulu</p>
+                    </div>
+                  )}
+
+                  {formData.tanggal && availableJadwalToday.length === 0 && (
+                    <div className="text-center py-8">
+                      <AlertTriangle size={32} className="text-amber-400 mx-auto mb-2" />
+                      <p className="text-sm text-gray-600 font-medium">Tidak ada vaksin tersedia</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Semua vaksin pada tanggal ini sudah diberikan atau tidak ada jadwal vaksin untuk anak ini.
+                      </p>
+                    </div>
+                  )}
+
                   <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
-                    {jadwalBelumSelesai.map((jadwal) => {
+                    {availableJadwalToday.map((jadwal) => {
                       const isSelected = formData.selectedJadwalIds.includes(
                         jadwal.jadwal_id
                       );
@@ -805,12 +1042,7 @@ const PelayananImunisasi = () => {
                       );
                     })}
 
-                    {jadwalBelumSelesai.length === 0 && (
-                      <div className="text-center py-6 text-green-600 font-bold text-sm">
-                        <CheckCircle2 size={32} className="mx-auto mb-2" />
-                        Semua jadwal sudah selesai!
-                      </div>
-                    )}
+                    
                   </div>
                 </div>
 
