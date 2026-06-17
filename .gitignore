@@ -14,7 +14,6 @@ build/
 
 # Machine Learning - Models and Datasets
 *.pth
-*.pkl
 *.model
 *.h5
 *.hdf5
