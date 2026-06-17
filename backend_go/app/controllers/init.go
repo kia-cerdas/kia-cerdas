@@ -123,6 +123,9 @@ type Main struct {
 
 	// Pencatatan Imunisasi (Web)
 	PencatatanImunisasi *PencatatanImunisasiController
+
+	// Ringkasan Desa (dashboard kader)
+	RingkasanDesa *RingkasanDesaController
 }
 
 type Options struct {
@@ -279,6 +282,9 @@ func Init(opts Options) *Main {
 	m.DetailKehamilanIbu = NewDetailKehamilanIbuController(opts.UseCases.DetailKehamilanIbu)
 	// Pencatatan Imunisasi (Web)
 	m.PencatatanImunisasi = NewPencatatanImunisasiController(opts.UseCases.PencatatanImunisasi)
+
+	// Ringkasan Desa (dashboard kader)
+	m.RingkasanDesa = NewRingkasanDesaController(opts.UseCases.RingkasanDesa)
 
 	return m
 }
