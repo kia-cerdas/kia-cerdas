@@ -611,12 +611,12 @@ elif page == "🤖 Chatbot Asisten":
                             unsafe_allow_html=True)
                 found = True; break
         if not found:
-            st.markdown('<div class="warning-box">🤔 Saya tidak menemukan jawaban spesifik. '
+            st.markdown('<div class="warning-box"> Saya tidak menemukan jawaban spesifik. '
                         'Silakan hubungi bidan/dokter Puskesmas terdekat.</div>',
                         unsafe_allow_html=True)
 
     st.markdown("---")
-    st.markdown("### 💡 Pertanyaan Cepat")
+    st.markdown("###  Pertanyaan Cepat")
     groups = {
         "Tentang Risiko": ["apa itu anemia","apa itu kek","apa itu preeklampsia"],
         "Panduan ANC": ["berapa kali kunjungan anc","apa itu imunisasi td","apa itu tripel eliminasi"],
