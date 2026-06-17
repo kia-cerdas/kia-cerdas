@@ -53,7 +53,6 @@ docs/
 ├── database/             # Database schemas & migrations
 └── docs/                 # Documentation
 
-
 ## 🚀 Quick Start
 
 ### Prerequisites

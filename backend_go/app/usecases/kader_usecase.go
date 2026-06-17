@@ -14,6 +14,7 @@ type KaderUsecase interface {
 	GetMyKaderList(bidanPosyanduID *int64, searchKeyword string) ([]repositories.KaderListItem, error)
 	GetKaderDetail(id int32) (*models.Kader, error)
 	UpdateMyKaderProfile(id int32, req *UpdateKaderProfileRequest) (*models.Kader, error)
+	GetMyProfile(userID int32) (*repositories.KaderProfileItem, error)
 
 	// For admin only
 	GetAllKader(desa string) ([]repositories.KaderListItem, error)
@@ -21,6 +22,8 @@ type KaderUsecase interface {
 	UpdateKader(id int32, req *UpdateKaderRequest) (*models.Kader, error)
 	UpdateKaderStatus(id int32, status string) (*models.Kader, error)
 	DeleteKader(id int32) error
+
+	
 }
 
 // CreateKaderRequest - Request untuk membuat kader baru
@@ -322,4 +325,19 @@ func (u *kaderUsecase) UpdateKaderStatus(id int32, status string) (*models.Kader
 	}
 
 	return kader, nil
+}
+
+
+// GetMyProfile - Kader mendapatkan profil milik sendiri (berdasarkan token/user_id)
+func (u *kaderUsecase) GetMyProfile(userID int32) (*repositories.KaderProfileItem, error) {
+	if userID <= 0 {
+		return nil, customerror.NewBadRequestError("user tidak valid")
+	}
+
+	profile, err := u.kaderRepo.FindProfileByUserID(userID)
+	if err != nil {
+		return nil, customerror.NewNotFoundError("profil kader tidak ditemukan")
+	}
+
+	return profile, nil
 }

@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
-import '../../data/models/edukasi_trimester_model.dart';
 
-class EdukasiTrimesterDetailScreen extends StatelessWidget {
-  final EdukasiTrimesterModel item;
+import '../../data/models/edukasi_nifas_model.dart';
 
-  const EdukasiTrimesterDetailScreen({super.key, required this.item});
+/// Halaman DETAIL satu materi edukasi nifas (setelah melahirkan).
+///
+/// Dibuka saat ibu mengetuk salah satu kartu di halaman daftar
+/// (EdukasiNifasScreen). Desainnya mengikuti halaman detail trimester
+/// agar konsisten. Model nifas hanya punya judul + isi (tanpa
+/// "tanda gejala"/"solusi"), jadi detailnya cukup teks panjang.
+class EdukasiNifasDetailScreen extends StatelessWidget {
+  final EdukasiNifasModel item;
 
-  String get _trimesterLabel {
-    final s = item.trimester.trim().toLowerCase();
-    if (s.contains('1') || s.endsWith('i')) return 'Trimester I';
-    if (s.contains('2') || s.endsWith('ii')) return 'Trimester II';
-    if (s.contains('3') || s.endsWith('iii')) return 'Trimester III';
-    return item.trimester;
-  }
+  const EdukasiNifasDetailScreen({super.key, required this.item});
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +19,7 @@ class EdukasiTrimesterDetailScreen extends StatelessWidget {
       backgroundColor: const Color(0xFFF4F7FB),
       body: CustomScrollView(
         slivers: [
-          // ── App bar dengan gambar ──────────────────────────────────
+          // ── HEADER bergambar (mengecil saat di-scroll) ──
           SliverAppBar(
             expandedHeight: item.gambarUrl.trim().isNotEmpty ? 240 : 120,
             pinned: true,
@@ -37,35 +36,33 @@ class EdukasiTrimesterDetailScreen extends StatelessWidget {
             ),
           ),
 
-          // ── Konten artikel ────────────────────────────────────────
+          // ── ISI HALAMAN ──
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Badge trimester + kategori
+                  // Badge pil
                   Wrap(
                     spacing: 8,
                     runSpacing: 6,
                     children: [
-                      if (item.trimester.trim().isNotEmpty)
-                        _badge(
-                          _trimesterLabel,
-                          bg: const Color(0xFF1F5EA8),
-                          fg: Colors.white,
-                        ),
-                      if (item.kategori.trim().isNotEmpty)
-                        _badge(
-                          item.kategori,
-                          bg: const Color(0xFFE8F1FD),
-                          fg: const Color(0xFF1F5EA8),
-                        ),
+                      _badge(
+                        'Masa Nifas',
+                        bg: const Color(0xFF1F5EA8),
+                        fg: Colors.white,
+                      ),
+                      _badge(
+                        'Setelah Melahirkan',
+                        bg: const Color(0xFFE8F1FD),
+                        fg: const Color(0xFF1F5EA8),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 16),
 
-                  // Judul
+                  // Judul besar
                   Text(
                     item.judul,
                     style: const TextStyle(
@@ -77,14 +74,11 @@ class EdukasiTrimesterDetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
 
-                  // Divider tipis
-                  Container(
-                    height: 1,
-                    color: const Color(0xFFE5E7EB),
-                  ),
+                  // Garis pemisah
+                  Container(height: 1, color: const Color(0xFFE5E7EB)),
                   const SizedBox(height: 20),
 
-                  // Isi lengkap
+                  // Isi materi (teks panjang, jarak baris longgar)
                   Text(
                     item.isi,
                     style: const TextStyle(

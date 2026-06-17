@@ -848,6 +848,7 @@ import 'package:flutter/material.dart';
 import '../../data/models/edukasi_trimester_model.dart';
 import '../../data/repositories/edukasi_trimester_repository.dart';
 import '../../data/services/edukasi_trimester_service.dart';
+import 'edukasi_trimester_detail_screen.dart';
 
 // =========================================================================
 // HELPER: Normalisasi nilai trimester dari DB ke angka '1', '2', '3'
@@ -1165,91 +1166,121 @@ class _ArticleCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => EdukasiTrimesterDetailScreen(item: item),
+        ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Gambar
-          if (item.gambarUrl.trim().isNotEmpty)
-            ClipRRect(
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(20)),
-              child: Image.network(
-                item.gambarUrl,
-                width: double.infinity,
-                height: 180,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => _placeholderImage(),
-              ),
-            )
-          else
-            _placeholderImage(rounded: true),
-
-          Padding(
-            padding: const EdgeInsets.all(18),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Badge trimester + kategori
-                Row(
-                  children: [
-                    if (item.trimester.trim().isNotEmpty)
-                      _Badge(
-                        text: _trimesterLabel,
-                        bgColor: const Color(0xFF1F5EA8),
-                        textColor: Colors.white,
-                      ),
-                    if (item.trimester.trim().isNotEmpty &&
-                        item.kategori.trim().isNotEmpty)
-                      const SizedBox(width: 8),
-                    if (item.kategori.trim().isNotEmpty)
-                      _Badge(
-                        text: item.kategori,
-                        bgColor: const Color(0xFFE8F1FD),
-                        textColor: const Color(0xFF1F5EA8),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-
-                // Judul
-                Text(
-                  item.judul,
-                  style: const TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF111827),
-                  ),
-                ),
-                const SizedBox(height: 10),
-
-                // Isi (preview)
-                Text(
-                  item.isi,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    height: 1.6,
-                    color: Color(0xFF6B7280),
-                  ),
-                ),
-              ],
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
-          ),
-        ],
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Gambar
+            if (item.gambarUrl.trim().isNotEmpty)
+              ClipRRect(
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(20)),
+                child: Image.network(
+                  item.gambarUrl,
+                  width: double.infinity,
+                  height: 180,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => _placeholderImage(),
+                ),
+              )
+            else
+              _placeholderImage(rounded: true),
+
+            Padding(
+              padding: const EdgeInsets.all(18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Badge trimester + kategori
+                  Row(
+                    children: [
+                      if (item.trimester.trim().isNotEmpty)
+                        _Badge(
+                          text: _trimesterLabel,
+                          bgColor: const Color(0xFF1F5EA8),
+                          textColor: Colors.white,
+                        ),
+                      if (item.trimester.trim().isNotEmpty &&
+                          item.kategori.trim().isNotEmpty)
+                        const SizedBox(width: 8),
+                      if (item.kategori.trim().isNotEmpty)
+                        _Badge(
+                          text: item.kategori,
+                          bgColor: const Color(0xFFE8F1FD),
+                          textColor: const Color(0xFF1F5EA8),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Judul
+                  Text(
+                    item.judul,
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF111827),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Isi (preview)
+                  Text(
+                    item.isi,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      height: 1.6,
+                      color: Color(0xFF6B7280),
+                    ),
+                  ),
+
+                  // Tombol baca selengkapnya
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text(
+                        'Baca selengkapnya',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF1F5EA8),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      const Icon(
+                        Icons.arrow_forward_rounded,
+                        size: 14,
+                        color: Color(0xFF1F5EA8),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
