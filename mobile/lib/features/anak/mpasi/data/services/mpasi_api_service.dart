@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:ta_pa2_pa3_project/core/network/app_http_client.dart';
 import 'package:ta_pa2_pa3_project/core/constants/api_constants.dart';
 import 'package:ta_pa2_pa3_project/core/services/auth_session.dart';
 import 'package:ta_pa2_pa3_project/features/anak/mpasi/data/models/mpasi_models.dart';
@@ -7,7 +8,7 @@ import 'package:ta_pa2_pa3_project/features/anak/mpasi/data/models/mpasi_models.
 class MpasiApiService {
   final http.Client _client;
 
-  MpasiApiService({http.Client? client}) : _client = client ?? http.Client();
+  MpasiApiService({http.Client? client}) : _client = client ?? AppHttpClient();
 
   Future<List<MateriMpasi>> getMateriByBulan(int bulan) async {
     final token = AuthSession.token;

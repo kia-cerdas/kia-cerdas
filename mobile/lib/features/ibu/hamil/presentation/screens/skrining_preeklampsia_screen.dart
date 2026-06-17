@@ -18,8 +18,6 @@ class _SkriningPreeklampsiaScreenState
   final _service = SkriningPreeklampsiaApiService();
   late Future<SkriningPreeklampsiaModel> _future;
 
-  static const String _nomorBidan = '6281234567890';
-
   @override
   void initState() {
     super.initState();
@@ -121,123 +119,183 @@ class _SkriningPreeklampsiaScreenState
   Future<void> _konfirmasiHubungiBidan(
     _PreeklampsiaGuidance guidance,
   ) async {
-    final lanjut = await showDialog<bool>(
+    const String namaBidan = "Bidan Desa";
+    const String nomorBidan = "0812-6482-5931";
+
+    final result = await showModalBottomSheet<String>(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          title: const Text(
-            "Hubungi Bidan?",
-            style: TextStyle(
-              fontWeight: FontWeight.w800,
+      backgroundColor: Colors.transparent,
+      builder: (_) {
+        return Container(
+          padding: const EdgeInsets.all(22),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(28),
+              topRight: Radius.circular(28),
             ),
           ),
-          content: Text(
-            "Ibu akan diarahkan untuk menghubungi bidan melalui WhatsApp.\n\n"
-            "Status: ${guidance.title}\n"
-            "Saran: ${guidance.statusLabel}\n"
-            "Waktu pemeriksaan: ${guidance.checkTime}\n\n"
-            "Lanjutkan?",
-            style: const TextStyle(
-              fontSize: 14,
-              height: 1.45,
-            ),
-          ),
-          actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text("Batal"),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(context, true),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+          child: SafeArea(
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+
+                  // HANDLE
+                  Container(
+                    width: 46,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+
+                  const SizedBox(height: 18),
+
+                  // ICON
+                  Container(
+                    width: 72,
+                    height: 72,
+                    decoration: BoxDecoration(
+                      color: Colors.green.shade50,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.support_agent,
+                      color: Colors.green.shade600,
+                      size: 36,
+                    ),
+                  ),
+
+                  const SizedBox(height: 18),
+
+                  const Text(
+                    "Hubungi Bidan",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  Text(
+                    "Ibu akan dihubungkan ke $namaBidan untuk mendapatkan bantuan dan arahan lebih lanjut.",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 13.5,
+                      color: Colors.grey.shade700,
+                      height: 1.5,
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  Text(
+                    nomorBidan,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey.shade700,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // WHATSAPP
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green.shade600,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.pop(context, "wa");
+                      },
+                      icon: const Icon(Icons.chat),
+                      label: const Text(
+                        "Chat via WhatsApp",
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // TELEPON
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.primary,
+                        side: BorderSide(color: AppColors.primary),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.pop(context, "call");
+                      },
+                      icon: const Icon(Icons.call_outlined),
+                      label: const Text(
+                        "Telepon Bidan",
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: TextButton(
+                      style: TextButton.styleFrom(
+                        backgroundColor: Colors.blueGrey.shade50,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: Text(
+                        "Batal",
+                        style: TextStyle(
+                          color: Colors.blueGrey.shade500,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              child: const Text("Lanjutkan"),
             ),
-          ],
+          ),
         );
       },
     );
 
-    if (lanjut == true && mounted) {
-      await _hubungiBidan(guidance);
+    // =====================================
+    // AKSI SETELAH PILIH
+    // =====================================
+
+    if (result == "wa" && mounted) {
+      final Uri url = Uri.parse('https://wa.me/6281264825931');
+      await launchUrl(url, mode: LaunchMode.externalApplication);
     }
-  }
 
-  Future<void> _hubungiBidan(_PreeklampsiaGuidance guidance) async {
-    final faktorText = guidance.factors.isEmpty
-        ? "- Tidak ada faktor risiko utama yang terdeteksi"
-        : guidance.factors.map((item) => "- ${item.label}").join("\n");
-
-    final pesan = Uri.encodeComponent(
-      "Assalamu'alaikum Bidan, saya ingin konsultasi hasil skrining preeklampsia.\n\n"
-      "Status Risiko: ${guidance.title}\n"
-      "Saran Tindakan: ${guidance.statusLabel}\n"
-      "Waktu Pemeriksaan: ${guidance.checkTime}\n\n"
-      "Faktor yang terdeteksi:\n"
-      "$faktorText\n\n"
-      "Mohon arahan selanjutnya, Bidan.",
-    );
-
-    final whatsappUrl = Uri.parse(
-      "https://wa.me/$_nomorBidan?text=$pesan",
-    );
-
-    final phoneUrl = Uri.parse(
-      "tel:$_nomorBidan",
-    );
-
-    try {
-      final whatsappOpened = await launchUrl(
-        whatsappUrl,
-        mode: LaunchMode.externalApplication,
-      );
-
-      if (!whatsappOpened) {
-        await _bukaTelepon(phoneUrl);
-      }
-    } catch (_) {
-      await _bukaTelepon(phoneUrl);
-    }
-  }
-
-  Future<void> _bukaTelepon(Uri phoneUrl) async {
-    try {
-      final phoneOpened = await launchUrl(
-        phoneUrl,
-        mode: LaunchMode.externalApplication,
-      );
-
-      if (!phoneOpened && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              "Tidak dapat membuka WhatsApp atau panggilan telepon.",
-            ),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-    } catch (_) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              "Gagal menghubungi bidan. Periksa aplikasi WhatsApp atau kontak telepon.",
-            ),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
+    if (result == "call" && mounted) {
+      final Uri url = Uri(scheme: 'tel', path: '081264825931');
+      await launchUrl(url);
     }
   }
 

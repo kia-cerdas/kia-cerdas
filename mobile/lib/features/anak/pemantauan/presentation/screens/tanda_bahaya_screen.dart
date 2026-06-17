@@ -49,14 +49,17 @@ class _TandaBahayaScreenState extends State<TandaBahayaScreen> {
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Mengerti', style: TextStyle(color: Colors.white)),
+              child:
+                  const Text('Mengerti', style: TextStyle(color: Colors.white)),
             )
           ],
         ),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Tidak ada tanda bahaya. Tetap pantau kesehatan anak.')),
+        const SnackBar(
+            content:
+                Text('Tidak ada tanda bahaya. Tetap pantau kesehatan anak.')),
       );
     }
   }
@@ -67,7 +70,8 @@ class _TandaBahayaScreenState extends State<TandaBahayaScreen> {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Skrining Tanda Bahaya', style: TextStyle(color: Colors.black87)),
+          title: const Text('Skrining Tanda Bahaya',
+              style: TextStyle(color: Colors.black87)),
           backgroundColor: Colors.white,
           iconTheme: const IconThemeData(color: Colors.black),
           bottom: const TabBar(
@@ -118,7 +122,8 @@ class _TandaBahayaScreenState extends State<TandaBahayaScreen> {
             child: ElevatedButton(
               onPressed: () => _submitSkrining(gejalaMap),
               style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: const Text('Cek Hasil Skrining', style: TextStyle(fontSize: 16, color: Colors.white)),
+              child: const Text('Cek Hasil Skrining',
+                  style: TextStyle(fontSize: 16, color: Colors.white)),
             ),
           ),
         )

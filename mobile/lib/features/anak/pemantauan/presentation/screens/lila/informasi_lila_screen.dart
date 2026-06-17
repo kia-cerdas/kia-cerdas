@@ -71,40 +71,44 @@ class InformasiLilaScreen extends StatelessWidget {
               title: 'Apa itu LiLA?',
               icon: Icons.info_outline,
               iconColor: const Color(0xFF16A34A),
-              content: 'Lingkar Lengan Atas (LiLA) adalah salah satu indikator untuk menilai status gizi anak, khususnya untuk mendeteksi gizi buruk. Pengukuran dilakukan pada lengan atas kiri, di tengah antara bahu dan siku.',
+              content:
+                  'Lingkar Lengan Atas (LiLA) adalah salah satu indikator untuk menilai status gizi anak, khususnya untuk mendeteksi gizi buruk. Pengukuran dilakukan pada lengan atas kiri, di tengah antara bahu dan siku.',
             ),
             const SizedBox(height: 16),
 
             // Kategori LiLA
             _sectionTitle('Kategori Pengukuran LiLA'),
             const SizedBox(height: 12),
-            
+
             _lilaCategoryCard(
               color: const Color(0xFFDCFCE7),
               borderColor: const Color(0xFF16A34A),
               title: 'Gizi Baik',
               value: '> 13,5 cm',
-              desc: 'Status gizi anak dalam kondisi baik. Lanjutkan pola makan sehat.',
+              desc:
+                  'Status gizi anak dalam kondisi baik. Lanjutkan pola makan sehat.',
               iconColor: const Color(0xFF16A34A),
             ),
             const SizedBox(height: 10),
-            
+
             _lilaCategoryCard(
               color: const Color(0xFFFEF3C7),
               borderColor: const Color(0xFFD97706),
               title: 'Gizi Kurang',
               value: '11,5 - 13,5 cm',
-              desc: 'Anak perlu perhatian lebih. Tingkatkan asupan gizi seimbang.',
+              desc:
+                  'Anak perlu perhatian lebih. Tingkatkan asupan gizi seimbang.',
               iconColor: const Color(0xFFD97706),
             ),
             const SizedBox(height: 10),
-            
+
             _lilaCategoryCard(
               color: const Color(0xFFFEE2E2),
               borderColor: const Color(0xFFDC2626),
               title: 'Gizi Buruk',
               value: '< 11,5 cm',
-              desc: 'Segera bawa anak ke puskesmas untuk penanganan lebih lanjut!',
+              desc:
+                  'Segera bawa anak ke puskesmas untuk penanganan lebih lanjut!',
               iconColor: const Color(0xFFDC2626),
               isDanger: true,
             ),
@@ -122,19 +126,22 @@ class InformasiLilaScreen extends StatelessWidget {
             _stepCard(
               step: 2,
               title: 'Temukan Titik Ukur',
-              desc: 'Ukur tengah-tengah antara ujung bahu (akromion) dan siku (olekranon).',
+              desc:
+                  'Ukur tengah-tengah antara ujung bahu (akromion) dan siku (olekranon).',
             ),
             const SizedBox(height: 10),
             _stepCard(
               step: 3,
               title: 'Lingkarkan Pita Ukur',
-              desc: 'Lingkarkan pita ukur melingkar di titik tengah tersebut, tidak terlalu ketat atau longgar.',
+              desc:
+                  'Lingkarkan pita ukur melingkar di titik tengah tersebut, tidak terlalu ketat atau longgar.',
             ),
             const SizedBox(height: 10),
             _stepCard(
               step: 4,
               title: 'Baca Hasil',
-              desc: 'Baca ukuran pada pita ukur saat anak dalam keadaan tenang dan rileks.',
+              desc:
+                  'Baca ukuran pada pita ukur saat anak dalam keadaan tenang dan rileks.',
             ),
             const SizedBox(height: 24),
 

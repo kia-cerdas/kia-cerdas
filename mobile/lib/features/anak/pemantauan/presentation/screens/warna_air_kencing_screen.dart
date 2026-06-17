@@ -7,7 +7,8 @@ class WarnaAirKencingScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Warna Air Kencing', style: TextStyle(color: Colors.black87)),
+        title: const Text('Warna Air Kencing',
+            style: TextStyle(color: Colors.black87)),
         backgroundColor: Colors.white,
         iconTheme: const IconThemeData(color: Colors.black),
       ),
@@ -27,24 +28,30 @@ class WarnaAirKencingScreen extends StatelessWidget {
           _buildIndikator(
             warna: Colors.yellow.shade100,
             status: 'Baik',
-            deskripsi: 'Anak terhidrasi dengan baik. Teruskan minum air putih sesuai kebutuhan.',
+            deskripsi:
+                'Anak terhidrasi dengan baik. Teruskan minum air putih sesuai kebutuhan.',
           ),
           _buildIndikator(
             warna: Colors.yellow.shade400,
             status: 'Kurang Baik',
-            deskripsi: 'Anak kurang terhidrasi. Tambahkan minum sesuai kebutuhan.',
+            deskripsi:
+                'Anak kurang terhidrasi. Tambahkan minum sesuai kebutuhan.',
           ),
           _buildIndikator(
             warna: Colors.orange.shade700,
             status: 'Tidak Baik',
-            deskripsi: 'Anak sangat kurang minum. Segera beri minum. Jika tidak membaik hubungi Nakes.',
+            deskripsi:
+                'Anak sangat kurang minum. Segera beri minum. Jika tidak membaik hubungi Nakes.',
           ),
         ],
       ),
     );
   }
 
-  Widget _buildIndikator({required Color warna, required String status, required String deskripsi}) {
+  Widget _buildIndikator(
+      {required Color warna,
+      required String status,
+      required String deskripsi}) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
@@ -58,16 +65,23 @@ class WarnaAirKencingScreen extends StatelessWidget {
           Container(
             width: 50,
             height: 50,
-            decoration: BoxDecoration(color: warna, shape: BoxShape.circle, border: Border.all(color: Colors.grey.shade400)),
+            decoration: BoxDecoration(
+                color: warna,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.grey.shade400)),
           ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(status, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                Text(status,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 16)),
                 const SizedBox(height: 4),
-                Text(deskripsi, style: const TextStyle(fontSize: 13, color: Colors.black54)),
+                Text(deskripsi,
+                    style:
+                        const TextStyle(fontSize: 13, color: Colors.black54)),
               ],
             ),
           )

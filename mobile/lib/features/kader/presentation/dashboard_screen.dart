@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:ta_pa2_pa3_project/core/services/auth_session.dart';
 import 'package:ta_pa2_pa3_project/features/kader/screens/pilih_status_kunjungan.dart';
+import 'package:ta_pa2_pa3_project/features/kader/screens/imunisasi_terlewat.dart';
 import 'package:ta_pa2_pa3_project/features/kader/screens/profil_screen.dart';
 import 'package:ta_pa2_pa3_project/features/kader/widgets/dashboard_bottom_nav.dart';
 import 'package:ta_pa2_pa3_project/features/kader/widgets/dashboard_header.dart';
-import 'package:ta_pa2_pa3_project/features/anak/pemantauan/presentation/screens/skrining/riwayat_skrining_tanda_bahaya_screen.dart';
+
 import 'package:ta_pa2_pa3_project/features/kader/screens/verifikasi_absensi_kelas_ibu_balita_screen.dart';
 // Bagian Ibu
 import 'package:ta_pa2_pa3_project/features/kader/screens/ttd_mms/rekap_ttd_mms_kader_screen.dart';
@@ -71,7 +72,7 @@ class _DashboardKaderScreenState extends State<DashboardKaderScreen> {
         body = _buildHomeBody();
         break;
       case 1:
-        body = const Center(child: Text('Kunjungan'));
+        body = const DaftarImunisasiTerlewatScreen();
         break;
       case 2:
         body = const ProfilScreen();
@@ -145,34 +146,7 @@ class _DashboardKaderScreenState extends State<DashboardKaderScreen> {
                   },
                 ),
 
-                const SizedBox(height: 24),
 
-                const Text(
-                  'Verifikasi Skrining',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-
-                const SizedBox(height: 10),
-
-                _buildFeatureActionCard(
-                  title: 'Periksa hasil skrining tanda bahaya anak.',
-                  subtitle:
-                      'Tinjau pengisian ibu dan berikan status verifikasi di sini.',
-                  icon: Icons.fact_check_rounded,
-                  accentColor: const Color(0xFF2563EB),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const RiwayatSkriningTandaBahayaScreen(
-                          showAllRecords: true,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-
-                const SizedBox(height: 12),
 
                 _buildFeatureActionCard(
                   title: 'Verifikasi Kelas Ibu Balita.',

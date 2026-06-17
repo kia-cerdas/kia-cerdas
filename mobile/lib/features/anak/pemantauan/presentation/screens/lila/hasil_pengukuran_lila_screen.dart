@@ -5,7 +5,8 @@ class HasilPengukuranLilaScreen extends StatefulWidget {
   const HasilPengukuranLilaScreen({Key? key}) : super(key: key);
 
   @override
-  State<HasilPengukuranLilaScreen> createState() => _HasilPengukuranLilaScreenState();
+  State<HasilPengukuranLilaScreen> createState() =>
+      _HasilPengukuranLilaScreenState();
 }
 
 class _HasilPengukuranLilaScreenState extends State<HasilPengukuranLilaScreen> {
@@ -14,10 +15,25 @@ class _HasilPengukuranLilaScreenState extends State<HasilPengukuranLilaScreen> {
   final TextEditingController _lilaController = TextEditingController();
   String? _selectedBulan;
   final List<String> _bulanOptions = [
-    '6 Bulan', '7 Bulan', '8 Bulan', '9 Bulan', '10 Bulan', '11 Bulan',
-    '12 Bulan', '15 Bulan', '18 Bulan', '21 Bulan', '24 Bulan',
-    '27 Bulan', '30 Bulan', '33 Bulan', '36 Bulan', '42 Bulan',
-    '48 Bulan', '54 Bulan', '59 Bulan',
+    '6 Bulan',
+    '7 Bulan',
+    '8 Bulan',
+    '9 Bulan',
+    '10 Bulan',
+    '11 Bulan',
+    '12 Bulan',
+    '15 Bulan',
+    '18 Bulan',
+    '21 Bulan',
+    '24 Bulan',
+    '27 Bulan',
+    '30 Bulan',
+    '33 Bulan',
+    '36 Bulan',
+    '42 Bulan',
+    '48 Bulan',
+    '54 Bulan',
+    '59 Bulan',
   ];
 
   List<Map<String, dynamic>> _riwayatPengukuran = [];
@@ -77,7 +93,7 @@ class _HasilPengukuranLilaScreenState extends State<HasilPengukuranLilaScreen> {
 
   void _showResultDialog(String status, Color statusColor, double lila) {
     final isGiziBuruk = status == 'Gizi Buruk';
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -242,7 +258,7 @@ class _HasilPengukuranLilaScreenState extends State<HasilPengukuranLilaScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  
+
                   // Nama Anak
                   const Text(
                     'Nama Anak',
@@ -327,7 +343,8 @@ class _HasilPengukuranLilaScreenState extends State<HasilPengukuranLilaScreen> {
                   const SizedBox(height: 8),
                   TextField(
                     controller: _lilaController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
                     decoration: InputDecoration(
                       hintText: 'Contoh: 12.5',
                       suffixText: 'cm',
@@ -385,7 +402,7 @@ class _HasilPengukuranLilaScreenState extends State<HasilPengukuranLilaScreen> {
               ),
             ),
             const SizedBox(height: 12),
-            
+
             if (_riwayatPengukuran.isEmpty)
               Container(
                 width: double.infinity,

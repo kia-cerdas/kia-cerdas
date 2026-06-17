@@ -170,3 +170,149 @@ class StatusKunjunganCountModel {
     };
   }
 }
+
+class JadwalImunisasiTerlewatModel {
+  final int jadwalId;
+  final String namaAnak;
+  final String namaDosis;
+  final int jumlahHariTerlambat;
+  final String prioritas;
+
+  JadwalImunisasiTerlewatModel({
+    required this.jadwalId,
+    required this.namaAnak,
+    required this.namaDosis,
+    required this.jumlahHariTerlambat,
+    required this.prioritas,
+  });
+
+  factory JadwalImunisasiTerlewatModel.fromJson(
+    Map<String, dynamic> json,
+  ) {
+  return JadwalImunisasiTerlewatModel(
+    jadwalId: (json['JadwalID'] as num?)?.toInt() ?? 0,
+    namaAnak: json['NamaAnak'] ?? '',
+    namaDosis: json['NamaDosis'] ?? '',
+    jumlahHariTerlambat:
+        (json['JumlahHariTerlambat'] as num?)?.toInt() ?? 0,
+    prioritas: json['Prioritas'] ?? '',
+  );
+}
+
+  Map<String, dynamic> toJson() {
+    return {
+      'jadwal_id': jadwalId,
+      'nama_anak': namaAnak,
+      'nama_dosis': namaDosis,
+      'jumlah_hari_terlambat': jumlahHariTerlambat,
+      'prioritas': prioritas,
+    };
+  }
+}
+
+class DetailJadwalImunisasiTerlewatModel {
+  final int jadwalId;
+  final int anakId;
+
+  final String namaAnak;
+  final DateTime? tanggalLahir;
+  final String dusun;
+
+  final String namaIbu;
+  final String nomorTeleponIbu;
+
+  final String namaAyah;
+  final String nomorTeleponAyah;
+
+  final String namaDosis;
+  final DateTime? jadwalImunisasi;
+
+  final String namaStatus;
+  final String prioritas;
+  final int jumlahHariTerlambat;
+
+  DetailJadwalImunisasiTerlewatModel({
+    required this.jadwalId,
+    required this.anakId,
+    required this.namaAnak,
+    required this.tanggalLahir,
+    required this.dusun,
+    required this.namaIbu,
+    required this.nomorTeleponIbu,
+    required this.namaAyah,
+    required this.nomorTeleponAyah,
+    required this.namaDosis,
+    required this.jadwalImunisasi,
+    required this.namaStatus,
+    required this.prioritas,
+    required this.jumlahHariTerlambat,
+  });
+
+  factory DetailJadwalImunisasiTerlewatModel.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    return DetailJadwalImunisasiTerlewatModel(
+      jadwalId: (json['jadwal_id'] as num?)?.toInt() ?? 0,
+      anakId: (json['anak_id'] as num?)?.toInt() ?? 0,
+
+      namaAnak: json['nama_anak'] ?? '',
+      tanggalLahir: _parseDate(
+        json['tanggal_lahir'],
+      ),
+      dusun: json['dusun'] ?? '',
+
+      namaIbu: json['nama_ibu'] ?? '',
+      nomorTeleponIbu: json['nomor_telepon_ibu'] ?? '',
+
+      namaAyah: json['nama_ayah'] ?? '',
+      nomorTeleponAyah: json['nomor_telepon_ayah'] ?? '',
+
+      namaDosis: json['nama_dosis'] ?? '',
+      jadwalImunisasi: _parseDate(
+        json['jadwal_imunisasi'],
+      ),
+
+      namaStatus: json['nama_status'] ?? '',
+      prioritas: json['prioritas'] ?? '',
+
+      jumlahHariTerlambat:
+          (json['jumlah_hari_terlambat'] as num?)
+                  ?.toInt() ??
+              0,
+    );
+  }
+
+  static DateTime? _parseDate(
+    dynamic value,
+  ) {
+    if (value == null) return null;
+
+    try {
+      return DateTime.parse(
+        value.toString(),
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+}
+
+class PostKunjunganImunisasiRequest {
+  final int idStatusKunjungan;
+  final String tanggalKunjungan;
+  final int idJadwalImunisasi;
+
+  PostKunjunganImunisasiRequest({
+    required this.idStatusKunjungan,
+    required this.tanggalKunjungan,
+    required this.idJadwalImunisasi,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      "id_status_kunjungan": idStatusKunjungan,
+      "tanggal_kunjungan": tanggalKunjungan,
+      "id_jadwal_imunisasi": idJadwalImunisasi,
+    };
+  }
+}

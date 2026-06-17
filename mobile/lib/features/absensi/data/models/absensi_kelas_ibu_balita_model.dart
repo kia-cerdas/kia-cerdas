@@ -5,6 +5,7 @@ class AbsensiKelasIbuBalitaModel {
   final String namaKader;
   final String tanggalParaf;
   final String namaIbu;
+  final String namaAnak;
   final String status;
 
   const AbsensiKelasIbuBalitaModel({
@@ -14,13 +15,36 @@ class AbsensiKelasIbuBalitaModel {
     required this.namaKader,
     required this.tanggalParaf,
     this.namaIbu = '',
+    this.namaAnak = '',
     this.status = 'Menunggu Verifikasi',
   });
 
   factory AbsensiKelasIbuBalitaModel.fromJson(Map<String, dynamic> json) {
     String namaIbu = '';
-    if (json['ibu'] != null && json['ibu']['kependudukan'] != null) {
-      namaIbu = json['ibu']['kependudukan']['nama']?.toString() ?? '';
+    String namaAnak = '';
+
+    if (json['ibu'] != null) {
+      if (json['ibu']['kependudukan'] != null) {
+        namaIbu = json['ibu']['kependudukan']['nama_lengkap']?.toString() ??
+            json['ibu']['kependudukan']['nama']?.toString() ?? '';
+      }
+      
+      if (json['ibu']['anak'] is List) {
+        final anakList = json['ibu']['anak'] as List;
+        final List<String> names = [];
+        for (var anakItem in anakList) {
+          if (anakItem['penduduk'] != null && anakItem['penduduk']['nama_lengkap'] != null) {
+            names.add(anakItem['penduduk']['nama_lengkap'].toString());
+          } else if (anakItem['penduduk'] != null && anakItem['penduduk']['nama'] != null) {
+            names.add(anakItem['penduduk']['nama'].toString());
+          } else if (anakItem['nama_anak'] != null) {
+            names.add(anakItem['nama_anak'].toString());
+          } else if (anakItem['nama'] != null) {
+            names.add(anakItem['nama'].toString());
+          }
+        }
+        namaAnak = names.join(', ');
+      }
     }
 
     return AbsensiKelasIbuBalitaModel(
@@ -30,6 +54,7 @@ class AbsensiKelasIbuBalitaModel {
       namaKader: json['nama_kader']?.toString() ?? '',
       tanggalParaf: _readDate(json['tanggal_paraf']),
       namaIbu: namaIbu,
+      namaAnak: namaAnak,
       status: json['status']?.toString() ?? 'Menunggu Verifikasi',
     );
   }
