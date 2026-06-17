@@ -905,6 +905,8 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	kader := e.Group("/kader")
 	kader.Use(middlewares.JWTAuth(controller.JWTSecret()))
 	kader.Use(middlewares.Kader())
+	// Profil
+	kader.GET("/profil", controller.Kader.GetMyProfile)
 	kader.GET("/imunisasi-terlewat", controller.GetJadwalImunisasiTerlewat)
 	kader.GET("/imunisasi-terlewat/:jadwal_id", controller.GetJadwalImunisasiTerlewatByID)
 	kader.POST("/kunjungan-imunisasi", controller.CreateKunjunganImunisasi)
@@ -938,6 +940,7 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	kader.GET("/bbl/anak/:anak_id", controller.Bbl.GetByAnakID)
 	kader.PUT("/bbl/anak/:anak_id/verifikasi", controller.Bbl.Verify)
 	kader.GET("/bbl", controller.Bbl.GetAll)
+
 
 	// ==================== KELUHAN ANAK ====================
 	ibu.GET("/keluhan-anak", controller.KeluhanAnak.GetByAnakIDForIbu)

@@ -180,3 +180,19 @@ func (c *KaderController) AdminUpdateStatusKader(ctx echo.Context) error {
 
 	return helpers.StandardResponse(ctx, http.StatusOK, []string{constants.SUCCESS_RESPONSE_MESSAGE}, kader, nil)
 }
+
+
+// GetMyProfile - Kader mendapatkan profil milik sendiri
+func (c *KaderController) GetMyProfile(ctx echo.Context) error {
+	claims, _ := ctx.Get("auth_claims").(*models.AuthClaims)
+	if claims == nil {
+		return helpers.Response(ctx, http.StatusUnauthorized, []string{"unauthorized"})
+	}
+
+	profile, err := c.usecase.GetMyProfile(claims.UserID)
+	if err != nil {
+		return helpers.Response(ctx, customerror.GetStatusCode(err), []string{err.Error()})
+	}
+
+	return helpers.StandardResponse(ctx, http.StatusOK, []string{constants.SUCCESS_RESPONSE_MESSAGE}, profile, nil)
+}
