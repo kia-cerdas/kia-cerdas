@@ -1,18 +1,54 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'core/services/auth_session.dart';
 import 'core/services/unauthorized_handler.dart';
 import 'core/themes/app_theme.dart';
 import 'core/services/notification_service.dart';
-
 import 'features/auth/presentation/screens/login_screen.dart';
-
 import 'features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'features/kader/presentation/dashboard_screen.dart';
-
 import 'core/routes/navigator_key.dart';
+import 'db/sync_provider.dart';
+import 'main.dart'; // Memastikan initBackgroundSyncListener terbaca
 
-class KiaApp extends StatelessWidget {
+class KiaApp extends StatefulWidget {
   const KiaApp({super.key});
+
+  @override
+  State<KiaApp> createState() => _KiaAppState(); // BERSIH: Tidak ada logika di sini
+}
+
+class _KiaAppState extends State<KiaApp> {
+  @override
+  void initState() {
+    super.initState();
+    
+    // PERBAIKAN UTAMA: Menunggu 1 frame sampai widget tree selesai dirender sempurna 
+    // agar Provider terikat ke context sebelum dibaca oleh _checkAndActivateSync()
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAndActivateSync();
+    });
+  }
+
+  void _checkAndActivateSync() {
+    // 1. Pastikan pengguna sudah login dan role-nya adalah Ibu
+    final bool isIbu = AuthSession.isLoggedIn && 
+        AuthSession.role?.trim().toLowerCase() == 'ibu';
+
+    if (isIbu) {
+      // 2. Ambil token JWT dari session
+      String? tokenJwt = AuthSession.token; 
+
+      if (tokenJwt != null && tokenJwt.isNotEmpty) {
+        // 3. Ambil SyncProvider dari root context (Sekarang aman dari ProviderNotFoundError)
+        final syncProvider = Provider.of<SyncProvider>(context, listen: false);
+
+        // 4. Aktifkan background sync listener
+        initBackgroundSyncListener(syncProvider, tokenJwt);
+        print("🎉 [Sobat Imun] Background Sync untuk Ibu berhasil diaktifkan dari app.dart");
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +57,6 @@ class KiaApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
       theme: AppTheme.lightTheme,
-      // navigatorKey: UnauthorizedHandler.navigatorKey,
       home: _buildHome(),
     );
   }
