@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import MainLayout from "../../components/Layout/MainLayout";
 import AlertNotification from "../../components/AlertNotification";
 import { PelayananLilaService } from "../../services/Pelayanan-lila-anak";
-import { Plus, Calendar, Ruler, ChevronRight, Loader2, Trash2, Edit, FileText } from 'lucide-react';
+import { Plus, Calendar, Ruler, ChevronRight, Loader2, Trash2, Edit, FileText, ArrowLeft } from 'lucide-react';
 
 const PelayananLilaIndex = () => {
   const { id: anakId } = useParams();
@@ -79,6 +79,12 @@ const PelayananLilaIndex = () => {
         onRetry={notification?.type === "error" ? () => setNotification(null) : null}
       />
       <div className="max-w-6xl mx-auto p-6 md:p-8 bg-slate-50 min-h-screen">
+        <button
+          onClick={() => navigate(`/data-anak/dashboard/${anakId}`)}
+          className="flex items-center gap-2 text-slate-500 hover:text-slate-800 font-bold text-xs uppercase tracking-wider mb-6 transition-all"
+        >
+          <ArrowLeft size={16} /> Kembali
+        </button>
 
         {/* HEADER */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
@@ -90,7 +96,7 @@ const PelayananLilaIndex = () => {
               Pencatatan LILA
             </h1>
             <p className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.2em] mt-3 ml-1">
-              ID Anak: {anakId} • Pantau Lingkar Lengan Atas
+              Pantau Lingkar Lengan Atas
             </p>
           </div>
 

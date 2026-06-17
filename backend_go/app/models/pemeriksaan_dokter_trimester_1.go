@@ -93,6 +93,11 @@ type PemeriksaanDokterTrimester1 struct {
 	USGPulsasiJantung           string   `gorm:"type:varchar(20)" json:"usg_pulsasi_jantung"`
 	USGKecurigaanTemuanAbnormal string   `gorm:"type:varchar(10)" json:"usg_kecurigaan_temuan_abnormal"`
 	USGKeteranganTemuanAbnormal string   `json:"usg_keterangan_temuan_abnormal"`
+	// Catatan Pelayanan fields (consolidated from catatan_pelayanan_trimester_1)
+	TanggalPeriksaStampParaf        *time.Time `gorm:"type:date" json:"tanggal_periksa_stamp_paraf"`
+	KeluhanPemeriksaanTindakanSaran string     `json:"keluhan_pemeriksaan_tindakan_saran"`
+	TanggalKembali                  *time.Time `gorm:"type:date" json:"tanggal_kembali"`
+
 
 	CreatedAt time.Time `json:"created_at"`
 }

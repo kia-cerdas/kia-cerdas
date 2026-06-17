@@ -12,6 +12,7 @@ type EvaluasiKesehatanIbuUsecase interface {
 	GetByIDForOrangtua(id int32, userID int32) (*models.EvaluasiKesehatanIbu, error) // MODUL IBU
 	GetMine(userID int32) (*models.EvaluasiKesehatanIbu, error) // MODUL IBU
 	GetByKehamilanID(kehamilanID int32) ([]models.EvaluasiKesehatanIbu, error)
+	GetByKehamilanIDForOrangtua(kehamilanID int32, userID int32) (*models.EvaluasiKesehatanIbu, error)
 	Update(e *models.EvaluasiKesehatanIbu) error
 	Delete(id int32) error
 }
@@ -68,4 +69,28 @@ func (u *evaluasiKesehatanIbuUsecase) GetByIDForOrangtua(id int32, userID int32)
 // MODUL IBU
 func (u *evaluasiKesehatanIbuUsecase) GetMine(userID int32) (*models.EvaluasiKesehatanIbu, error) {
 	return u.repo.FindMineByUserID(userID)
+}
+
+
+
+
+
+
+
+
+
+
+
+// Untuk hasil evaluasi kehamilan bagian Profil 
+
+func (u *evaluasiKesehatanIbuUsecase) GetByKehamilanIDForOrangtua(kehamilanID int32, userID int32) (*models.EvaluasiKesehatanIbu, error) {
+	owned, err := u.repo.IsKehamilanOwnedByUser(kehamilanID, userID)
+	if err != nil {
+		return nil, err
+	}
+	if !owned {
+		return nil, errors.New("Anda tidak memiliki akses ke data ini")
+	}
+
+	return u.repo.FindLatestByKehamilanID(kehamilanID)
 }

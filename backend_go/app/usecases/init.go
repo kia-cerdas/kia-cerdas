@@ -50,6 +50,7 @@ type Main struct {
 	CatatanPelayananTrimester2    CatatanPelayananTrimester2Usecase
 	CatatanPelayananTrimester3    CatatanPelayananTrimester3Usecase
 	CatatanPelayananNifas         CatatanPelayananNifasUsecase
+	CatatanPelayananKehamilan     CatatanPelayananKehamilanUsecase
 	// GrafikEvaluasiKehamilan       GrafikEvaluasiKehamilanUsecase
 	GrafikPeningkatanBB          GrafikPeningkatanBBUsecase
 	PenjelasanHasilGrafik        PenjelasanHasilGrafikUsecase
@@ -71,6 +72,7 @@ type Main struct {
 	Bbl                  BblUsecase
 	JenisPelayanan       JenisPelayananUsecase
 	KategoriUmur         KategoriUmurUsecase
+	GejalaDaruratAnak    GejalaDaruratAnakUsecase
 
 	// Usecase tambahan
 	KeluhanAnak KeluhanAnakUseCase
@@ -119,10 +121,17 @@ type Main struct {
 	EdukasiAturanPorsiMPASI  AturanPorsiMPASIUsecase
 	EdukasiJadwalHarianMPASI JadwalHarianMPASIUsecase
 	JadwalLayanan            JadwalLayananUsecase
+
+	// Vaksin & Dosis Vaksin
+	Vaksin      VaksinUsecase
+	DosisVaksin DosisVaksinUsecase
 	EdukasiResepMPASI        ResepMPASIUsecase
 	// EdukasiTandaBahayaTrimester EdukasiTandaBahayaTrimesterUsecase
 	LaporanIbu        LaporanIbuUsecase
 	LaporanAnak       LaporanAnakUsecase
+	LaporanRemaja     LaporanRemajaUsecase
+	LaporanDewasa     LaporanDewasaUsecase
+	LaporanLansia     LaporanLansiaUsecase
 	PrediksiStunting  PrediksiStuntingUsecase
 	PemeriksaanAnak   PemeriksaanAnakUsecase
 	PemeriksaanRemaja PemeriksaanRemajaUsecase
@@ -136,6 +145,13 @@ type Main struct {
 	EdukasiMPASI      EdukasiMPASIUsecase
 	// Profile Ibu
 	ProfilIbu ProfilIbuUsecase
+	DetailKehamilanIbu DetailKehamilanIbuUsecase
+
+	// Pencatatan Imunisasi (Web)
+	PencatatanImunisasi *PencatatanImunisasiUsecase
+
+	// Puskesmas Dashboard (multi-desa recap)
+	PuskesmasDashboard PuskesmasDashboardUsecase
 }
 
 type Options struct {
@@ -180,11 +196,14 @@ func Init(opts Options) *Main {
 	}
 	prediksiUc := NewPrediksiRisikoUsecase(mlURL)
 	// Inisialisasi usecase yang sudah ada
-	m.Anak = NewAnakUseCase(opts.Repository.Anak, opts.Repository.Kependudukan, opts.Repository.PrediksiStunting)
+	m.Anak = NewAnakUseCase(opts.Repository.Anak, opts.Repository.Kependudukan, opts.Repository.PrediksiStunting, opts.Repository.Ibu)
 	m.Anak.SetOnAnakCreated(func(anakID int32) {
 		if err := m.GenerateJadwalImunisasiByAnakID(anakID); err != nil {
 			fmt.Println("[AUTO JADWAL] ERROR:", err)
 		}
+	})
+	m.Anak.SetOnAnakCreatedSync(func(anakID int32) error {
+		return m.EnsurePrediksiForAnak(anakID)
 	})
 	m.PelayananKesehatanAnak = NewPelayananKesehatanAnakUseCase(opts.Repository.PelayananKesehatanAnak)
 	m.Neonatus = NewPelayananNeonatusUseCase(opts.Repository.Neonatus)
@@ -221,6 +240,7 @@ func Init(opts Options) *Main {
 	m.CatatanPelayananTrimester2 = NewCatatanPelayananTrimester2Usecase(opts.Repository.CatatanPelayananTrimester2)
 	m.CatatanPelayananTrimester3 = NewCatatanPelayananTrimester3Usecase(opts.Repository.CatatanPelayananTrimester3)
 	m.CatatanPelayananNifas = NewCatatanPelayananNifasUsecase(opts.Repository.CatatanPelayananNifas)
+	m.CatatanPelayananKehamilan = NewCatatanPelayananKehamilanUsecase(opts.Repository.CatatanPelayananKehamilan)
 	m.GrafikEvaluasiKehamilan = NewGrafikEvaluasiKehamilanUsecase(opts.Repository.GrafikEvaluasiKehamilan, opts.Repository.Kehamilan)
 	m.GrafikPeningkatanBB = NewGrafikPeningkatanBBUsecase(opts.Repository.GrafikPeningkatanBB, opts.Repository.Kehamilan)
 	m.PenjelasanHasilGrafik = NewPenjelasanHasilGrafikUsecase(opts.Repository.PenjelasanHasilGrafik)
@@ -264,6 +284,7 @@ func Init(opts Options) *Main {
 	m.JenisPelayanan = NewJenisPelayananUsecase(opts.Repository.JenisPelayanan)
 	m.KeluhanAnak = NewKeluhanAnakUseCase(opts.Repository.KeluhanAnak)
 	m.KategoriUmur = NewKategoriUmurUsecase(opts.Repository.KategoriUmur)
+	m.GejalaDaruratAnak = NewGejalaDaruratAnakUsecase(opts.Repository.GejalaDaruratAnak)
 
 	// Usecase tambahan
 	m.KeluhanAnak = NewKeluhanAnakUseCase(opts.Repository.KeluhanAnak)
@@ -295,6 +316,9 @@ func Init(opts Options) *Main {
 	m.EdukasiMPASI = NewEdukasiMPASIUsecase(opts.Repository.EdukasiMPASI)
 	m.LaporanIbu = NewLaporanIbuUsecase(opts.Repository.LaporanIbu)
 	m.LaporanAnak = NewLaporanAnakUsecase(opts.Repository.LaporanAnak)
+	m.LaporanRemaja = NewLaporanRemajaUsecase(opts.Repository.LaporanRemaja)
+	m.LaporanDewasa = NewLaporanDewasaUsecase(opts.Repository.LaporanDewasa)
+	m.LaporanLansia = NewLaporanLansiaUsecase(opts.Repository.LaporanLansia)
 
 	stuntingMLURL := "http://localhost:8000"
 	if opts.Config != nil && opts.Config.MLServiceURL != "" {
@@ -304,6 +328,10 @@ func Init(opts Options) *Main {
 
 	// Jadwal Layanan (imunisasi) usecase
 	m.JadwalLayanan = NewJadwalLayananUsecase(opts.Repository.JadwalLayanan)
+
+	// Vaksin & Dosis Vaksin usecase
+	m.Vaksin = NewVaksinUsecase(opts.Repository.Vaksin)
+	m.DosisVaksin = NewDosisVaksinUsecase(opts.Repository.DosisVaksin)
 	m.PemeriksaanAnak = NewPemeriksaanAnakUsecase(opts.Repository.PemeriksaanAnak)
 	m.PemeriksaanRemaja = NewPemeriksaanRemajaUsecase(opts.Repository.PemeriksaanRemaja)
 	m.PemeriksaanDewasa = NewPemeriksaanDewasaUsecase(opts.Repository.PemeriksaanDewasa)
@@ -316,8 +344,8 @@ func Init(opts Options) *Main {
 	)
 	m.Pencatatan = NewPencatatanUsecase(
 		opts.Repository.Kependudukan,
-		opts.Repository.Pemeriksaan,   //
-		 //
+		opts.Repository.Pemeriksaan, //
+		//
 	)
 	m.Form = NewFormUsecase(opts.Repository.Form) // Inisialisasi FormUsecase dengan repository yang sesuai
 	m.Pemeriksaan = NewPemeriksaanUsecase(opts.Repository.Form, opts.Repository.Pemeriksaan, opts.Repository)
@@ -365,5 +393,22 @@ func Init(opts Options) *Main {
 		opts.Repository.RiwayatKehamilanLalu,
 		opts.Repository.Desa,
 	)
+	// Riwayat Kehamilan Ibu 
+	m.DetailKehamilanIbu = NewDetailKehamilanIbuUsecase(
+		opts.Repository.Kehamilan,
+		opts.Repository.SkriningPreeklampsia,
+		opts.Repository.GrafikEvaluasiKehamilan,
+		opts.Repository.GrafikPeningkatanBB,
+		opts.Repository.RingkasanPelayananPersalinan,
+		opts.Repository.Ibu,
+		opts.Repository.User,
+	)
+
+	// Pencatatan Imunisasi (Web)
+	m.PencatatanImunisasi = NewPencatatanImunisasiUsecase(opts.Repository.PencatatanImunisasi)
+
+	// Puskesmas Dashboard (multi-desa recap)
+	m.PuskesmasDashboard = NewPuskesmasDashboardUsecase(opts.Repository.PuskesmasDashboard)
+
 	return m
 }

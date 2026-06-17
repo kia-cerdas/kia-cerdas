@@ -515,64 +515,64 @@ export default function SkriningDMGestasional() {
             <h1 className="text-[28px] font-bold text-gray-900">
               Skrining DM Gestasional
             </h1>
-            {/* Banner peringatan usia kehamilan */}
-            {kehamilan && (isEarlySkrining || isLateSkrining) && !showForm && (
-              <div
-                className={`p-4 rounded-lg ${
-                  isEarlySkrining
-                    ? "bg-yellow-50 border-l-4 border-yellow-500"
-                    : "bg-red-50 border-l-4 border-red-500"
-                }`}
-              >
-                <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0">
+          </div>
+
+          {/* Banner peringatan usia kehamilan */}
+          {kehamilan && (isEarlySkrining || isLateSkrining) && !showForm && (
+            <div
+              className={`p-4 rounded-lg ${
+                isEarlySkrining
+                  ? "bg-yellow-50 border-l-4 border-yellow-500"
+                  : "bg-red-50 border-l-4 border-red-500"
+              }`}
+            >
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0">
+                  {isEarlySkrining ? (
+                    <AlertCircle size={20} className="text-yellow-600" />
+                  ) : (
+                    <AlertCircle size={20} className="text-red-600" />
+                  )}
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-gray-800">
+                    {isEarlySkrining
+                      ? "Peringatan: Usia Kehamilan Terlalu Dini"
+                      : "Peringatan: Sudah Melewati Waktu Skrining Optimal"}
+                  </p>
+                  <p className="text-sm text-gray-600 mt-1">
                     {isEarlySkrining ? (
-                      <AlertCircle size={20} className="text-yellow-600" />
+                      <>
+                        Usia kehamilan saat ini:{" "}
+                        <strong>{usiaKehamilanSaatIni} minggu</strong>.
+                        Skrining DM Gestasional idealnya dilakukan pada usia
+                        kehamilan <strong>24-28 minggu</strong>. Hasil
+                        skrining saat ini mungkin belum akurat.
+                      </>
                     ) : (
-                      <AlertCircle size={20} className="text-red-600" />
+                      <>
+                        Usia kehamilan saat ini:{" "}
+                        <strong>{usiaKehamilanSaatIni} minggu</strong>. Waktu
+                        ideal skrining DM Gestasional adalah{" "}
+                        <strong>24-28 minggu</strong>. Skrining yang dilakukan
+                        sekarang sudah terlambat. Segera konsultasikan hasil
+                        dengan dokter.
+                      </>
                     )}
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-gray-800">
-                      {isEarlySkrining
-                        ? "⚠️ Peringatan: Usia Kehamilan Terlalu Dini"
-                        : "⚠️ Peringatan: Sudah Melewati Waktu Skrining Optimal"}
-                    </p>
-                    <p className="text-sm text-gray-600 mt-1">
-                      {isEarlySkrining ? (
-                        <>
-                          Usia kehamilan saat ini:{" "}
-                          <strong>{usiaKehamilanSaatIni} minggu</strong>.
-                          Skrining DM Gestasional idealnya dilakukan pada usia
-                          kehamilan <strong>24-28 minggu</strong>. Hasil
-                          skrining saat ini mungkin belum akurat.
-                        </>
-                      ) : (
-                        <>
-                          Usia kehamilan saat ini:{" "}
-                          <strong>{usiaKehamilanSaatIni} minggu</strong>. Waktu
-                          ideal skrining DM Gestasional adalah{" "}
-                          <strong>24-28 minggu</strong>. Skrining yang dilakukan
-                          sekarang sudah terlambat. Segera konsultasikan hasil
-                          dengan dokter.
-                        </>
-                      )}
-                    </p>
-                  </div>
+                  </p>
                 </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
           {/* Banner peringatan status kehamilan dan hak akses */}
           {!isActive && (
-            <div className="bg-gray-100 border-l-4 border-gray-500 p-3 rounded text-gray-700 text-base flex items-center gap-2">
-              <EyeOff size={16} /> Kehamilan ini sudah selesai (NON-AKTIF). Data
-              hanya dapat dilihat, tidak dapat diubah.
+            <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg text-blue-700 text-base flex items-center gap-2">
+              <EyeOff size={16} /> Kehamilan ini sudah selesai (NON-AKTIF). Data hanya dapat dilihat, tidak dapat diubah.
             </div>
           )}
           {!canEdit && isActive && (
             <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg text-blue-700 text-base flex items-center gap-2">
-              <Eye size={16} /> Anda dalam mode baca. Data hanya dapat dilihat, tidak dapat diubah.
+              <Eye size={16} /> Anda dalam mode baca (Dokter). Data hanya dapat dilihat, tidak dapat diubah.
             </div>
           )}
 
@@ -583,7 +583,7 @@ export default function SkriningDMGestasional() {
                 <div className="p-4 bg-[#185FA5]/10 rounded-full">
                   <Save size={48} className="text-[#185FA5]" />
                 </div>
-                <h3 className="text-[22px] font-semibold text-gray-800">
+                <h3 className="text-[22px] font-semibold text-[#185FA5]">
                   Belum Ada Data Skrining DM Gestasional
                 </h3>
                 <p className="text-gray-500 text-base max-w-md">
@@ -780,7 +780,7 @@ export default function SkriningDMGestasional() {
               {/* ========== SAMPAI SINI ========== */}
 
               <div className="bg-[#185FA5]/10 p-4 rounded-lg">
-                <h2 className="text-base font-semibold text-[#185FA5] mb-1">
+                <h2 className="text-lg font-semibold text-[#185FA5] mb-1">
                   Test Toleransi Glukosa Oral (TTGO)
                 </h2>
                 <p className="text-sm text-gray-700">
@@ -800,7 +800,7 @@ export default function SkriningDMGestasional() {
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-base font-medium mb-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
                         Hasil (mg/dL) <span className="text-red-500">*</span>
                       </label>
                       <input

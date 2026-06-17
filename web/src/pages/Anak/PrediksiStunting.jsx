@@ -113,12 +113,12 @@ export default function PrediksiStunting() {
         if (resMeasure) {
           setForm((f) => ({
             ...f,
-            berat_badan:    resMeasure.berat_badan    ? String(resMeasure.berat_badan)    : "",
-            tinggi_badan:   resMeasure.tinggi_badan   ? String(resMeasure.tinggi_badan)   : "",
-            hasil_lila:     resMeasure.hasil_lila      ? String(resMeasure.hasil_lila)      : "",
-            lingkar_kepala: resMeasure.lingkar_kepala  ? String(resMeasure.lingkar_kepala)  : "",
+            berat_badan: resMeasure.berat_badan ? String(resMeasure.berat_badan) : "",
+            tinggi_badan: resMeasure.tinggi_badan ? String(resMeasure.tinggi_badan) : "",
+            hasil_lila: resMeasure.hasil_lila ? String(resMeasure.hasil_lila) : "",
+            lingkar_kepala: resMeasure.lingkar_kepala ? String(resMeasure.lingkar_kepala) : "",
             usia_ukur_bulan: resMeasure.usia_ukur_bulan ? String(resMeasure.usia_ukur_bulan) : "",
-            jenis_kelamin:  anak?.jenis_kelamin || "",
+            jenis_kelamin: anak?.jenis_kelamin || "",
           }));
         } else {
           setForm((f) => ({
@@ -176,13 +176,13 @@ export default function PrediksiStunting() {
     setSubmitError("");
     try {
       const payload = {
-        anak_id:        parseInt(id),
-        berat_badan:    parseFloat(form.berat_badan),
-        tinggi_badan:   parseFloat(form.tinggi_badan),
-        hasil_lila:     parseFloat(form.hasil_lila),
+        anak_id: parseInt(id),
+        berat_badan: parseFloat(form.berat_badan),
+        tinggi_badan: parseFloat(form.tinggi_badan),
+        hasil_lila: parseFloat(form.hasil_lila),
         lingkar_kepala: parseFloat(form.lingkar_kepala),
         usia_ukur_bulan: parseInt(form.usia_ukur_bulan) || 0,
-        jenis_kelamin:  form.jenis_kelamin || "Laki-laki",
+        jenis_kelamin: form.jenis_kelamin || "Laki-laki",
       };
       const res = await prediksiStunting(payload);
       const status = res.status_prediksi || res.data?.status_prediksi;

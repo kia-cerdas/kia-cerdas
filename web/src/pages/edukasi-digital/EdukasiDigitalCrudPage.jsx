@@ -37,7 +37,7 @@ const guessId = (item) =>
   item?.id ?? item?.ID ?? item?.id_edukasi ?? item?.id_informasi ?? null;
 
 const guessImage = (item) => 
-  item?.gambar_url ?? item?.GambarURL ?? item?.image_url ?? item?.image ?? "";
+  item?.gambar_url ?? item?.GambarURL ?? item?.image_url ?? item?.thumbnail_url ?? item?.ThumbnailURL ?? item?.image ?? "";
 
 const guessCategory = (item) =>
   item?.kategori_umur?.kategori_umur ?? item?.kategori_umur?.KategoriUmur ?? item?.tipe ?? "Edukasi";
@@ -590,10 +590,10 @@ export default function EdukasiDigitalCrudPage({
                                     {guessImage(item) ? (
                                       <img 
                                         src={guessImage(item)} 
-                                        alt={item.judul}
+                                        alt={item.judul || "gambar"}
                                         className="w-full h-full object-cover"
                                         onError={(e) => {
-                                          e.target.style.display = 'none';
+                                          e.target.parentNode.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>';
                                         }}
                                       />
                                     ) : (

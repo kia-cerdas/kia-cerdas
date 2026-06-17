@@ -19,8 +19,8 @@ type RequestPerubahanImunisasi struct {
 func (RequestPerubahanImunisasi) TableName() string { return "request_perubahan_imunisasi" }
 
 type RequestPerubahanJadwalRequest struct {
-	TanggalBaru string `json:"tanggal_baru"`
-	Alasan      string `json:"alasan"`
+	JadwalLayananID int32  `json:"jadwal_layanan_id"`
+	Alasan          string `json:"alasan"`
 }
 
 type RequestPerubahanJadwalResponse struct {

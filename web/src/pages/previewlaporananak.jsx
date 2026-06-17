@@ -13,6 +13,7 @@ import {
 	FileSpreadsheet,
 	RefreshCw,
 } from "lucide-react";
+import Swal from "sweetalert2";
 
 export default function LaporanAnakPreview() {
 	const navigate = useNavigate();
@@ -84,7 +85,12 @@ export default function LaporanAnakPreview() {
 			a.click();
 			window.URL.revokeObjectURL(url);
 		} catch (err) {
-			alert("Gagal mengekspor laporan anak: " + (err.response?.data?.message || err.message));
+			Swal.fire({
+				icon: "error",
+				title: "Gagal Mengekspor",
+				text: "Gagal mengekspor laporan anak: " + (err.response?.data?.message || err.message),
+				confirmButtonColor: "#185FA5",
+			});
 		} finally {
 			setExporting(false);
 		}
@@ -92,7 +98,12 @@ export default function LaporanAnakPreview() {
 
 	const handleApplyFilter = () => {
 		if (!startDate || !endDate) {
-			alert("Silakan pilih tanggal awal dan akhir terlebih dahulu.");
+			Swal.fire({
+				icon: "warning",
+				title: "Tanggal Belum Dipilih",
+				text: "Silakan pilih tanggal awal dan akhir terlebih dahulu.",
+				confirmButtonColor: "#185FA5",
+			});
 			return;
 		}
 		setFilterEnabled(true);

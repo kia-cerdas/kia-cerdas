@@ -1,0 +1,83 @@
+# Python Virtual Environments
+**/venv/
+**/env/
+**/.venv/
+MachineLearning/venv/
+MachineLearning/.venv/
+
+# Python Cache
+**/__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# Machine Learning - Models and Datasets
+*.pth
+*.pkl
+*.model
+*.h5
+*.hdf5
+**/datasets/
+**/dataset/
+*/data/
+
+# Node modules
+**/node_modules/
+**/npm-debug.log
+package-lock.json
+yarn.lock
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Compressed Archives
+*.rar
+*.zip
+*.tar
+*.tar.gz
+*.7z
+
+# Go Build Artifacts
+**/tmp/
+tmp_build
+**/cmd/main
+**/cmd/tmp/
+*.exe
+
+# Flutter/Dart Build and Generated Files
+**/.gradle/
+**/build/
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/pubspec.lock
+**/.packages
+**/GeneratedPluginRegistrant.java
+**/GeneratedPluginRegistrant.h
+**/GeneratedPluginRegistrant.m
+**/GeneratedPluginRegistrant.swift
+**/generated_plugin_registrant.cc
+**/generated_plugin_registrant.h
+**/generated_plugins.cmake
+**/ephemeral/
+**/.plugin_symlinks/
+**/local.properties
+**/gradle-wrapper.jar
+**/Flutter/Generated.xcconfig
+**/Flutter/flutter_export_environment.sh
+
+# Environment files (should be managed separately)
+.env
+.env.local
+.env.*.local
+!.env.example
+!.env.template

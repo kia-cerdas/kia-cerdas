@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:ta_pa2_pa3_project/core/network/app_http_client.dart';
 import 'package:ta_pa2_pa3_project/core/constants/api_constants.dart';
 import 'package:ta_pa2_pa3_project/core/services/auth_session.dart';
 import 'package:ta_pa2_pa3_project/features/absensi/data/models/absensi_kelas_ibu_balita_model.dart';
@@ -9,7 +10,7 @@ class AbsensiKelasIbuBalitaApiService {
   final http.Client _client;
 
   AbsensiKelasIbuBalitaApiService({http.Client? client})
-      : _client = client ?? http.Client();
+      : _client = client ?? AppHttpClient();
 
   Map<String, String> get _headers {
     final token = AuthSession.token;
@@ -26,7 +27,7 @@ class AbsensiKelasIbuBalitaApiService {
 
   Future<List<AbsensiKelasIbuBalitaModel>> getMine() async {
     final uri = Uri.parse(
-      '${ApiConstants.baseUrl}/modul-ibu/absensi-kelas-ibu-balita/me',
+      '${ApiConstants.baseUrl}/ibu/absensi-kelas-ibu-balita/me',
     );
 
     final response = await _client.get(uri, headers: _headers);
@@ -59,7 +60,7 @@ class AbsensiKelasIbuBalitaApiService {
     AbsensiKelasIbuBalitaModel data,
   ) async {
     final uri = Uri.parse(
-      '${ApiConstants.baseUrl}/modul-ibu/absensi-kelas-ibu-balita',
+      '${ApiConstants.baseUrl}/ibu/absensi-kelas-ibu-balita',
     );
 
     final response = await _client.post(

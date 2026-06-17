@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import MainLayout from "../../components/Layout/MainLayout";
 import AlertNotification from "../../components/AlertNotification";
 import { ChevronLeft, CheckCircle2, XCircle, Calendar, Save, RefreshCw } from "lucide-react";
@@ -145,12 +145,12 @@ export default function LembarPerawatanAnak() {
 
         {/* Header */}
         <div className="flex items-center gap-4 mb-2">
-          <button
-            onClick={() => navigate(-1)}
-            className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+          <Link
+            to="/pemantauan/perkembangan"
+            className="p-2 hover:bg-slate-100 rounded-lg transition-colors flex items-center justify-center text-slate-600"
           >
-            <ChevronLeft size={24} className="text-slate-600" />
-          </button>
+            <ChevronLeft size={24} />
+          </Link>
           <div>
             <h1 className="text-2xl font-bold text-slate-800">Lembar Perawatan Anak</h1>
             <p className="text-slate-500 text-sm">Catat pencapaian indikator perkembangan anak</p>

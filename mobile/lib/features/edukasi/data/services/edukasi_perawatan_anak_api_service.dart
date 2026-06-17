@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:ta_pa2_pa3_project/core/network/app_http_client.dart';
 
 import 'package:ta_pa2_pa3_project/core/constants/api_constants.dart';
 import 'package:ta_pa2_pa3_project/features/edukasi/data/models/edukasi_perawatan_anak_model.dart';
@@ -9,7 +10,7 @@ class EdukasiPerawatanAnakApiService {
   final http.Client _client;
 
   EdukasiPerawatanAnakApiService({http.Client? client})
-      : _client = client ?? http.Client();
+      : _client = client ?? AppHttpClient();
 
   String _extractErrorMessage(String body, int statusCode) {
     try {

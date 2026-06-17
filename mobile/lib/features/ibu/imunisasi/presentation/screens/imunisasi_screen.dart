@@ -26,6 +26,7 @@ class _ImunisasiScreenState extends State<ImunisasiScreen> {
   @override
   void initState() {
     super.initState();
+    debugPrint("IMUNISASI SCREEN ANAK ID = ${widget.anakId}");
     _loadData();
   }
 

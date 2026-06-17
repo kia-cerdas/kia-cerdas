@@ -99,6 +99,10 @@ class _PilihAnakImunisasiScreenState extends State<PilihAnakImunisasiScreen> {
 
           final anakList = snapshot.data ?? const <IbuAnakModel>[];
 
+for (final anak in anakList) {
+  debugPrint("ID   : ${anak.id}");
+  debugPrint("NAMA : ${anak.nama}");
+}
           if (anakList.isEmpty) {
             return const Center(
               child: Padding(
@@ -162,9 +166,14 @@ class _PilihAnakImunisasiScreenState extends State<PilihAnakImunisasiScreen> {
             ),
           ),
 
+
           // ICON KANAN
           InkWell(
+            
             onTap: () {
+              debugPrint("ANAK DIPILIH");
+debugPrint("ID   : ${anak.id}");
+debugPrint("NAMA : ${anak.nama}");
               Navigator.push(
                 context,
                 MaterialPageRoute(

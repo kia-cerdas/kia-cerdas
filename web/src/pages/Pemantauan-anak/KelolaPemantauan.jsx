@@ -190,9 +190,9 @@ export default function KelolaPemantauan() {
 
   return (
     <MainLayout>
-      <AlertNotification 
-        notification={notification} 
-        onClose={() => setNotification(null)} 
+      <AlertNotification
+        notification={notification}
+        onClose={() => setNotification(null)}
         onRetry={notification?.type === "error" ? () => setNotification(null) : null}
       />
       <div className="max-w-6xl mx-auto space-y-6">
@@ -214,7 +214,7 @@ export default function KelolaPemantauan() {
         {/* Info & Action Button */}
         <div className="flex items-center justify-between px-2">
           <div>
-            <h1 className="text-2xl font-bold text-slate-800">Kelola Lembar Pemantauan</h1>
+            <h1 className="text-2xl font-bold text-slate-800">Kelola Lembar Pemantauan Anak</h1>
             <p className="text-sm text-slate-500 mt-1">Mengatur bank soal indikator kesehatan anak per kategori umur.</p>
           </div>
           <button
@@ -244,8 +244,8 @@ export default function KelolaPemantauan() {
               key={rentang.id}
               onClick={() => setActiveRentangId(String(rentang.id))}
               className={`flex-1 py-2.5 text-sm font-medium rounded-lg transition-all ${activeRentangId === String(rentang.id)
-                  ? "bg-white text-blue-600 shadow-sm"
-                  : "text-slate-500 hover:text-slate-700"
+                ? "bg-white text-blue-600 shadow-sm"
+                : "text-slate-500 hover:text-slate-700"
                 }`}
             >
               {rentang.nama_rentang}

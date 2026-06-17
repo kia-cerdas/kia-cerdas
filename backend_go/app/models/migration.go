@@ -151,6 +151,7 @@ func AutoMigrate(db *gorm.DB) error {
 		&JadwalImunisasiAnak{},
 		&MasterImunisasi{},
 		&RequestPerubahanImunisasi{},
+		&PencatatanImunisasi{},
 
 		// ==================== JADWAL LAYANAN ====================
 		&JadwalLayanan{},
@@ -160,6 +161,10 @@ func AutoMigrate(db *gorm.DB) error {
 
 		// ==================== AUDIT TRAIL ====================
 		&AuditTrail{},
+
+		// ==================== GEJALA DARURAT ANAK ====================
+		&RiwayatDeteksi{},
+		&DetailDeteksi{},
 	}
 
 	// Jalankan automigrate

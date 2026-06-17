@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"monitoring-service/app/models"
+	"strings"
 	"time"
 
 	"context"
@@ -301,23 +302,23 @@ func (u *Main) UpdateStatusJadwal() error {
 
 		diff :=
 			int(
-				nowDate.Sub(tgl).Hours() / 24,
+				tgl.Sub(nowDate).Hours() / 24,
 			)
 
 		var newStatus uint
 
 		switch {
 
-		case diff < 0:
+		case diff >= 1:
 			newStatus = 1
 
-		case diff <= 3:
+		case diff == 0:
 			newStatus = 2
 
-		case diff <= 6:
+		case diff >= -6:
 			newStatus = 3
 
-		case diff <= 13:
+		case diff >= -14:
 			newStatus = 4
 
 		default:
@@ -334,6 +335,103 @@ func (u *Main) UpdateStatusJadwal() error {
 
 			if err != nil {
 				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+// ProcessPosyanduReminder mengirim notifikasi kepada semua ibu
+// bila ada jadwal layanan posyandu yang akan berlangsung H-3.
+// Logic:
+//   - ambil jadwal dengan tanggal = today + 3
+//   - komposisi pesan mencantumkan nama posyandu, layanan, tanggal, dan daftar dosis
+//   - ambil seluruh list ibu (repository.Ibu.FindAll())
+//   - untuk setiap ibu, temukan user via repository.User.FindByPendudukID
+//   - ambil token FCM dan kirim
+//   - simpan notifikasi ke tabel notifikasi
+func (u *Main) ProcessPosyanduReminder() error {
+
+	target := time.Now().AddDate(0, 0, 3)
+	// normalisasi hanya tanggal
+	t := time.Date(target.Year(), target.Month(), target.Day(), 0, 0, 0, 0, time.Local)
+
+	jadwals, err := u.repository.JadwalLayanan.GetByDateRange(nil, &t, &t)
+	if err != nil {
+		return err
+	}
+
+	if len(jadwals) == 0 {
+		return nil
+	}
+
+	// susun pesan per jadwal
+	for _, j := range jadwals {
+
+		posyanduName := ""
+		if j.Posyandu != nil {
+			posyanduName = j.Posyandu.Nama
+		}
+
+		// daftar nama dosis
+		dosisList := []string{}
+		for _, d := range j.DosisVaksins {
+			dosisList = append(dosisList, d.NamaDosis)
+		}
+
+		tglStr := "-"
+		if j.Tanggal != nil {
+			tglStr = j.Tanggal.Format("02 January 2006")
+		}
+
+		title := "Pelayanan Posyandu dalam 3 Hari"
+		body := "Halo Ibu, akan ada layanan " + j.Layanan + " di " + posyanduName + " pada " + tglStr + "."
+		if len(dosisList) > 0 {
+			body += " Tersedia: " + strings.Join(dosisList, ", ") + "."
+		}
+
+		// ambil semua ibu
+		ibus, err := u.repository.Ibu.FindAll()
+		if err != nil {
+			log.Printf("[POSYANDU REMINDER] gagal ambil list ibu: %v", err)
+			continue
+		}
+
+		for _, ibu := range ibus {
+			// cari pengguna berdasarkan penduduk id
+			var pendudukID int64 = int64(ibu.IDKependudukan)
+			user, err := u.repository.User.FindByPendudukID(pendudukID)
+			if err != nil || user == nil {
+				continue
+			}
+
+			tokens, err := u.repository.GetFCMTokensByUserID(uint(user.ID))
+			if err != nil {
+				log.Printf("[POSYANDU REMINDER] gagal ambil token user_id=%d: %v", user.ID, err)
+				continue
+			}
+
+			sentAny := false
+			for _, token := range tokens {
+				if token == "" {
+					continue
+				}
+				if err := u.sendFCM(token, title, body); err != nil {
+					log.Printf("[POSYANDU REMINDER] FCM error user_id=%d: %v", user.ID, err)
+					continue
+				}
+				sentAny = true
+			}
+
+			if sentAny || len(tokens) == 0 {
+				// simpan notifikasi
+				_ = u.repository.CreateNotifikasi(models.Notifikasi{
+					PenggunaID:       uint(user.ID),
+					Judul:            title,
+					Pesan:            body,
+					TipeNotifikasiID: 4, // 4 = Reminder Posyandu (asumsi)
+				})
 			}
 		}
 	}

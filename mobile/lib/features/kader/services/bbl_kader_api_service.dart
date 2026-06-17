@@ -1,11 +1,12 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:ta_pa2_pa3_project/core/network/app_http_client.dart';
 import 'package:ta_pa2_pa3_project/core/constants/api_constants.dart';
 import 'package:ta_pa2_pa3_project/core/services/auth_session.dart';
 import 'package:ta_pa2_pa3_project/features/anak/catatan/data/models/bbl_model.dart';
 
 class BblKaderApiService {
-  final http.Client _client = http.Client();
+  final http.Client _client = AppHttpClient();
 
   Map<String, String> _headers() {
     final token = AuthSession.token;

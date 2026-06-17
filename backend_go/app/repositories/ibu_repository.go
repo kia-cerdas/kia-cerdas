@@ -178,7 +178,7 @@ func (r *IbuRepository) GetDashboard(desaID *int32, role string) ([]models.IbuDa
             p.trimester,
             p.kunjungan_ke,
             p.skor_risiko,
-            p.status_risiko,
+            COALESCE(p.status_risiko, '') as status_risiko,
             p.sistole,
             p.diastole,
             p.tes_lab_hb as hb,
@@ -191,8 +191,8 @@ func (r *IbuRepository) GetDashboard(desaID *int32, role string) ([]models.IbuDa
                 SELECT p2.id_periksa
                 FROM pemeriksaan_kehamilan p2
                 WHERE p2.kehamilan_id = k.id
+                AND p2.tanggal_periksa IS NOT NULL
                 ORDER BY 
-                    p2.tanggal_periksa IS NULL,
                     p2.tanggal_periksa DESC,
                     p2.created_at DESC,
                     p2.id_periksa DESC

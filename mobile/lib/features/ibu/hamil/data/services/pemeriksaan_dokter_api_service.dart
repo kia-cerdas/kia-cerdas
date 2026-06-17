@@ -1,6 +1,7 @@
 // import 'dart:convert';
 
 // import 'package:http/http.dart' as http;
+import 'package:ta_pa2_pa3_project/core/network/app_http_client.dart';
 // import 'package:ta_pa2_pa3_project/core/constants/api_constants.dart';
 // import 'package:ta_pa2_pa3_project/core/services/auth_session.dart';
 // import 'package:ta_pa2_pa3_project/features/ibu/hamil/data/models/pemeriksaan_dokter_model.dart';
@@ -9,7 +10,7 @@
 //   final http.Client _client;
 
 //   PemeriksaanDokterApiService({http.Client? client})
-//       : _client = client ?? http.Client();
+//       : _client = client ?? AppHttpClient();
 
 //   Future<PemeriksaanDokterTrimester1Model> getTrimester1Mine() async {
 //     final data = await _get(ApiConstants.pemeriksaanDokterTrimester1);
@@ -61,6 +62,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:ta_pa2_pa3_project/core/network/app_http_client.dart';
 import 'package:ta_pa2_pa3_project/core/constants/api_constants.dart';
 import 'package:ta_pa2_pa3_project/core/services/auth_session.dart';
 import 'package:ta_pa2_pa3_project/features/ibu/hamil/data/models/pemeriksaan_dokter_model.dart';
@@ -69,7 +71,7 @@ class PemeriksaanDokterApiService {
   final http.Client _client;
 
   PemeriksaanDokterApiService({http.Client? client})
-      : _client = client ?? http.Client();
+      : _client = client ?? AppHttpClient();
 
   // ── Single (lama, tetap dipertahankan) ────────────────────────────────────
 

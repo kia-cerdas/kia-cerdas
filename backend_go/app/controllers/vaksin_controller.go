@@ -2,70 +2,141 @@ package controllers
 
 import (
 	"net/http"
+	"strconv"
 
 	"monitoring-service/app/models"
+	"monitoring-service/app/usecases"
 
 	"github.com/labstack/echo/v4"
-	"gorm.io/gorm"
 )
 
 type VaksinController struct {
-	db *gorm.DB
+	usecase usecases.VaksinUsecase
 }
 
-func NewVaksinController(db *gorm.DB) *VaksinController {
-	// Tambahkan log untuk debugging
-	if db == nil {
-		panic("VaksinController: db cannot be nil")
+func NewVaksinController(u usecases.VaksinUsecase) *VaksinController {
+	return &VaksinController{usecase: u}
+}
+
+func (ctrl *VaksinController) GetAll(ctx echo.Context) error {
+	data, err := ctrl.usecase.GetAll()
+	if err != nil {
+		return ctx.JSON(http.StatusInternalServerError, echo.Map{"error": err.Error()})
 	}
-	return &VaksinController{db: db}
+
+	return ctx.JSON(http.StatusOK, echo.Map{"data": data})
 }
 
-func (c *VaksinController) GetAll(ctx echo.Context) error {
-	// Safety check - cek apakah db nil
-	if c.db == nil {
+func (ctrl *VaksinController) GetByID(ctx echo.Context) error {
+	id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
+	if err != nil {
+		return ctx.JSON(http.StatusBadRequest, echo.Map{"error": "ID tidak valid"})
+	}
+
+	data, err := ctrl.usecase.GetByID(uint(id))
+	if err != nil {
+		return ctx.JSON(http.StatusNotFound, echo.Map{"error": "Vaksin tidak ditemukan"})
+	}
+
+	return ctx.JSON(http.StatusOK, echo.Map{"data": data})
+}
+
+func (ctrl *VaksinController) Create(ctx echo.Context) error {
+	var req struct {
+		Nama        string `json:"nama" validate:"required"`
+		Deskripsi   string `json:"deskripsi"`
+		EfekSamping string `json:"efek_samping"`
+	}
+
+	if err := ctx.Bind(&req); err != nil {
+		return ctx.JSON(http.StatusBadRequest, echo.Map{"error": "Data tidak valid"})
+	}
+
+	if req.Nama == "" {
+		return ctx.JSON(http.StatusBadRequest, echo.Map{"error": "Nama vaksin wajib diisi"})
+	}
+
+	vaksin := models.Vaksin{
+		Name:        req.Nama,
+		Deskripsi:   req.Deskripsi,
+		EfekSamping: req.EfekSamping,
+	}
+
+	if err := ctrl.usecase.Create(&vaksin); err != nil {
 		return ctx.JSON(http.StatusInternalServerError, echo.Map{
-			"error": "Database connection is nil",
+			"error":   "Gagal menyimpan vaksin",
+			"details": err.Error(),
 		})
 	}
 
-	var vaksins []models.Vaksin
-
-	// Ambil semua vaksin yang tidak dihapus
-	if err := c.db.Where("deleted_at IS NULL").Find(&vaksins).Error; err != nil {
-		return ctx.JSON(http.StatusInternalServerError, echo.Map{
-			"error": err.Error(),
-		})
-	}
-
-	return ctx.JSON(http.StatusOK, echo.Map{
-		"data": vaksins,
+	return ctx.JSON(http.StatusCreated, echo.Map{
+		"status":  "success",
+		"message": "Vaksin berhasil ditambahkan",
+		"data":    vaksin,
 	})
 }
 
-func (c *VaksinController) GetByID(ctx echo.Context) error {
-	// Safety check - cek apakah db nil
-	if c.db == nil {
-		return ctx.JSON(http.StatusInternalServerError, echo.Map{
-			"error": "Database connection is nil",
-		})
+func (ctrl *VaksinController) Update(ctx echo.Context) error {
+	id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
+	if err != nil {
+		return ctx.JSON(http.StatusBadRequest, echo.Map{"error": "ID tidak valid"})
 	}
 
-	id := ctx.Param("id")
+	vaksin, err := ctrl.usecase.GetByID(uint(id))
+	if err != nil {
+		return ctx.JSON(http.StatusNotFound, echo.Map{"error": "Vaksin tidak ditemukan"})
+	}
 
-	var vaksin models.Vaksin
-	if err := c.db.Where("id = ? AND deleted_at IS NULL", id).First(&vaksin).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return ctx.JSON(http.StatusNotFound, echo.Map{
-				"error": "Vaksin not found",
-			})
-		}
+	var req struct {
+		Nama        string `json:"nama"`
+		Deskripsi   string `json:"deskripsi"`
+		EfekSamping string `json:"efek_samping"`
+	}
+
+	if err := ctx.Bind(&req); err != nil {
+		return ctx.JSON(http.StatusBadRequest, echo.Map{"error": "Data tidak valid"})
+	}
+
+	if req.Nama != "" {
+		vaksin.Name = req.Nama
+	}
+	vaksin.Deskripsi = req.Deskripsi
+	vaksin.EfekSamping = req.EfekSamping
+
+	if err := ctrl.usecase.Update(vaksin); err != nil {
 		return ctx.JSON(http.StatusInternalServerError, echo.Map{
-			"error": err.Error(),
+			"error":   "Gagal mengupdate vaksin",
+			"details": err.Error(),
 		})
 	}
 
 	return ctx.JSON(http.StatusOK, echo.Map{
-		"data": vaksin,
+		"status":  "success",
+		"message": "Vaksin berhasil diupdate",
+		"data":    vaksin,
+	})
+}
+
+func (ctrl *VaksinController) Delete(ctx echo.Context) error {
+	id, err := strconv.ParseUint(ctx.Param("id"), 10, 64)
+	if err != nil {
+		return ctx.JSON(http.StatusBadRequest, echo.Map{"error": "ID tidak valid"})
+	}
+
+	// Verify exists first
+	if _, err := ctrl.usecase.GetByID(uint(id)); err != nil {
+		return ctx.JSON(http.StatusNotFound, echo.Map{"error": "Vaksin tidak ditemukan"})
+	}
+
+	if err := ctrl.usecase.Delete(uint(id)); err != nil {
+		return ctx.JSON(http.StatusInternalServerError, echo.Map{
+			"error":   "Gagal menghapus vaksin",
+			"details": err.Error(),
+		})
+	}
+
+	return ctx.JSON(http.StatusOK, echo.Map{
+		"status":  "success",
+		"message": "Vaksin berhasil dihapus",
 	})
 }

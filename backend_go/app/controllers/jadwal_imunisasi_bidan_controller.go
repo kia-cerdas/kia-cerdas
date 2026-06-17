@@ -59,3 +59,24 @@ func (m *Main) GetJadwalImunisasiByIDBidan(c echo.Context) error {
 
 	return helpers.StandardResponse(c, http.StatusOK, []string{constants.SUCCESS_RESPONSE_MESSAGE}, data, nil)
 }
+
+// BatalParafBidan cancels a completed paraf: resets jadwal status and deletes pencatatan records
+func (m *Main) BatalParafBidan(c echo.Context) error {
+
+	jadwalID, err := strconv.Atoi(c.Param("id"))
+	if err != nil || jadwalID <= 0 {
+		return helpers.Response(c, http.StatusBadRequest, []string{"id tidak valid"})
+	}
+
+	// 1. Soft-delete pencatatan imunisasi records for this jadwal
+	if err := m.usecases.PencatatanImunisasi.CancelByJadwalID(uint(jadwalID)); err != nil {
+		return helpers.Response(c, http.StatusInternalServerError, []string{"gagal menghapus pencatatan: " + err.Error()})
+	}
+
+	// 2. Reset jadwal status from SELESAI(6) back to BELUM(1)
+	if err := m.usecases.SetJadwalSelesaiBidanReset(uint(jadwalID)); err != nil {
+		return helpers.Response(c, http.StatusInternalServerError, []string{"gagal reset jadwal: " + err.Error()})
+	}
+
+	return helpers.StandardResponse(c, http.StatusOK, []string{"paraf berhasil dibatalkan"}, nil, nil)
+}

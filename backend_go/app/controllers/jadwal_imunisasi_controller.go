@@ -63,9 +63,6 @@ func (m *Main) GetJadwalImunisasi(
 
 func (m *Main) GetJadwalImunisasiByAnakID(c echo.Context) error {
 
-	// =========================
-	// 1. Ambil auth claims
-	// =========================
 	claimsValue := c.Get("auth_claims")
 
 	claims, ok := claimsValue.(*models.AuthClaims)
@@ -77,9 +74,6 @@ func (m *Main) GetJadwalImunisasiByAnakID(c echo.Context) error {
 		)
 	}
 
-	// =========================
-	// 2. Ambil anakId dari param
-	// =========================
 	anakIDParam := c.Param("anak_id")
 
 	anakID, err := strconv.Atoi(anakIDParam)
@@ -91,9 +85,6 @@ func (m *Main) GetJadwalImunisasiByAnakID(c echo.Context) error {
 		)
 	}
 
-	// =========================
-	// 3. Call usecase
-	// =========================
 	data, err := m.usecases.GetJadwalImunisasiByAnakID(
 		int32(claims.UserID),
 		int32(anakID),
@@ -106,10 +97,6 @@ func (m *Main) GetJadwalImunisasiByAnakID(c echo.Context) error {
 			[]string{err.Error()},
 		)
 	}
-
-	// =========================
-	// 4. Return response sukses
-	// =========================
 	return helpers.StandardResponse(
 		c,
 		http.StatusOK,
@@ -139,7 +126,6 @@ func (m *Main) UpdateTanggalEstimasi(c echo.Context) error {
 		return helpers.Response(c, 400, []string{"format tanggal harus YYYY-MM-DD"})
 	}
 
-	// 🔥 AMBIL USER ID
 	claims := c.Get("auth_claims").(*models.AuthClaims)
 	userID := claims.UserID
 
@@ -232,6 +218,133 @@ func (m *Main) SetJadwalSelesai(c echo.Context) error {
 		200,
 		[]string{"jadwal berhasil diselesaikan"},
 		nil,
+		nil,
+	)
+}
+
+func (m *Main) GetJadwalImunisasiTerlewat(
+	c echo.Context,
+) error {
+
+	claimsValue :=
+		c.Get("auth_claims")
+
+	claims, ok :=
+		claimsValue.(*models.AuthClaims)
+
+	if !ok {
+
+		return helpers.Response(
+			c,
+			http.StatusUnauthorized,
+			[]string{
+				"user tidak valid",
+			},
+		)
+	}
+
+	data, err :=
+		m.usecases.
+			GetJadwalImunisasiTerlewatByKaderID(
+				int32(claims.UserID),
+			)
+
+	if err != nil {
+
+		return helpers.Response(
+			c,
+			http.StatusInternalServerError,
+			[]string{
+				err.Error(),
+			},
+		)
+	}
+
+	return helpers.StandardResponse(
+		c,
+		http.StatusOK,
+		[]string{
+			constants.SUCCESS_RESPONSE_MESSAGE,
+		},
+		data,
+		nil,
+	)
+}
+
+func (m *Main) GetJadwalImunisasiTerlewatByID(
+	c echo.Context,
+) error {
+
+	claimsValue :=
+		c.Get("auth_claims")
+
+	claims, ok :=
+		claimsValue.(*models.AuthClaims)
+
+	if !ok {
+
+		return helpers.Response(
+			c,
+			http.StatusUnauthorized,
+			[]string{
+				"user tidak valid",
+			},
+		)
+	}
+
+	idParam :=
+		c.Param("jadwal_id")
+
+	jadwalID, err :=
+		strconv.Atoi(idParam)
+
+	if err != nil || jadwalID <= 0 {
+
+		return helpers.Response(
+			c,
+			http.StatusBadRequest,
+			[]string{
+				"jadwal id tidak valid",
+			},
+		)
+	}
+
+	data, err :=
+		m.usecases.
+			GetJadwalImunisasiTerlewatByID(
+				int32(claims.UserID),
+				uint(jadwalID),
+			)
+
+	if err != nil {
+
+		return helpers.Response(
+			c,
+			http.StatusInternalServerError,
+			[]string{
+				err.Error(),
+			},
+		)
+	}
+
+	if data == nil {
+
+		return helpers.Response(
+			c,
+			http.StatusNotFound,
+			[]string{
+				"data tidak ditemukan",
+			},
+		)
+	}
+
+	return helpers.StandardResponse(
+		c,
+		http.StatusOK,
+		[]string{
+			constants.SUCCESS_RESPONSE_MESSAGE,
+		},
+		data,
 		nil,
 	)
 }

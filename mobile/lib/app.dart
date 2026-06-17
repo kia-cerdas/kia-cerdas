@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'core/services/auth_session.dart';
+import 'core/services/unauthorized_handler.dart';
 import 'core/themes/app_theme.dart';
+import 'core/services/notification_service.dart';
 
 import 'features/auth/presentation/screens/login_screen.dart';
 
 import 'features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'features/kader/presentation/dashboard_screen.dart';
+
+import 'core/routes/navigator_key.dart';
 
 class KiaApp extends StatelessWidget {
   const KiaApp({super.key});
@@ -15,7 +19,9 @@ class KiaApp extends StatelessWidget {
     return MaterialApp(
       title: 'Aplikasi KIA Cerdas',
       debugShowCheckedModeBanner: false,
+      navigatorKey: navigatorKey,
       theme: AppTheme.lightTheme,
+      // navigatorKey: UnauthorizedHandler.navigatorKey,
       home: _buildHome(),
     );
   }

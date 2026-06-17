@@ -108,7 +108,8 @@ class _SkriningBahayaScreenState extends State<SkriningBahayaScreen> {
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFFEAED),
                         borderRadius: BorderRadius.circular(20),
@@ -162,7 +163,8 @@ class _SkriningBahayaScreenState extends State<SkriningBahayaScreen> {
                   },
                   {
                     'id': 'dehidrasi',
-                    'label': 'Ada tanda dehidrasi (mata cekung, mulut kering, lemas)?',
+                    'label':
+                        'Ada tanda dehidrasi (mata cekung, mulut kering, lemas)?',
                     'isEmergency': true,
                   },
                   {
@@ -278,7 +280,9 @@ class _SkriningBahayaScreenState extends State<SkriningBahayaScreen> {
                           },
                           checkColor: Colors.white,
                           fillColor: MaterialStateProperty.all(
-                            isChecked ? const Color(0xFF2563EB) : Colors.grey.shade300,
+                            isChecked
+                                ? const Color(0xFF2563EB)
+                                : Colors.grey.shade300,
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -340,11 +344,14 @@ class _SkriningBahayaScreenState extends State<SkriningBahayaScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: hasEmergency ? const Color(0xFFFFEAED) : const Color(0xFFECFDF5),
+        backgroundColor:
+            hasEmergency ? const Color(0xFFFFEAED) : const Color(0xFFECFDF5),
         title: Text(
           hasEmergency ? 'SEGERA KE FASILITAS' : 'Hasil Skrining',
           style: TextStyle(
-            color: hasEmergency ? const Color(0xFFDC2626) : const Color(0xFF059669),
+            color: hasEmergency
+                ? const Color(0xFFDC2626)
+                : const Color(0xFF059669),
             fontWeight: FontWeight.bold,
           ),
         ),

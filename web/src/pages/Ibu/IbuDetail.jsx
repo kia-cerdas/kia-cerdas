@@ -5,6 +5,7 @@ import MainLayout from "../../components/Layout/MainLayout";
 import { getIbuById } from "../../services/ibu";
 import { getKehamilanByIbuId } from "../../services/kehamilan";
 import { updateStatusKehamilan } from "../../services/kehamilan";
+import { getCurrentUser, isDokterUser, isBidanUser } from "../../services/auth";
 import { XCircle } from "lucide-react";
 import Swal from "sweetalert2";
 import { getDokterT1CompleteByKehamilanId } from "../../services/pemeriksaanDokter";
@@ -83,9 +84,16 @@ export default function IbuDetail() {
 
   const [checkingT1, setCheckingT1] = useState(false);
   const [checkingT3, setCheckingT3] = useState(false);
-
+  const [isDokter, setIsDokter] = useState(false);
 
   const [nonAktifLoading, setNonAktifLoading] = useState(false);
+
+  // Cek role user saat komponen mount
+  useEffect(() => {
+    const user = getCurrentUser();
+    const dokter = isDokterUser(user);
+    setIsDokter(dokter);
+  }, []);
 
 const handleNonAktif = async () => {
   const result = await Swal.fire({
@@ -536,7 +544,7 @@ const handleNonAktif = async () => {
                   to={withKehamilan(`/data-ibu/${id}/rujukan`)}
                   className="flex items-center gap-2 w-full text-left p-2.5 rounded-lg hover:bg-gray-50 text-gray-700 text-sm"
                 >
-                  <AlertTriangle size={16} className="text-[#A32D2D] flex-shrink-0" /> Buat / Lihat Rujukan
+                  <AlertTriangle size={16} className="text-[#A32D2D] flex-shrink-0" /> {isDokter ? 'Lihat Rujukan' : 'Buat / Lihat Rujukan'}
                 </Link>
                 <Link 
                   to="/daftar-rujukan"

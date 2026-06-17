@@ -28,6 +28,7 @@ type createRujukanRequest struct {
 	RujukanBalikDiagnosisAkhir               string `json:"rujukan_balik_diagnosis_akhir"`
 	RujukanBalikResumePemeriksaanTatalaksana string `json:"rujukan_balik_resume_pemeriksaan_tatalaksana"`
 	AnjuranRekomendasiTempatMelahirkan       string `json:"anjuran_rekomendasi_tempat_melahirkan"`
+	Source                                   string `json:"source"`
 }
 
 func (c *RujukanController) Create(ctx echo.Context) error {
@@ -47,6 +48,11 @@ func (c *RujukanController) Create(ctx echo.Context) error {
 		RujukanBalikDiagnosisAkhir:               req.RujukanBalikDiagnosisAkhir,
 		RujukanBalikResumePemeriksaanTatalaksana: req.RujukanBalikResumePemeriksaanTatalaksana,
 		AnjuranRekomendasiTempatMelahirkan:       req.AnjuranRekomendasiTempatMelahirkan,
+		// Source field is optional - only set if migration has been run
+	}
+	// Only set source if provided (will be ignored by GORM if column doesn't exist)
+	if req.Source != "" {
+		r.Source = req.Source
 	}
 	if req.RujukanBalikTanggal != "" {
 		if t, err := time.Parse("2006-01-02", req.RujukanBalikTanggal); err == nil {
@@ -104,6 +110,7 @@ func (c *RujukanController) Update(ctx echo.Context) error {
 	existing.RujukanBalikDiagnosisAkhir = req.RujukanBalikDiagnosisAkhir
 	existing.RujukanBalikResumePemeriksaanTatalaksana = req.RujukanBalikResumePemeriksaanTatalaksana
 	existing.AnjuranRekomendasiTempatMelahirkan = req.AnjuranRekomendasiTempatMelahirkan
+	existing.Source = req.Source
 
 	// Update tanggal rujukan balik jika ada
 	if req.RujukanBalikTanggal != "" {
@@ -131,7 +138,7 @@ func (c *RujukanController) Delete(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, models.Response{StatusCode: http.StatusOK, Message: "deleted"})
 }
 
-//.MODUL IBU
+// .MODUL IBU
 func (c *RujukanController) GetByIDForOrangtua(ctx echo.Context) error {
 	id, err := strconv.ParseInt(ctx.Param("id"), 10, 32)
 	if err != nil {

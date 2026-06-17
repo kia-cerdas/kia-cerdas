@@ -8,10 +8,7 @@ import { getCurrentUser, isDokterUser } from "../../services/auth";
 import {
   getDokterT3CompleteByKehamilanId,
   deleteDokterT3Complete,
-  getCatatanT3ByKehamilanId,
-  createCatatanT3,
-  updateCatatanT3,
-  deleteCatatanT3,
+  updateDokterT3Complete,
 } from "../../services/pemeriksaanDokter";
 import {
   ArrowLeft,
@@ -115,146 +112,6 @@ function DetailSection({ icon: Icon, title, colorCls = "bg-indigo-50 text-indigo
   );
 }
 
-// ─── Modal Catatan (T3) ───────────────────────────────────────────────────────
-
-function ModalCatatan({ kehamilanId, catatan, onClose, onSaved }) {
-  const isEdit = Boolean(catatan);
-  const [form, setForm] = useState({
-    tanggal_periksa_stamp_paraf: catatan?.tanggal_periksa_stamp_paraf
-      ? catatan.tanggal_periksa_stamp_paraf.split("T")[0]
-      : "",
-    keluhan_pemeriksaan_tindakan_saran:
-      catatan?.keluhan_pemeriksaan_tindakan_saran || "",
-    tanggal_kembali: catatan?.tanggal_kembali
-      ? catatan.tanggal_kembali.split("T")[0]
-      : "",
-  });
-  const [saving, setSaving] = useState(false);
-  const [fieldError, setFieldError] = useState("");
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-    setFieldError("");
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!form.keluhan_pemeriksaan_tindakan_saran.trim()) {
-      setFieldError("Keluhan / tindakan / saran tidak boleh kosong.");
-      return;
-    }
-    setSaving(true);
-    try {
-      const payload = {
-        kehamilan_id: kehamilanId,
-        tanggal_periksa_stamp_paraf: form.tanggal_periksa_stamp_paraf || null,
-        keluhan_pemeriksaan_tindakan_saran: form.keluhan_pemeriksaan_tindakan_saran.trim(),
-        tanggal_kembali: form.tanggal_kembali || null,
-      };
-
-      if (isEdit) {
-        await updateCatatanT3(catatan.id_catatan_t3, payload);
-      } else {
-        await createCatatanT3(payload);
-      }
-      onSaved();
-      onClose();
-    } catch (err) {
-      const msg = err.response?.data?.message || err.message || "Terjadi kesalahan";
-      setFieldError("Gagal menyimpan: " + msg);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg z-10 overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-4 bg-indigo-50 border-b border-indigo-100">
-          <div className="flex items-center gap-2 text-indigo-700">
-            <StickyNote size={18} />
-            <h2 className="font-bold text-sm">
-              {isEdit ? "Edit Catatan" : "Tambah Catatan Baru"}
-            </h2>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-1.5 rounded-full hover:bg-indigo-100 transition text-indigo-500"
-          >
-            <X size={16} />
-          </button>
-        </div>
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-              Tanggal Periksa / Stempel / Paraf
-            </label>
-            <input
-              type="date"
-              name="tanggal_periksa_stamp_paraf"
-              value={form.tanggal_periksa_stamp_paraf}
-              onChange={handleChange}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-              Keluhan / Pemeriksaan / Tindakan / Saran{" "}
-              <span className="text-red-500">*</span>
-            </label>
-            <textarea
-              name="keluhan_pemeriksaan_tindakan_saran"
-              value={form.keluhan_pemeriksaan_tindakan_saran}
-              onChange={handleChange}
-              placeholder="Tuliskan keluhan pasien, hasil pemeriksaan, tindakan yang dilakukan, atau saran dokter..."
-              rows={5}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 transition resize-none"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-              Tanggal Kembali (Kontrol Selanjutnya)
-            </label>
-            <input
-              type="date"
-              name="tanggal_kembali"
-              value={form.tanggal_kembali}
-              onChange={handleChange}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
-            />
-          </div>
-          {fieldError && (
-            <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-3 py-2">
-              <AlertCircle size={14} className="text-red-500 shrink-0" />
-              <p className="text-xs text-red-600">{fieldError}</p>
-            </div>
-          )}
-          <div className="flex gap-3 pt-1">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 py-2 rounded-xl border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50 transition"
-            >
-              Batal
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="flex-1 flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white py-2 rounded-xl text-sm font-semibold transition"
-            >
-              {saving ? <Loader2 className="animate-spin" size={15} /> : <Save size={15} />}
-              {saving ? "Menyimpan..." : isEdit ? "Simpan Perubahan" : "Tambah Catatan"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
-
 // ─── Komponen Utama ───────────────────────────────────────────────────────────
 
 export default function PemeriksaanDokterT3CompleteDetail() {
@@ -266,10 +123,6 @@ export default function PemeriksaanDokterT3CompleteDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const [catatanList, setCatatanList] = useState([]);
-  const [loadingCatatan, setLoadingCatatan] = useState(false);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editCatatan, setEditCatatan] = useState(null);
   const [canEdit, setCanEdit] = useState(false);
   const [canDelete, setCanDelete] = useState(false);
 
@@ -309,31 +162,6 @@ export default function PemeriksaanDokterT3CompleteDetail() {
     fetchData();
   }, [id]);
 
-  // Fetch catatan T3
-  const fetchCatatan = useCallback(async () => {
-    if (!kehamilan) return;
-    setLoadingCatatan(true);
-    try {
-      const res = await getCatatanT3ByKehamilanId(kehamilan.id);
-      if (Array.isArray(res)) {
-        setCatatanList(res);
-      } else if (res && Array.isArray(res.data)) {
-        setCatatanList(res.data);
-      } else {
-        setCatatanList([]);
-      }
-    } catch (err) {
-      console.error("Error fetch catatan T3:", err);
-      setCatatanList([]);
-    } finally {
-      setLoadingCatatan(false);
-    }
-  }, [kehamilan]);
-
-  useEffect(() => {
-    fetchCatatan();
-  }, [fetchCatatan]);
-
   // Hapus pemeriksaan utama T3
   const handleDelete = async () => {
     if (!canDelete) {
@@ -347,7 +175,7 @@ export default function PemeriksaanDokterT3CompleteDetail() {
 
     const result = await Swal.fire({
       title: "Hapus Data Pemeriksaan T3?",
-      html: "<p class='text-sm'>Apakah Anda yakin ingin menghapus semua data pemeriksaan Trimester 3 ini?</p><p class='text-xs text-red-600 mt-2'>⚠️ Seluruh Catatan Pelayanan pada Trimester ini juga akan ikut terhapus.</p>",
+      html: "<p class='text-sm'>Apakah Anda yakin ingin menghapus semua data pemeriksaan Trimester 3 ini?</p>",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#dc2626",
@@ -359,17 +187,11 @@ export default function PemeriksaanDokterT3CompleteDetail() {
     if (!result.isConfirmed) return;
 
     try {
-      // Hapus semua catatan pelayanan T3 terkait terlebih dahulu
-      if (catatanList.length > 0) {
-        const deleteNotesPromises = catatanList.map((c) => deleteCatatanT3(c.id_catatan_t3));
-        await Promise.all(deleteNotesPromises);
-      }
-
       // Hapus data pemeriksaan utama
       await deleteDokterT3Complete(data.dokter.id);
       await Swal.fire({
         title: "Berhasil!",
-        text: "Data pemeriksaan T3 dan catatan terkait berhasil dihapus.",
+        text: "Data pemeriksaan T3 berhasil dihapus.",
         icon: "success",
         confirmButtonColor: "#10b981",
       });
@@ -383,59 +205,6 @@ export default function PemeriksaanDokterT3CompleteDetail() {
         confirmButtonColor: "#ef4444",
       });
     }
-  };
-
-  // Hapus catatan T3
-  const handleDeleteCatatan = async (idCatatan) => {
-    if (!canEdit) return;
-
-    const result = await Swal.fire({
-      title: "Hapus Catatan?",
-      text: "Apakah Anda yakin ingin menghapus catatan ini?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#dc2626",
-      cancelButtonColor: "#6b7280",
-      confirmButtonText: "Ya, Hapus",
-      cancelButtonText: "Batal",
-    });
-
-    if (!result.isConfirmed) return;
-
-    try {
-      await deleteCatatanT3(idCatatan);
-      await Swal.fire({
-        title: "Berhasil!",
-        text: "Catatan berhasil dihapus.",
-        icon: "success",
-        confirmButtonColor: "#10b981",
-      });
-      fetchCatatan();
-    } catch (err) {
-      await Swal.fire({
-        title: "Error!",
-        text: "Gagal menghapus catatan.",
-        icon: "error",
-        confirmButtonColor: "#ef4444",
-      });
-    }
-  };
-
-  const handleTambahCatatan = () => {
-    if (!canEdit) return;
-    setEditCatatan(null);
-    setModalOpen(true);
-  };
-
-  const handleEditCatatan = (catatan) => {
-    if (!canEdit) return;
-    setEditCatatan(catatan);
-    setModalOpen(true);
-  };
-
-  const handleModalClose = () => {
-    setModalOpen(false);
-    setEditCatatan(null);
   };
 
   if (loading) {
@@ -529,16 +298,15 @@ export default function PemeriksaanDokterT3CompleteDetail() {
                 : "bg-blue-100 text-blue-700"
             }`}
           >
-            {canEdit ? "Mode Edit (Dokter)" : "Mode Baca (Bidan)"}
+            {/* {canEdit ? "Mode Edit (Dokter)" : "Mode Baca (Bidan)"} */}
           </div>
         </div>
 
         {!canEdit && (
           <div className="mb-6 p-3 bg-blue-50 rounded-lg border border-blue-200">
             <p className="text-sm text-blue-700 flex items-center gap-2">
-              <AlertCircle size={16} />
-              Anda login sebagai BIDAN. Data hanya dapat dilihat, tidak dapat
-              diedit atau dihapus.
+              <Eye size={16} />
+              Anda dalam mode baca (Bidan). Data hanya dapat dilihat, tidak dapat diubah.
             </p>
           </div>
         )}
@@ -844,122 +612,18 @@ export default function PemeriksaanDokterT3CompleteDetail() {
             </div>
           </DetailSection>
 
-          {/* Catatan Pelayanan Trimester 3 */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-4 bg-indigo-50 border-b border-indigo-100">
-              <div className="flex items-center gap-2 text-indigo-700">
-                <StickyNote size={17} />
-                <span className="font-semibold text-sm">Catatan Pelayanan Trimester 3</span>
-                {catatanList.length > 0 && (
-                  <span className="bg-indigo-200 text-indigo-800 text-xs font-bold px-2 py-0.5 rounded-full">
-                    {catatanList.length}
-                  </span>
-                )}
+          {/* Catatan Pemeriksaan */}
+          <DetailSection icon={StickyNote} title="Catatan Pemeriksaan" colorCls="bg-amber-50 text-amber-700 border-amber-100">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <InfoRow label="Tanggal Periksa / Stempel / Paraf" value={fmtDate(d.tanggal_periksa_stamp_paraf)} />
+              <InfoRow label="Tanggal Kembali" value={fmtDate(d.tanggal_kembali)} />
+              <div className="sm:col-span-2">
+                <InfoRow label="Keluhan / Pemeriksaan / Tindakan / Saran" value={d.keluhan_pemeriksaan_tindakan_saran} />
               </div>
-              {canEdit && (
-                <button
-                  type="button"
-                  onClick={handleTambahCatatan}
-                  className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-1.5 rounded-xl text-xs font-semibold transition shadow-sm"
-                >
-                  <Plus size={14} /> Tambah Catatan
-                </button>
-              )}
             </div>
-            <div className="p-5">
-              {loadingCatatan ? (
-                <div className="flex items-center justify-center py-8 gap-2 text-gray-400">
-                  <Loader2 className="animate-spin" size={20} />
-                  <span className="text-sm">Memuat catatan...</span>
-                </div>
-              ) : catatanList.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-10 text-center">
-                  <div className="w-14 h-14 bg-indigo-50 rounded-full flex items-center justify-center mb-3">
-                    <MessageSquarePlus size={24} className="text-indigo-300" />
-                  </div>
-                  <p className="text-sm font-medium text-gray-500 mb-1">Belum ada catatan pelayanan</p>
-                  <p className="text-xs text-gray-400 mb-4">
-                    {canEdit
-                      ? "Tambahkan catatan keluhan, tindakan, atau saran untuk kunjungan ini"
-                      : "Belum ada catatan. Hanya dokter yang dapat menambahkan catatan."}
-                  </p>
-                  {canEdit && (
-                    <button
-                      type="button"
-                      onClick={handleTambahCatatan}
-                      className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition"
-                    >
-                      <Plus size={15} /> Tambah Catatan Pertama
-                    </button>
-                  )}
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {catatanList.map((catatan, idx) => (
-                    <div
-                      key={catatan.id_catatan_t3}
-                      className="group relative bg-gray-50 hover:bg-indigo-50/40 border border-gray-100 hover:border-indigo-200 rounded-2xl p-4 transition-all"
-                    >
-                      <div className="absolute top-4 left-4 w-6 h-6 bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center text-xs font-bold">
-                        {idx + 1}
-                      </div>
-                      <div className="ml-9">
-                        <div className="flex flex-wrap items-center gap-3 mb-3">
-                          {catatan.tanggal_periksa_stamp_paraf && (
-                            <div className="flex items-center gap-1.5 text-xs text-indigo-600 bg-indigo-100 px-2.5 py-1 rounded-full font-medium">
-                              <Calendar size={11} />
-                              {fmtDate(catatan.tanggal_periksa_stamp_paraf)}
-                            </div>
-                          )}
-                          {catatan.tanggal_kembali && (
-                            <div className="flex items-center gap-1.5 text-xs text-teal-600 bg-teal-100 px-2.5 py-1 rounded-full font-medium">
-                              <CalendarCheck size={11} />
-                              Kembali: {fmtDate(catatan.tanggal_kembali)}
-                            </div>
-                          )}
-                        </div>
-                        <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
-                          {catatan.keluhan_pemeriksaan_tindakan_saran || <span className="italic text-gray-400">Tidak ada isi catatan</span>}
-                        </p>
-                      </div>
-                      {canEdit && (
-                        <div className="absolute top-3 right-3 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button
-                            type="button"
-                            onClick={() => handleEditCatatan(catatan)}
-                            className="p-1.5 rounded-lg bg-white border border-amber-200 text-amber-600 hover:bg-amber-50 transition shadow-sm"
-                            title="Edit catatan"
-                          >
-                            <Pencil size={13} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteCatatan(catatan.id_catatan_t3)}
-                            className="p-1.5 rounded-lg bg-white border border-red-200 text-red-500 hover:bg-red-50 transition shadow-sm"
-                            title="Hapus catatan"
-                          >
-                            <Trash2 size={13} />
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
+          </DetailSection>
         </div>
       </div>
-
-      {/* Modal Catatan */}
-      {modalOpen && (
-        <ModalCatatan
-          kehamilanId={kehamilan?.id}
-          catatan={editCatatan}
-          onClose={handleModalClose}
-          onSaved={fetchCatatan}
-        />
-      )}
     </MainLayout>
   );
 }

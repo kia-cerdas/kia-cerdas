@@ -3,12 +3,13 @@ import { useParams, useNavigate } from "react-router-dom";
 import MainLayout from "../components/Layout/MainLayout";
 import api from "../services/api";
 import { getActiveForm, savePemeriksaan, getRiwayatPemeriksaan } from "../services/pemeriksaan";
-import { 
+import {
   Plus, Search, Eye, ArrowLeft,
   User, AlertCircle, CheckCircle,
   Heart, Droplet, Thermometer, Activity, RefreshCw, Loader2,
-  FileText, X
+  FileText, X, Calendar, BarChart3, Scale, Lightbulb
 } from 'lucide-react';
+import Swal from "sweetalert2";
 
 const categories = {
   anak: { name: "Anak",  color: "blue", range: "5-9 tahun", bgGradient: "from-blue-500 to-blue-600" },
@@ -26,7 +27,7 @@ const validations = {
     if (num <= 0) return "Berat badan harus lebih dari 0 kg";
     if (num < 10) return "Berat badan terlalu rendah (minimal 10 kg)";
     if (num > 250) return "Berat badan terlalu tinggi (maksimal 250 kg)";
-    if (num < 25) return "⚠️ Berat badan di bawah 25 kg, periksa kembali";
+    if (num < 25) return "Berat badan di bawah 25 kg, periksa kembali";
     return null;
   },
   
@@ -37,8 +38,8 @@ const validations = {
     if (num <= 0) return "Tinggi badan harus lebih dari 0 cm";
     if (num < 50) return "Tinggi badan terlalu pendek (minimal 50 cm)";
     if (num > 250) return "Tinggi badan terlalu tinggi (maksimal 250 cm)";
-    if (num < 70) return "⚠️ Tinggi badan di bawah 70 cm, periksa kembali";
-    if (num > 220) return "⚠️ Tinggi badan di atas 220 cm, periksa kembali";
+    if (num < 70) return "Tinggi badan di bawah 70 cm, periksa kembali";
+    if (num > 220) return "Tinggi badan di atas 220 cm, periksa kembali";
     return null;
   },
   
@@ -48,10 +49,10 @@ const validations = {
     if (isNaN(num)) return null;
     if (num < 10) return "IMT terlalu rendah, periksa data berat/tinggi";
     if (num > 50) return "IMT terlalu tinggi, periksa data berat/tinggi";
-    if (num < 14) return "⚠️ IMT rendah (underweight)";
-    if (num > 30) return "⚠️ IMT tinggi (obesitas)";
-    if (num > 25) return "⚠️ IMT di atas normal (overweight)";
-    if (num < 18.5) return "⚠️ IMT di bawah normal (underweight)";
+    if (num < 14) return "IMT rendah (underweight)";
+    if (num > 30) return "IMT tinggi (obesitas)";
+    if (num > 25) return "IMT di atas normal (overweight)";
+    if (num < 18.5) return "IMT di bawah normal (underweight)";
     return null;
   },
   
@@ -61,9 +62,9 @@ const validations = {
     if (isNaN(num)) return "Tekanan darah harus diisi";
     if (num < 70) return "Tekanan darah terlalu rendah (hipotensi berat)";
     if (num > 220) return "Tekanan darah terlalu tinggi (hipertensi berat)";
-    if (num < 90) return "⚠️ Tekanan darah rendah (hipotensi)";
-    if (num > 140) return "⚠️ Tekanan darah tinggi (hipertensi)";
-    if (num > 160) return "⚠️ Tekanan darah sangat tinggi, waspada";
+    if (num < 90) return "Tekanan darah rendah (hipotensi)";
+    if (num > 140) return "Tekanan darah tinggi (hipertensi)";
+    if (num > 160) return "Tekanan darah sangat tinggi, waspada";
     return null;
   },
   
@@ -73,8 +74,8 @@ const validations = {
     if (isNaN(num)) return "Tekanan darah harus diisi";
     if (num < 40) return "Tekanan darah diastolik terlalu rendah";
     if (num > 130) return "Tekanan darah diastolik terlalu tinggi";
-    if (num < 60) return "⚠️ Tekanan darah diastolik rendah";
-    if (num > 90) return "⚠️ Tekanan darah diastolik tinggi";
+    if (num < 60) return "Tekanan darah diastolik rendah";
+    if (num > 90) return "Tekanan darah diastolik tinggi";
     return null;
   },
   
@@ -84,10 +85,10 @@ const validations = {
     if (isNaN(num)) return "Gula darah harus diisi";
     if (num < 40) return "Gula darah terlalu rendah (hipoglikemia berat) - segera makan!";
     if (num > 500) return "Gula darah terlalu tinggi (hiperglikemia berat) - segera ke dokter!";
-    if (num < 70) return "⚠️ Gula darah rendah (hipoglikemia) - segera makan makanan manis";
-    if (num > 200) return "⚠️ Gula darah tinggi (hiperglikemia) - kontrol gula darah";
-    if (num > 140) return "⚠️ Gula darah di atas normal - waspada diabetes";
-    if (num < 80) return "⚠️ Gula darah rendah - perlu makan ringan";
+    if (num < 70) return "Gula darah rendah (hipoglikemia) - segera makan makanan manis";
+    if (num > 200) return "Gula darah tinggi (hiperglikemia) - kontrol gula darah";
+    if (num > 140) return "Gula darah di atas normal - waspada diabetes";
+    if (num < 80) return "Gula darah rendah - perlu makan ringan";
     return null;
   },
   
@@ -97,8 +98,8 @@ const validations = {
     if (isNaN(num)) return "Gula darah puasa harus diisi";
     if (num < 60) return "Gula darah puasa terlalu rendah";
     if (num > 200) return "Gula darah puasa terlalu tinggi";
-    if (num > 126) return "⚠️ Gula darah puasa tinggi (prediabetes/diabetes)";
-    if (num < 70) return "⚠️ Gula darah puasa rendah";
+    if (num > 126) return "Gula darah puasa tinggi (prediabetes/diabetes)";
+    if (num < 70) return "Gula darah puasa rendah";
     return null;
   },
   
@@ -107,8 +108,8 @@ const validations = {
     const num = Number(value);
     if (isNaN(num)) return "Gula darah 2 jam harus diisi";
     if (num > 250) return "Gula darah 2 jam terlalu tinggi";
-    if (num > 200) return "⚠️ Gula darah 2 jam tinggi - risiko diabetes";
-    if (num > 140) return "⚠️ Gula darah 2 jam di atas normal";
+    if (num > 200) return "Gula darah 2 jam tinggi - risiko diabetes";
+    if (num > 140) return "Gula darah 2 jam di atas normal";
     return null;
   },
   
@@ -118,10 +119,10 @@ const validations = {
     if (isNaN(num)) return "Suhu tubuh harus diisi";
     if (num < 32) return "Suhu terlalu rendah (hipotermia berat) - darurat!";
     if (num > 42) return "Suhu terlalu tinggi (hipertermia berat) - darurat!";
-    if (num < 35) return "⚠️ Suhu rendah (hipotermia) - hangatkan tubuh";
-    if (num > 38.5) return "⚠️ Demam tinggi - segera konsultasi dokter";
-    if (num > 37.5) return "⚠️ Demam ringan - perbanyak minum air putih";
-    if (num < 36) return "⚠️ Suhu di bawah normal";
+    if (num < 35) return "Suhu rendah (hipotermia) - hangatkan tubuh";
+    if (num > 38.5) return "Demam tinggi - segera konsultasi dokter";
+    if (num > 37.5) return "Demam ringan - perbanyak minum air putih";
+    if (num < 36) return "Suhu di bawah normal";
     return null;
   },
   
@@ -131,9 +132,9 @@ const validations = {
     if (isNaN(num)) return "Kolesterol harus diisi";
     if (num < 50) return "Kolesterol terlalu rendah";
     if (num > 400) return "Kolesterol terlalu tinggi - risiko penyakit jantung";
-    if (num > 240) return "⚠️ Kolesterol tinggi - perlu kontrol pola makan";
-    if (num > 200) return "⚠️ Kolesterol di atas normal";
-    if (num < 120) return "⚠️ Kolesterol rendah";
+    if (num > 240) return "Kolesterol tinggi - perlu kontrol pola makan";
+    if (num > 200) return "Kolesterol di atas normal";
+    if (num < 120) return "Kolesterol rendah";
     return null;
   },
   
@@ -143,9 +144,9 @@ const validations = {
     if (isNaN(num)) return "Denyut nadi harus diisi";
     if (num < 40) return "Denyut nadi terlalu lambat (bradikardia berat)";
     if (num > 150) return "Denyut nadi terlalu cepat (takikardia berat)";
-    if (num < 60) return "⚠️ Denyut nadi lambat (bradikardia)";
-    if (num > 100) return "⚠️ Denyut nadi cepat (takikardia)";
-    if (num > 120) return "⚠️ Denyut nadi sangat cepat - waspada";
+    if (num < 60) return "Denyut nadi lambat (bradikardia)";
+    if (num > 100) return "Denyut nadi cepat (takikardia)";
+    if (num > 120) return "Denyut nadi sangat cepat - waspada";
     return null;
   },
   
@@ -155,8 +156,8 @@ const validations = {
     if (isNaN(num)) return null;
     if (num < 50) return "Lingkar perut terlalu kecil";
     if (num > 150) return "Lingkar perut terlalu besar";
-    if (num > 90) return "⚠️ Lingkar perut berlebih - risiko metabolik";
-    if (num > 80) return "⚠️ Lingkar perut melebihi batas normal";
+    if (num > 90) return "Lingkar perut berlebih - risiko metabolik";
+    if (num > 80) return "Lingkar perut melebihi batas normal";
     return null;
   },
   
@@ -185,8 +186,8 @@ const validations = {
     if (isNaN(num)) return "Hemoglobin harus diisi";
     if (num < 4) return "Hemoglobin terlalu rendah - anemia berat!";
     if (num > 20) return "Hemoglobin terlalu tinggi - waspada";
-    if (num < 10) return "⚠️ Hemoglobin rendah (anemia) - perlu suplemen zat besi";
-    if (num < 12) return "⚠️ Hemoglobin di bawah normal";
+    if (num < 10) return "Hemoglobin rendah (anemia) - perlu suplemen zat besi";
+    if (num < 12) return "Hemoglobin di bawah normal";
     return null;
   },
   
@@ -196,8 +197,8 @@ const validations = {
     if (isNaN(num)) return "Asam urat harus diisi";
     if (num < 2) return "Asam urat terlalu rendah";
     if (num > 12) return "Asam urat terlalu tinggi - risiko gout";
-    if (num > 7) return "⚠️ Asam urat tinggi - hindari jeroan dan kacang-kacangan";
-    if (num > 8.5) return "⚠️ Asam urat sangat tinggi - konsultasi dokter";
+    if (num > 7) return "Asam urat tinggi - hindari jeroan dan kacang-kacangan";
+    if (num > 8.5) return "Asam urat sangat tinggi - konsultasi dokter";
     return null;
   }
 };
@@ -292,7 +293,12 @@ export default function PencatatanKesehatanKategori() {
       return response || [];
     } catch (err) {
       console.error(err);
-      alert("Gagal memuat riwayat pemeriksaan");
+      Swal.fire({
+        icon: "error",
+        title: "Gagal Memuat Riwayat",
+        text: "Gagal memuat riwayat pemeriksaan",
+        confirmButtonColor: "#185FA5",
+      });
       return [];
     } finally {
       setLoadingHistory(false);
@@ -307,7 +313,12 @@ export default function PencatatanKesehatanKategori() {
       return response.data;
     } catch (err) {
       console.error(err);
-      alert("Gagal memuat detail pemeriksaan");
+      Swal.fire({
+        icon: "error",
+        title: "Gagal Memuat Detail",
+        text: "Gagal memuat detail pemeriksaan",
+        confirmButtonColor: "#185FA5",
+      });
       return null;
     } finally {
       setLoadingDetail(false);
@@ -354,7 +365,12 @@ export default function PencatatanKesehatanKategori() {
       setModal("checkup");
     } catch (err) {
       console.error(err);
-      alert("Gagal memuat form pemeriksaan. Pastikan superadmin sudah mengaktifkan versi form untuk kategori ini.");
+      Swal.fire({
+        icon: "error",
+        title: "Gagal Memuat Form",
+        text: "Gagal memuat form pemeriksaan. Pastikan superadmin sudah mengaktifkan versi form untuk kategori ini.",
+        confirmButtonColor: "#185FA5",
+      });
     } finally {
       setLoadingForm(false);
     }
@@ -452,8 +468,8 @@ export default function PencatatanKesehatanKategori() {
         break;
     }
     
-    // Pisahkan error dan warning (warning diawali dengan ⚠️)
-    if (error && error.includes("⚠️")) {
+    // Pisahkan error dan warning
+    if (error && (error.includes("rendah") || error.includes("tinggi") || error.includes("di atas") || error.includes("di bawah"))) {
       return { error: null, warning: error };
     }
     return { error: error, warning: null };
@@ -501,7 +517,7 @@ export default function PencatatanKesehatanKategori() {
           // Validasi IMT
           const imtValidation = validations.imt(imtValue);
           if (imtValidation) {
-            if (imtValidation.includes("⚠️")) {
+            if (imtValidation.includes("rendah") || imtValidation.includes("tinggi")) {
               setFieldWarnings(prevW => ({ ...prevW, imt: imtValidation }));
               setFieldErrors(prevE => {
                 const { imt, ...rest } = prevE;
@@ -559,14 +575,19 @@ export default function PencatatanKesehatanKategori() {
     // Validasi semua field
     if (!validateAllFields()) {
       const errorMessages = Object.values(fieldErrors);
-      alert(`⚠️ Mohon perbaiki data berikut:\n${errorMessages.map(msg => `- ${msg}`).join('\n')}`);
+      Swal.fire({
+        icon: "warning",
+        title: "Data Belum Lengkap",
+        html: `Mohon perbaiki data berikut:<br>${errorMessages.map(msg => `- ${msg}`).join('<br>')}`,
+        confirmButtonColor: "#185FA5",
+      });
       return;
     }
     
     // Tampilkan warning jika ada
     const warnings = Object.values(fieldWarnings).filter(w => w);
     if (warnings.length > 0) {
-      const confirmMessage = `⚠️ PERHATIAN!\n\nBeberapa data berada di luar batas normal:\n${warnings.map(w => `- ${w}`).join('\n')}\n\nApakah Anda tetap ingin menyimpan?`;
+      const confirmMessage = `PERHATIAN!\n\nBeberapa data berada di luar batas normal:\n${warnings.map(w => `- ${w}`).join('\n')}\n\nApakah Anda tetap ingin menyimpan?`;
       if (!window.confirm(confirmMessage)) {
         return;
       }
@@ -590,7 +611,12 @@ export default function PencatatanKesehatanKategori() {
       fetchDataFromAPI();
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.error || "Gagal menyimpan pemeriksaan");
+      Swal.fire({
+        icon: "error",
+        title: "Gagal Menyimpan",
+        text: err.response?.data?.error || "Gagal menyimpan pemeriksaan",
+        confirmButtonColor: "#185FA5",
+      });
     } finally {
       setSubmitting(false);
     }
@@ -663,13 +689,13 @@ export default function PencatatanKesehatanKategori() {
             )}
             {/* Informasi nilai normal */}
             {!hasError && !hasWarning && q.key === "tekanan_darah_sistolik" && value && (
-              <p className="text-green-600 text-xs mt-1">✅ Tekanan darah normal (90-140 mmHg)</p>
+              <p className="text-green-600 text-xs mt-1">Tekanan darah normal (90-140 mmHg)</p>
             )}
             {!hasError && !hasWarning && q.key === "gula_darah" && value && value >= 70 && value <= 140 && (
-              <p className="text-green-600 text-xs mt-1">✅ Gula darah normal (70-140 mg/dL)</p>
+              <p className="text-green-600 text-xs mt-1">Gula darah normal (70-140 mg/dL)</p>
             )}
             {!hasError && !hasWarning && q.key === "suhu" && value && value >= 36 && value <= 37.5 && (
-              <p className="text-green-600 text-xs mt-1">✅ Suhu tubuh normal</p>
+              <p className="text-green-600 text-xs mt-1">Suhu tubuh normal</p>
             )}
           </div>
         );
@@ -902,7 +928,7 @@ export default function PencatatanKesehatanKategori() {
                         <div>
                           <h3 className="font-bold text-lg">{patient.nama_lengkap}</h3>
                           <p className="text-sm opacity-90">{patient.usia} tahun</p>
-                          {patient.dusun && <p className="text-xs opacity-75 mt-1">📍 {patient.dusun}</p>}
+                          {patient.dusun && <p className="text-xs opacity-75 mt-1"> {patient.dusun}</p>}
                         </div>
                         <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs ${status.color} bg-white`}>
                           <StatusIcon size={12} /> {status.text}
@@ -920,22 +946,22 @@ export default function PencatatanKesehatanKategori() {
                                  patient.kategori_risiko === "Sedang" ? "#d97706" :
                                  patient.kategori_risiko === "Normal" ? "#16a34a" : "#6b7280"
                         }}>
-                        {patient.kategori_risiko === "Tinggi" && "⚠️ "}
-                        {patient.kategori_risiko === "Sedang" && "⚡ "}
-                        {patient.kategori_risiko === "Normal" && "✅ "}
+                        {patient.kategori_risiko === "Tinggi" && <AlertCircle size={14} className="inline mr-1" />}
+                        {patient.kategori_risiko === "Sedang" && <AlertCircle size={14} className="inline mr-1" />}
+                        {patient.kategori_risiko === "Normal" && <CheckCircle size={14} className="inline mr-1" />}
                         Status Risiko: {patient.kategori_risiko || "Belum Diperiksa"}
                       </div>
                       {latest ? (
                         <div className="bg-gray-50 p-3 rounded-lg text-sm mb-4">
                           <div className="flex items-center gap-1 text-gray-500 mb-2">
-                            📅 Pemeriksaan Terakhir: {new Date(latest.tanggal).toLocaleDateString("id-ID")}
+                            <Calendar size={12} className="inline" /> Pemeriksaan Terakhir: {new Date(latest.tanggal).toLocaleDateString("id-ID")}
                           </div>
                           <div className="flex gap-3 flex-wrap">
                             {latest.tekanan_darah && <div><Heart size={12} className="inline text-red-500" /> {latest.tekanan_darah}</div>}
                             {latest.gula_darah && <div><Droplet size={12} className="inline text-blue-500" /> {latest.gula_darah} mg/dL</div>}
                             {latest.suhu && <div><Thermometer size={12} className="inline text-orange-500" /> {latest.suhu}°C</div>}
                             {latest.berat_badan && latest.tinggi_badan && <div><Activity size={12} className="inline text-green-600" /> BB: {latest.berat_badan} kg / TB: {latest.tinggi_badan} cm</div>}
-                            {latest.imt && <div>📊 IMT: {latest.imt.toFixed(1)}</div>}
+                            {latest.imt && <div><BarChart3 size={12} className="inline text-purple-500" /> IMT: {latest.imt.toFixed(1)}</div>}
                           </div>
                         </div>
                       ) : (
@@ -990,13 +1016,13 @@ export default function PencatatanKesehatanKategori() {
                             })}
                           </div>
                           <div className="grid grid-cols-2 gap-2 text-sm mt-2">
-                            {exam.tekanan_darah && <div>💓 TD: {exam.tekanan_darah}</div>}
-                            {exam.gula_darah && <div>🍬 GDS: {exam.gula_darah} mg/dL</div>}
-                            {exam.kolesterol && <div>🩸 Kolesterol: {exam.kolesterol} mg/dL</div>}
-                            {exam.berat_badan && exam.tinggi_badan && <div>⚖️ BB: {exam.berat_badan} kg / TB: {exam.tinggi_badan} cm</div>}
-                            {exam.imt && <div>📊 IMT: {typeof exam.imt === 'number' ? exam.imt.toFixed(1) : exam.imt}</div>}
-                            {exam.kategori_risiko && <div>⚠️ Risiko: {exam.kategori_risiko}</div>}
-                            {exam.rekomendasi && <div>💡 Rekomendasi: {exam.rekomendasi}</div>}
+                            {exam.tekanan_darah && <div><Heart size={12} className="inline text-red-500" /> TD: {exam.tekanan_darah}</div>}
+                            {exam.gula_darah && <div><Droplet size={12} className="inline text-blue-500" /> GDS: {exam.gula_darah} mg/dL</div>}
+                            {exam.kolesterol && <div><FileText size={12} className="inline text-red-600" /> Kolesterol: {exam.kolesterol} mg/dL</div>}
+                            {exam.berat_badan && exam.tinggi_badan && <div><Scale size={12} className="inline text-gray-600" /> BB: {exam.berat_badan} kg / TB: {exam.tinggi_badan} cm</div>}
+                            {exam.imt && <div><BarChart3 size={12} className="inline text-purple-500" /> IMT: {typeof exam.imt === 'number' ? exam.imt.toFixed(1) : exam.imt}</div>}
+                            {exam.kategori_risiko && <div><AlertCircle size={12} className="inline text-yellow-500" /> Risiko: {exam.kategori_risiko}</div>}
+                            {exam.rekomendasi && <div><Lightbulb size={12} className="inline text-yellow-600" /> Rekomendasi: {exam.rekomendasi}</div>}
                           </div>
                           {exam.riwayat_penyakit && <div className="text-sm mt-2"><span className="font-medium">Riwayat:</span> {exam.riwayat_penyakit}</div>}
                           {exam.catatan_khusus && <div className="text-sm mt-1"><span className="font-medium">Catatan:</span> {exam.catatan_khusus}</div>}
@@ -1120,28 +1146,28 @@ export default function PencatatanKesehatanKategori() {
                         {renderDynamicField(q)}
                         {/* Informasi nilai normal */}
                         {q.key === "berat_badan" && (
-                          <p className="text-xs text-blue-600 mt-0.5">
-                            💡 Nilai normal: 25-200 kg
+                          <p className="text-xs text-blue-600 mt-0.5 flex items-center gap-1">
+                            <Lightbulb size={10} className="inline" /> Nilai normal: 25-200 kg
                           </p>
                         )}
                         {q.key === "tinggi_badan" && (
-                          <p className="text-xs text-blue-600 mt-0.5">
-                            💡 Nilai normal: 70-220 cm
+                          <p className="text-xs text-blue-600 mt-0.5 flex items-center gap-1">
+                            <Lightbulb size={10} className="inline" /> Nilai normal: 70-220 cm
                           </p>
                         )}
                         {q.key === "tekanan_darah_sistolik" && (
-                          <p className="text-xs text-blue-600 mt-0.5">
-                            💡 Nilai normal: 90-140 mmHg
+                          <p className="text-xs text-blue-600 mt-0.5 flex items-center gap-1">
+                            <Lightbulb size={10} className="inline" /> Nilai normal: 90-140 mmHg
                           </p>
                         )}
                         {q.key === "gula_darah" && (
-                          <p className="text-xs text-blue-600 mt-0.5">
-                            💡 Gula darah normal: 70-140 mg/dL (puasa: 70-100 mg/dL)
+                          <p className="text-xs text-blue-600 mt-0.5 flex items-center gap-1">
+                            <Lightbulb size={10} className="inline" /> Gula darah normal: 70-140 mg/dL (puasa: 70-100 mg/dL)
                           </p>
                         )}
                         {q.key === "suhu" && (
-                          <p className="text-xs text-blue-600 mt-0.5">
-                            💡 Suhu normal: 36-37.5°C
+                          <p className="text-xs text-blue-600 mt-0.5 flex items-center gap-1">
+                            <Lightbulb size={10} className="inline" /> Suhu normal: 36-37.5°C
                           </p>
                         )}
                       </div>
@@ -1169,9 +1195,9 @@ export default function PencatatanKesehatanKategori() {
                       resultData.kategori_risiko === "Sedang" ? "bg-yellow-100 text-yellow-600" :
                       resultData.kategori_risiko === "Normal" ? "bg-green-100 text-green-600" :
                       "bg-gray-100 text-gray-600"}`}>
-                    {resultData.kategori_risiko === "Tinggi" ? "⚠️" :
-                     resultData.kategori_risiko === "Sedang" ? "⚡" :
-                     resultData.kategori_risiko === "Normal" ? "✅" : "ℹ️"}
+                    {resultData.kategori_risiko === "Tinggi" ? <AlertCircle size={32} /> :
+                     resultData.kategori_risiko === "Sedang" ? <AlertCircle size={32} /> :
+                     resultData.kategori_risiko === "Normal" ? <CheckCircle size={32} /> : <AlertCircle size={32} />}
                   </div>
                   <h3 className="text-xl font-bold mt-4">Pemeriksaan Selesai</h3>
                   <div className="mt-4 p-3 rounded-lg bg-gray-50">

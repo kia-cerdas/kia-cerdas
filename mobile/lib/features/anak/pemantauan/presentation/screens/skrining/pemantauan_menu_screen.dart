@@ -101,7 +101,7 @@ class _PemantauanMenuScreenState extends State<PemantauanMenuScreen> {
     );
   }
 
-    PreferredSizeWidget _buildHeader() {
+  PreferredSizeWidget _buildHeader() {
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 1,
@@ -203,7 +203,7 @@ class _PemantauanMenuScreenState extends State<PemantauanMenuScreen> {
           SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Pilih kelompok usia yang sesuai, lalu ketuk Skrining sekarang untuk mulai.',
+              'Kelompok usia yang sesuai, lalu ketuk Skrining sekarang untuk mulai.',
               style: TextStyle(
                 fontSize: 12.5,
                 height: 1.45,
@@ -231,7 +231,7 @@ class _PemantauanMenuScreenState extends State<PemantauanMenuScreen> {
         const SizedBox(width: 10),
         Expanded(
           child: Text(
-            'Pilih Kelompok Usia',
+            'Kelompok Usia',
             style: const TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.bold,
@@ -263,7 +263,8 @@ class _PemantauanMenuScreenState extends State<PemantauanMenuScreen> {
   }
 
   Widget _buildAgeCard(_AgeCardSpec card) {
-    final isSelected = _ageCards[_selectedAgeIndex].rentangNama == card.rentangNama;
+    final isSelected =
+        _ageCards[_selectedAgeIndex].rentangNama == card.rentangNama;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -299,7 +300,8 @@ class _PemantauanMenuScreenState extends State<PemantauanMenuScreen> {
               const Spacer(),
               if (isSelected)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: card.accent.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(999),
@@ -411,10 +413,10 @@ class _PemantauanMenuScreenState extends State<PemantauanMenuScreen> {
     );
   }
 
-
   int _resolveAgeIndex(String usiaText) {
     final normalized = usiaText.toLowerCase();
-    final match = RegExp(r'(\d+)\s*(tahun|bulan|hari)').allMatches(normalized).toList();
+    final match =
+        RegExp(r'(\d+)\s*(tahun|bulan|hari)').allMatches(normalized).toList();
 
     int years = 0;
     int months = 0;

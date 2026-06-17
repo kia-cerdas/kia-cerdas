@@ -297,3 +297,50 @@ func (m *Main) GetKunjunganImunisasiByStatus(
 		nil,
 	)
 }
+
+func (m *Main) CreateKunjunganImunisasi(
+	c echo.Context,
+) error {
+
+	var req models.PostKunjunganImunisasiRequest
+
+	if err := c.Bind(&req); err != nil {
+
+		return helpers.Response(
+			c,
+			http.StatusBadRequest,
+			[]string{
+				"invalid request",
+			},
+		)
+	}
+
+	kunjunganID, err :=
+		m.usecases.
+			CreateKunjunganImunisasi(&req)
+
+	if err != nil {
+
+		return helpers.Response(
+			c,
+			http.StatusInternalServerError,
+			[]string{
+				err.Error(),
+			},
+		)
+	}
+
+	response := map[string]interface{}{
+		"kunjungan_id": kunjunganID,
+	}
+
+	return helpers.StandardResponse(
+		c,
+		http.StatusCreated,
+		[]string{
+			constants.SUCCESS_RESPONSE_MESSAGE,
+		},
+		response,
+		nil,
+	)
+}

@@ -4,6 +4,7 @@ const ADMIN_ROLE = "admin";
 const SUPERADMIN_ROLE = "superadmin";
 const BIDAN_ROLE = "bidan";
 const DOKTER_ROLE = "dokter";
+const BIDAN_PUSKESMAS_ROLE = "bidan_puskesmas";
 
 const normalizeRole = (role) => (role || "").toString().trim().toLowerCase();
 
@@ -13,12 +14,16 @@ export const isAdminUser = (user) =>
   [ADMIN_ROLE, SUPERADMIN_ROLE].includes(normalizeRole(user?.role));
 export const isDokterUser = (user) => normalizeRole(user?.role) === DOKTER_ROLE;
 export const isBidanUser = (user) => normalizeRole(user?.role) === BIDAN_ROLE;
+export const isBidanPuskesmasUser = (user) => normalizeRole(user?.role) === BIDAN_PUSKESMAS_ROLE;
+export const isPuskesmasUser = (user) =>
+  [BIDAN_PUSKESMAS_ROLE, DOKTER_ROLE].includes(normalizeRole(user?.role));
 
 export const getUserRedirectRoute = (user) => {
   const role = normalizeRole(user?.role);
   if (role === SUPERADMIN_ROLE) return "/superadmin/dashboard";
   if (role === ADMIN_ROLE) return "/dashboard/admin";
-  if (role === DOKTER_ROLE) return "/dashboard/dokter";
+  if (role === BIDAN_PUSKESMAS_ROLE) return "/dashboard/puskesmas";
+  if (role === DOKTER_ROLE) return "/dashboard/puskesmas";
   if (role === BIDAN_ROLE) return "/dashboard/bidan";
   return "/login";
 };

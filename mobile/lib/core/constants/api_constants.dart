@@ -16,6 +16,7 @@ class ApiConstants {
     }
   }
 
+//   static String baseUrl = 'https://api.generasisehat.com';
 // static String get baseUrl => 'https://api.generasisehat.com';
 
   static const String authLogin = '/auth/login';
@@ -61,7 +62,7 @@ class ApiConstants {
   static const String grafikPeningkatanBBV2 =
       '/modul-ibu/grafik-peningkatan-bb/v2';
   static const String keteranganLahir = '/modul-ibu/keterangan-lahir/me';
-  // Profile Ibu 
+  // Profile Ibu
   static const String profilIbu = '/modul-ibu/profil';
 
   // Pemeriksaan Dokter - list semua kunjungan (BARU)
@@ -86,6 +87,11 @@ class ApiConstants {
   static const String rujukanIbu = '/modul-ibu/rujukan';
   static String get ringkasanPersalinan =>
       '$baseUrl/modul-ibu/ringkasan-persalinan/me';
+
+  // Catatan Pelayanan Kehamilan unified (tabel baru untuk mobile)
+  // ?trimester=1 opsional (1/2/3). Kosong = semua trimester.
+  static const String catatanPelayananKehamilanMe =
+      '/modul-ibu/catatan-pelayanan-kehamilan/me';
   static String catatanPelayananT1(
     int kehamilanId,
   ) =>
@@ -127,14 +133,14 @@ class ApiConstants {
       '/ibu/pertumbuhan/anak/$anakId';
   // Informasi Umum
   static const String masterStandar = '/master-standar';
-    static const String edukasiInformasiUmum = '/edukasi-informasi-umum';
+  static const String edukasiInformasiUmum = '/edukasi-informasi-umum';
 
-    static String edukasiInformasiUmumById(int id) =>
-            '/edukasi-informasi-umum/$id';
+  static String edukasiInformasiUmumById(int id) =>
+      '/edukasi-informasi-umum/$id';
 
-    static const String informasiUmum = edukasiInformasiUmum;
+  static const String informasiUmum = edukasiInformasiUmum;
 
-    static String informasiUmumById(int id) => edukasiInformasiUmumById(id);
+  static String informasiUmumById(int id) => edukasiInformasiUmumById(id);
   // Perawatan (Milestone/Perkembangan)
   static const String ibuKategoriCapaian = '/ibu/kategori-capaian';
   static String ibuKategoriCapaianByRentangUsia(String rentangUsia) =>

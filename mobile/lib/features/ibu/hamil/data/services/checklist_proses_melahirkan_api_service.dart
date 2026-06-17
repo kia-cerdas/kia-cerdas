@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:ta_pa2_pa3_project/core/network/app_http_client.dart';
 import 'package:ta_pa2_pa3_project/core/constants/api_constants.dart';
 import 'package:ta_pa2_pa3_project/core/services/auth_session.dart';
 import 'package:ta_pa2_pa3_project/features/ibu/hamil/data/models/checklist_proses_melahirkan_model.dart';
@@ -9,7 +10,7 @@ class ChecklistProsesMelahirkanApiService {
   final http.Client _client;
 
   ChecklistProsesMelahirkanApiService({http.Client? client})
-      : _client = client ?? http.Client();
+      : _client = client ?? AppHttpClient();
 
   Map<String, String> get _headers {
     final token = AuthSession.token;

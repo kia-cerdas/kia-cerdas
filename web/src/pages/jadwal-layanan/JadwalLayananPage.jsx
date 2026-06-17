@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import MainLayout from "../../components/Layout/MainLayout";
 import {
   CalendarDays,
@@ -19,6 +19,7 @@ import {
   deleteJadwalLayanan,
 } from "../../services/jadwalLayanan";
 import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -395,8 +396,19 @@ export default function JadwalLayananPage() {
         });
 
       setAllRows(rows);
-    } catch {
+    } catch (err) {
       setError("Gagal memuat jadwal layanan. Periksa koneksi dan coba lagi.");
+      
+      // SweetAlert2 untuk error loading
+      Swal.fire({
+        icon: "error",
+        title: "Gagal Memuat Data",
+        text: "Tidak dapat memuat jadwal layanan. Silakan periksa koneksi internet Anda.",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#185FA5",
+        background: "#fff",
+        backdrop: `rgba(0,0,0,0.4)`,
+      });
     } finally {
       setLoading(false);
     }
@@ -414,13 +426,60 @@ export default function JadwalLayananPage() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Hapus jadwal layanan ini?")) return;
+    // SweetAlert2 untuk konfirmasi delete
+    const result = await Swal.fire({
+      title: "Hapus Jadwal Layanan?",
+      text: "Data yang sudah dihapus tidak dapat dikembalikan!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#A32D2D",
+      cancelButtonColor: "#6B7280",
+      confirmButtonText: "Ya, Hapus!",
+      cancelButtonText: "Batal",
+      background: "#fff",
+      backdrop: `rgba(0,0,0,0.4)`,
+      customClass: {
+        popup: "rounded-2xl",
+        confirmButton: "rounded-xl px-5 py-2.5 font-semibold",
+        cancelButton: "rounded-xl px-5 py-2.5 font-semibold",
+      },
+    });
+
+    if (!result.isConfirmed) return;
+
     setDeleting(id);
     try {
       await deleteJadwalLayanan(id);
       setAllRows((prev) => prev.filter((r) => r.id !== id));
-    } catch {
-      alert("Gagal menghapus jadwal layanan.");
+      
+      // SweetAlert2 untuk sukses delete
+      Swal.fire({
+        icon: "success",
+        title: "Berhasil Dihapus!",
+        text: "Jadwal layanan telah dihapus dari sistem.",
+        timer: 2000,
+        showConfirmButton: false,
+        background: "#fff",
+        backdrop: `rgba(0,0,0,0.4)`,
+        customClass: {
+          popup: "rounded-2xl",
+        },
+      });
+    } catch (err) {
+      // SweetAlert2 untuk error delete
+      Swal.fire({
+        icon: "error",
+        title: "Gagal Menghapus",
+        text: "Terjadi kesalahan saat menghapus jadwal layanan. Silakan coba lagi.",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#185FA5",
+        background: "#fff",
+        backdrop: `rgba(0,0,0,0.4)`,
+        customClass: {
+          popup: "rounded-2xl",
+          confirmButton: "rounded-xl px-5 py-2.5 font-semibold",
+        },
+      });
     } finally {
       setDeleting(null);
     }

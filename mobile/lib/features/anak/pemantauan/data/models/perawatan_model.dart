@@ -118,3 +118,36 @@ class UpdatePerawatanRequest {
     'tanggal_periksa': tanggalPeriksa?.toIso8601String(),
   };
 }
+
+class BulkPerawatanItem {
+  final int kategoriCapaianId;
+  final bool? jawaban;
+  final DateTime? tanggalPeriksa;
+
+  BulkPerawatanItem({
+    required this.kategoriCapaianId,
+    this.jawaban,
+    this.tanggalPeriksa,
+  });
+
+  Map<String, dynamic> toJson() => {
+    'kategori_capaian_id': kategoriCapaianId,
+    'jawaban': jawaban,
+    'tanggal_periksa': tanggalPeriksa?.toIso8601String(),
+  };
+}
+
+class BulkPerawatanRequest {
+  final int anakId;
+  final List<BulkPerawatanItem> data;
+
+  BulkPerawatanRequest({
+    required this.anakId,
+    required this.data,
+  });
+
+  Map<String, dynamic> toJson() => {
+    'anak_id': anakId,
+    'data': data.map((item) => item.toJson()).toList(),
+  };
+}

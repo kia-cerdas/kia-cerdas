@@ -18,7 +18,7 @@ import {
   Filler,
 } from "chart.js";
 
-import { Plus, AlertTriangle, Activity, Scale, Heart, Droplets, FileText } from "lucide-react";
+import { Plus, AlertTriangle, Activity, Scale, Heart, Droplets, FileText, TrendingUp, Eye } from "lucide-react";
 import Swal from "sweetalert2";
 
 ChartJS.register(
@@ -227,15 +227,26 @@ export default function PemeriksaanKehamilanList() {
 
   // ── Style helpers ──
   const getRiskStyles = (status) => {
-    if (status === "PERLU RUJUKAN")  return "bg-red-50 border-red-200 text-red-700";
-    if (status === "PERLU TINDAKAN") return "bg-yellow-50 border-yellow-200 text-yellow-700";
+    const upperStatus = status?.toUpperCase() || "";
+    if (upperStatus === "PERLU RUJUKAN" || upperStatus === "TINGGI")  return "bg-red-50 border-red-200 text-red-700";
+    if (upperStatus === "PERLU TINDAKAN" || upperStatus === "SEDANG") return "bg-yellow-50 border-yellow-200 text-yellow-700";
     return "bg-green-50 border-green-200 text-green-700";
   };
 
   const getBadgeStyles = (status) => {
-    if (status === "PERLU RUJUKAN")  return "bg-red-100 text-red-700 border-red-200";
-    if (status === "PERLU TINDAKAN") return "bg-yellow-100 text-yellow-700 border-yellow-200";
+    const upperStatus = status?.toUpperCase() || "";
+    if (upperStatus === "PERLU RUJUKAN" || upperStatus === "TINGGI")  return "bg-red-100 text-red-700 border-red-200";
+    if (upperStatus === "PERLU TINDAKAN" || upperStatus === "SEDANG") return "bg-yellow-100 text-yellow-700 border-yellow-200";
     return "bg-green-100 text-green-700 border-green-200";
+  };
+
+  // ── Normalize status for display consistency ──
+  const normalizeDisplayStatus = (status) => {
+    const upperStatus = status?.toUpperCase() || "";
+    if (upperStatus === "PERLU RUJUKAN" || upperStatus === "TINGGI") return "PERLU RUJUKAN";
+    if (upperStatus === "PERLU TINDAKAN" || upperStatus === "SEDANG") return "PERLU TINDAKAN";
+    if (upperStatus === "NORMAL" || upperStatus === "RENDAH" || upperStatus === "RISIKO RENDAH") return "NORMAL";
+    return status || "NORMAL";
   };
 
   // ── Chart options ──
@@ -293,7 +304,7 @@ export default function PemeriksaanKehamilanList() {
     e.preventDefault();
     Swal.fire({
       title: "Konfirmasi Rujukan",
-      text: `Ibu ini memiliki status "${risk?.status_risiko}". Lanjutkan ke form rujukan?`,
+      text: `Ibu ini memiliki status "${normalizeDisplayStatus(risk?.status_risiko)}". Lanjutkan ke form rujukan?`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#d33",
@@ -326,28 +337,8 @@ export default function PemeriksaanKehamilanList() {
           <div className="flex-1">
             <div className="flex items-center gap-3 flex-wrap">
               <h1 className="text-3xl font-extrabold text-gray-900">Pemantauan ANC</h1>
-
-              {/* Badge status risiko */}
-              {hasExaminations && risk && (
-                <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border ${getBadgeStyles(risk.status_risiko)}`}>
-                  <span className="w-2 h-2 rounded-full bg-current animate-pulse"></span>
-                  {risk.status_risiko}
-                </span>
-              )}
             </div>
             <p className="text-gray-500 italic mt-1">Berdasarkan Standar Buku KIA & Skrining Risiko</p>
-
-            {/* Peringatan jika status bukan NORMAL */}
-            {showWarning && (
-              <div className={`mt-2 text-sm p-2 rounded-lg inline-block ${
-                risk.status_risiko === "PERLU RUJUKAN"
-                  ? "text-red-600 bg-red-50"
-                  : "text-yellow-700 bg-yellow-50"
-              }`}>
-                ⚠️ Ibu hamil dengan status {risk.status_risiko} memerlukan perhatian khusus.
-                {risk.status_risiko === "PERLU RUJUKAN" && " Segera lakukan rujukan."}
-              </div>
-            )}
           </div>
 
           <div className="flex gap-3 flex-shrink-0">
@@ -361,7 +352,7 @@ export default function PemeriksaanKehamilanList() {
             )}
 
             {/* Tombol Rujuk: muncul jika PERLU RUJUKAN, dan hanya untuk bidan (canEdit) */}
-            {hasExaminations && risk?.status_risiko === "PERLU RUJUKAN" && canEdit && (
+            {hasExaminations && normalizeDisplayStatus(risk?.status_risiko) === "PERLU RUJUKAN" && canEdit && (
               <button
                 onClick={handleRujukClick}
                 className="bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 transition-all shadow-md hover:shadow-lg animate-pulse"
@@ -374,8 +365,8 @@ export default function PemeriksaanKehamilanList() {
 
         {/* ── Info mode dokter ── */}
         {!canEdit && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-blue-700 text-sm flex items-center gap-2">
-            <AlertTriangle size={16} /> Anda dalam mode baca (Dokter). Data hanya dapat dilihat, tidak dapat diubah atau menambah pemeriksaan.
+          <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg text-blue-700 text-base flex items-center gap-2">
+            <Eye size={16} /> Anda dalam mode baca (Dokter). Data hanya dapat dilihat, tidak dapat diubah.
           </div>
         )}
 
@@ -385,7 +376,7 @@ export default function PemeriksaanKehamilanList() {
             <AlertTriangle className="flex-shrink-0" size={28} />
             <div>
               <h3 className="font-bold text-lg uppercase tracking-wide">
-                Status: {risk.status_risiko}
+                Status: {normalizeDisplayStatus(risk.status_risiko)}
               </h3>
               <p className="text-sm leading-relaxed mt-1">{risk.ringkasan}</p>
 
@@ -463,7 +454,7 @@ export default function PemeriksaanKehamilanList() {
         {/* ── Grafik ── */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-            <h2 className="font-bold text-gray-700 mb-4 flex items-center gap-2">📈 Tinggi Fundus (TFU)</h2>
+            <h2 className="font-bold text-gray-700 mb-4 flex items-center gap-2"><TrendingUp size={20} className="text-indigo-600" /> Tinggi Fundus (TFU)</h2>
             {tfu.length === 0 ? (
               <div className="h-64 flex flex-col items-center justify-center text-gray-400 bg-gray-50 rounded-xl">
                 <FileText size={48} strokeWidth={1.5} /><p className="mt-2 text-sm">Belum ada data TFU</p>
@@ -474,7 +465,7 @@ export default function PemeriksaanKehamilanList() {
           </div>
 
           <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-            <h2 className="font-bold text-gray-700 mb-4 flex items-center gap-2">💓 Detak Jantung Janin</h2>
+            <h2 className="font-bold text-gray-700 mb-4 flex items-center gap-2"><Heart size={20} className="text-red-500" /> Detak Jantung Janin</h2>
             {djj.length === 0 ? (
               <div className="h-64 flex flex-col items-center justify-center text-gray-400 bg-gray-50 rounded-xl">
                 <FileText size={48} strokeWidth={1.5} /><p className="mt-2 text-sm">Belum ada data DJJ</p>
@@ -485,7 +476,7 @@ export default function PemeriksaanKehamilanList() {
           </div>
 
           <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-            <h2 className="font-bold text-gray-700 mb-4 flex items-center gap-2">🩸 Tekanan Darah</h2>
+            <h2 className="font-bold text-gray-700 mb-4 flex items-center gap-2"><Droplets size={20} className="text-red-600" /> Tekanan Darah</h2>
             {td.length === 0 ? (
               <div className="h-64 flex flex-col items-center justify-center text-gray-400 bg-gray-50 rounded-xl">
                 <FileText size={48} strokeWidth={1.5} /><p className="mt-2 text-sm">Belum ada data tekanan darah</p>
@@ -496,7 +487,7 @@ export default function PemeriksaanKehamilanList() {
           </div>
 
           <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-            <h2 className="font-bold text-gray-700 mb-4 flex items-center gap-2">⚖️ Grafik Berat Badan (PBB)</h2>
+            <h2 className="font-bold text-gray-700 mb-4 flex items-center gap-2"><Scale size={20} className="text-orange-600" /> Grafik Berat Badan (PBB)</h2>
             {bb.length === 0 ? (
               <div className="h-64 flex flex-col items-center justify-center text-gray-400 bg-gray-50 rounded-xl">
                 <FileText size={48} strokeWidth={1.5} /><p className="mt-2 text-sm">Belum ada data berat badan</p>

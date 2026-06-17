@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import MainLayout from "../../components/Layout/MainLayout";
 import { getAnakById } from "../../services/Anak";
 import { getPertumbuhanChart } from "../../services/pertumbuhan";
+import { getKeluhanByAnakId } from "../../services/keluhanAnak";
 import GrowthChart from "../../components/Dashboard/GrowthChart";
 import {
   ResponsiveContainer,
@@ -15,14 +16,15 @@ import {
 } from "recharts";
 
 import {
-  ChevronLeft, Baby, Ruler, Activity, Calendar, User,
-  Plus, X, Apple, Syringe, TrendingUp, Smile, ChartLine, Stethoscope, ClipboardList
+  ChevronLeft, ArrowLeft, Baby, Ruler, Activity, Calendar, User,
+  Plus, X, Apple, Syringe, TrendingUp, Smile, ChartLine, Stethoscope, ClipboardList, ArrowRight
 } from "lucide-react";
 
 export default function AnakDashboard() {
   const { id } = useParams();
   const [child, setChild] = useState(null);
   const [chartData, setChartData] = useState(null);
+  const [keluhanList, setKeluhanList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -35,11 +37,15 @@ export default function AnakDashboard() {
       try {
         setLoading(true);
         setError(null);
-        const [resAnak, resChart] = await Promise.all([
+        const [resAnak, resChart, resKeluhan] = await Promise.all([
           getAnakById(id),
           getPertumbuhanChart(id).catch(err => {
             console.warn("Error fetching chart data:", err);
             return { data: null };
+          }),
+          getKeluhanByAnakId(id).catch(err => {
+            console.warn("Error fetching complaints:", err);
+            return { data: [] };
           })
         ]);
 
@@ -58,6 +64,7 @@ export default function AnakDashboard() {
             console.log("🎯 LILA values:", chartResponse.riwayat.map(r => ({ usia: r.usia_ukur_bulan, lila: r.hasil_lila, lk: r.lingkar_kepala })));
           }
           setChartData(chartResponse);
+          setKeluhanList(resKeluhan?.data || []);
         }
       } catch (err) {
         if (isMounted) {
@@ -77,7 +84,25 @@ export default function AnakDashboard() {
   if (loading) return <MainLayout><div className="p-10 text-center font-medium text-gray-400">Memuat...</div></MainLayout>;
   if (error) return <MainLayout><div className="p-10 text-center text-red-500">{error}</div></MainLayout>;
 
-  const growthData = chartData?.riwayat || child?.pertumbuhan || [];
+  const baseGrowthData = chartData?.riwayat || child?.pertumbuhan || [];
+  const growthData = [...baseGrowthData];
+
+  // Jika tidak ada data ukur bulan 0 (saat lahir) tapi ada data lahir anak, tambahkan sebagai titik awal
+  const hasMonthZero = growthData.some((r) => r.usia_ukur_bulan === 0);
+  if (!hasMonthZero && child) {
+    const hasBirthData = child.berat_lahir_kg || child.tinggi_lahir_cm || child.lingkar_kepala_cm;
+    if (hasBirthData) {
+      growthData.unshift({
+        usia_ukur_bulan: 0,
+        berat_badan: child.berat_lahir_kg || null,
+        tinggi_badan: child.tinggi_lahir_cm || null,
+        lingkar_kepala: child.lingkar_kepala_cm || null,
+        hasil_lila: null,
+        tgl_ukur: child.tanggal_lahir || "",
+      });
+    }
+  }
+
   const lastGrowth = growthData.length > 0 ? growthData[growthData.length - 1] : null;
   const isLaki = child?.jenis_kelamin?.toLowerCase() === "laki-laki";
   const themeColor = isLaki ? "#3b82f6" : "#ec4899";
@@ -87,10 +112,8 @@ export default function AnakDashboard() {
     { title: "Gizi & Obat Cacing", icon: <Apple size={32} />, link: `/data-anak/pelayanan-gizi/${id}` },
     { title: "Imunisasi", icon: <Syringe size={32} />, link: `/data-anak/pelayanan-Imunisasi/${id}` },
     { title: "Kesehatan Gigi", icon: <Smile size={32} />, link: `/data-anak/pelayanan-Gigi/${id}` },
-    { title: "Tumbuh Kembang", icon: <TrendingUp size={32} />, link: `/data-anak/Tumbuh-kembang-Anak/${id}` },
-    { title: "Pencatatan LILA", icon: <Ruler size={32} />, link: `/data-anak/lila/${id}` },
     { title: "Pertumbuhan", icon: <Activity size={32} />, link: `/data-anak/pertumbuhan/${id}` },
-    { title: "Keluhan Anak", icon: <Stethoscope size={32} />, link: `/data-anak/keluhan/${id}` },
+    { title: "Tumbuh Kembang", icon: <TrendingUp size={32} />, link: `/data-anak/Tumbuh-kembang-Anak/${id}` },
   ];
 
   return (
@@ -100,8 +123,11 @@ export default function AnakDashboard() {
         {/* HEADER: Lebih rapat */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
           <div>
-            <Link to="/daftar-anak" className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-blue-600 mb-1 transition-all">
-              <ChevronLeft size={14} /> Kembali
+            <Link
+              to="/daftar-anak"
+              className="flex items-center gap-2 px-6 py-2 border border-blue-600 text-blue-600 hover:bg-blue-50 rounded-full font-medium text-sm transition-all group w-fit mb-4 mt-2"
+            >
+              <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Kembali
             </Link>
             <h1 className="text-2xl font-bold text-gray-800 tracking-tight">{child.nama}</h1>
           </div>
@@ -127,6 +153,59 @@ export default function AnakDashboard() {
           <ChartCard title="Grafik Tinggi Badan (cm)" dataKey="tinggi_badan" data={growthData} color="#8b5cf6" />
           <ChartCard title="Grafik LILA (cm)" dataKey="hasil_lila" data={growthData} color="#f59e0b" />
           <ChartCard title="Grafik Lingkar Kepala (cm)" dataKey="lingkar_kepala" data={growthData} color="#10b981" />
+        </div>
+
+        {/* RIWAYAT KELUHAN & CATATAN KUNJUNGAN */}
+        <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm mb-6">
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex items-center gap-2">
+              <Stethoscope className="text-blue-600 animate-pulse" size={24} />
+              <h3 className="text-lg font-bold text-gray-800">Riwayat Keluhan & Catatan Kunjungan</h3>
+            </div>
+            <Link
+              to={`/data-anak/keluhan/${id}`}
+              className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 transition-colors"
+            >
+              Lihat Detail & Kelola <ArrowRight size={14} />
+            </Link>
+          </div>
+
+          {keluhanList.length === 0 ? (
+            <div className="py-8 text-center text-gray-400 italic text-sm">
+              Belum ada catatan keluhan untuk anak ini.
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {keluhanList.slice(0, 3).map((item, index) => (
+                <div key={item.id || index} className="p-4 bg-slate-50/50 rounded-2xl border border-slate-100 flex flex-col md:flex-row justify-between gap-4 transition-all hover:bg-slate-50">
+                  <div className="space-y-1 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase">
+                        {item.tanggal ? new Date(item.tanggal).toLocaleDateString("id-ID", { day: 'numeric', month: 'long', year: 'numeric' }) : "-"}
+                      </span>
+                      <span className="text-[9px] px-2 py-0.5 bg-blue-50 text-blue-600 rounded-md font-bold uppercase">
+                        Pemeriksa: {item.pemeriksa || "Petugas"}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-400 font-bold uppercase block mt-1">Keluhan / Gejala:</span>
+                      <p className="text-sm font-bold text-slate-800 leading-relaxed">
+                        {item.keluhan || "-"}
+                      </p>
+                    </div>
+                  </div>
+                  {item.tindakan && (
+                    <div className="md:w-1/2 bg-white p-3 rounded-xl border border-slate-100 flex flex-col justify-center">
+                      <span className="text-[9px] text-slate-400 font-bold uppercase block mb-1">Tindakan / Saran:</span>
+                      <p className="text-xs text-blue-600 font-bold leading-relaxed bg-blue-50/30 px-3 py-2 rounded-lg border border-blue-50">
+                        {item.tindakan || "-"}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* MODAL: Versi Ringkas (Compact) */}
