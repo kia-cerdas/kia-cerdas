@@ -20,7 +20,7 @@ build/
 *.hdf5
 **/datasets/
 **/dataset/
-**/data/
+*/data/
 
 # Node modules
 **/node_modules/
