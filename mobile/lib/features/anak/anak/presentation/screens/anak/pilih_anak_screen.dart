@@ -37,6 +37,127 @@ class _PilihAnakScreenState extends State<PilihAnakScreen> {
     super.dispose();
   }
 
+  // ─── Helper: apakah tujuan ini memerlukan batasan usia 6 tahun ───
+  bool get _tujuanBerbatasiUsia =>
+      widget.tujuan == 'pertumbuhan' ||
+      widget.tujuan == 'pemantauan' ||
+      widget.tujuan == 'bahaya';
+
+  // ─── Helper: cek apakah anak sudah melewati tepat 6 tahun ───
+  bool _isOver6Years(String tanggalLahir) {
+    if (tanggalLahir.isEmpty) return false;
+    try {
+      final lahir = DateTime.parse(tanggalLahir);
+      // Terblokir tepat saat anak melewati hari ulang tahun ke-6
+      final batas = DateTime(lahir.year + 6, lahir.month, lahir.day);
+      return DateTime.now().isAfter(batas);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  // ─── Dialog info ketika anak sudah melewati batas usia ───
+  void _showBatasUsiaDialog(BuildContext context, IbuAnakModel anak) {
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFFFF7ED),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.child_friendly_rounded,
+                  color: Color(0xFFF59E0B),
+                  size: 40,
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Masa Pemantauan Selesai',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF1E293B),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              RichText(
+                textAlign: TextAlign.center,
+                text: TextSpan(
+                  style: const TextStyle(
+                    fontSize: 13.5,
+                    height: 1.6,
+                    color: Color(0xFF475569),
+                  ),
+                  children: [
+                    TextSpan(
+                      text: anak.nama,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const TextSpan(
+                      text:
+                          ' sudah berusia lebih dari 6 tahun.\n\nPemantauan tumbuh kembang pada modul ini hanya berlaku hingga usia 6 tahun sesuai standar buku KIA.',
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF0FDF4),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFBBF7D0)),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.info_outline_rounded,
+                        color: Color(0xFF16A34A), size: 18),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Fitur Imunisasi dan Catatan masih dapat diakses.',
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          color: Color(0xFF15803D),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                height: 46,
+                child: FilledButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFF185FA5),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text('Mengerti'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -129,58 +250,116 @@ class _PilihAnakScreenState extends State<PilihAnakScreen> {
 
   Widget _buildItem(BuildContext context, IbuAnakModel anak) {
     final anakMap = anak.toChildMap();
+    final isBlocked = _tujuanBerbatasiUsia && _isOver6Years(anak.tanggalLahir);
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        onTap: () => _openTujuan(context, anak, anakMap),
-        child: Container(
-          margin: const EdgeInsets.only(bottom: 16),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: const Color(0xFFEBF5FF),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFD7ECFF)),
-          ),
-          child: Row(
-            children: [
-              const CircleAvatar(
-                radius: 24,
-                backgroundColor: Color(0xFFD7ECFF),
-                child: Icon(
-                  Icons.person_outline,
-                  size: 26,
-                  color: Color(0xFF185FA5),
-                ),
+        onTap: () => isBlocked
+            ? _showBatasUsiaDialog(context, anak)
+            : _openTujuan(context, anak, anakMap),
+        child: Opacity(
+          opacity: isBlocked ? 0.65 : 1.0,
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 16),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color:
+                  isBlocked ? const Color(0xFFF1F5F9) : const Color(0xFFEBF5FF),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isBlocked
+                    ? const Color(0xFFCBD5E1)
+                    : const Color(0xFFD7ECFF),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      anak.nama,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF185FA5),
+            ),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 24,
+                  backgroundColor: isBlocked
+                      ? const Color(0xFFE2E8F0)
+                      : const Color(0xFFD7ECFF),
+                  child: Icon(
+                    Icons.person_outline,
+                    size: 26,
+                    color: isBlocked
+                        ? const Color(0xFF94A3B8)
+                        : const Color(0xFF185FA5),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        anak.nama,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: isBlocked
+                              ? const Color(0xFF64748B)
+                              : const Color(0xFF185FA5),
+                        ),
                       ),
-                    ),
-                    Text(
-                      anak.usiaTeks.isEmpty
-                          ? 'Siap untuk pemantauan anak'
-                          : anak.usiaTeks,
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                  ],
+                      const SizedBox(height: 2),
+                      Text(
+                        anak.usiaTeks.isEmpty
+                            ? 'Siap untuk pemantauan anak'
+                            : anak.usiaTeks,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color:
+                              isBlocked ? const Color(0xFF94A3B8) : null,
+                        ),
+                      ),
+                      // Badge "Pemantauan selesai" untuk anak > 6 tahun
+                      if (isBlocked) ...[
+                        const SizedBox(height: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFF7ED),
+                            borderRadius: BorderRadius.circular(8),
+                            border:
+                                Border.all(color: const Color(0xFFFDBA74)),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.lock_outline_rounded,
+                                  size: 11, color: Color(0xFFF59E0B)),
+                              SizedBox(width: 4),
+                              Text(
+                                'Pemantauan selesai (> 6 tahun)',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Color(0xFFB45309),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
-              ),
-              const CircleAvatar(
-                radius: 14,
-                backgroundColor: Color(0xFF185FA5),
-                child: Icon(Icons.arrow_forward, size: 14, color: Colors.white),
-              ),
-            ],
+                CircleAvatar(
+                  radius: 14,
+                  backgroundColor: isBlocked
+                      ? const Color(0xFFCBD5E1)
+                      : const Color(0xFF185FA5),
+                  child: Icon(
+                    isBlocked ? Icons.lock_outline : Icons.arrow_forward,
+                    size: 14,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
