@@ -130,7 +130,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 8),
                       const Text(
-                        'Gunakan email/no hp dan password untuk mengakses fitur yang membutuhkan bearer token.',
+                        'Gunakan email dan password untuk mengakses fitur yang membutuhkan bearer token.',
                         textAlign: TextAlign.center,
                         style: TextStyle(color: Colors.black54),
                       ),
@@ -142,10 +142,30 @@ class _LoginScreenState extends State<LoginScreen> {
                           border: OutlineInputBorder(),
                           prefixIcon: Icon(Icons.person_outline),
                         ),
-                        validator: (value) {
+                        // validator: (value) {
+                        //   if (value == null || value.trim().isEmpty) {
+                        //     return 'Identifier wajib diisi';
+                        //   }
+                        //   return null;
+                        // },
+                                                validator: (value) {
                           if (value == null || value.trim().isEmpty) {
                             return 'Identifier wajib diisi';
                           }
+                          
+                          final v = value.trim();
+                          
+                          // Cek apakah ini No HP (dimulai angka)
+                          final isPhoneNumber = RegExp(r'^[0-9]').hasMatch(v);
+                          
+                          if (!isPhoneNumber) {
+                            // Jika bukan No HP, maka WAJIB format email valid
+                            final emailRegex = RegExp(r'^[\w\.-]+@[\w\.-]+\.\w+$');
+                            if (!emailRegex.hasMatch(v)) {
+                              return 'Pastikan format email benar (contoh: pengguna@gmail.com)';
+                            }
+                          }
+                          
                           return null;
                         },
                       ),

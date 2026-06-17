@@ -89,7 +89,8 @@ class _GrafikPeningkatanBBScreenState
     return Scaffold(
       backgroundColor: _C.bg,
       appBar: AppBar(
-        backgroundColor: _C.primary,
+        // backgroundColor: AppColors.primary,
+        backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         elevation: 0,
         title: const Text(
