@@ -337,8 +337,19 @@ func (r *KependudukanRepository) GetAllActive() ([]models.Kependudukan, error) {
 func (r *KependudukanRepository) FindByAgeRange(minAge, maxAge int, desaID *int32, role string) ([]models.Kependudukan, error) {
 	var list []models.Kependudukan
 	query := r.db.Where("deleted_at IS NULL").
-		Where("tanggal_pengurangan IS NULL OR tanggal_pengurangan > NOW()").
-		Where("EXTRACT(YEAR FROM AGE(NOW(), tanggal_lahir)) BETWEEN ? AND ?", minAge, maxAge)
+		Where("tanggal_pengurangan IS NULL OR tanggal_pengurangan > NOW()")
+
+	if minAge == 0 && maxAge == 5 { // balita
+		query = query.Where("AGE(NOW(), tanggal_lahir) <= INTERVAL '5 years'")
+	} else if minAge == 5 && maxAge == 9 { // anak (5-9 tahun)
+		query = query.Where("AGE(NOW(), tanggal_lahir) > INTERVAL '5 years' AND AGE(NOW(), tanggal_lahir) < INTERVAL '10 years'")
+	} else if minAge == 10 && maxAge == 18 { // remaja
+		query = query.Where("AGE(NOW(), tanggal_lahir) >= INTERVAL '10 years' AND AGE(NOW(), tanggal_lahir) < INTERVAL '19 years'")
+	} else if minAge == 19 && maxAge == 59 { // dewasa
+		query = query.Where("AGE(NOW(), tanggal_lahir) >= INTERVAL '19 years' AND AGE(NOW(), tanggal_lahir) < INTERVAL '60 years'")
+	} else { // lansia
+		query = query.Where("AGE(NOW(), tanggal_lahir) >= INTERVAL '60 years'")
+	}
 
 	// Filter desa hanya jika role tidak memiliki akses penuh
 	if !middlewares.HasFullAccess(role) && desaID != nil {

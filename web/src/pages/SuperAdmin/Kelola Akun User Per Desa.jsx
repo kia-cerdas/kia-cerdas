@@ -292,7 +292,7 @@ export default function UserPerDesaManagement() {
 
   return (
     <MainLayout>
-      <div className="p-8 space-y-8">
+      <div className="p-4 md:p-6 lg:p-8 space-y-6 md:space-y-8 max-w-full overflow-hidden">
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {stats.map((stat) => {
             const Icon = stat.icon;
@@ -312,18 +312,17 @@ export default function UserPerDesaManagement() {
           })}
         </section>
 
-        <div className={`${cardClass} p-6 space-y-5`}>
+        <div className={`${cardClass} p-4 md:p-6 space-y-5`}>
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">Kelola user</p>
-              <h2 className="mt-1 text-2xl font-bold text-slate-900">User selain bidan, kader, dan admin</h2>
+              <h2 className="mt-1 text-xl md:text-2xl font-bold text-slate-900">User selain bidan, kader, dan admin</h2>
               <p className="mt-1 text-sm text-slate-500">Gunakan halaman ini untuk mengubah role, reset password, dan menonaktifkan user biasa.</p>
             </div>
             <div className="flex flex-wrap items-center gap-3">
-              <button onClick={openCreateModal} className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800">
+              <button onClick={openCreateModal} className="inline-flex items-center gap-2 rounded-2xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">
                 <Plus size={16} />
                 Tambah User
-                <ChevronDown size={16} className="hidden" />
               </button>
               <button onClick={loadUsers} className="inline-flex items-center gap-2 rounded-2xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200">
                 <Loader2 size={16} />
@@ -346,72 +345,74 @@ export default function UserPerDesaManagement() {
           </div>
 
           <div className="overflow-x-auto rounded-2xl border border-slate-200">
-            <table className="w-full min-w-[1100px]">
-              <thead className="bg-slate-50 text-left text-sm text-slate-600">
-                <tr>
-                  <th className="px-4 py-3 font-semibold">User</th>
-                  <th className="px-4 py-3 font-semibold">Role</th>
-                  <th className="px-4 py-3 font-semibold">Status</th>
-                  <th className="px-4 py-3 font-semibold">Kontak</th>
-                  <th className="px-4 py-3 text-center font-semibold">Aksi</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loadingUsers ? (
+            <div className="min-w-[800px]">
+              <table className="w-full">
+                <thead className="bg-slate-50 text-left text-sm text-slate-600">
                   <tr>
-                    <td colSpan={5} className="px-4 py-10 text-center text-slate-500">Memuat data user...</td>
+                    <th className="px-4 py-3 font-semibold">User</th>
+                    <th className="px-4 py-3 font-semibold">Role</th>
+                    <th className="px-4 py-3 font-semibold">Status</th>
+                    <th className="px-4 py-3 font-semibold">Kontak</th>
+                    <th className="px-4 py-3 text-center font-semibold">Aksi</th>
                   </tr>
-                ) : visibleUsers.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="px-4 py-10 text-center text-slate-500">Belum ada user yang sesuai filter</td>
-                  </tr>
-                ) : (
-                  visibleUsers.map((user) => {
-                    return (
-                      <tr key={user.id} className="border-t border-slate-100 align-top hover:bg-slate-50/70">
-                        <td className="px-4 py-4">
-                          <div className="font-semibold text-slate-900">{user.name}</div>
-                          <div className="text-sm text-slate-500">ID {user.id}</div>
-                        </td>
-                        <td className="px-4 py-4">
-                          <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700">{user.role}</span>
-                        </td>
-                        <td className="px-4 py-4">
-                          <span className={`inline-flex rounded-full px-3 py-1 text-sm font-medium ${user.is_active ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"}`}>
-                            {user.is_active ? "Aktif" : "Nonaktif"}
-                          </span>
-                        </td>
-                        <td className="px-4 py-4 text-sm text-slate-600">
-                          <div>{user.email}</div>
-                          <div className="text-xs text-slate-400">{user.phone_number || "-"}</div>
-                        </td>
-                        <td className="px-4 py-4">
-                          <div className="flex flex-wrap items-center justify-center gap-2">
-                            <button type="button" onClick={() => openRoleModal(user)} className="inline-flex items-center gap-2 rounded-xl bg-cyan-50 px-3 py-2 text-sm font-semibold text-cyan-700 hover:bg-cyan-100">
-                              <Edit size={16} />
-                              Edit Role
-                            </button>
-                            <button type="button" onClick={() => openResetModal(user)} className="inline-flex items-center gap-2 rounded-xl bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-700 hover:bg-amber-100">
-                              <KeyRound size={16} />
-                              Reset Password
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => openStatusActionModal(user, user.is_active ? "deactivate" : "activate")}
-                              disabled={submitting}
-                              className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold disabled:opacity-60 ${user.is_active ? "bg-rose-50 text-rose-700 hover:bg-rose-100" : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"}`}
-                            >
-                              <Power size={16} />
-                              {user.is_active ? "Nonaktifkan" : "Aktifkan"}
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {loadingUsers ? (
+                    <tr>
+                      <td colSpan={5} className="px-4 py-10 text-center text-slate-500">Memuat data user...</td>
+                    </tr>
+                  ) : visibleUsers.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="px-4 py-10 text-center text-slate-500">Belum ada user yang sesuai filter</td>
+                    </tr>
+                  ) : (
+                    visibleUsers.map((user) => {
+                      return (
+                        <tr key={user.id} className="border-t border-slate-100 align-top hover:bg-slate-50/70">
+                          <td className="px-4 py-4">
+                            <div className="font-semibold text-slate-900">{user.name}</div>
+                            <div className="text-sm text-slate-500">ID {user.id}</div>
+                          </td>
+                          <td className="px-4 py-4">
+                            <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700">{user.role}</span>
+                          </td>
+                          <td className="px-4 py-4">
+                            <span className={`inline-flex rounded-full px-3 py-1 text-sm font-medium ${user.is_active ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"}`}>
+                              {user.is_active ? "Aktif" : "Nonaktif"}
+                            </span>
+                          </td>
+                          <td className="px-4 py-4 text-sm text-slate-600">
+                            <div>{user.email}</div>
+                            <div className="text-xs text-slate-400">{user.phone_number || "-"}</div>
+                          </td>
+                          <td className="px-4 py-4">
+                            <div className="flex flex-wrap items-center justify-center gap-2">
+                              <button type="button" onClick={() => openRoleModal(user)} className="inline-flex items-center gap-2 rounded-xl bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-100">
+                                <Edit size={16} />
+                                <span className="hidden sm:inline">Edit Role</span>
+                              </button>
+                              <button type="button" onClick={() => openResetModal(user)} className="inline-flex items-center gap-2 rounded-xl bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-700 hover:bg-amber-100">
+                                <KeyRound size={16} />
+                                <span className="hidden sm:inline">Reset</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => openStatusActionModal(user, user.is_active ? "deactivate" : "activate")}
+                                disabled={submitting}
+                                className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold disabled:opacity-60 ${user.is_active ? "bg-rose-50 text-rose-700 hover:bg-rose-100" : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"}`}
+                              >
+                                <Power size={16} />
+                                <span className="hidden sm:inline">{user.is_active ? "Nonaktifkan" : "Aktifkan"}</span>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
@@ -481,7 +482,7 @@ export default function UserPerDesaManagement() {
                 <button type="button" onClick={closeCreateModal} className="rounded-2xl bg-slate-100 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-200">
                   Batal
                 </button>
-                <button type="submit" disabled={submitting} className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60">
+                <button type="submit" disabled={submitting} className="inline-flex items-center gap-2 rounded-2xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60">
                   {submitting ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
                   Simpan User
                 </button>
@@ -522,7 +523,7 @@ export default function UserPerDesaManagement() {
                 <button type="button" onClick={() => setShowRoleModal(false)} className="rounded-2xl bg-slate-100 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-200">
                   Batal
                 </button>
-                <button type="submit" disabled={submitting} className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60">
+                <button type="submit" disabled={submitting} className="inline-flex items-center gap-2 rounded-2xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60">
                   {submitting ? <Loader2 size={16} className="animate-spin" /> : <Edit size={16} />}
                   Simpan Perubahan
                 </button>
@@ -556,7 +557,7 @@ export default function UserPerDesaManagement() {
                 <button type="button" onClick={() => setShowResetModal(false)} className="rounded-2xl bg-slate-100 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-200">
                   Batal
                 </button>
-                <button type="submit" disabled={submitting} className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60">
+                <button type="submit" disabled={submitting} className="inline-flex items-center gap-2 rounded-2xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60">
                   {submitting ? <Loader2 size={16} className="animate-spin" /> : <KeyRound size={16} />}
                   Simpan Password
                 </button>
@@ -616,7 +617,7 @@ export default function UserPerDesaManagement() {
             </div>
 
             <div className="mt-6 flex justify-end">
-              <button type="button" onClick={clearMessages} className="rounded-2xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800">
+              <button type="button" onClick={clearMessages} className="rounded-2xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700">
                 Tutup
               </button>
             </div>

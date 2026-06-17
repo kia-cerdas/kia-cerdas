@@ -13,6 +13,7 @@ import {
   FileSpreadsheet,
   RefreshCw,
 } from "lucide-react";
+import Swal from "sweetalert2";
 
 export default function LaporanIbuPreview() {
   const navigate = useNavigate();
@@ -73,7 +74,12 @@ export default function LaporanIbuPreview() {
       a.click();
       window.URL.revokeObjectURL(url);
     } catch (err) {
-      alert("Gagal mengekspor laporan ibu: " + (err.response?.data?.message || err.message));
+      Swal.fire({
+        icon: "error",
+        title: "Gagal Mengekspor",
+        text: "Gagal mengekspor laporan ibu: " + (err.response?.data?.message || err.message),
+        confirmButtonColor: "#185FA5",
+      });
     } finally {
       setExporting(false);
     }

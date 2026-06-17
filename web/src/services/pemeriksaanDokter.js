@@ -106,6 +106,16 @@ export const deleteDokterT1Complete = async (id) => {
   return res.data;
 };
 
+// T1 Complete with Catatan (consolidated)
+export const createDokterT1CompleteWithCatatan = async (data) => {
+  const res = await api.post(BASE_DOKTER_T1_COMPLETE, data);
+  return res.data;
+};
+export const updateDokterT1CompleteWithCatatan = async (id, data) => {
+  const res = await api.put(`${BASE_DOKTER_T1_COMPLETE}/${id}`, data);
+  return res.data;
+};
+
 // T3 Complete
 export const getDokterT3CompleteByKehamilanId = async (kehamilanId) => {
   const res = await api.get(`${BASE_DOKTER_T3_COMPLETE}?kehamilan_id=${kehamilanId}`);
@@ -125,6 +135,16 @@ export const updateDokterT3Complete = async (id, data) => {
 };
 export const deleteDokterT3Complete = async (id) => {
   const res = await api.delete(`${BASE_DOKTER_T3_COMPLETE}/${id}`);
+  return res.data;
+};
+
+// T3 Complete with Catatan (consolidated)
+export const createDokterT3CompleteWithCatatan = async (data) => {
+  const res = await api.post(BASE_DOKTER_T3_COMPLETE, data);
+  return res.data;
+};
+export const updateDokterT3CompleteWithCatatan = async (id, data) => {
+  const res = await api.put(`${BASE_DOKTER_T3_COMPLETE}/${id}`, data);
   return res.data;
 };
 

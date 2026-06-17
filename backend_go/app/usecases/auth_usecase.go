@@ -22,26 +22,29 @@ type roleDestination struct {
 var roleDestinations = map[string]roleDestination{
 	"Admin":            {TargetApp: "website", RedirectRoute: "/dashboard/admin"},
 	"Superadmin":       {TargetApp: "website", RedirectRoute: "/superadmin/desa"},
-	"Dokter":           {TargetApp: "website", RedirectRoute: "/dashboard/dokter"},
+	"Dokter":           {TargetApp: "website", RedirectRoute: "/dashboard/puskesmas"},
 	"Tenaga-kesehatan": {TargetApp: "website", RedirectRoute: "/dashboard/tenaga-kesehatan"},
 	"Kader":            {TargetApp: "mobile", RedirectRoute: "/mobile/home-kader"},
 	"Bidan":            {TargetApp: "mobile", RedirectRoute: "/mobile/home-bidan"},
+	"Bidan_puskesmas":  {TargetApp: "website", RedirectRoute: "/dashboard/puskesmas"},
 	"Ibu":              {TargetApp: "mobile", RedirectRoute: "/mobile/home-orangtua"},
 }
 
 var roleAliases = map[string]string{
-	"admin":            "Admin",
-	"dokter":           "Dokter",
+	"admin":           "Admin",
+	"dokter":          "Dokter",
 	"tenagakesehatan":  "Tenaga-kesehatan",
 	"tenaga-kesehatan": "Tenaga-kesehatan",
 	"tenaga kesehatan": "Tenaga-kesehatan",
-	"kader":            "Kader",
-	"bidan":            "Bidan",
-	"superadmin":       "Superadmin",
-	"orangtua":         "Orangtua",
-	"orang tua":        "Orangtua",
-	"orang-tua":        "Orangtua",
-	"Ibu":              "Orangtua",
+	"kader":           "Kader",
+	"bidan":           "Bidan",
+	"bidanpuskesmas":  "Bidan_puskesmas",
+	"bidan_puskesmas": "Bidan_puskesmas",
+	"superadmin":      "Superadmin",
+	"orangtua":        "Orangtua",
+	"orang tua":       "Orangtua",
+	"orang-tua":       "Orangtua",
+	"Ibu":             "Orangtua",
 }
 
 var phonePattern = regexp.MustCompile(`^\+62[0-9]{8,13}$`)

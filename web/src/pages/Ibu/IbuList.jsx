@@ -23,8 +23,8 @@
     if (!risk || risk.trim() === "") return "BELUM_DIPERIKSA";
     const upperRisk = risk.toUpperCase();
     if (upperRisk === "PERLU RUJUKAN" || upperRisk === "TINGGI") return "PERLU_RUJUKAN";
-    if (upperRisk === "PERLU TINDAKAN" || upperRisk === "SEDANG" || upperRisk === "SEDAMNG") return "PERLU_TINDAKAN";
-    if (upperRisk === "NORMAL") return "NORMAL";
+    if (upperRisk === "PERLU TINDAKAN" || upperRisk === "SEDANG") return "PERLU_TINDAKAN";
+    if (upperRisk === "NORMAL" || upperRisk === "RENDAH" || upperRisk === "RISIKO RENDAH") return "NORMAL";
     return "BELUM_DIPERIKSA";
   };
 

@@ -96,6 +96,7 @@ import (
 	"fmt"
 	"monitoring-service/app/models"
 	"monitoring-service/app/repositories"
+	"sort"
 	"strings"
 	"time"
 )
@@ -129,8 +130,17 @@ func (u *pemeriksaanKehamilanUsecase) Create(p *models.PemeriksaanKehamilan) err
 
 	// Prediction adalah optional - data tetap bisa disimpan meski prediksi gagal
 	if err := u.fillPrediction(p); err != nil {
-		// Log error tapi jangan return - lanjutkan menyimpan data
-		fmt.Println("⚠️ Warning: Prediksi risiko gagal, tapi data akan tetap disimpan:", err)
+		// Jika ML service gagal, gunakan perhitungan manual sebagai fallback
+		fmt.Println("⚠️ Warning: Prediksi risiko ML gagal, gunakan perhitungan manual:", err)
+		p.StatusRisiko = calculateManualRiskStatus(p)
+		p.DetailRisiko = generateProblemAndRecommendation(p)
+		p.SkorRisiko = 0 // Set skor default jika ML gagal
+	}
+
+	// Pastikan status_risiko selalu terisi
+	if p.StatusRisiko == "" {
+		p.StatusRisiko = calculateManualRiskStatus(p)
+		p.DetailRisiko = generateProblemAndRecommendation(p)
 	}
 
 	return u.repo.Create(p)
@@ -156,9 +166,19 @@ func (u *pemeriksaanKehamilanUsecase) Update(p *models.PemeriksaanKehamilan) err
 
 	// Prediction adalah optional - data tetap bisa diupdate meski prediksi gagal
 	if err := u.fillPrediction(p); err != nil {
-		// Log error tapi jangan return - lanjutkan mengupdate data
-		fmt.Println("⚠️ Warning: Prediksi risiko gagal saat update, tapi data akan tetap diupdate:", err)
+		// Jika ML service gagal, gunakan perhitungan manual sebagai fallback
+		fmt.Println("⚠️ Warning: Prediksi risiko ML gagal saat update, gunakan perhitungan manual:", err)
+		p.StatusRisiko = calculateManualRiskStatus(p)
+		p.DetailRisiko = generateProblemAndRecommendation(p)
+		p.SkorRisiko = 0 // Set skor default jika ML gagal
 	}
+
+	// Pastikan status_risiko selalu terisi
+	if p.StatusRisiko == "" {
+		p.StatusRisiko = calculateManualRiskStatus(p)
+		p.DetailRisiko = generateProblemAndRecommendation(p)
+	}
+
 	return u.repo.Update(p)
 }
 
@@ -207,7 +227,41 @@ func (u *pemeriksaanKehamilanUsecase) fillPrediction(p *models.PemeriksaanKehami
 	p.SkorRisiko = int32(resp.Prediction)
 	p.StatusRisiko = resp.Label
 	p.DetailRisiko = generateProblemAndRecommendation(p)
+
+	// Fallback: jika ML service tidak mengembalikan label yang valid, gunakan perhitungan manual
+	if p.StatusRisiko == "" || (p.StatusRisiko != "PERLU RUJUKAN" && p.StatusRisiko != "PERLU TINDAKAN" && p.StatusRisiko != "NORMAL") {
+		p.StatusRisiko = calculateManualRiskStatus(p)
+		p.DetailRisiko = generateProblemAndRecommendation(p)
+	}
+
 	return nil
+}
+
+func calculateManualRiskStatus(p *models.PemeriksaanKehamilan) string {
+	faktorTinggi := 0
+	faktorSedang := 0
+
+	// Faktor risiko tinggi
+	if p.Sistole >= 140 || p.Diastole >= 90 {
+		faktorTinggi++
+	}
+	if p.TesLabHb != nil && *p.TesLabHb < 8.0 {
+		faktorTinggi++
+	}
+	if p.LingkarLenganAtas != nil && *p.LingkarLenganAtas < 23.5 {
+		faktorSedang++
+	}
+	if p.Sistole >= 120 || p.Diastole >= 80 {
+		faktorSedang++
+	}
+
+	if faktorTinggi >= 1 {
+		return "PERLU RUJUKAN"
+	}
+	if faktorSedang >= 1 {
+		return "PERLU TINDAKAN"
+	}
+	return "NORMAL"
 }
 func generateProblemAndRecommendation(p *models.PemeriksaanKehamilan) string {
 	var parts []string
@@ -498,14 +552,23 @@ func (u *pemeriksaanKehamilanUsecase) GetGrafikANC(kehamilanID int32) (*GrafikAN
 		return resp, nil
 	}
 
-	var latest models.PemeriksaanKehamilan
+	// Sort by tanggal_periksa DESC, then created_at DESC to get the latest examination
+	sort.Slice(data, func(i, j int) bool {
+		if data[i].TanggalPeriksa != nil && data[j].TanggalPeriksa != nil {
+			return data[i].TanggalPeriksa.After(*data[j].TanggalPeriksa)
+		}
+		if data[i].TanggalPeriksa != nil {
+			return true
+		}
+		if data[j].TanggalPeriksa != nil {
+			return false
+		}
+		return data[i].CreatedAt.After(data[j].CreatedAt)
+	})
+
+	latest := data[0]
 
 	for _, d := range data {
-
-		if d.MingguKehamilan >= latest.MingguKehamilan {
-			latest = d
-		}
-
 		if d.DenyutJantungJanin > 0 {
 			resp.GrafikDJJ = append(resp.GrafikDJJ, GrafikPoint{
 				Minggu: d.MingguKehamilan,

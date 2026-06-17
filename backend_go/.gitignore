@@ -6,3 +6,4 @@ firebase-service-account.json
 *.exe
 **/tmp/
 *.log
+/docs

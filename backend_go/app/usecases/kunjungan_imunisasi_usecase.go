@@ -2,6 +2,7 @@ package usecases
 
 import (
 	"fmt"
+	"log"
 	"monitoring-service/app/models"
 )
 
@@ -177,4 +178,32 @@ func (m *Main) GetKunjunganImunisasiByStatus(
 	}
 
 	return response, nil
+}
+
+func (m *Main) CreateKunjunganImunisasi(
+	req *models.PostKunjunganImunisasiRequest,
+) (uint, error) {
+
+	// Buat kunjungan imunisasi
+	kunjunganID, err := m.repository.CreateKunjunganImunisasi(
+		req.IDStatusKunjungan,
+		req.TanggalKunjungan,
+		req.IDJadwalImunisasi,
+	)
+
+	if err != nil {
+		return 0, fmt.Errorf("gagal membuat kunjungan imunisasi: %v", err)
+	}
+
+	return kunjunganID, nil
+}
+
+func (m *Main) ProcessOverdueKunjunganImunisasi() error {
+	updated, err := m.repository.MarkOverdueKunjunganImunisasi()
+	if err != nil {
+		return err
+	}
+
+	log.Printf("[CRON] overdue kunjungan imunisasi updated=%d", updated)
+	return nil
 }

@@ -9,7 +9,7 @@ type KeteranganLahir struct {
 
 	// Relasi ke Ringkasan Pelayanan Persalinan (opsional)
 	RingkasanPelayananPersalinanID *int32                        `json:"ringkasan_pelayanan_persalinan_id"`
-	Ringkasan                      *RingkasanPelayananPersalinan `gorm:"foreignKey:RingkasanPelayananPersalinanID;references:ID" json:"ringkasan,omitempty"`
+	Ringkasan                      *RingkasanPelayananPersalinan `gorm:"foreignKey:RingkasanPelayananPersalinanID;references:ID;constraint:OnDelete:SET NULL" json:"ringkasan,omitempty"`
 
 	NomorSurat   string     `gorm:"type:varchar(100)" json:"nomor_surat"`
 	HariLahir    string     `gorm:"type:varchar(20)" json:"hari_lahir"`

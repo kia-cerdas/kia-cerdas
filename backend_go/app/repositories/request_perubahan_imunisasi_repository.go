@@ -205,3 +205,20 @@ func (m *Main) UpdateTanggalJadwalImunisasi(
 			"id_status_jadwal": 1,
 		}).Error
 }
+
+func (m *Main) GetJadwalLayananByID(
+	id int32,
+) (*models.JadwalLayanan, error) {
+
+	var jadwal models.JadwalLayanan
+
+	err := m.postgres.
+		First(&jadwal, id).
+		Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &jadwal, nil
+}

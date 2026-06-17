@@ -1,7 +1,6 @@
 // src/services/api.js
 import axios from "axios";
 
-// HAPUS /api/v1 dari URL
 // const API_BASE_URL = import.meta.env.VITE_API_URL || "https://api.generasisehat.com";
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 

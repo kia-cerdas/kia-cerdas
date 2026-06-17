@@ -7,7 +7,8 @@ import {
   exportLaporanAnak,
   exportLaporanIbu,     // masih diperlukan untuk export langsung jika ada, tapi untuk ibu kita arahkan ke halaman terpisah
 } from "../services/laporan";
-import { FileDown, Download, Eye, Loader2, Table } from "lucide-react";
+import { FileDown, Download, Eye, Loader2, Table, Users, UserCheck, HeartPulse } from "lucide-react";
+import Swal from "sweetalert2";
 
 export default function Laporan() {
   const navigate = useNavigate();
@@ -59,7 +60,12 @@ export default function Laporan() {
       window.URL.revokeObjectURL(url);
     } catch (err) {
       console.error("Export error:", err);
-      alert("Gagal mengekspor laporan anak");
+      Swal.fire({
+        icon: "error",
+        title: "Gagal Mengekspor",
+        text: "Gagal mengekspor laporan anak",
+        confirmButtonColor: "#185FA5",
+      });
     } finally {
       setLoadingAnak(false);
     }
@@ -178,6 +184,84 @@ export default function Laporan() {
                 className="w-full bg-green-600 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-green-700 transition-colors"
               >
                 <Eye size={18} /> Lihat & Export Laporan Anak
+              </button>
+            </div>
+          </div>
+
+          {/* Card Laporan Remaja */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <Users className="text-blue-600" size={28} />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-800">
+                    Laporan Data Remaja
+                  </h2>
+                  <p className="text-gray-500 text-sm">
+                    Data remaja beserta riwayat kesehatan
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => navigate("/laporan/remaja/preview")}
+                className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors"
+              >
+                <Eye size={18} /> Lihat & Export Laporan Remaja
+              </button>
+            </div>
+          </div>
+
+          {/* Card Laporan Dewasa */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-purple-100 rounded-lg">
+                  <UserCheck className="text-purple-600" size={28} />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-800">
+                    Laporan Data Dewasa
+                  </h2>
+                  <p className="text-gray-500 text-sm">
+                    Data dewasa beserta riwayat kesehatan
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => navigate("/laporan/dewasa/preview")}
+                className="w-full bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-purple-700 transition-colors"
+              >
+                <Eye size={18} /> Lihat & Export Laporan Dewasa
+              </button>
+            </div>
+          </div>
+
+          {/* Card Laporan Lansia */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-orange-100 rounded-lg">
+                  <HeartPulse className="text-orange-600" size={28} />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-800">
+                    Laporan Data Lansia
+                  </h2>
+                  <p className="text-gray-500 text-sm">
+                    Data lansia beserta riwayat kesehatan
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => navigate("/laporan/lansia/preview")}
+                className="w-full bg-orange-600 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-orange-700 transition-colors"
+              >
+                <Eye size={18} /> Lihat & Export Laporan Lansia
               </button>
             </div>
           </div>

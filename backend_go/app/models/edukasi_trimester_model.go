@@ -4,7 +4,7 @@ import "time"
 
 type EdukasiTrimester struct {
 	ID         int32     `json:"id" gorm:"primaryKey;autoIncrement"`
-	Trimester  string    `json:"trimester" gorm:"type:varchar(10)"`
+	Trimester  string    `json:"trimester" gorm:"type:varchar(50)"`
 	Kategori   string    `json:"kategori" gorm:"type:varchar(100)"`
 	Judul      string    `json:"judul" gorm:"type:varchar(255)"`
 	Isi        string    `json:"isi" gorm:"type:text"`

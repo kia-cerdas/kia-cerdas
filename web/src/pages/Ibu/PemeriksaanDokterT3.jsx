@@ -26,6 +26,7 @@ export default function PemeriksaanDokterT3() {
     biometri_ac_cm: "", biometri_ac_minggu: "", biometri_fl_cm: "", biometri_fl_minggu: "",
     biometri_efw_tbj_gram: "", biometri_efw_tbj_minggu: "",
     usg_kecurigaan_temuan_abnormal: "Tidak", usg_keterangan_temuan_abnormal: "",
+    tanggal_periksa_stamp_paraf: "", keluhan_pemeriksaan_tindakan_saran: "", tanggal_kembali: "",
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -45,8 +46,11 @@ export default function PemeriksaanDokterT3() {
               const updated = { ...prev };
               Object.keys(prev).forEach(key => {
                 if (d[key] !== undefined && d[key] !== null) {
-                  if (key === "tanggal_periksa") updated[key] = new Date(d[key]).toISOString().split("T")[0];
-                  else updated[key] = d[key];
+                  if (key === "tanggal_periksa" || key === "tanggal_periksa_stamp_paraf" || key === "tanggal_kembali") {
+                    updated[key] = new Date(d[key]).toISOString().split("T")[0];
+                  } else {
+                    updated[key] = d[key];
+                  }
                 }
               });
               return updated;
@@ -158,6 +162,19 @@ export default function PemeriksaanDokterT3() {
               <div><label className="block text-sm font-medium mb-1">Keterangan</label><input name="usg_keterangan_temuan_abnormal" value={form.usg_keterangan_temuan_abnormal} onChange={handleChange} className="w-full border rounded-lg px-3 py-2" /></div>
             </div>
           </div>
+
+          <div>
+            <h3 className="font-semibold mb-3 text-indigo-700">Catatan Pemeriksaan</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div><label className="block text-sm font-medium mb-1">Tanggal Periksa / Stempel / Paraf</label><input type="date" name="tanggal_periksa_stamp_paraf" value={form.tanggal_periksa_stamp_paraf} onChange={handleChange} className="w-full border rounded-lg px-3 py-2" /></div>
+              <div><label className="block text-sm font-medium mb-1">Tanggal Kembali</label><input type="date" name="tanggal_kembali" value={form.tanggal_kembali} onChange={handleChange} className="w-full border rounded-lg px-3 py-2" /></div>
+            </div>
+            <div className="mt-4">
+              <label className="block text-sm font-medium mb-1">Keluhan / Pemeriksaan / Tindakan / Saran</label>
+              <textarea name="keluhan_pemeriksaan_tindakan_saran" value={form.keluhan_pemeriksaan_tindakan_saran} onChange={handleChange} className="w-full border rounded-lg px-3 py-2" rows="3" placeholder="Tuliskan keluhan, hasil pemeriksaan, tindakan yang dilakukan, dan saran untuk pasien..." />
+            </div>
+          </div>
+
           <button type="submit" disabled={saving} className="bg-indigo-600 text-white px-6 py-2 rounded-lg flex items-center gap-2">
             <Save size={18} /> {saving ? "Menyimpan..." : "Simpan Pemeriksaan Dokter T3"}
           </button>

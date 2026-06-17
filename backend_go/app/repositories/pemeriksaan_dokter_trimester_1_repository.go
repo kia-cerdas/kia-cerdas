@@ -40,8 +40,10 @@ func (r *PemeriksaanDokterTrimester1Repository) CreateWithLab(dokter *models.Pem
 // ── UpdateWithLab (transaksi update dokter + lab) ─────────────────────
 func (r *PemeriksaanDokterTrimester1Repository) UpdateWithLab(dokterID int32, dokter *models.PemeriksaanDokterTrimester1, lab *models.PemeriksaanLaboratoriumJiwa) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {
+		// FIX: Gunakan Select("*") + Updates agar GORM tidak menjalankan SELECT * terlebih dahulu
+		// yang memperlambat query karena membaca kolom besar seperti gambar_usg (base64).
 		dokter.ID = dokterID
-		if err := tx.Save(dokter).Error; err != nil {
+		if err := tx.Model(&models.PemeriksaanDokterTrimester1{}).Where("id_trimester1 = ?", dokterID).Select("*").Updates(dokter).Error; err != nil {
 			return err
 		}
 		if lab != nil {
@@ -88,8 +90,9 @@ func (r *PemeriksaanDokterTrimester1Repository) FindByKehamilanID(kehamilanID in
 
 // ── Update biasa (single) ─────────────────────────────────────────────
 func (r *PemeriksaanDokterTrimester1Repository) Update(dokter *models.PemeriksaanDokterTrimester1) error {
-	// Save akan mengupdate semua field berdasarkan primary key
-	return r.db.Save(dokter).Error
+	// FIX: Gunakan Updates() alih-alih Save() untuk menghindari SELECT * sebelum UPDATE
+	// yang lambat karena kolom gambar_usg bisa berisi Base64 besar.
+	return r.db.Model(&models.PemeriksaanDokterTrimester1{}).Where("id_trimester1 = ?", dokter.ID).Select("*").Updates(dokter).Error
 }
 
 // ── Delete ─────────────────────────────────────────────────────────────

@@ -3,6 +3,7 @@ package usecases
 import (
 	"fmt"
 	"monitoring-service/app/models"
+	"sort"
 	"time"
 )
 
@@ -251,6 +252,7 @@ func (m *Main) GetJadwalImunisasiByAnakIDBidan(anakID int32) ([]models.JadwalImu
 
 			anakMap[row.AnakID].Jadwal = append(anakMap[row.AnakID].Jadwal, models.JadwalImunisasiItem{
 				JadwalID:        row.JadwalID,
+				DosisVaksinID:   row.DosisVaksinID,
 				NamaDosis:       row.NamaDosis,
 				TanggalEstimasi: row.TanggalEstimasi,
 				Deskripsi:       row.Deskripsi,
@@ -273,6 +275,11 @@ func (m *Main) SetJadwalSelesaiBidan(jadwalID uint) error {
 	return m.repository.UpdateStatusJadwalImunisasi(jadwalID, 6)
 }
 
+// SetJadwalSelesaiBidanReset resets a completed jadwal back to status 1 (belum)
+func (m *Main) SetJadwalSelesaiBidanReset(jadwalID uint) error {
+	return m.repository.UpdateStatusJadwalImunisasi(jadwalID, 1)
+}
+
 func (m *Main) GetJadwalImunisasiByJadwalIDBidan(jadwalID uint) (*models.JadwalImunisasiResponse, error) {
 
 	row, err := m.repository.GetJadwalImunisasiByJadwalIDBidan(jadwalID)
@@ -292,6 +299,7 @@ func (m *Main) GetJadwalImunisasiByJadwalIDBidan(jadwalID uint) (*models.JadwalI
 		Jadwal: []models.JadwalImunisasiItem{
 			{
 				JadwalID:        row.JadwalID,
+				DosisVaksinID:   row.DosisVaksinID,
 				NamaDosis:       row.NamaDosis,
 				TanggalEstimasi: row.TanggalEstimasi,
 				Deskripsi:       row.Deskripsi,
@@ -301,4 +309,169 @@ func (m *Main) GetJadwalImunisasiByJadwalIDBidan(jadwalID uint) (*models.JadwalI
 			},
 		},
 	}, nil
+}
+
+func (m *Main) GetJadwalImunisasiTerlewatByKaderID(
+	userID int32,
+) (
+	[]models.JadwalImunisasiTerlewatResponse,
+	error,
+) {
+
+	rows, err :=
+		m.repository.
+			GetJadwalImunisasiTerlewatByKaderID(
+				userID,
+			)
+
+	if err != nil {
+		return nil, err
+	}
+
+	response :=
+		[]models.JadwalImunisasiTerlewatResponse{}
+
+	for _, row := range rows {
+		jumlahHariTerlambat := 0
+
+		if row.JadwalImunisasi != nil {
+			jumlahHariTerlambat =
+				int(
+					time.Since(*row.JadwalImunisasi).
+						Hours() / 24,
+				)
+		}
+		response =
+			append(
+				response,
+				models.JadwalImunisasiTerlewatResponse{
+					JadwalID: row.JadwalID,
+
+					NamaAnak:     row.NamaAnak,
+					TanggalLahir: row.TanggalLahir,
+					Dusun:        row.Dusun,
+
+					NamaIbu:         row.NamaIbu,
+					NomorTeleponIbu: row.NomorTeleponIbu,
+
+					NamaAyah:         row.NamaAyah,
+					NomorTeleponAyah: row.NomorTeleponAyah,
+
+					NamaDosis: row.NamaDosis,
+
+					JadwalImunisasi: row.JadwalImunisasi,
+
+					NamaStatus: row.NamaStatus,
+
+					Prioritas: getPrioritasImunisasi(
+						row.JadwalImunisasi,
+					),
+					JumlahHariTerlambat: jumlahHariTerlambat,
+				},
+			)
+	}
+	sort.Slice(
+		response,
+		func(i, j int) bool {
+
+			order := map[string]int{
+				"P1": 1,
+				"P2": 2,
+				"P3": 3,
+				"P4": 4,
+			}
+
+			return order[response[i].Prioritas] <
+				order[response[j].Prioritas]
+		},
+	)
+
+	return response, nil
+}
+
+func (m *Main) GetJadwalImunisasiTerlewatByID(
+	userID int32,
+	jadwalID uint,
+) (
+	*models.DetailJadwalImunisasiTerlewatResponse,
+	error,
+) {
+
+	row, err :=
+		m.repository.
+			GetJadwalImunisasiTerlewatByID(
+				userID,
+				jadwalID,
+			)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if row == nil || row.JadwalID == 0 {
+		return nil, nil
+	}
+
+	jumlahHariTerlambat := 0
+
+	if row.JadwalImunisasi != nil {
+		jumlahHariTerlambat =
+			int(
+				time.Since(*row.JadwalImunisasi).
+					Hours() / 24,
+			)
+	}
+
+	return &models.DetailJadwalImunisasiTerlewatResponse{
+		JadwalID: row.JadwalID,
+		AnakID:   row.AnakID,
+
+		NamaAnak:     row.NamaAnak,
+		TanggalLahir: row.TanggalLahir,
+		Dusun:        row.Dusun,
+
+		NamaIbu:         row.NamaIbu,
+		NomorTeleponIbu: row.NomorTeleponIbu,
+
+		NamaAyah:         row.NamaAyah,
+		NomorTeleponAyah: row.NomorTeleponAyah,
+
+		NamaDosis: row.NamaDosis,
+
+		JadwalImunisasi: row.JadwalImunisasi,
+
+		NamaStatus: row.NamaStatus,
+
+		Prioritas: getPrioritasImunisasi(
+			row.JadwalImunisasi,
+		),
+		JumlahHariTerlambat: jumlahHariTerlambat,
+	}, nil
+}
+
+func getPrioritasImunisasi(
+	tanggal *time.Time,
+) string {
+
+	if tanggal == nil {
+		return "P4"
+	}
+
+	delta :=
+		int(time.Since(*tanggal).Hours() / 24)
+
+	switch {
+
+	case delta > 14:
+		return "P1"
+
+	case delta >= 7:
+		return "P2"
+
+	case delta >= 1:
+		return "P3"
+
+	default:
+		return "P4"
+	}
 }

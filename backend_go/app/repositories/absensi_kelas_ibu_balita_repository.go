@@ -57,6 +57,8 @@ func (r *AbsensiKelasIbuBalitaRepository) FindAllWithIbu() ([]models.AbsensiKela
 	err := r.db.
 		Preload("Ibu").
 		Preload("Ibu.Kependudukan").
+		Preload("Ibu.Anak").
+		Preload("Ibu.Anak.Penduduk").
 		Order("created_at DESC").
 		Find(&list).Error
 	return list, err

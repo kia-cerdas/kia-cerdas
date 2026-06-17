@@ -82,6 +82,7 @@ type PerawatanRepository interface {
 	IsAnakOwnedByIbu(anakID int32, userID int32) (bool, error)
 	GetPerawatanByAnakIDForIbu(anakID int32, userID int32) ([]models.Perawatan, error)
 	GetPerawatanByAnakIDAndRentangUsiaForIbu(anakID int32, rentangUsia string, userID int32) ([]models.Perawatan, error)
+	GetPerawatanByAnakAndKategori(anakID int32, kategoriID uint) (*models.Perawatan, error)
 
 	// KategoriCapaian operations
 	GetAllKategoriCapaian() ([]models.KategoriCapaian, error)
@@ -157,6 +158,22 @@ func (r *perawatanRepository) GetPerawatanByAnakIDAndRentangUsia(anakID int32, r
 		return nil, customerror.NewInternalServiceError("gagal mengambil data perawatan")
 	}
 	return result, nil
+}
+
+// GetPerawatanByAnakAndKategori retrieves a specific perawatan record for an anak and kategori
+func (r *perawatanRepository) GetPerawatanByAnakAndKategori(anakID int32, kategoriID uint) (*models.Perawatan, error) {
+	var result models.Perawatan
+	err := r.db.
+		Where("anak_id = ? AND kategori_capaian_id = ? AND deleted_at IS NULL", anakID, kategoriID).
+		First(&result).Error
+
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, nil // Return nil if not found, instead of error
+		}
+		return nil, customerror.NewInternalServiceError("gagal mengambil data perawatan")
+	}
+	return &result, nil
 }
 
 // UpdatePerawatan updates an existing perawatan record

@@ -48,31 +48,68 @@ func (u *absensiKelasIbuHamilUsecase) SaveMine(
 		return nil, errors.New("user_id tidak valid")
 	}
 
-	if req.PertemuanKe < 1 || req.PertemuanKe > 9 {
-		return nil, errors.New("pertemuan_ke harus antara 1 sampai 9")
-	}
+	// if req.PertemuanKe < 1 || req.PertemuanKe > 9 {
+	// 	return nil, errors.New("pertemuan_ke harus antara 1 sampai 9")
+	// }
 
+	// kehamilan, err := u.repo.FindActiveKehamilanByUserID(userID)
+	// if err != nil {
+	// 	return nil, errors.New("kehamilan aktif tidak ditemukan")
+	// }
+
+	// existing, err := u.repo.FindByKehamilanIDAndPertemuanKe(kehamilan.ID, req.PertemuanKe)
+	// if err == nil && existing != nil {
+	// 	if existing.Status == "Terverifikasi" {
+	// 		return nil, errors.New("sesi ini sudah terverifikasi dan tidak dapat diubah kembali")
+	// 	}
+	// }
+
+	// data := &models.AbsensiKelasIbuHamil{
+	// 	KehamilanID:  kehamilan.ID,
+	// 	PertemuanKe:  req.PertemuanKe,
+	// 	Tanggal:      req.Tanggal,
+	// 	NamaKader:    req.NamaKader,
+	// 	TanggalParaf: req.TanggalParaf,
+	// }
+
+	// if err := u.repo.Upsert(data); err != nil {
+	// 	return nil, err
+	// }
+
+	// return data, nil
+
+	// Cari kehamilan aktif milik ibu (tidak diubah)
 	kehamilan, err := u.repo.FindActiveKehamilanByUserID(userID)
 	if err != nil {
 		return nil, errors.New("kehamilan aktif tidak ditemukan")
 	}
 
-	existing, err := u.repo.FindByKehamilanIDAndPertemuanKe(kehamilan.ID, req.PertemuanKe)
-	if err == nil && existing != nil {
-		if existing.Status == "Terverifikasi" {
-			return nil, errors.New("sesi ini sudah terverifikasi dan tidak dapat diubah kembali")
+	// Ambil semua absensi yang sudah ada untuk kehamilan ini
+	existingList, err := u.repo.FindByKehamilanID(kehamilan.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Aturan "buku tamu": tidak boleh kirim baru kalau masih ada
+	// yang menunggu verifikasi kader. Sama seperti pola Balita.
+	for _, a := range existingList {
+		if a.Status == "Menunggu Verifikasi" {
+			return nil, errors.New("masih ada absensi yang belum diverifikasi kader, silakan tunggu verifikasi terlebih dahulu")
 		}
 	}
 
+	// Nomor pertemuan dihitung otomatis dari jumlah data yang sudah ada.
+	// Tidak ada lagi batas maksimal 9.
 	data := &models.AbsensiKelasIbuHamil{
 		KehamilanID:  kehamilan.ID,
-		PertemuanKe:  req.PertemuanKe,
+		PertemuanKe:  int32(len(existingList) + 1),
 		Tanggal:      req.Tanggal,
 		NamaKader:    req.NamaKader,
 		TanggalParaf: req.TanggalParaf,
 	}
 
-	if err := u.repo.Upsert(data); err != nil {
+	// Pakai Create (data selalu baru, bukan menimpa slot lama)
+	if err := u.repo.Create(data); err != nil {
 		return nil, err
 	}
 

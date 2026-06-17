@@ -6,10 +6,8 @@ import {
   FileText,
   TriangleAlert,
   AlertCircle,
-  Download,
   RotateCcw,
   Eye,
-  PhoneCall,
   Search
 } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -26,11 +24,23 @@ export default function LihatDataPemantauan() {
     try {
       const resAnak = await getAnak();
       const listAnak = resAnak.data || resAnak;
+      const balitaList = listAnak.filter((c) => {
+        if (c.usia_bulan !== undefined) {
+          return c.usia_bulan < 60;
+        }
+        if (!c.tanggal_lahir) return false;
+        const birthDate = new Date(c.tanggal_lahir);
+        if (isNaN(birthDate.getTime())) return false;
+        const currentDate = new Date();
+        const limitDate = new Date(birthDate);
+        limitDate.setFullYear(birthDate.getFullYear() + 5);
+        return currentDate <= limitDate;
+      });
       const resRentang = await getRentangUsia();
       const activeRentang = resRentang?.[0]; // Default to first range for summary
 
       const processedData = await Promise.all(
-        listAnak.map(async (anak) => {
+        balitaList.map(async (anak) => {
           // Fetch latest history for summary (simplified)
           let history = [];
           if (activeRentang) {
@@ -87,15 +97,11 @@ export default function LihatDataPemantauan() {
   return (
     <MainLayout>
       <div className="p-6 space-y-6 bg-[#F8FAFC] min-h-screen">
-        {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-slate-800">Data Pemantauan Anak</h1>
             <p className="text-slate-500">Pantau kondisi anak berdasarkan laporan checklist harian ibu.</p>
           </div>
-          <button className="flex items-center gap-2 bg-[#0052CC] hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-all text-sm font-semibold">
-            <Download size={18} /> Ekspor Laporan
-          </button>
         </div>
 
         {/* Stats Cards */}
@@ -149,7 +155,7 @@ export default function LihatDataPemantauan() {
               <thead>
                 <tr className="text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
                   <th className="pb-4 px-2">IDENTITAS</th>
-                  <th className="pb-4 px-2">USIA & TERAKHIR UPDATE</th>
+                  <th className="pb-4 px-2">USIA</th>
                   <th className="pb-4 px-2 text-center">GEJALA TERDETEKSI</th>
                   <th className="pb-4 px-2 text-center">STATUS</th>
                   <th className="pb-4 px-2 text-right">AKSI</th>
@@ -194,9 +200,6 @@ export default function LihatDataPemantauan() {
                           >
                             <Eye size={18} />
                           </Link>
-                          <button className="p-2 bg-[#0052CC] text-white rounded-lg hover:bg-blue-700">
-                            <PhoneCall size={18} />
-                          </button>
                         </div>
                       </td>
                     </tr>

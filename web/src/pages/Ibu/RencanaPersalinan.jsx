@@ -1,11 +1,12 @@
 // src/pages/Ibu/RencanaPersalinan.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import MainLayout from "../../components/Layout/MainLayout";
 import { getKehamilanByIbuId } from "../../services/kehamilan";
 import { getRencanaByKehamilanId, createRencana, updateRencana, deleteRencana } from "../../services/persalinan";
 import { getCurrentUser, isDokterUser } from "../../services/auth";
 import { getIbuById } from "../../services/ibu";
+import { getDokterT3CompleteByKehamilanId } from "../../services/pemeriksaanDokter";
 import {
   Save, CheckCircle, AlertCircle, ArrowLeft, Eye, Edit, Plus,
   ClipboardList, Trash2, FileDown, User, Calendar, Heart,
@@ -20,6 +21,45 @@ function buildAlamat(kependudukan) {
   if (kependudukan.dusun) parts.push(`Dusun ${kependudukan.dusun}`);
   if (kependudukan.kecamatan) parts.push(`Kec. ${kependudukan.kecamatan}`);
   return parts.join(", ");
+}
+
+// ─── Helper: generate available months based on T3 date (moved outside component) ───────────
+function generateAvailableMonths(t3Tanggal) {
+  if (!t3Tanggal) return [];
+
+  const monthNames = [
+    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+  ];
+
+  const availableMonths = [];
+  const t3Month = t3Tanggal.getMonth();
+  const t3Year = t3Tanggal.getFullYear();
+
+  // Generate months from T3 month to T3 month + 3 (max 4 months total)
+  for (let i = 0; i <= 3; i++) {
+    const monthIndex = (t3Month + i) % 12;
+    const yearOffset = Math.floor((t3Month + i) / 12);
+    const year = t3Year + yearOffset;
+    
+    availableMonths.push({
+      name: monthNames[monthIndex],
+      value: monthNames[monthIndex],
+      year: year
+    });
+  }
+
+  return availableMonths;
+}
+
+// ─── Helper: get available years based on T3 date (moved outside component) ────────────────
+function generateAvailableYears(t3Tanggal) {
+  if (!t3Tanggal) return [];
+
+  const availableMonths = generateAvailableMonths(t3Tanggal);
+  const years = [...new Set(availableMonths.map(m => m.year))];
+  
+  return years.sort((a, b) => a - b);
 }
 
 // ─── Helper: export ke DOCX ────────────────────────────────────────────────
@@ -259,18 +299,18 @@ const Badge = ({ children, color = "indigo" }) => {
 
 const InfoItem = ({ label, value, className = "" }) => (
   <div className={`flex flex-col gap-0.5 ${className}`}>
-    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{label}</span>
-    <span className="text-sm font-medium text-gray-800">{value || <span className="text-gray-400 italic">—</span>}</span>
+    <span className="text-xs text-gray-500 font-medium uppercase tracking-wide">{label}</span>
+    <span className="text-sm text-gray-800 font-semibold mt-0.5">{value || <span className="text-gray-400 italic">—</span>}</span>
   </div>
 );
 
 const SectionCard = ({ icon: Icon, title, iconColor = "text-indigo-500", bgColor = "bg-indigo-50", children }) => (
-  <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-    <div className={`flex items-center gap-3 px-6 py-3 ${bgColor}`}>
+  <div className="bg-white rounded-xl shadow-sm p-5 border border-gray-100 overflow-hidden">
+    <div className={`flex items-center gap-3 px-5 py-3 ${bgColor}`}>
       <Icon size={18} className={iconColor} />
-      <h4 className={`font-bold text-sm ${iconColor}`}>{title}</h4>
+      <h4 className={`text-lg font-semibold text-gray-800`}>{title}</h4>
     </div>
-    <div className="px-6 py-4">{children}</div>
+    <div className="px-5 py-4">{children}</div>
   </div>
 );
 
@@ -306,6 +346,8 @@ export default function RencanaPersalinan() {
   const [isEditing, setIsEditing]         = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage]   = useState("");
+  const [t3Complete, setT3Complete]       = useState(false); // VALIDASI: Cek kelengkapan T3
+  const [t3Tanggal, setT3Tanggal]         = useState(null); // VALIDASI: Simpan tanggal pencatatan T3
 
   // ── Form state ──────────────────────────────────────────────────────────
   // Field otomatis (dari data ibu) — tidak bisa diedit pengguna
@@ -348,7 +390,7 @@ export default function RencanaPersalinan() {
   const autoGolDarah    = ibuData?.kependudukan?.golongan_darah || "";
 
   // ── mapDataToForm — hanya field manual ──────────────────────────────────
-  const mapDataToForm = (data) => ({
+  const mapDataToForm = useCallback((data) => ({
     perkiraan_bulan_persalinan: data.perkiraan_bulan_persalinan || "",
     perkiraan_tahun_persalinan: data.perkiraan_tahun_persalinan || "",
     fasyankes_1_nama_tenaga:    data.fasyankes_1_nama_tenaga || "",
@@ -376,7 +418,7 @@ export default function RencanaPersalinan() {
       ? data.tanggal_pernyataan.substring(0, 10)
       : "",
     nama_bidan_dokter_ttd:      data.nama_bidan_dokter_ttd || "",
-  });
+  }), []);
 
   // ── Fetch data saat mount ────────────────────────────────────────────────
   useEffect(() => {
@@ -394,7 +436,24 @@ export default function RencanaPersalinan() {
         const aktif = kehamilanList[0];
         setKehamilan(aktif);
 
-        // 2. Data ibu (untuk auto-fill)
+        // 2. VALIDASI: Cek kelengkapan data Trimester 3
+        try {
+          const t3Data = await getDokterT3CompleteByKehamilanId(aktif.id);
+          // Cek apakah data T3 ada dan lengkap (minimal field wajib terisi)
+          if (t3Data && t3Data.dokter && t3Data.dokter.tanggal_periksa) {
+            setT3Complete(true);
+            setT3Tanggal(new Date(t3Data.dokter.tanggal_periksa));
+          } else {
+            setT3Complete(false);
+            setT3Tanggal(null);
+          }
+        } catch (t3Err) {
+          console.warn("Gagal mengecek data T3:", t3Err);
+          setT3Complete(false);
+          setT3Tanggal(null);
+        }
+
+        // 3. Data ibu (untuk auto-fill)
         try {
           const ibu = await getIbuById(id);
           setIbuData(ibu);
@@ -402,7 +461,7 @@ export default function RencanaPersalinan() {
           console.warn("Gagal memuat data ibu:", ibuErr);
         }
 
-        // 3. Data rencana persalinan
+        // 4. Data rencana persalinan
         const rencanaData = await getRencanaByKehamilanId(aktif.id);
         if (rencanaData && rencanaData.length > 0) {
           const data = rencanaData[0];
@@ -425,14 +484,86 @@ export default function RencanaPersalinan() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  const handleChange = (e) => {
+  // Memoize available months and years to prevent recalculation
+  const availableMonths = useMemo(() => generateAvailableMonths(t3Tanggal), [t3Tanggal]);
+  const availableYears = useMemo(() => generateAvailableYears(t3Tanggal), [t3Tanggal]);
+
+  const handleChange = useCallback((e) => {
     if (!canEdit) return;
     const { name, value } = e.target;
+    
+    // Auto-set year when month is selected
+    if (name === "perkiraan_bulan_persalinan" && value) {
+      const selectedMonth = availableMonths.find(m => m.value === value);
+      if (selectedMonth) {
+        setForm((prev) => ({ 
+          ...prev, 
+          [name]: value,
+          perkiraan_tahun_persalinan: selectedMonth.year.toString()
+        }));
+        return;
+      }
+    }
+    
     setForm((prev) => ({ ...prev, [name]: value }));
-  };
+  }, [canEdit, availableMonths]);
+
+  // VALIDASI: Cek apakah perkiraan bulan/tahun persalinan valid (berdasarkan T3)
+  const validatePerkiraanPersalinan = useCallback(() => {
+    const { perkiraan_bulan_persalinan, perkiraan_tahun_persalinan } = form;
+    
+    if (!perkiraan_bulan_persalinan || !perkiraan_tahun_persalinan) {
+      return null; // Belum diisi, tidak perlu validasi
+    }
+
+    // VALIDASI: Cek apakah data T3 tersedia
+    if (!t3Tanggal) {
+      return "Data Trimester 3 belum tersedia. Silakan lengkapi data pemeriksaan Trimester 3 terlebih dahulu.";
+    }
+
+    const monthMap = {
+      'Januari': 0, 'Februari': 1, 'Maret': 2, 'April': 3, 'Mei': 4, 'Juni': 5,
+      'Juli': 6, 'Agustus': 7, 'September': 8, 'Oktober': 9, 'November': 10, 'Desember': 11
+    };
+    
+    const monthIndex = monthMap[perkiraan_bulan_persalinan];
+    
+    if (monthIndex === undefined) {
+      return "Format bulan tidak valid.";
+    }
+
+    const rencanaDate = new Date(parseInt(perkiraan_tahun_persalinan), monthIndex, 1);
+    
+    // VALIDASI: Cek apakah tanggal rencana dalam rentang valid (T3 month to T3 month + 3)
+    const t3Month = t3Tanggal.getMonth();
+    const t3Year = t3Tanggal.getFullYear();
+    
+    // Hitung tanggal minimum (bulan T3) dan maksimum (T3 + 3 bulan)
+    const minDate = new Date(t3Year, t3Month, 1);
+    const maxDate = new Date(t3Year, t3Month + 3, 0); // Akhir bulan ke-3 setelah T3
+    
+    // Set jam ke 0 untuk perbandingan yang akurat
+    rencanaDate.setHours(0, 0, 0, 0);
+    minDate.setHours(0, 0, 0, 0);
+    maxDate.setHours(23, 59, 59, 999);
+
+    if (rencanaDate < minDate) {
+      const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
+                         'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+      return `Perkiraan persalinan tidak boleh sebelum bulan pencatatan Trimester 3. Tanggal T3: ${monthNames[t3Month]} ${t3Year}. Pilihan yang tersedia: ${monthNames[t3Month]} ${t3Year} hingga ${monthNames[(t3Month + 3) % 12]} ${t3Year + Math.floor((t3Month + 3) / 12)}.`;
+    }
+
+    if (rencanaDate > maxDate) {
+      const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
+                         'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+      return `Perkiraan persalinan tidak boleh lebih dari 3 bulan setelah pencatatan Trimester 3. Tanggal T3: ${monthNames[t3Month]} ${t3Year}. Pilihan yang tersedia: ${monthNames[t3Month]} ${t3Year} hingga ${monthNames[(t3Month + 3) % 12]} ${t3Year + Math.floor((t3Month + 3) / 12)}.`;
+    }
+
+    return null; // Valid
+  }, [form, t3Tanggal]);
 
   // ── Bangun payload lengkap (manual + auto) ───────────────────────────────
-  const buildPayload = () => ({
+  const buildPayload = useCallback(() => ({
     ...form,
     kehamilan_id:              kehamilan.id,
     perkiraan_tahun_persalinan: form.perkiraan_tahun_persalinan
@@ -445,12 +576,33 @@ export default function RencanaPersalinan() {
     nama_ibu_hamil_ttd:     autoNamaIbu,
     nama_suami_keluarga_ttd: autoNamaSuami,
     donor_golongan_darah:   autoGolDarah,
-  });
+  }), [form, kehamilan, autoNamaIbu, autoAlamat, autoNamaSuami, autoGolDarah]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
     if (!canEdit) {
       Swal.fire({ icon: "error", title: "Akses Ditolak", text: "Anda tidak memiliki izin untuk mengubah data." });
+      return;
+    }
+    // VALIDASI: Cek kelengkapan T3 sebelum mengizinkan submit
+    if (!t3Complete) {
+      Swal.fire({
+        icon: "warning",
+        title: "Data Trimester 3 Belum Lengkap",
+        text: "Rencana Persalinan hanya dapat diisi setelah data pemeriksaan Trimester 3 lengkap. Silakan lengkapi data Trimester 3 terlebih dahulu.",
+        confirmButtonColor: "#185FA5"
+      });
+      return;
+    }
+    // VALIDASI: Cek perkiraan bulan/tahun persalinan
+    const persalinanValidationError = validatePerkiraanPersalinan();
+    if (persalinanValidationError) {
+      Swal.fire({
+        icon: "warning",
+        title: "Perkiraan Persalinan Tidak Valid",
+        text: persalinanValidationError,
+        confirmButtonColor: "#185FA5"
+      });
       return;
     }
     if (!kehamilan) {
@@ -481,9 +633,9 @@ export default function RencanaPersalinan() {
     } finally {
       setSaving(false);
     }
-  };
+  }, [canEdit, t3Complete, validatePerkiraanPersalinan, kehamilan, buildPayload, existingRencana, mapDataToForm]);
 
-  const handleDelete = async () => {
+  const handleDelete = useCallback(async () => {
     if (!canEdit || !existingRencana) return;
     const result = await Swal.fire({
       title: "Hapus Rencana Persalinan?",
@@ -506,9 +658,9 @@ export default function RencanaPersalinan() {
       console.error(err);
       Swal.fire({ icon: "error", title: "Gagal", text: "Gagal menghapus: " + (err.response?.data?.message || err.message) });
     }
-  };
+  }, [canEdit, existingRencana, emptyForm]);
 
-  const handleExport = async () => {
+  const handleExport = useCallback(async () => {
     if (!existingRencana) return;
     setExporting(true);
     try {
@@ -529,7 +681,7 @@ export default function RencanaPersalinan() {
     } finally {
       setExporting(false);
     }
-  };
+  }, [existingRencana, autoNamaIbu, autoAlamat, autoNamaSuami, autoGolDarah]);
 
   // ── EvaluationView ───────────────────────────────────────────────────────
   const EvaluationView = () => {
@@ -540,12 +692,28 @@ export default function RencanaPersalinan() {
             <div className="p-5 bg-indigo-50 rounded-full">
               <ClipboardList size={52} className="text-indigo-400" />
             </div>
-            <h3 className="text-xl font-bold text-gray-800">Belum Ada Rencana Persalinan</h3>
+            <h3 className="text-[22px] font-semibold text-[#185FA5]">Belum Ada Rencana Persalinan</h3>
             <p className="text-gray-400 max-w-md text-sm">Belum ada rencana persalinan yang dibuat untuk ibu hamil ini.</p>
             {canEdit && (
-              <button onClick={() => setIsEditing(true)} className="mt-2 bg-indigo-600 text-white px-6 py-2.5 rounded-lg font-semibold flex items-center gap-2 hover:bg-indigo-700 transition">
-                <Plus size={18} /> Buat Rencana Persalinan
-              </button>
+              <>
+                {!t3Complete && (
+                  <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg text-amber-700 text-sm max-w-md">
+                    <AlertCircle size={16} className="inline mr-2" />
+                    Data Trimester 3 belum lengkap. Rencana Persalinan hanya dapat diisi setelah pemeriksaan Trimester 3 selesai.
+                  </div>
+                )}
+                <button 
+                  onClick={() => setIsEditing(true)} 
+                  disabled={!t3Complete}
+                  className={`mt-2 px-6 py-2.5 rounded-lg font-semibold flex items-center gap-2 transition ${
+                    !t3Complete 
+                      ? "bg-gray-300 text-gray-500 cursor-not-allowed" 
+                      : "bg-indigo-600 text-white hover:bg-indigo-700"
+                  }`}
+                >
+                  <Plus size={18} /> Buat Rencana Persalinan
+                </button>
+              </>
             )}
           </div>
         </div>
@@ -703,8 +871,11 @@ export default function RencanaPersalinan() {
     );
   };
 
-  // ── FormView ─────────────────────────────────────────────────────────────
-  const FormView = () => (
+  // ── FormView (moved outside to prevent remounting) ─────────────────────────────
+  const FormView = React.memo(({ 
+    form, handleChange, canEdit, autoNamaIbu, autoAlamat, autoNamaSuami, autoGolDarah, 
+    availableMonths, availableYears, t3Tanggal, handleSubmit, saving, existingRencana, setIsEditing 
+  }) => (
     <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm p-8 space-y-8 border border-gray-100">
 
       {/* ── Informasi auto-fill (banner) ── */}
@@ -734,28 +905,49 @@ export default function RencanaPersalinan() {
           <div className="flex flex-wrap gap-4 mt-2">
             <div className="flex items-center gap-2">
               <span>Bulan:</span>
-              <input
+              <select
                 name="perkiraan_bulan_persalinan"
                 value={form.perkiraan_bulan_persalinan}
                 onChange={handleChange}
                 disabled={!canEdit}
-                className="border rounded px-2 py-1 w-36 not-italic bg-white"
-                placeholder="Januari"
-              />
+                className="border rounded px-2 py-1 w-40 not-italic bg-white"
+              >
+                <option value="">Pilih Bulan</option>
+                {availableMonths.map((month) => (
+                  <option key={month.value} value={month.value}>
+                    {month.name}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="flex items-center gap-2">
               <span>Tahun:</span>
-              <input
-                type="number"
+              <select
                 name="perkiraan_tahun_persalinan"
                 value={form.perkiraan_tahun_persalinan}
                 onChange={handleChange}
                 disabled={!canEdit}
-                className="border rounded px-2 py-1 w-28 not-italic bg-white"
-                placeholder="2025"
-              />
+                className="border rounded px-2 py-1 w-32 not-italic bg-white"
+              >
+                <option value="">Pilih Tahun</option>
+                {availableYears.map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
+          {t3Tanggal && (
+            <p className="text-xs text-indigo-600 mt-2">
+              ℹ️ Berdasarkan data Trimester 3 (dicatat pada {t3Tanggal.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}), perkiraan persalinan hanya dapat dipilih hingga 3 bulan ke depan.
+            </p>
+          )}
+          {!t3Tanggal && (
+            <p className="text-xs text-amber-600 mt-2">
+              ⚠️ Data Trimester 3 belum tersedia. Dropdown akan muncul setelah data T3 dicatat.
+            </p>
+          )}
         </div>
       </div>
 
@@ -896,7 +1088,7 @@ export default function RencanaPersalinan() {
         </div>
       )}
     </form>
-  );
+  ));
 
   // ── Loading ──────────────────────────────────────────────────────────────
   if (loading) {
@@ -941,7 +1133,7 @@ export default function RencanaPersalinan() {
 
         {/* ── Mode Baca (Dokter) ── */}
         {!canEdit && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4 text-blue-700 text-sm flex items-center gap-2">
+          <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg text-blue-700 text-base flex items-center gap-2">
             <Eye size={16} /> Anda dalam mode baca (Dokter). Data hanya dapat dilihat, tidak dapat diubah.
           </div>
         )}
@@ -957,7 +1149,26 @@ export default function RencanaPersalinan() {
           </div>
         )}
 
-        {isEditing ? <FormView /> : <EvaluationView />}
+        {isEditing ? (
+          <FormView 
+            form={form}
+            handleChange={handleChange}
+            canEdit={canEdit}
+            autoNamaIbu={autoNamaIbu}
+            autoAlamat={autoAlamat}
+            autoNamaSuami={autoNamaSuami}
+            autoGolDarah={autoGolDarah}
+            availableMonths={availableMonths}
+            availableYears={availableYears}
+            t3Tanggal={t3Tanggal}
+            handleSubmit={handleSubmit}
+            saving={saving}
+            existingRencana={existingRencana}
+            setIsEditing={setIsEditing}
+          />
+        ) : (
+          <EvaluationView />
+        )}
       </div>
     </MainLayout>
   );

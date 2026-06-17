@@ -9,7 +9,7 @@ const Breadcrumb = () => {
   // Mapping dari path ke label yang lebih user-friendly
   const breadcrumbLabels = {
     // Dashboard & Main
-    dashboard: "Dashboard",
+    dashboard: "Beranda",
     admin: "Admin",
     dokter: "Dokter",
     superadmin: "Superadmin",
@@ -28,7 +28,7 @@ const Breadcrumb = () => {
     // Ibu - Skrining & Pemeriksaan
     skrining: "Skrining",
     "skrining-preeklampsia": "Skrining Preeklampsia",
-    "skrining-dashboard": "Dashboard Skrining",
+    "skrining-dashboard": "Beranda Skrining",
     "Skrining-Diabetes-Melitus-Gestasional": "Skrining Diabetes Melitus Gestasional",
     "pemeriksaan-fisik": "Pemeriksaan Fisik",
     "pemeriksaan-rutin": "Pemeriksaan Rutin",
@@ -63,7 +63,7 @@ const Breadcrumb = () => {
     // Anak - Monitoring
     keluhan: "Keluhan",
     pemantauan: "Pemantauan",
-    perkembangan: "Perkembangan",
+    perkembangan: "Perawatan",
 
     // Pencatatan & Monitoring
     pencatatan: "Pencatatan",
@@ -71,7 +71,7 @@ const Breadcrumb = () => {
     monitoring: "Monitoring",
     "lihat": "Lihat Data",
     "kelola": "Kelola",
-    "kelola-perkembangan": "Kelola Perkembangan",
+    "kelola-perkembangan": "Kelola Perawatan",
 
     // Edukasi Digital
     "edukasi-digital": "Edukasi Digital",
@@ -113,9 +113,11 @@ const Breadcrumb = () => {
     dewasa: "Dewasa",
     lansia: "Lansia",
     preview: "Preview",
-    "audit-trail": "Audit Trail",
+    // "audit-trail": "Audit Trail",
     "kelola-user": "Kelola User",
     "kelola-user-per-desa": "Kelola Akun User Per Desa",
+    "kelola-puskesmas": "Kelola Puskesmas",
+    "kelola-posyandu": "Kelola Posyandu",
     "form-versi": "Kelola Form Versi",
   };
 
@@ -124,7 +126,7 @@ const Breadcrumb = () => {
 
   // Tambah Home
   breadcrumbItems.push({
-    label: "Home",
+    label: "Beranda",
     path: "/dashboard",
     icon: true,
   });
@@ -173,7 +175,7 @@ const Breadcrumb = () => {
             <Link
               to={item.path}
               className="flex items-center gap-1 text-indigo-600 hover:text-indigo-700 font-medium transition-colors duration-200"
-              title="Kembali ke Home"
+              title="Kembali ke Beranda"
             >
               <Home className="w-4 h-4" />
               <span className="hidden sm:inline">{item.label}</span>
@@ -235,7 +237,7 @@ function getBreadcrumbPath(pathname, segment, currentPath) {
   if (childMatch) {
     const childCategory = childMatch[1];
     const childId = childMatch[2];
-    
+
     // If the segment is the childCategory (e.g. pertumbuhan, pelayanan-gizi),
     // append the child ID to construct a valid route.
     if (segment === childCategory) {

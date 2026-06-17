@@ -26,11 +26,6 @@ export const EDUKASI_RESOURCES = {
     label: "Setelah Melahirkan",
     path: "edukasi-setelah-melahirkan",
   },
-  nifas: {
-    key: "nifas",
-    label: "Edukasi Nifas",
-    path: "edukasi-nifas",
-  },
   menyusuiAsi: {
     key: "menyusuiAsi",
     label: "Menyusui ASI",

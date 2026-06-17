@@ -49,7 +49,8 @@ func (u *pendudukRiskUsecase) GetPendudukByRisk(kelompok, risiko string, desaID 
 				continue
 			}
 			umur := utils.HitungUmur(tglLahir)
-			if umur <= 5 {
+			fiveYearsLater := tglLahir.AddDate(5, 0, 0)
+			if !time.Now().After(fiveYearsLater) {
 				var ris string
 				switch a.StatusPrediksi {
 				case "Stunting":

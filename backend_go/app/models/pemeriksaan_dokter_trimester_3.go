@@ -113,6 +113,11 @@ type PemeriksaanDokterTrimester3 struct {
 
 	USGKecurigaanTemuanAbnormal string `gorm:"type:varchar(10)" json:"usg_kecurigaan_temuan_abnormal"`
 	USGKeteranganTemuanAbnormal string `json:"usg_keterangan_temuan_abnormal"`
+	// Catatan Pelayanan fields (consolidated from catatan_pelayanan_trimester_3)
+	TanggalPeriksaStampParaf        *time.Time `gorm:"type:date" json:"tanggal_periksa_stamp_paraf"`
+	KeluhanPemeriksaanTindakanSaran string     `json:"keluhan_pemeriksaan_tindakan_saran"`
+	TanggalKembali                  *time.Time `gorm:"type:date" json:"tanggal_kembali"`
+
 
 	// ========== LANJUTAN TRIMESTER 3 (digabung di sini) ==========
 	HasilUSGCatatan                       string     `gorm:"type:text" json:"hasil_usg_catatan"`

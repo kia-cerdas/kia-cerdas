@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"errors"
+	"monitoring-service/app/helpers"
 	"monitoring-service/app/models"
 	"monitoring-service/app/usecases"
 	"net/http"
@@ -64,7 +65,7 @@ func (c *kunjunganGiziController) GetByAnakID(ctx echo.Context) error {
 				"error": err.Error(),
 			})
 		}
-		return ctx.JSON(http.StatusOK, data)
+		return helpers.StandardResponse(ctx, http.StatusOK, "berhasil", data, nil)
 	}
 
 	anakID, err := ParseInt(anakIDStr, "anak_id")
@@ -81,7 +82,7 @@ func (c *kunjunganGiziController) GetByAnakID(ctx echo.Context) error {
 		})
 	}
 
-	return ctx.JSON(http.StatusOK, data)
+	return helpers.StandardResponse(ctx, http.StatusOK, "berhasil", data, nil)
 }
 
 func (c *kunjunganGiziController) GetByID(ctx echo.Context) error {

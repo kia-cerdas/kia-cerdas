@@ -18,6 +18,8 @@ type Ibu struct {
 	Paritas int32 `json:"paritas,omitempty"`
 	Abortus int32 `json:"abortus,omitempty"`
 
+	Anak []Anak `gorm:"foreignKey:IbuID;references:IDIbu" json:"anak,omitempty"`
+
 	// StatusKehamilan string        `json:"status_kehamilan"`
 	CreatedAt time.Time      `gorm:"column:created_at" json:"created_at"`
 	UpdatedAt time.Time      `gorm:"column:updated_at" json:"updated_at"`

@@ -1,366 +1,272 @@
 package seeders
 
-// import (
-// 	"log"
-// 	"time"
+import (
+	"log"
+	"monitoring-service/app/models"
+	"time"
 
-// 	"monitoring-service/app/models"
+	"gorm.io/gorm"
+)
 
-// 	"gorm.io/gorm"
-// )
+type KependudukanSeeder struct {
+	db *gorm.DB
+}
 
-// type KependudukanSeeder struct {
-// 	db *gorm.DB
-// }
+func NewKependudukanSeeder(db *gorm.DB) *KependudukanSeeder {
+	return &KependudukanSeeder{db: db}
+}
 
-// func NewKependudukanSeeder(db *gorm.DB) *KependudukanSeeder {
-// 	return &KependudukanSeeder{db: db}
-// }
+func (s *KependudukanSeeder) Seed() error {
+	log.Println("Starting kependudukan and anak seeding...")
 
-// func (s *KependudukanSeeder) Seed() error {
-// 	log.Println("Starting kependudukan and anak seeding...")
+	if err := s.seedKartuKeluarga(); err != nil {
+		return err
+	}
 
-// 	if err := s.seedKartuKeluarga(); err != nil {
-// 		return err
-// 	}
+	// Seed kependudukan data
+	if err := s.seedKependudukan(); err != nil {
+		return err
+	}
 
-// 	// Seed kependudukan data
-// 	if err := s.seedKependudukan(); err != nil {
-// 		return err
-// 	}
+	// Seed ibu data
+	if err := s.seedIbu(); err != nil {
+		return err
+	}
 
-// 	// Seed ibu data
-// 	if err := s.seedIbu(); err != nil {
-// 		return err
-// 	}
+	// Seed anak data
+	if err := s.seedAnak(); err != nil {
+		return err
+	}
 
-// 	// Seed anak data
-// 	if err := s.seedAnak(); err != nil {
-// 		return err
-// 	}
+	log.Println("Kependudukan and anak seeding completed!")
+	return nil
+}
 
-// 	log.Println("Kependudukan and anak seeding completed!")
-// 	return nil
-// }
+func (s *KependudukanSeeder) seedKartuKeluarga() error {
+	now := time.Now()
 
-// func (s *KependudukanSeeder) seedKartuKeluarga() error {
-// 	now := time.Now()
+	list := []models.KartuKeluarga{
+		{
+			NoKK:      "3171234567890101",
+			CreatedAt: now,
+		},
+		{
+			NoKK:      "3171234567890102",
+			CreatedAt: now,
+		},
+	}
 
-// 	list := []models.KartuKeluarga{
-// 		{
-// 			NoKartuKeluarga: 3171234567890101,
-// 			TanggalTerbit:   "2018-01-10",
-// 			Alamat:          "Dusun Mawar",
-// 			RTRW:            "001/002",
-// 			CreatedAt:       now,
-// 			UpdatedAt:       now,
-// 		},
-// 		{
-// 			NoKartuKeluarga: 3171234567890102,
-// 			TanggalTerbit:   "2019-03-21",
-// 			Alamat:          "Dusun Melati",
-// 			RTRW:            "003/004",
-// 			CreatedAt:       now,
-// 			UpdatedAt:       now,
-// 		},
-// 	}
+	for _, item := range list {
+		if err := s.db.Where("no_kk = ?", item.NoKK).FirstOrCreate(&item).Error; err != nil {
+			log.Printf("Error seeding KartuKeluarga (NoKK: %s): %v\n", item.NoKK, err)
+			return err
+		}
+	}
 
-// 	for _, item := range list {
-// 		if err := s.db.Where("no_kartu_keluarga = ?", item.NoKartuKeluarga).FirstOrCreate(&item).Error; err != nil {
-// 			log.Printf("Error seeding KartuKeluarga (NoKK: %d): %v\n", item.NoKartuKeluarga, err)
-// 			return err
-// 		}
-// 	}
+	return nil
+}
 
-// 	return nil
-// }
+func (s *KependudukanSeeder) seedKependudukan() error {
+	now := time.Now()
 
-// func (s *KependudukanSeeder) seedKependudukan() error {
-// 	now := time.Now()
+	var kartuKeluargaList []models.KartuKeluarga
+	if err := s.db.Where("no_kk IN ?", []string{"3171234567890101", "3171234567890102"}).Find(&kartuKeluargaList).Error; err != nil {
+		return err
+	}
 
-// 	var kartuKeluargaList []models.KartuKeluarga
-// 	if err := s.db.Where("no_kartu_keluarga IN ?", []int64{3171234567890101, 3171234567890102}).Find(&kartuKeluargaList).Error; err != nil {
-// 		return err
-// 	}
+	kkIDByNo := map[string]int64{}
+	for _, kk := range kartuKeluargaList {
+		kkIDByNo[kk.NoKK] = kk.ID
+	}
 
-// 	kkIDByNo := map[int64]uint{}
-// 	for _, kk := range kartuKeluargaList {
-// 		kkIDByNo[kk.NoKartuKeluarga] = kk.ID
-// 	}
+	kk01ID, ok := kkIDByNo["3171234567890101"]
+	if !ok {
+		return gorm.ErrRecordNotFound
+	}
+	kk02ID, ok := kkIDByNo["3171234567890102"]
+	if !ok {
+		return gorm.ErrRecordNotFound
+	}
 
-// 	kk01ID, ok := kkIDByNo[3171234567890101]
-// 	if !ok {
-// 		return gorm.ErrRecordNotFound
-// 	}
-// 	kk02ID, ok := kkIDByNo[3171234567890102]
-// 	if !ok {
-// 		return gorm.ErrRecordNotFound
-// 	}
+	// Data contoh kependudukan (2 keluarga)
+	nik1 := "3171234567890001"
+	nik2 := "3171234567890002"
+	nik3 := "3171234567890003"
+	nik4 := "3171234567890004"
+	nik5 := "3171234567890005"
+	nik6 := "3171234567890011"
+	nik7 := "3171234567890012"
+	nik8 := "3171234567890013"
+	nik9 := "3171234567890014"
 
-// 	// Data contoh kependudukan (2 keluarga)
-// 	kependudukanList := []models.Kependudukan{
-// 		// Keluarga 1
-// 		{
-// 			NoKartuKeluargaID: &kk01ID,
-// 			Nik:               3171234567890001,
-// 			Nama:              "Budi Santoso",
-// 			JenisKelamin:      "Laki-laki",
-// 			TanggalLahir:      "1990-05-10",
-// 			TempatLahir:       "Jakarta",
-// 			GolonganDarah:     "O",
-// 			// HubunganKeluarga:   "Kepala Keluarga",
-// 			Dusun:              "Mawar",
-// 			Pekerjaan:          "Karyawan Swasta",
-// 			PendidikanTerakhir: "S1",
-// 			CreatedAt:          now,
-// 			UpdatedAt:          now,
-// 		},
-// 		{
-// 			NoKartuKeluargaID: &kk01ID,
-// 			Nik:               3171234567890002,
-// 			Nama:              "Siti Aminah",
-// 			JenisKelamin:      "Perempuan",
-// 			TanggalLahir:      "1992-08-20",
-// 			TempatLahir:       "Bandung",
-// 			GolonganDarah:     "A",
-// 			// HubunganKeluarga:   "Istri",
-// 			Dusun:              "Mawar",
-// 			Pekerjaan:          "Ibu Rumah Tangga",
-// 			PendidikanTerakhir: "SMA",
-// 			CreatedAt:          now,
-// 			UpdatedAt:          now,
-// 		},
-// 		{
-// 			NoKartuKeluargaID: &kk01ID,
-// 			Nik:               3171234567890003, // NIK untuk disemai ke tabel Anak
-// 			Nama:              "Ahmad Santoso",
-// 			JenisKelamin:      "Laki-laki",
-// 			TanggalLahir:      "2020-10-15",
-// 			TempatLahir:       "Jakarta",
-// 			GolonganDarah:     "O",
-// 			// HubunganKeluarga:  "Anak",
-// 			Dusun:     "Mawar",
-// 			CreatedAt: now,
-// 			UpdatedAt: now,
-// 		},
-// 		{
-// 			NoKartuKeluargaID: &kk01ID,
-// 			Nik:               3171234567890004, // NIK untuk disemai ke tabel Anak
-// 			Nama:              "Rina Santoso",
-// 			JenisKelamin:      "Perempuan",
-// 			TanggalLahir:      "2023-01-25",
-// 			TempatLahir:       "Jakarta",
-// 			GolonganDarah:     "A",
-// 			// HubunganKeluarga:  "Anak",
-// 			Dusun:     "Mawar",
-// 			CreatedAt: now,
-// 			UpdatedAt: now,
-// 		},
-// 		{
-// 			NoKartuKeluargaID: &kk01ID,
-// 			Nik:               3171234567890005, // NIK untuk disemai ke tabel Anak
-// 			Nama:              "Nahes Purba",
-// 			JenisKelamin:      "Laki-laki",
-// 			TanggalLahir:      "2025-12-09",
-// 			TempatLahir:       "Jakarta",
-// 			GolonganDarah:     "A",
-// 			// HubunganKeluarga:  "Anak",
-// 			Dusun:     "Luman Batu",
-// 			CreatedAt: now,
-// 			UpdatedAt: now,
-// 		},
-// 		// Keluarga 2
-// 		{
-// 			NoKartuKeluargaID: &kk02ID,
-// 			Nik:               3171234567890011,
-// 			Nama:              "Andi Pratama",
-// 			JenisKelamin:      "Laki-laki",
-// 			TanggalLahir:      "1989-01-17",
-// 			TempatLahir:       "Jakarta",
-// 			GolonganDarah:     "B",
-// 			// HubunganKeluarga:   "Kepala Keluarga",
-// 			Dusun:              "Melati",
-// 			Pekerjaan:          "Wiraswasta",
-// 			PendidikanTerakhir: "S1",
-// 			CreatedAt:          now,
-// 			UpdatedAt:          now,
-// 		},
-// 		{
-// 			NoKartuKeluargaID: &kk02ID,
-// 			Nik:               3171234567890012,
-// 			Nama:              "Dewi Lestari",
-// 			JenisKelamin:      "Perempuan",
-// 			TanggalLahir:      "1991-04-03",
-// 			TempatLahir:       "Bogor",
-// 			GolonganDarah:     "AB",
-// 			// HubunganKeluarga:   "Istri",
-// 			Dusun:              "Melati",
-// 			Pekerjaan:          "Ibu Rumah Tangga",
-// 			PendidikanTerakhir: "SMA",
-// 			CreatedAt:          now,
-// 			UpdatedAt:          now,
-// 		},
-// 		{
-// 			NoKartuKeluargaID: &kk02ID,
-// 			Nik:               3171234567890013,
-// 			Nama:              "Kania Pratama",
-// 			JenisKelamin:      "Perempuan",
-// 			TanggalLahir:      "2022-07-19",
-// 			TempatLahir:       "Jakarta",
-// 			GolonganDarah:     "AB",
-// 			// HubunganKeluarga:  "Anak",
-// 			Dusun:     "Melati",
-// 			CreatedAt: now,
-// 			UpdatedAt: now,
-// 		},
-// 		{
-// 			NoKartuKeluargaID: &kk02ID,
-// 			Nik:               3171234567890014,
-// 			Nama:              "Rafi Pratama",
-// 			JenisKelamin:      "Laki-laki",
-// 			TanggalLahir:      "2024-11-01",
-// 			TempatLahir:       "Jakarta",
-// 			GolonganDarah:     "B",
-// 			// HubunganKeluarga:  "Anak",
-// 			Dusun:     "Melati",
-// 			CreatedAt: now,
-// 			UpdatedAt: now,
-// 		},
-// 	}
+	tanggalLahir1, _ := time.Parse("2006-01-02", "1990-05-10")
+	tanggalLahir2, _ := time.Parse("2006-01-02", "1992-08-20")
+	tanggalLahir3, _ := time.Parse("2006-01-02", "2020-10-15")
+	tanggalLahir4, _ := time.Parse("2006-01-02", "2023-01-25")
+	tanggalLahir5, _ := time.Parse("2006-01-02", "2025-12-09")
+	tanggalLahir6, _ := time.Parse("2006-01-02", "1989-01-17")
+	tanggalLahir7, _ := time.Parse("2006-01-02", "1991-04-03")
+	tanggalLahir8, _ := time.Parse("2006-01-02", "2022-07-19")
+	tanggalLahir9, _ := time.Parse("2006-01-02", "2024-11-01")
 
-// 	for _, k := range kependudukanList {
-// 		if err := s.db.Where("nik = ?", k.Nik).FirstOrCreate(&k).Error; err != nil {
-// 			log.Printf("Error seeding Kependudukan (NIK: %d): %v\n", k.Nik, err)
-// 			return err
-// 		}
-// 	}
+	kependudukanList := []models.Kependudukan{
+		// Keluarga 1
+		{
+			KartuKeluargaID:    &kk01ID,
+			NIK:                &nik1,
+			NamaLengkap:        "Budi Santoso",
+			JenisKelamin:       "Laki-laki",
+			TanggalLahir:       tanggalLahir1,
+			TempatLahir:        "Jakarta",
+			GolonganDarah:      "O",
+			Dusun:              "Mawar",
+			Pekerjaan:          "Karyawan Swasta",
+			PendidikanTerakhir: "S1",
+			CreatedAt:          now,
+			UpdatedAt:          now,
+		},
+		{
+			KartuKeluargaID:    &kk01ID,
+			NIK:                &nik2,
+			NamaLengkap:        "Siti Aminah",
+			JenisKelamin:       "Perempuan",
+			TanggalLahir:       tanggalLahir2,
+			TempatLahir:        "Bandung",
+			GolonganDarah:      "A",
+			Dusun:              "Mawar",
+			Pekerjaan:          "Ibu Rumah Tangga",
+			PendidikanTerakhir: "SMA",
+			CreatedAt:          now,
+			UpdatedAt:          now,
+		},
+		{
+			KartuKeluargaID: &kk01ID,
+			NIK:             &nik3,
+			NamaLengkap:     "Ahmad Santoso",
+			JenisKelamin:    "Laki-laki",
+			TanggalLahir:    tanggalLahir3,
+			TempatLahir:     "Jakarta",
+			GolonganDarah:   "O",
+			Dusun:           "Mawar",
+			CreatedAt:       now,
+			UpdatedAt:       now,
+		},
+		{
+			KartuKeluargaID: &kk01ID,
+			NIK:             &nik4,
+			NamaLengkap:     "Rina Santoso",
+			JenisKelamin:    "Perempuan",
+			TanggalLahir:    tanggalLahir4,
+			TempatLahir:     "Jakarta",
+			GolonganDarah:   "A",
+			Dusun:           "Mawar",
+			CreatedAt:       now,
+			UpdatedAt:       now,
+		},
+		{
+			KartuKeluargaID: &kk01ID,
+			NIK:             &nik5,
+			NamaLengkap:     "Nahes Purba",
+			JenisKelamin:    "Laki-laki",
+			TanggalLahir:    tanggalLahir5,
+			TempatLahir:     "Jakarta",
+			GolonganDarah:   "A",
+			Dusun:           "Luman Batu",
+			CreatedAt:       now,
+			UpdatedAt:       now,
+		},
+		// Keluarga 2
+		{
+			KartuKeluargaID:    &kk02ID,
+			NIK:                &nik6,
+			NamaLengkap:        "Andi Pratama",
+			JenisKelamin:       "Laki-laki",
+			TanggalLahir:       tanggalLahir6,
+			TempatLahir:        "Jakarta",
+			GolonganDarah:      "B",
+			Dusun:              "Melati",
+			Pekerjaan:          "Wiraswasta",
+			PendidikanTerakhir: "S1",
+			CreatedAt:          now,
+			UpdatedAt:          now,
+		},
+		{
+			KartuKeluargaID:    &kk02ID,
+			NIK:                &nik7,
+			NamaLengkap:        "Dewi Lestari",
+			JenisKelamin:       "Perempuan",
+			TanggalLahir:       tanggalLahir7,
+			TempatLahir:        "Bogor",
+			GolonganDarah:      "AB",
+			Dusun:              "Melati",
+			Pekerjaan:          "Ibu Rumah Tangga",
+			PendidikanTerakhir: "SMA",
+			CreatedAt:          now,
+			UpdatedAt:          now,
+		},
+		{
+			KartuKeluargaID: &kk02ID,
+			NIK:             &nik8,
+			NamaLengkap:     "Kania Pratama",
+			JenisKelamin:    "Perempuan",
+			TanggalLahir:    tanggalLahir8,
+			TempatLahir:     "Jakarta",
+			GolonganDarah:   "AB",
+			Dusun:           "Melati",
+			CreatedAt:       now,
+			UpdatedAt:       now,
+		},
+		{
+			KartuKeluargaID: &kk02ID,
+			NIK:             &nik9,
+			NamaLengkap:     "Rafi Pratama",
+			JenisKelamin:    "Laki-laki",
+			TanggalLahir:    tanggalLahir9,
+			TempatLahir:     "Jakarta",
+			GolonganDarah:   "B",
+			Dusun:           "Melati",
+			CreatedAt:       now,
+			UpdatedAt:       now,
+		},
+	}
 
-// 	return nil
-// }
+	for _, k := range kependudukanList {
+		if err := s.db.Where("nik = ?", k.NIK).FirstOrCreate(&k).Error; err != nil {
+			log.Printf("Error seeding Kependudukan (NIK: %s): %v\n", *k.NIK, err)
+			return err
+		}
+	}
 
-// func (s *KependudukanSeeder) seedIbu() error {
-// 	ibuNikList := []int64{3171234567890002, 3171234567890012}
+	return nil
+}
 
-// 	for _, ibuNik := range ibuNikList {
-// 		var kepIbu models.Kependudukan
-// 		if err := s.db.Where("nik = ?", ibuNik).First(&kepIbu).Error; err != nil {
-// 			if err == gorm.ErrRecordNotFound {
-// 				log.Printf("Kependudukan ibu dengan NIK %d tidak ditemukan, melewati seed Ibu\n", ibuNik)
-// 				continue
-// 			}
-// 			return err
-// 		}
+func (s *KependudukanSeeder) seedIbu() error {
+	ibuNikList := []string{"3171234567890002", "3171234567890012"}
 
-// 		kepID := kepIbu.ID
-// 		ibu := models.Ibu{KependudukanID: &kepID}
+	for _, ibuNik := range ibuNikList {
+		var kepIbu models.Kependudukan
+		if err := s.db.Where("nik = ?", ibuNik).First(&kepIbu).Error; err != nil {
+			if err == gorm.ErrRecordNotFound {
+				log.Printf("Kependudukan ibu dengan NIK %s tidak ditemukan, melewati seed Ibu\n", ibuNik)
+				continue
+			}
+			return err
+		}
 
-// 		if err := s.db.Where("kependudukan_id = ?", kepID).FirstOrCreate(&ibu).Error; err != nil {
-// 			log.Printf("Error seeding Ibu (KependudukanID: %d): %v\n", kepID, err)
-// 			return err
-// 		}
-// 	}
+		ibu := models.Ibu{IDKependudukan: kepIbu.IDKependudukan}
 
-// 	return nil
-// }
+		if err := s.db.Where("penduduk_id = ?", kepIbu.IDKependudukan).FirstOrCreate(&ibu).Error; err != nil {
+			log.Printf("Error seeding Ibu (IDKependudukan: %d): %v\n", kepIbu.IDKependudukan, err)
+			return err
+		}
+	}
 
-// func (s *KependudukanSeeder) seedAnak() error {
-// 	now := time.Now()
+	return nil
+}
 
-// 	type anakSeedItem struct {
-// 		BeratLahir   float64
-// 		TinggiLahir  float64
-// 		IbuNik       int64
-// 		NamaAnak     string
-// 		JenisKelamin string
-// 		TanggalLahir string
-// 		NoKK         int64
-// 	}
-
-// 	// Mapping berat dan tinggi anak berdasarkan NIK
-// 	dataAnakMap := map[int64]anakSeedItem{
-// 		3171234567890003: {BeratLahir: 3.2, TinggiLahir: 50.0, IbuNik: 3171234567890002, NamaAnak: "Ahmad Santoso", JenisKelamin: "Laki-laki", TanggalLahir: "2020-10-15", NoKK: 3171234567890101},
-// 		3171234567890004: {BeratLahir: 2.9, TinggiLahir: 48.5, IbuNik: 3171234567890002, NamaAnak: "Rina Santoso", JenisKelamin: "Perempuan", TanggalLahir: "2023-01-25", NoKK: 3171234567890101},
-// 		3171234567890005: {BeratLahir: 3.1, TinggiLahir: 49.0, IbuNik: 3171234567890002, NamaAnak: "Nahes Purba", JenisKelamin: "Laki-laki", TanggalLahir: "2025-12-09", NoKK: 3171234567890101},
-// 		3171234567890013: {BeratLahir: 3.0, TinggiLahir: 49.5, IbuNik: 3171234567890012, NamaAnak: "Kania Pratama", JenisKelamin: "Perempuan", TanggalLahir: "2022-07-19", NoKK: 3171234567890102},
-// 		3171234567890014: {BeratLahir: 3.3, TinggiLahir: 50.2, IbuNik: 3171234567890012, NamaAnak: "Rafi Pratama", JenisKelamin: "Laki-laki", TanggalLahir: "2024-11-01", NoKK: 3171234567890102},
-// 	}
-
-// 	for nik, detailAnak := range dataAnakMap {
-// 		var kartuKeluarga models.KartuKeluarga
-// 		if detailAnak.NoKK > 0 {
-// 			if err := s.db.Where("no_kartu_keluarga = ?", detailAnak.NoKK).First(&kartuKeluarga).Error; err != nil {
-// 				if err != gorm.ErrRecordNotFound {
-// 					return err
-// 				}
-// 			}
-// 		}
-
-// 		var kependudukan models.Kependudukan
-// 		var kependudukanID *uint
-
-// 		// Cari ID Kependudukan berdasarkan NIK
-// 		if err := s.db.Where("nik = ?", nik).First(&kependudukan).Error; err != nil {
-// 			if err != gorm.ErrRecordNotFound {
-// 				return err
-// 			}
-// 			log.Printf("Kependudukan dengan NIK %d tidak ditemukan, lanjut pakai data anak fallback\n", nik)
-// 		} else {
-// 			kID := kependudukan.ID
-// 			kependudukanID = &kID
-// 		}
-
-// 		var ibu models.Ibu
-// 		if detailAnak.IbuNik > 0 {
-// 			var kepIbu models.Kependudukan
-// 			if err := s.db.Where("nik = ?", detailAnak.IbuNik).First(&kepIbu).Error; err != nil {
-// 				log.Printf("Kependudukan ibu dengan NIK %d tidak ditemukan, melewati seed Anak NIK %d\n", detailAnak.IbuNik, nik)
-// 				continue
-// 			}
-
-// 			if err := s.db.Where("kependudukan_id = ?", kepIbu.ID).First(&ibu).Error; err != nil {
-// 				log.Printf("Ibu dengan NIK %d tidak ditemukan, melewati seed Anak NIK %d\n", detailAnak.IbuNik, nik)
-// 				continue
-// 			}
-// 		}
-
-// 		var existing models.Anak
-// 		var err error
-// 		// Periksa apakah data anak untuk KependudukanID ini sudah ada
-// 		if kependudukanID != nil {
-// 			err = s.db.Where("kependudukan_id = ?", *kependudukanID).First(&existing).Error
-// 		} else {
-// 			err = s.db.Where("nama_anak = ? AND tanggal_lahir = ?", detailAnak.NamaAnak, detailAnak.TanggalLahir).First(&existing).Error
-// 		}
-
-// 		if err != nil {
-// 			if err == gorm.ErrRecordNotFound {
-// 				var ibuID *uint
-// 				if ibu.ID > 0 {
-// 					ibuID = &ibu.ID
-// 				}
-
-// 				anak := models.Anak{
-// 					IbuID:           ibuID,
-// 					KependudukanID:  kependudukanID,
-// 					NoKartuKeluarga: kartuKeluarga.NoKartuKeluarga,
-// 					NamaAnak:        detailAnak.NamaAnak,
-// 					JenisKelamin:    detailAnak.JenisKelamin,
-// 					TanggalLahir:    detailAnak.TanggalLahir,
-// 					BeratLahir:      detailAnak.BeratLahir,
-// 					TinggiLahir:     detailAnak.TinggiLahir,
-// 					CreatedAt:       now,
-// 					UpdatedAt:       now,
-// 				}
-
-// 				if err := s.db.Create(&anak).Error; err != nil {
-// 					log.Printf("Error creating Anak (Nama: %s): %v\n", anak.NamaAnak, err)
-// 					return err
-// 				}
-// 			} else {
-// 				return err
-// 			}
-// 		}
-// 	}
-
-// 	return nil
-// }
+func (s *KependudukanSeeder) seedAnak() error {
+	// Anak model is now linked to Kehamilan, not directly to Ibu/Kependudukan
+	// This seeder needs to be updated to work with the new Kehamilan-based structure
+	log.Println("Anak seeder skipped - requires Kehamilan data structure")
+	return nil
+}

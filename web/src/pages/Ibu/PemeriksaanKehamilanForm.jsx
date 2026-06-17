@@ -9,6 +9,7 @@ import {
   updatePemeriksaanKehamilan,
 } from "../../services/pemeriksaanKehamilan";
 import { getKehamilanById } from "../../services/kehamilan";
+import { getCurrentUser, isDokterUser } from "../../services/auth";
 import {
   Save,
   ArrowLeft,
@@ -27,6 +28,7 @@ import {
   Baby,
   Droplet,
   Heart,
+  Eye,
 } from "lucide-react";
 
 // ─────────────────────────────────────────────────────────────
@@ -190,6 +192,8 @@ export default function PemeriksaanKehamilanForm() {
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState({});
   const [step, setStep] = useState(1);
+  const [isDokter, setIsDokter] = useState(false);
+  const [isReadOnly, setIsReadOnly] = useState(false);
   
   // State untuk data kehamilan
   const [kehamilanDetail, setKehamilanDetail] = useState(null);
@@ -224,6 +228,18 @@ export default function PemeriksaanKehamilanForm() {
     tes_golongan_darah: "",
     tata_laksana_kasus: "",
   });
+
+  // ── Cek role user dan set read-only mode ──
+  useEffect(() => {
+    const user = getCurrentUser();
+    const dokter = isDokterUser(user);
+    setIsDokter(dokter);
+    
+    // Dokter tidak bisa edit data ANC yang sudah ada
+    if (dokter && isEdit) {
+      setIsReadOnly(true);
+    }
+  }, [isEdit]);
 
   // ── Ambil detail kehamilan berdasarkan ID ──
   useEffect(() => {
@@ -438,7 +454,20 @@ export default function PemeriksaanKehamilanForm() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const validateStep3 = () => true;
+  const validateStep3 = () => {
+    const newErrors = {};
+    if (!form.skrining_dokter?.trim()) {
+      newErrors.skrining_dokter = "Skrining dokter / temuan harus diisi";
+    }
+    if (!form.konseling?.trim()) {
+      newErrors.konseling = "Konseling yang diberikan harus diisi";
+    }
+    if (!form.tata_laksana_kasus?.trim()) {
+      newErrors.tata_laksana_kasus = "Tata laksana kasus harus diisi";
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleNext = () => {
     const valid = step === 1 ? validateStep1() : step === 2 ? validateStep2() : validateStep3();
@@ -446,12 +475,25 @@ export default function PemeriksaanKehamilanForm() {
       setStep(step + 1);
       setErrors({});
     } else {
+      // Show alert with list of errors
+      const errorList = Object.entries(errors)
+        .map(([field, message]) => `• ${message}`)
+        .join('\n');
+      
       Swal.fire({
-        icon: "error",
-        title: "Validasi Gagal",
-        text: "Mohon perbaiki data yang masih bermasalah.",
+        icon: "warning",
+        title: "Data Belum Lengkap",
+        html: `<div class="text-left" style="white-space: pre-line;">${errorList}</div>`,
         confirmButtonColor: "#4f46e5",
       });
+
+      // Scroll to first error field
+      const firstErrorField = Object.keys(errors)[0];
+      const errorElement = document.querySelector(`[name="${firstErrorField}"]`);
+      if (errorElement) {
+        errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        errorElement.focus();
+      }
     }
   };
 
@@ -503,16 +545,34 @@ export default function PemeriksaanKehamilanForm() {
     
     const step1Valid = validateStep1();
     const step2Valid = validateStep2();
+    const step3Valid = validateStep3();
     
-    if (!step1Valid || !step2Valid) {
+    if (!step1Valid || !step2Valid || !step3Valid) {
+      // Show alert with list of errors
+      const errorList = Object.entries(errors)
+        .map(([field, message]) => `• ${message}`)
+        .join('\n');
+      
       Swal.fire({
         icon: "warning",
         title: "Data Belum Lengkap",
-        text: "Masih ada data yang belum lengkap atau tidak valid.",
+        html: `<div class="text-left" style="white-space: pre-line;">${errorList}</div>`,
         confirmButtonColor: "#4f46e5",
       });
+      
       if (!step1Valid) setStep(1);
       else if (!step2Valid) setStep(2);
+      else if (!step3Valid) setStep(3);
+      
+      // Scroll to first error field
+      const firstErrorField = Object.keys(errors)[0];
+      const errorElement = document.querySelector(`[name="${firstErrorField}"]`);
+      if (errorElement) {
+        setTimeout(() => {
+          errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          errorElement.focus();
+        }, 100);
+      }
       return;
     }
     
@@ -614,63 +674,67 @@ export default function PemeriksaanKehamilanForm() {
                   </div>
                 )}
                 
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (kehamilanDetail?.hpht && form.tanggal_periksa) {
-                      const usia = hitungUsiaKehamilanDariHPHT(kehamilanDetail.hpht, form.tanggal_periksa);
-                      if (usia && usia.minggu !== undefined && usia.minggu > 0) {
-                        const newTrimester = getTrimesterFromWeek(usia.minggu);
-                        const newKunjungan = getKunjunganKeFromWeek(usia.minggu);
-                        setForm(prev => ({
-                          ...prev,
-                          minggu_kehamilan: usia.minggu.toString(),
-                          trimester: newTrimester,
-                          kunjungan_ke: newKunjungan
-                        }));
-                        Swal.fire({
-                          icon: "success",
-                          title: "Usia Kehamilan Terisi",
-                          html: `<div class="text-left">
-                            <p>📅 Usia kehamilan: <strong>${usia.display}</strong></p>
-                            <p>📊 Trimester: <strong>${newTrimester}</strong></p>
-                            <p>🔄 Kunjungan ke-: <strong>${newKunjungan}</strong></p>
-                          </div>`,
-                          timer: 2500,
-                          showConfirmButton: false
-                        });
-                      } else {
-                        Swal.fire("Info", "Kehamilan masih dibawah 1 minggu. Pastikan HPHT dan tanggal periksa valid.", "info");
+                {!isReadOnly && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (kehamilanDetail?.hpht && form.tanggal_periksa) {
+                        const usia = hitungUsiaKehamilanDariHPHT(kehamilanDetail.hpht, form.tanggal_periksa);
+                        if (usia && usia.minggu !== undefined && usia.minggu > 0) {
+                          const newTrimester = getTrimesterFromWeek(usia.minggu);
+                          const newKunjungan = getKunjunganKeFromWeek(usia.minggu);
+                          setForm(prev => ({
+                            ...prev,
+                            minggu_kehamilan: usia.minggu.toString(),
+                            trimester: newTrimester,
+                            kunjungan_ke: newKunjungan
+                          }));
+                          Swal.fire({
+                            icon: "success",
+                            title: "Usia Kehamilan Terisi",
+                            html: `<div class="text-left">
+                              <p>Usia kehamilan: <strong>${usia.display}</strong></p>
+                              <p>Trimester: <strong>${newTrimester}</strong></p>
+                              <p>Kunjungan ke-: <strong>${newKunjungan}</strong></p>
+                            </div>`,
+                            timer: 2500,
+                            showConfirmButton: false
+                          });
+                        } else {
+                          Swal.fire("Info", "Kehamilan masih dibawah 1 minggu. Pastikan HPHT dan tanggal periksa valid.", "info");
+                        }
                       }
-                    }
-                  }}
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700 transition flex items-center gap-2"
-                >
-                  <RefreshCw size={14} />
-                  Isi Otomatis Usia Kehamilan
-                </button>
+                    }}
+                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700 transition flex items-center gap-2"
+                  >
+                    <RefreshCw size={14} />
+                    Isi Otomatis Usia Kehamilan
+                  </button>
+                )}
               </div>
               
               {/* Toggle mode */}
-              <div className="mt-3 flex items-center justify-end gap-4 border-t border-indigo-100 pt-3">
-                <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={autoCalculate}
-                    onChange={(e) => setAutoCalculate(e.target.checked)}
-                    className="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4"
-                  />
-                  <span className="flex items-center gap-1">
-                    <RefreshCw size={12} />
-                    Mode Otomatis (hitung usia kehamilan berdasarkan HPHT)
-                  </span>
-                </label>
-                {autoCalculate && (
-                  <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full">
-                    Aktif - Usia kehamilan akan terisi otomatis
-                  </span>
-                )}
-              </div>
+              {!isReadOnly && (
+                <div className="mt-3 flex items-center justify-end gap-4 border-t border-indigo-100 pt-3">
+                  <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={autoCalculate}
+                      onChange={(e) => setAutoCalculate(e.target.checked)}
+                      className="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4"
+                    />
+                    <span className="flex items-center gap-1">
+                      <RefreshCw size={12} />
+                      Mode Otomatis (hitung usia kehamilan berdasarkan HPHT)
+                    </span>
+                  </label>
+                  {autoCalculate && (
+                    <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                      Aktif - Usia kehamilan akan terisi otomatis
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
@@ -712,34 +776,49 @@ export default function PemeriksaanKehamilanForm() {
               <ArrowLeft size={24} />
             </button>
             <div>
-              <h1 className="text-2xl font-bold text-gray-800">
-                {isEdit ? "Edit" : "Input"} Pemeriksaan ANC
+              <h1 className="text-[28px] font-bold text-gray-900">
+                {isReadOnly ? "Lihat Detail" : (isEdit ? "Edit" : "Input")} Pemeriksaan ANC
               </h1>
-              <p className="text-gray-500">Formulir standar pelayanan kehamilan terintegrasi</p>
+              <p className="text-gray-500">
+                {isReadOnly ? "Mode baca saja - Data tidak dapat diubah" : "Formulir standar pelayanan kehamilan terintegrasi"}
+              </p>
             </div>
           </div>
 
-          {/* Step indicator */}
-          <div className="flex items-center justify-center mb-8">
-            <div className="flex items-center gap-2">
-              {[Activity, Beaker, MessageCircle].map((Icon, i) => (
-                <React.Fragment key={i}>
-                  {i > 0 && <div className={`w-16 h-0.5 ${step > i ? "bg-indigo-600" : "bg-gray-200"}`} />}
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
-                    step >= i + 1 ? "bg-indigo-600 text-white shadow-md" : "bg-gray-200 text-gray-500"
-                  }`}>
-                    <Icon size={20} />
-                  </div>
-                </React.Fragment>
-              ))}
+          {/* Warning banner for read-only mode */}
+          {isReadOnly && (
+            <div className="mb-6 bg-blue-50 border border-blue-200 p-4 rounded-lg text-blue-800 flex items-center gap-3">
+              <Eye size={20} className="flex-shrink-0" />
+              <div>
+                <p className="font-semibold">Mode Baca Saja (Dokter)</p>
+                <p className="text-sm">Anda dalam mode baca. Data pemeriksaan ANC hanya dapat dilihat, tidak dapat diubah. Hubungi bidan jika perlu perubahan data.</p>
+              </div>
             </div>
-          </div>
+          )}
 
-          <form onSubmit={handleSubmit}>
+          {/* Step indicator - hide in read-only mode */}
+          {!isReadOnly && (
+            <div className="flex items-center justify-center mb-8">
+              <div className="flex items-center gap-2">
+                {[Activity, Beaker, MessageCircle].map((Icon, i) => (
+                  <React.Fragment key={i}>
+                    {i > 0 && <div className={`w-16 h-0.5 ${step > i ? "bg-indigo-600" : "bg-gray-200"}`} />}
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                      step >= i + 1 ? "bg-indigo-600 text-white shadow-md" : "bg-gray-200 text-gray-500"
+                    }`}>
+                      <Icon size={20} />
+                    </div>
+                  </React.Fragment>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <form onSubmit={isReadOnly ? (e) => e.preventDefault() : handleSubmit}>
             {/* Step 1: Fisik & Antropometri */}
-            {step === 1 && (
+            {(step === 1 || isReadOnly) && (
               <div className="bg-white rounded-xl shadow-sm p-6 space-y-6 border border-gray-100">
-                <h2 className="text-lg font-semibold flex items-center gap-2 text-indigo-800 border-b pb-2">
+                <h2 className="text-[22px] font-semibold text-[#185FA5] flex items-center gap-2 border-b pb-2">
                   <Activity size={20} /> Pemeriksaan Fisik & Antropometri
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -753,7 +832,8 @@ export default function PemeriksaanKehamilanForm() {
                       name="tanggal_periksa"
                       value={form.tanggal_periksa}
                       onChange={handleChange}
-                      className={`mt-1 w-full border rounded-lg p-2 ${errors.tanggal_periksa ? "border-red-500" : "border-gray-300"}`}
+                      disabled={isReadOnly}
+                      className={`mt-1 w-full border rounded-lg p-2 ${errors.tanggal_periksa ? "border-red-500" : "border-gray-300"} ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
                     />
                     <ErrorMsg field="tanggal_periksa" />
                   </div>
@@ -767,7 +847,8 @@ export default function PemeriksaanKehamilanForm() {
                       value={form.tempat_periksa}
                       onChange={handleChange}
                       placeholder="Puskesmas / Klinik / RS"
-                      className="mt-1 w-full border rounded-lg p-2 border-gray-300"
+                      disabled={isReadOnly}
+                      className={`mt-1 w-full border rounded-lg p-2 border-gray-300 ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
                     />
                   </div>
                   
@@ -779,14 +860,14 @@ export default function PemeriksaanKehamilanForm() {
                       name="kunjungan_ke"
                       value={form.kunjungan_ke}
                       onChange={handleChange}
-                      className={`mt-1 w-full border rounded-lg p-2 ${errors.kunjungan_ke ? "border-red-500" : "border-gray-300"}`}
-                      disabled={autoCalculate}
+                      disabled={isReadOnly || autoCalculate}
+                      className={`mt-1 w-full border rounded-lg p-2 ${errors.kunjungan_ke ? "border-red-500" : "border-gray-300"} ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
                     >
                       {[1, 2, 3, 4, 5, 6].map((n) => (
                         <option key={n}>{n}</option>
                       ))}
                     </select>
-                    {autoCalculate && (
+                    {autoCalculate && !isReadOnly && (
                       <p className="text-xs text-gray-400 mt-1">(Otomatis berdasarkan usia kehamilan)</p>
                     )}
                     <ErrorMsg field="kunjungan_ke" />
@@ -800,14 +881,14 @@ export default function PemeriksaanKehamilanForm() {
                       name="trimester"
                       value={form.trimester}
                       onChange={handleChange}
-                      className="mt-1 w-full border rounded-lg p-2 border-gray-300"
-                      disabled={autoCalculate}
+                      disabled={isReadOnly || autoCalculate}
+                      className={`mt-1 w-full border rounded-lg p-2 border-gray-300 ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
                     >
                       <option value="I">Trimester 1 (0-12 minggu)</option>
                       <option value="II">Trimester 2 (13-24 minggu)</option>
                       <option value="III">Trimester 3 (≥25 minggu)</option>
                     </select>
-                    {autoCalculate && (
+                    {autoCalculate && !isReadOnly && (
                       <p className="text-xs text-gray-400 mt-1">(Otomatis berdasarkan usia kehamilan)</p>
                     )}
                   </div>
@@ -824,10 +905,10 @@ export default function PemeriksaanKehamilanForm() {
                         value={form.minggu_kehamilan}
                         onChange={handleChange}
                         placeholder="Contoh: 12"
-                        className={`mt-1 flex-1 border rounded-lg p-2 ${errors.minggu_kehamilan ? "border-red-500" : "border-gray-300"}`}
-                        disabled={autoCalculate}
+                        disabled={isReadOnly || autoCalculate}
+                        className={`mt-1 flex-1 border rounded-lg p-2 ${errors.minggu_kehamilan ? "border-red-500" : "border-gray-300"} ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
                       />
-                      {!autoCalculate && kehamilanDetail?.hpht && (
+                      {!isReadOnly && !autoCalculate && kehamilanDetail?.hpht && (
                         <button
                           type="button"
                           onClick={() => {
@@ -863,7 +944,8 @@ export default function PemeriksaanKehamilanForm() {
                       value={form.berat_badan}
                       onChange={handleChange}
                       placeholder="58"
-                      className={`mt-1 w-full border rounded-lg p-2 ${errors.berat_badan ? "border-red-500" : "border-gray-300"}`}
+                      disabled={isReadOnly}
+                      className={`mt-1 w-full border rounded-lg p-2 ${errors.berat_badan ? "border-red-500" : "border-gray-300"} ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
                     />
                     <ErrorMsg field="berat_badan" />
                   </div>
@@ -879,7 +961,8 @@ export default function PemeriksaanKehamilanForm() {
                       value={form.tinggi_badan}
                       onChange={handleChange}
                       placeholder="150"
-                      className={`mt-1 w-full border rounded-lg p-2 ${errors.tinggi_badan ? "border-red-500" : "border-gray-300"}`}
+                      disabled={isReadOnly}
+                      className={`mt-1 w-full border rounded-lg p-2 ${errors.tinggi_badan ? "border-red-500" : "border-gray-300"} ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
                     />
                     <ErrorMsg field="tinggi_badan" />
                   </div>
@@ -895,7 +978,8 @@ export default function PemeriksaanKehamilanForm() {
                       value={form.lingkar_lengan_atas}
                       onChange={handleChange}
                       placeholder="23"
-                      className={`mt-1 w-full border rounded-lg p-2 ${errors.lingkar_lengan_atas ? "border-red-500" : "border-gray-300"}`}
+                      disabled={isReadOnly}
+                      className={`mt-1 w-full border rounded-lg p-2 ${errors.lingkar_lengan_atas ? "border-red-500" : "border-gray-300"} ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
                     />
                     <ErrorMsg field="lingkar_lengan_atas" />
                   </div>
@@ -911,7 +995,8 @@ export default function PemeriksaanKehamilanForm() {
                       value={form.sistole}
                       onChange={handleChange}
                       placeholder="120"
-                      className={`mt-1 w-full border rounded-lg p-2 ${errors.sistole ? "border-red-500" : "border-gray-300"}`}
+                      disabled={isReadOnly}
+                      className={`mt-1 w-full border rounded-lg p-2 ${errors.sistole ? "border-red-500" : "border-gray-300"} ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
                     />
                     <ErrorMsg field="sistole" />
                   </div>
@@ -926,7 +1011,8 @@ export default function PemeriksaanKehamilanForm() {
                       value={form.diastole}
                       onChange={handleChange}
                       placeholder="80"
-                      className={`mt-1 w-full border rounded-lg p-2 ${errors.diastole ? "border-red-500" : "border-gray-300"}`}
+                      disabled={isReadOnly}
+                      className={`mt-1 w-full border rounded-lg p-2 ${errors.diastole ? "border-red-500" : "border-gray-300"} ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
                     />
                     <ErrorMsg field="diastole" />
                   </div>
@@ -942,7 +1028,8 @@ export default function PemeriksaanKehamilanForm() {
                       value={form.tinggi_rahim}
                       onChange={handleChange}
                       placeholder="20"
-                      className={`mt-1 w-full border rounded-lg p-2 ${errors.tinggi_rahim ? "border-red-500" : "border-gray-300"}`}
+                      disabled={isReadOnly}
+                      className={`mt-1 w-full border rounded-lg p-2 ${errors.tinggi_rahim ? "border-red-500" : "border-gray-300"} ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
                     />
                     <ErrorMsg field="tinggi_rahim" />
                   </div>
@@ -957,7 +1044,8 @@ export default function PemeriksaanKehamilanForm() {
                       value={form.denyut_jantung_janin}
                       onChange={handleChange}
                       placeholder="140"
-                      className={`mt-1 w-full border rounded-lg p-2 ${errors.denyut_jantung_janin ? "border-red-500" : "border-gray-300"}`}
+                      disabled={isReadOnly}
+                      className={`mt-1 w-full border rounded-lg p-2 ${errors.denyut_jantung_janin ? "border-red-500" : "border-gray-300"} ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
                     />
                     <ErrorMsg field="denyut_jantung_janin" />
                   </div>
@@ -971,7 +1059,8 @@ export default function PemeriksaanKehamilanForm() {
                       value={form.letak_denyut_jantung_bayi}
                       onChange={handleChange}
                       placeholder="Kepala / Sungsang / Melintang"
-                      className="mt-1 w-full border rounded-lg p-2 border-gray-300"
+                      disabled={isReadOnly}
+                      className={`mt-1 w-full border rounded-lg p-2 border-gray-300 ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
                     />
                   </div>
                 </div>
@@ -979,7 +1068,7 @@ export default function PemeriksaanKehamilanForm() {
             )}
 
             {/* Step 2: Laboratorium - sama seperti sebelumnya */}
-            {step === 2 && (
+            {(step === 2 || isReadOnly) && (
               <div className="bg-white rounded-xl shadow-sm p-6 space-y-6 border border-gray-100">
                 <h2 className="text-lg font-semibold flex items-center gap-2 text-indigo-800 border-b pb-2">
                   <Beaker size={20} /> Laboratorium & Penunjang
@@ -996,7 +1085,8 @@ export default function PemeriksaanKehamilanForm() {
                       value={form.tes_lab_hb}
                       onChange={handleChange}
                       placeholder="11.5"
-                      className={`mt-1 w-full border rounded-lg p-2 ${errors.tes_lab_hb ? "border-red-500" : "border-gray-300"}`}
+                      disabled={isReadOnly}
+                      className={`mt-1 w-full border rounded-lg p-2 ${errors.tes_lab_hb ? "border-red-500" : "border-gray-300"} ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
                     />
                     <ErrorMsg field="tes_lab_hb" />
                     {form.tes_lab_hb && parseFloat(form.tes_lab_hb) < 11 && (
@@ -1016,7 +1106,8 @@ export default function PemeriksaanKehamilanForm() {
                       value={form.tes_lab_gula_darah}
                       onChange={handleChange}
                       placeholder="90"
-                      className={`mt-1 w-full border rounded-lg p-2 ${errors.tes_lab_gula_darah ? "border-red-500" : "border-gray-300"}`}
+                      disabled={isReadOnly}
+                      className={`mt-1 w-full border rounded-lg p-2 ${errors.tes_lab_gula_darah ? "border-red-500" : "border-gray-300"} ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
                     />
                     <ErrorMsg field="tes_lab_gula_darah" />
                   </div>
@@ -1029,7 +1120,8 @@ export default function PemeriksaanKehamilanForm() {
                       name="tes_lab_protein_urine"
                       value={form.tes_lab_protein_urine}
                       onChange={handleChange}
-                      className="mt-1 w-full border rounded-lg p-2 border-gray-300"
+                      disabled={isReadOnly}
+                      className={`mt-1 w-full border rounded-lg p-2 border-gray-300 ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
                     >
                       <option>negatif</option>
                       <option>positif 1</option>
@@ -1046,7 +1138,8 @@ export default function PemeriksaanKehamilanForm() {
                       name="tripel_eliminasi"
                       value={form.tripel_eliminasi}
                       onChange={handleChange}
-                      className="mt-1 w-full border rounded-lg p-2 border-gray-300"
+                      disabled={isReadOnly}
+                      className={`mt-1 w-full border rounded-lg p-2 border-gray-300 ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
                     >
                       <option>non reaktif</option>
                       <option>reaktif HIV</option>
@@ -1063,7 +1156,8 @@ export default function PemeriksaanKehamilanForm() {
                       name="tes_golongan_darah"
                       value={form.tes_golongan_darah}
                       onChange={handleChange}
-                      className="mt-1 w-full border rounded-lg p-2 border-gray-300"
+                      disabled={isReadOnly}
+                      className={`mt-1 w-full border rounded-lg p-2 border-gray-300 ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
                     >
                       <option value="">Pilih Golongan Darah</option>
                       <option value="A">A</option>
@@ -1082,7 +1176,8 @@ export default function PemeriksaanKehamilanForm() {
                       value={form.usg}
                       onChange={handleChange}
                       placeholder="Normal / Plasenta letak rendah dll"
-                      className="mt-1 w-full border rounded-lg p-2 border-gray-300"
+                      disabled={isReadOnly}
+                      className={`mt-1 w-full border rounded-lg p-2 border-gray-300 ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
                     />
                   </div>
                   
@@ -1096,7 +1191,8 @@ export default function PemeriksaanKehamilanForm() {
                       value={form.tablet_tambah_darah}
                       onChange={handleChange}
                       placeholder="90"
-                      className={`mt-1 w-full border rounded-lg p-2 ${errors.tablet_tambah_darah ? "border-red-500" : "border-gray-300"}`}
+                      disabled={isReadOnly}
+                      className={`mt-1 w-full border rounded-lg p-2 ${errors.tablet_tambah_darah ? "border-red-500" : "border-gray-300"} ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
                     />
                     <ErrorMsg field="tablet_tambah_darah" />
                   </div>
@@ -1109,7 +1205,8 @@ export default function PemeriksaanKehamilanForm() {
                       name="status_imunisasi_tetanus"
                       value={form.status_imunisasi_tetanus}
                       onChange={handleChange}
-                      className="mt-1 w-full border rounded-lg p-2 border-gray-300"
+                      disabled={isReadOnly}
+                      className={`mt-1 w-full border rounded-lg p-2 border-gray-300 ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
                     >
                       {[
                         "Belum pernah imunisasi TT",
@@ -1128,7 +1225,7 @@ export default function PemeriksaanKehamilanForm() {
             )}
 
             {/* Step 3: Konseling */}
-            {step === 3 && (
+            {(step === 3 || isReadOnly) && (
               <div className="bg-white rounded-xl shadow-sm p-6 space-y-6 border border-gray-100">
                 <h2 className="text-lg font-semibold flex items-center gap-2 text-indigo-800 border-b pb-2">
                   <MessageCircle size={20} /> Konseling & Tindak Lanjut
@@ -1144,7 +1241,8 @@ export default function PemeriksaanKehamilanForm() {
                       onChange={handleChange}
                       rows={2}
                       placeholder="Hasil skrining preeklampsia, diabetes, dll"
-                      className="mt-1 w-full border rounded-lg p-2 border-gray-300"
+                      disabled={isReadOnly}
+                      className={`mt-1 w-full border rounded-lg p-2 border-gray-300 ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
                     />
                   </div>
                   <div>
@@ -1157,7 +1255,8 @@ export default function PemeriksaanKehamilanForm() {
                       onChange={handleChange}
                       rows={2}
                       placeholder="Edukasi tanda bahaya, gizi, imunisasi, KB pasca persalinan"
-                      className="mt-1 w-full border rounded-lg p-2 border-gray-300"
+                      disabled={isReadOnly}
+                      className={`mt-1 w-full border rounded-lg p-2 border-gray-300 ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
                     />
                   </div>
                   <div>
@@ -1170,43 +1269,46 @@ export default function PemeriksaanKehamilanForm() {
                       onChange={handleChange}
                       rows={2}
                       placeholder="Obat, rujukan, jadwal kontrol berikutnya"
-                      className="mt-1 w-full border rounded-lg p-2 border-gray-300"
+                      disabled={isReadOnly}
+                      className={`mt-1 w-full border rounded-lg p-2 border-gray-300 ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
                     />
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Navigation Buttons */}
-            <div className="flex gap-4 mt-8 pb-8">
-              {step > 1 && (
-                <button
-                  type="button"
-                  onClick={handlePrev}
-                  className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium transition"
-                >
-                  ← Kembali
-                </button>
-              )}
-              {step < 3 ? (
-                <button
-                  type="button"
-                  onClick={handleNext}
-                  className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg shadow transition"
-                >
-                  Selanjutnya →
-                </button>
-              ) : (
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg shadow flex items-center justify-center gap-2 transition disabled:opacity-50"
-                >
-                  {saving ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
-                  {saving ? "Menyimpan..." : "Simpan Pemeriksaan"}
-                </button>
-              )}
-            </div>
+            {/* Navigation Buttons - hide in read-only mode */}
+            {!isReadOnly && (
+              <div className="flex gap-4 mt-8 pb-8">
+                {step > 1 && (
+                  <button
+                    type="button"
+                    onClick={handlePrev}
+                    className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium transition"
+                  >
+                    ← Kembali
+                  </button>
+                )}
+                {step < 3 ? (
+                  <button
+                    type="button"
+                    onClick={handleNext}
+                    className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg shadow transition"
+                  >
+                    Selanjutnya →
+                  </button>
+                ) : (
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg shadow flex items-center justify-center gap-2 transition disabled:opacity-50"
+                  >
+                    {saving ? <Loader2 className="animate-spin" size={20} /> : <Save size={20} />}
+                    {saving ? "Menyimpan..." : "Simpan Pemeriksaan"}
+                  </button>
+                )}
+              </div>
+            )}
           </form>
         </div>
       </div>
