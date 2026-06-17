@@ -38,14 +38,14 @@ type PrediksiStunting struct {
 	UsiaUkurBulan     int       `gorm:"not null" json:"usia_ukur_bulan"`
 	
 	// Hasil prediksi
-	RiskPercentage    float64   `gorm:"type:decimal(5,2);not null" json:"risk_percentage"`   // 0-100%
+	RiskPercentage    float64   `gorm:"type:decimal(5,2);not null" json:"risk_percentage"`
 	Classification    string    `gorm:"type:varchar(20);not null" json:"classification"`     // STUNTING, AT_RISK, NORMAL
-	Confidence        float64   `gorm:"type:decimal(5,2)" json:"confidence"`                 // 0-100%
+	Confidence        float64   `gorm:"type:decimal(5,2)" json:"confidence"`
 	StatusPrediksi    string    `gorm:"column:status_prediksi;type:varchar(30)" json:"status_prediksi"`
 	
 	// Data tambahan dari WHO standards
 	ZScoreTBU         float64   `gorm:"type:decimal(5,2)" json:"z_score_tb_u"`
-	StatusTBU         string    `gorm:"type:varchar(20)" json:"status_tb_u"`
+	StatusTBU         string    `gorm:"type:varchar(100)" json:"status_tb_u"` // diperbesar dari 20 → 100
 	
 	// Rekomendasi untuk bidan
 	Rekomendasi       string    `gorm:"type:text" json:"rekomendasi"`

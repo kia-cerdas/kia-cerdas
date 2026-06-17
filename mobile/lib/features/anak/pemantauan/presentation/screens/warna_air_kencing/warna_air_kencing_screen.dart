@@ -12,13 +12,50 @@ class _WarnaAirKencingScreenState extends State<WarnaAirKencingScreen> {
   String? _selectedWarna;
 
   final List<Map<String, dynamic>> _warnaAirKencing = [
-    {'nama': 'Kuning Pucat/Bening', 'color': const Color(0xFFFEF9C3), 'status': 'Normal', 'desc': 'Menandakan bayi cukup mendapat cairan. Bayi terhidrasi dengan baik.'},
-    {'nama': 'Kuning Muda', 'color': const Color(0xFFFDE047), 'status': 'Normal', 'desc': 'Warna kuning muda merupakan warna air kencing yang sehat.'},
-    {'nama': 'Kuning', 'color': const Color(0xFFEAB308), 'status': 'Normal', 'desc': 'Warna kuning masih normal, pastikan bayi mendapat ASI cukup.'},
-    {'nama': 'Kuning Tua/Jingga', 'color': const Color(0xFFCA8A04), 'status': 'Perhatian', 'desc': 'Bisa jadi tanda dehidrasi ringan. Perbanyak pemberian ASI.'},
-    {'nama': 'Oranye/Kuning Gelap', 'color': const Color(0xFF92400E), 'status': 'Bahaya', 'desc': 'Tanda dehidrasi berat. Segera berikan ASI lebih sering atau ke puskesmas!'},
-    {'nama': 'Merah/Merah Muda', 'color': const Color(0xFFF87171), 'status': 'Bahaya', 'desc': 'Bisa jadi tanda adanya darah. Segera ke puskesmas!'},
-    {'nama': 'Putih/Susu', 'color': const Color(0xFFF5F5F4), 'status': 'Bahaya', 'desc': 'Bisa jadi tanda infeksi saluran kemih. Segera ke puskesmas!'},
+    {
+      'nama': 'Kuning Pucat/Bening',
+      'color': const Color(0xFFFEF9C3),
+      'status': 'Normal',
+      'desc':
+          'Menandakan bayi cukup mendapat cairan. Bayi terhidrasi dengan baik.'
+    },
+    {
+      'nama': 'Kuning Muda',
+      'color': const Color(0xFFFDE047),
+      'status': 'Normal',
+      'desc': 'Warna kuning muda merupakan warna air kencing yang sehat.'
+    },
+    {
+      'nama': 'Kuning',
+      'color': const Color(0xFFEAB308),
+      'status': 'Normal',
+      'desc': 'Warna kuning masih normal, pastikan bayi mendapat ASI cukup.'
+    },
+    {
+      'nama': 'Kuning Tua/Jingga',
+      'color': const Color(0xFFCA8A04),
+      'status': 'Perhatian',
+      'desc': 'Bisa jadi tanda dehidrasi ringan. Perbanyak pemberian ASI.'
+    },
+    {
+      'nama': 'Oranye/Kuning Gelap',
+      'color': const Color(0xFF92400E),
+      'status': 'Bahaya',
+      'desc':
+          'Tanda dehidrasi berat. Segera berikan ASI lebih sering atau ke puskesmas!'
+    },
+    {
+      'nama': 'Merah/Merah Muda',
+      'color': const Color(0xFFF87171),
+      'status': 'Bahaya',
+      'desc': 'Bisa jadi tanda adanya darah. Segera ke puskesmas!'
+    },
+    {
+      'nama': 'Putih/Susu',
+      'color': const Color(0xFFF5F5F4),
+      'status': 'Bahaya',
+      'desc': 'Bisa jadi tanda infeksi saluran kemih. Segera ke puskesmas!'
+    },
   ];
 
   void _showResult() {
@@ -32,7 +69,8 @@ class _WarnaAirKencingScreenState extends State<WarnaAirKencingScreen> {
       return;
     }
 
-    final selectedData = _warnaAirKencing.firstWhere((w) => w['nama'] == _selectedWarna);
+    final selectedData =
+        _warnaAirKencing.firstWhere((w) => w['nama'] == _selectedWarna);
     final isBahaya = selectedData['status'] == 'Bahaya';
     final isPerhatian = selectedData['status'] == 'Perhatian';
 
@@ -228,9 +266,8 @@ class _WarnaAirKencingScreenState extends State<WarnaAirKencingScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: isSelected
-                          ? const Color(0xFFE0F2FE)
-                          : Colors.white,
+                      color:
+                          isSelected ? const Color(0xFFE0F2FE) : Colors.white,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: isSelected

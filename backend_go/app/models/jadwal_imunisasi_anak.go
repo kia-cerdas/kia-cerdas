@@ -40,6 +40,7 @@ type JadwalImunisasiResponse struct {
 
 type JadwalImunisasiItem struct {
 	JadwalID        uint       `json:"jadwal_id"`
+	DosisVaksinID   uint       `json:"dosis_vaksin_id"`
 	NamaDosis       string     `json:"nama_dosis"`
 	TanggalEstimasi *time.Time `json:"tanggal_estimasi,omitempty"`
 	Deskripsi       string     `json:"deskripsi"`
@@ -58,6 +59,7 @@ type JadwalImunisasiJoin struct {
 	TanggalLahir *time.Time
 
 	JadwalID        uint
+	DosisVaksinID   uint `gorm:"column:dosis_vaksin_id"`
 	NamaDosis       string
 	TanggalEstimasi *time.Time
 
@@ -69,4 +71,64 @@ type JadwalImunisasiJoin struct {
 	IsSentH7    bool
 	IsSentH3    bool
 	IsSentH     bool
+}
+
+type JadwalImunisasiTerlewatResponse struct {
+	JadwalID     uint
+	NamaAnak     string
+	TanggalLahir *time.Time
+	Dusun        string
+
+	NamaIbu         string
+	NomorTeleponIbu string
+
+	NamaAyah         string
+	NomorTeleponAyah string
+
+	NamaDosis       string
+	JadwalImunisasi *time.Time
+
+	NamaStatus string
+	Prioritas  string
+	JumlahHariTerlambat int 
+}
+
+type JadwalImunisasiTerlewatJoin struct {
+	JadwalID        uint
+	AnakID          uint
+	NamaAnak        string
+	TanggalLahir    *time.Time
+	Dusun           string
+	TanggalEstimasi *time.Time
+	NamaIbu         string
+	NomorTeleponIbu string
+
+	NamaAyah         string
+	NomorTeleponAyah string
+
+	NamaDosis       string
+	JadwalImunisasi *time.Time
+
+	NamaStatus string
+}
+type DetailJadwalImunisasiTerlewatResponse struct {
+	JadwalID uint `json:"jadwal_id"`
+	AnakID   uint `json:"anak_id"`
+
+	NamaAnak     string     `json:"nama_anak"`
+	TanggalLahir *time.Time `json:"tanggal_lahir,omitempty"`
+	Dusun        string     `json:"dusun"`
+
+	NamaIbu         string `json:"nama_ibu"`
+	NomorTeleponIbu string `json:"nomor_telepon_ibu"`
+
+	NamaAyah         string `json:"nama_ayah"`
+	NomorTeleponAyah string `json:"nomor_telepon_ayah"`
+
+	NamaDosis string `json:"nama_dosis"`
+
+	JadwalImunisasi *time.Time `json:"jadwal_imunisasi,omitempty"`
+	NamaStatus      string     `json:"nama_status"`
+	Prioritas       string     `json:"prioritas"`
+	JumlahHariTerlambat int `json:"jumlah_hari_terlambat"`
 }

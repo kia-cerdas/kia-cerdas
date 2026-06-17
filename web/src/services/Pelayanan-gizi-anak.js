@@ -8,7 +8,7 @@ export const PelayananGiziService = {
     const res = await api.get(`${BASE}`, {
       params: { anak_id: anakId }
     });
-    return res.data;
+    return res.data.data || res.data;
   },
 
   getById: async (id) => {

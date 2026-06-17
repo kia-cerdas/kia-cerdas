@@ -1,19 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, X, Save, UserCheck, ClipboardCheck, Loader2 } from 'lucide-react';
-import { useParams } from 'react-router-dom';
+import { Plus, X, Save, UserCheck, ClipboardCheck, Loader2, ArrowLeft } from 'lucide-react';
+import { useParams, useNavigate } from 'react-router-dom';
 import MainLayout from "../../components/Layout/MainLayout";
 import AlertNotification from "../../components/AlertNotification";
 import { getCurrentUser } from '../../services/auth';
 import { sdidtkService } from '../../services/SDIDTk';
+import { getAnakById } from '../../services/Anak';
 
 const FormSDIDTK = () => {
   const { id: idAnakParam } = useParams();
   const idAnak = idAnakParam || 1;
+  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [dataList, setDataList] = useState([]);
   const [userLogin, setUserLogin] = useState(null);
   const [notification, setNotification] = useState(null);
+  const [anakData, setAnakData] = useState(null);
 
   const [formData, setFormData] = useState({
     bulan_ke: "",
@@ -24,9 +27,39 @@ const FormSDIDTK = () => {
     tindakan: "", kunjungan_ulang: ""
   });
 
+  const calculateAgeInMonths = (birthDateString) => {
+    if (!birthDateString) return 1;
+    const birth = new Date(birthDateString);
+    const now = new Date();
+    const diffYears = now.getFullYear() - birth.getFullYear();
+    const diffMonths = now.getMonth() - birth.getMonth();
+    let months = diffYears * 12 + diffMonths;
+    if (now.getDate() < birth.getDate()) {
+      months--;
+    }
+    return months < 1 ? 1 : months;
+  };
+
+  const fetchAnak = async () => {
+    try {
+      const res = await getAnakById(idAnak);
+      if (res && res.data) {
+        setAnakData(res.data);
+        const ageMonths = calculateAgeInMonths(res.data.tanggal_lahir);
+        setFormData(prev => ({
+          ...prev,
+          bulan_ke: ageMonths > 60 ? 60 : ageMonths
+        }));
+      }
+    } catch (error) {
+      console.error("Gagal mengambil data anak:", error);
+    }
+  };
+
   useEffect(() => {
     setUserLogin(getCurrentUser());
     loadData();
+    fetchAnak();
   }, [idAnak]);
 
   const loadData = async () => {
@@ -45,6 +78,15 @@ const FormSDIDTK = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (formData.tanggal > todayStr) {
+      setNotification({
+        type: "error",
+        message: "Tanggal periksa tidak boleh tanggal yang akan datang!"
+      });
+      return;
+    }
 
     const nakesId = Number(userLogin?.user_id || userLogin?.id);
     if (!nakesId || nakesId === 0) {
@@ -111,8 +153,10 @@ const FormSDIDTK = () => {
   };
 
   const resetForm = () => {
+    const ageMonths = anakData ? calculateAgeInMonths(anakData.tanggal_lahir) : "";
     setFormData({
-      bulan_ke: "", tanggal: new Date().toISOString().split('T')[0],
+      bulan_ke: ageMonths > 60 ? 60 : ageMonths,
+      tanggal: new Date().toISOString().split('T')[0],
       bb_u: "N", bb_tb: "GN", tb_u: "N", lk_u: "N", lila: "N",
       kpsp: "Ds", tdd: "N", tdl: "N", kmpe: "N", m_chat_revised: "N", actrs: "N",
       tindakan: "", kunjungan_ulang: ""
@@ -130,22 +174,26 @@ const FormSDIDTK = () => {
 
   return (
     <MainLayout>
-      <AlertNotification 
-        notification={notification} 
-        onClose={() => setNotification(null)} 
+      <AlertNotification
+        notification={notification}
+        onClose={() => setNotification(null)}
         onRetry={notification?.type === "error" ? () => {
           setNotification(null);
           setIsModalOpen(true);
         } : null}
       />
       <div className="p-6 bg-gray-50 min-h-screen font-sans">
+        {/* NAVIGASI KEMBALI */}
+        <button
+          onClick={() => navigate(`/data-anak/dashboard/${idAnak}`)}
+          className="flex items-center gap-2 px-6 py-2 border border-blue-600 text-blue-600 hover:bg-blue-50 rounded-full font-medium text-sm transition-all group w-fit mb-4 mt-2"
+        >
+          <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Kembali
+        </button>
 
         {/* HEADER */}
         <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-4">
           <div>
-            <p className="text-blue-600 font-bold text-[10px] uppercase tracking-widest mb-1 italic">
-              Petugas Aktif: {userLogin?.nama || 'Nakes'}
-            </p>
             <h1 className="text-3xl font-black text-gray-900 uppercase tracking-tighter italic">Pemantauan Pertumbuhan & Perkembangan </h1>
           </div>
           <button onClick={() => setIsModalOpen(true)} className="bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-3 hover:bg-blue-700 transition-all shadow-2xl">
@@ -203,7 +251,16 @@ const FormSDIDTK = () => {
               <div className="bg-blue-600 p-6 flex justify-between items-center text-white font-black uppercase">
                 <div className="flex items-center gap-4">
                   <ClipboardCheck />
-                  <span>Input Laporan SDIDTK</span>
+                  <div>
+                    <span>Input Laporan SDIDTK</span>
+                    {anakData && (
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white/20 text-white text-[10px] font-black rounded-full border border-white/30 normal-case tracking-normal">
+                          Usia Anak Saat Ini: <strong>{calculateAgeInMonths(anakData.tanggal_lahir)} Bulan</strong>
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <button onClick={() => setIsModalOpen(false)}><X /></button>
               </div>
@@ -214,7 +271,7 @@ const FormSDIDTK = () => {
                   {/* Kolom Kiri: Hanya Informasi Utama */}
                   <div className="space-y-6">
                     <InputField
-                      label="Bulan Ke-"
+                      label={anakData ? `Bulan Ke- (Usia Sekarang: ${calculateAgeInMonths(anakData.tanggal_lahir)} Bulan)` : "Bulan Ke-"}
                       type="number"
                       min="1"
                       value={formData.bulan_ke}
@@ -231,6 +288,7 @@ const FormSDIDTK = () => {
                       type="date"
                       value={formData.tanggal}
                       onChange={e => setFormData({ ...formData, tanggal: e.target.value })}
+                      max={new Date().toISOString().split('T')[0]}
                       required
                     />
                     <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100">

@@ -146,7 +146,7 @@ const PelayananLilaCreate = () => {
           </nav>
           <h1 className="text-4xl font-black text-slate-900 tracking-tight">Input Pencatatan LILA</h1>
           <p className="text-[10px] text-slate-400 font-bold mt-2 uppercase tracking-widest">
-            Petugas: {authUser.nama} • ID Anak: {id}
+            Petugas: {authUser.nama}
           </p>
         </header>
 

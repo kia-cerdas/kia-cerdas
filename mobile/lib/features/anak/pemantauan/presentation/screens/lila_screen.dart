@@ -35,7 +35,8 @@ class _LilaScreenState extends State<LilaScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Lingkar Lengan Atas', style: TextStyle(color: Colors.black87)),
+        title: const Text('Lingkar Lengan Atas',
+            style: TextStyle(color: Colors.black87)),
         backgroundColor: Colors.white,
         iconTheme: const IconThemeData(color: Colors.black),
       ),
@@ -56,11 +57,13 @@ class _LilaScreenState extends State<LilaScreen> {
             const SizedBox(height: 24),
             TextField(
               controller: _lilaController,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
               decoration: InputDecoration(
                 labelText: 'Hasil Pengukuran (cm)',
                 hintText: 'Contoh: 12.5',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 suffixText: 'cm',
               ),
             ),
@@ -72,9 +75,11 @@ class _LilaScreenState extends State<LilaScreen> {
                 onPressed: _hitungLila,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF7C3AED),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
-                child: const Text('Cek Status Gizi', style: TextStyle(fontSize: 16, color: Colors.white)),
+                child: const Text('Cek Status Gizi',
+                    style: TextStyle(fontSize: 16, color: Colors.white)),
               ),
             ),
             const SizedBox(height: 24),
@@ -89,12 +94,16 @@ class _LilaScreenState extends State<LilaScreen> {
                 ),
                 child: Column(
                   children: [
-                    const Text('Status Anak:', style: TextStyle(fontWeight: FontWeight.bold)),
+                    const Text('Status Anak:',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
                     Text(
                       _hasil,
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: _hasilColor, fontSize: 16, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          color: _hasilColor,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),

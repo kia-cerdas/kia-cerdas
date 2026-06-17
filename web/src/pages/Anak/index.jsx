@@ -24,7 +24,19 @@ export default function AnakListNakes() {
         setLoading(true);
         const res = await getAnak();
         const list = res.data || [];
-        setChildren(list);
+        const balitaList = list.filter((c) => {
+          if (c.usia_bulan !== undefined) {
+            return c.usia_bulan < 60;
+          }
+          if (!c.tanggal_lahir) return false;
+          const birthDate = new Date(c.tanggal_lahir);
+          if (isNaN(birthDate.getTime())) return false;
+          const currentDate = new Date();
+          const limitDate = new Date(birthDate);
+          limitDate.setFullYear(birthDate.getFullYear() + 5);
+          return currentDate <= limitDate;
+        });
+        setChildren(balitaList);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -63,8 +75,8 @@ export default function AnakListNakes() {
   };
 
   // Gunakan status_prediksi dari field anak (di-set backend setelah prediksi)
-  const normalCount   = children.filter((c) => c.status_prediksi === "Normal").length;
-  const risikoCount   = children.filter((c) => c.status_prediksi === "Risiko Stunting").length;
+  const normalCount = children.filter((c) => c.status_prediksi === "Normal").length;
+  const risikoCount = children.filter((c) => c.status_prediksi === "Risiko Stunting").length;
   const stuntingCount = children.filter((c) => c.status_prediksi === "Stunting").length;
 
   // --- LOGIC FILTER & PAGINATION ---
@@ -75,16 +87,16 @@ export default function AnakListNakes() {
   );
 
   const filteredChildren = searchFiltered.filter((c) => {
-    if (activeQuickFilter === "normal")   return c.status_prediksi === "Normal";
-    if (activeQuickFilter === "risiko")   return c.status_prediksi === "Risiko Stunting";
+    if (activeQuickFilter === "normal") return c.status_prediksi === "Normal";
+    if (activeQuickFilter === "risiko") return c.status_prediksi === "Risiko Stunting";
     if (activeQuickFilter === "stunting") return c.status_prediksi === "Stunting";
     return true;
   });
 
-  const indexOfLastItem  = currentPage * itemsPerPage;
+  const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems     = filteredChildren.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages       = Math.ceil(filteredChildren.length / itemsPerPage);
+  const currentItems = filteredChildren.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredChildren.length / itemsPerPage);
 
   const handleSearchChange = (e) => { setSearchTerm(e.target.value); setCurrentPage(1); };
   const handleQuickFilterChange = (f) => { setActiveQuickFilter(f); setCurrentPage(1); };
@@ -94,15 +106,15 @@ export default function AnakListNakes() {
       <div className="p-4 md:p-8 bg-[#f8fafc] min-h-screen">
         <div className="mb-8">
           <div className="mb-5">
-            <h1 className="text-2xl font-bold text-gray-800 tracking-tight">Manajemen Data Anak</h1>
-            <p className="text-gray-500 text-sm">Rekam data pertumbuhan anak secara terpusat.</p>
+            <h1 className="text-2xl font-bold text-gray-800 tracking-tight">Manajemen Data Balita</h1>
+            <p className="text-gray-500 text-sm">Rekam data pertumbuhan Balita secara terpusat.</p>
           </div>
 
           {/* Dashboard Cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {/* Total */}
             <DashCard
-              label="Total Anak"
+              label="Total Balita"
               count={children.length}
               icon={<Baby size={20} />}
               active={activeQuickFilter === "all"}
@@ -169,7 +181,7 @@ export default function AnakListNakes() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
               <input
                 type="text"
-                placeholder="Cari nama anak atau nama ibu..."
+                placeholder="Cari nama balita atau nama ibu..."
                 className="pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl w-full focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-sm"
                 onChange={handleSearchChange}
               />
@@ -204,7 +216,7 @@ export default function AnakListNakes() {
                 <tr>
                   <td colSpan="7" className="text-center py-16">
                     <div className="flex flex-col items-center justify-center gap-3">
-                      <p className="text-gray-500 font-semibold">Belum ada data anak</p>
+                      <p className="text-gray-500 font-semibold">Belum ada data Balita</p>
                       <p className="text-sm text-gray-400">Tambahkan data pertama untuk mulai pemantauan.</p>
                     </div>
                   </td>
@@ -231,8 +243,8 @@ export default function AnakListNakes() {
                         <Link to={`/data-anak/dashboard/${child.id}`} className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm active:scale-95">
                           Detail
                         </Link>
-                        <Link to={`/data-anak/edit/${child.id}`} className="p-1.5 text-gray-400 hover:text-amber-600"><Pencil size={14}/></Link>
-                        <button onClick={() => handleDelete(child.id, child.nama)} className="p-1.5 text-gray-400 hover:text-red-600"><Trash2 size={14}/></button>
+                        <Link to={`/data-anak/edit/${child.id}`} className="p-1.5 text-gray-400 hover:text-amber-600"><Pencil size={14} /></Link>
+                        <button onClick={() => handleDelete(child.id, child.nama)} className="p-1.5 text-gray-400 hover:text-red-600"><Trash2 size={14} /></button>
                       </div>
                     </td>
                   </tr>
@@ -261,11 +273,10 @@ export default function AnakListNakes() {
                   <button
                     key={i}
                     onClick={() => setCurrentPage(i + 1)}
-                    className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${
-                      currentPage === i + 1
-                        ? "bg-indigo-600 text-white shadow-md shadow-indigo-100"
-                        : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
-                    }`}
+                    className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${currentPage === i + 1
+                      ? "bg-indigo-600 text-white shadow-md shadow-indigo-100"
+                      : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
+                      }`}
                   >
                     {i + 1}
                   </button>

@@ -1,6 +1,8 @@
 package repositories
 
-import "time"
+import (
+	"time"
+)
 
 type KunjunganImunisasiDetailJoin struct {
 	KunjunganID      uint
@@ -10,11 +12,11 @@ type KunjunganImunisasiDetailJoin struct {
 	NamaAnak     string
 	TanggalLahir *time.Time
 
-	NamaIbu         string
-	NomorTeleponIbu string
-	NamaAyah        string
+	NamaIbu          string
+	NomorTeleponIbu  string
+	NamaAyah         string
 	NomorTeleponAyah string
-	Dusun			string
+	Dusun            string
 
 	NamaVaksin      string
 	NamaDosis       string
@@ -35,8 +37,8 @@ func (m *Main) GetKunjunganImunisasiByID(
 	var result KunjunganImunisasiDetailJoin
 
 	err := m.postgres.
-Table("kunjungan_imunisasi ki").
-	Select(`
+		Table("kunjungan_imunisasi ki").
+		Select(`
 		ki.id AS kunjungan_id,
 		ki.tanggal_kunjungan,
 		sk.status_kunjungan,
@@ -55,47 +57,47 @@ Table("kunjungan_imunisasi ki").
 		dv.nama_dosis,
 		jia.tanggal_estimasi AS jadwal_imunisasi
 	`).
-	Joins(`
+		Joins(`
 		INNER JOIN status_kunjungan sk
 		ON sk.id = ki.id_status_kunjungan
 	`).
-	Joins(`
+		Joins(`
 		INNER JOIN jadwal_imunisasi_anak jia
 		ON jia.id = ki.id_jadwal_imunisasi
 	`).
-	Joins(`
+		Joins(`
 		INNER JOIN anak a
 		ON a.id = jia.id_anak
 	`).
-	Joins(`
+		Joins(`
 		INNER JOIN penduduk p_anak
 		ON p_anak.id = a.penduduk_id
 	`).
-	Joins(`
+		Joins(`
 		INNER JOIN kehamilan kh
 		ON kh.id = a.kehamilan_id
 	`).
-	Joins(`
+		Joins(`
 		INNER JOIN ibu i
 		ON i.id = kh.ibu_id
 	`).
-	Joins(`
+		Joins(`
 		INNER JOIN penduduk p_ibu
 		ON p_ibu.id = i.penduduk_id
 	`).
-	Joins(`
+		Joins(`
 		LEFT JOIN penduduk p_ayah
 		ON p_ayah.id = i.suami_id
 	`).
-	Joins(`
+		Joins(`
 		LEFT JOIN dosis_vaksin dv
 		ON dv.id = jia.id_dosis_vaksin
 	`).
-	Joins(`
+		Joins(`
 		LEFT JOIN vaksin v
 		ON v.id = dv.id_vaksin
 	`).
-	Where("ki.id = ?", kunjunganID).
+		Where("ki.id = ?", kunjunganID).
 		Scan(&result).Error
 
 	if err != nil {
@@ -172,6 +174,17 @@ func (m *Main) UpdateTanggalKunjungan(
 		).Error
 }
 
+func (m *Main) MarkOverdueKunjunganImunisasi() (int64, error) {
+	result := m.postgres.
+		Table("kunjungan_imunisasi").
+		Where("tanggal_kunjungan IS NOT NULL").
+		Where("DATE(tanggal_kunjungan) < CURRENT_DATE").
+		Where("id_status_kunjungan = ?", 1).
+		Update("id_status_kunjungan", 2)
+
+	return result.RowsAffected, result.Error
+}
+
 func (m *Main) GetKunjunganImunisasiByStatus(
 	statusID uint,
 ) (
@@ -218,4 +231,30 @@ func (m *Main) GetKunjunganImunisasiByStatus(
 	}
 
 	return result, nil
+}
+
+func (m *Main) CreateKunjunganImunisasi(
+	statusID uint,
+	tanggalKunjungan string,
+	jadwalImunisasiID uint,
+) (uint, error) {
+
+	var kunjunganImunisasi struct {
+		ID uint
+	}
+
+	err := m.postgres.
+		Table("kunjungan_imunisasi").
+		Create(map[string]interface{}{
+			"id_status_kunjungan": statusID,
+			"tanggal_kunjungan":   tanggalKunjungan,
+			"id_jadwal_imunisasi": jadwalImunisasiID,
+		}).
+		Scan(&kunjunganImunisasi).Error
+
+	if err != nil {
+		return 0, err
+	}
+
+	return kunjunganImunisasi.ID, nil
 }

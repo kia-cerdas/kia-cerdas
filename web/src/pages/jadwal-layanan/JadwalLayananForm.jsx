@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import MainLayout from "../../components/Layout/MainLayout";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -22,6 +22,7 @@ import {
   Check,
   X,
 } from "lucide-react";
+import Swal from "sweetalert2";
 
 function FormField({ label, icon: Icon, children, hint }) {
   return (
@@ -76,14 +77,6 @@ function isTimeValidForToday(selectedDate, timeValue) {
   if (hour === currentHour && minute < currentMinute) return false;
   
   return true;
-}
-
-// Mendapatkan waktu minimal untuk hari ini
-function getMinTimeForToday() {
-  const today = new Date();
-  const currentHour = today.getHours();
-  const currentMinute = today.getMinutes();
-  return `${String(currentHour).padStart(2, '0')}:${String(currentMinute).padStart(2, '0')}`;
 }
 
 // Multi-select dropdown component untuk Dosis Vaksin
@@ -231,8 +224,23 @@ export default function JadwalLayananForm() {
             dosis_vaksin_ids: data.dosis_vaksin_ids ?? data.dosis_vaksins?.map(d => d.id) ?? [],
           });
         }
-      } catch {
+      } catch (err) {
         setError("Gagal memuat data jadwal. Silakan kembali dan coba lagi.");
+        
+        // SweetAlert2 untuk error load data
+        Swal.fire({
+          icon: "error",
+          title: "Gagal Memuat Data",
+          text: "Tidak dapat memuat data jadwal layanan. Silakan coba lagi.",
+          confirmButtonText: "OK",
+          confirmButtonColor: "#185FA5",
+          background: "#fff",
+          backdrop: `rgba(0,0,0,0.4)`,
+          customClass: {
+            popup: "rounded-2xl",
+            confirmButton: "rounded-xl px-5 py-2.5 font-semibold",
+          },
+        });
       } finally {
         setLoading(false);
       }
@@ -277,54 +285,78 @@ export default function JadwalLayananForm() {
   const handleTanggalChange = (e) => {
     const value = e.target.value;
     
-    // Validasi tanggal tidak boleh kurang dari hari ini
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const selectedDate = new Date(value);
-    
-    if (selectedDate < today) {
-      setError("Tanggal pelayanan tidak boleh kurang dari hari ini");
-      return;
-    }
-    
-    setError("");
+    // Update form dulu agar user bisa mengetik dengan lancar
     setForm((prev) => ({ ...prev, tanggal: value }));
+    
+    // Hanya validasi jika sudah input lengkap (format YYYY-MM-DD)
+    if (value && value.length === 10 && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const selectedDate = new Date(value);
+      
+      // Cek apakah tanggal valid
+      if (isNaN(selectedDate.getTime())) {
+        setError("Format tanggal tidak valid");
+        return;
+      }
+      
+      // Validasi tanggal tidak boleh kurang dari hari ini
+      if (selectedDate < today) {
+        setError("Tanggal pelayanan tidak boleh kurang dari hari ini");
+        return;
+      }
+      
+      setError("");
+    } else {
+      // Clear error saat user masih mengetik
+      setError("");
+    }
   };
 
   // Handler khusus untuk waktu mulai
   const handleWaktuMulaiChange = (e) => {
     const value = e.target.value;
     
-    if (!form.tanggal) {
-      setError("Pilih tanggal terlebih dahulu");
-      return;
-    }
-    
-    if (!isTimeValidForToday(form.tanggal, value)) {
-      setError("Waktu mulai tidak boleh kurang dari jam sekarang untuk hari ini");
-      return;
-    }
-    
-    setError("");
+    // Update form dulu
     setForm((prev) => ({ ...prev, waktu_mulai: value }));
+    
+    // Hanya validasi jika tanggal sudah diisi dan waktu lengkap (HH:MM)
+    if (form.tanggal && value && /^\d{2}:\d{2}$/.test(value)) {
+      if (!isTimeValidForToday(form.tanggal, value)) {
+        setError("Waktu mulai tidak boleh kurang dari jam sekarang untuk hari ini");
+        return;
+      }
+      setError("");
+    } else if (!form.tanggal && value) {
+      setError("Pilih tanggal terlebih dahulu");
+    } else {
+      setError("");
+    }
   };
 
   // Handler khusus untuk waktu selesai
   const handleWaktuSelesaiChange = (e) => {
     const value = e.target.value;
     
-    if (form.waktu_mulai && value <= form.waktu_mulai) {
-      setError("Waktu selesai harus lebih besar dari waktu mulai");
-      return;
-    }
-    
-    if (!isTimeValidForToday(form.tanggal, value)) {
-      setError("Waktu selesai tidak boleh kurang dari jam sekarang untuk hari ini");
-      return;
-    }
-    
-    setError("");
+    // Update form dulu
     setForm((prev) => ({ ...prev, waktu_selesai: value }));
+    
+    // Hanya validasi jika waktu lengkap (HH:MM)
+    if (value && /^\d{2}:\d{2}$/.test(value)) {
+      if (form.waktu_mulai && value <= form.waktu_mulai) {
+        setError("Waktu selesai harus lebih besar dari waktu mulai");
+        return;
+      }
+      
+      if (form.tanggal && !isTimeValidForToday(form.tanggal, value)) {
+        setError("Waktu selesai tidak boleh kurang dari jam sekarang untuk hari ini");
+        return;
+      }
+      
+      setError("");
+    } else {
+      setError("");
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -340,12 +372,30 @@ export default function JadwalLayananForm() {
     if (!form.tanggal) {
       setError("Tanggal harus diisi");
       setSaving(false);
+      Swal.fire({
+        icon: "warning",
+        title: "Data Tidak Lengkap",
+        text: "Tanggal harus diisi!",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#185FA5",
+        background: "#fff",
+        customClass: { popup: "rounded-2xl", confirmButton: "rounded-xl px-5 py-2.5 font-semibold" },
+      });
       return;
     }
     
     if (selectedDate < today) {
       setError("Tanggal pelayanan tidak boleh kurang dari hari ini");
       setSaving(false);
+      Swal.fire({
+        icon: "warning",
+        title: "Tanggal Tidak Valid",
+        text: "Tanggal pelayanan tidak boleh kurang dari hari ini!",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#185FA5",
+        background: "#fff",
+        customClass: { popup: "rounded-2xl", confirmButton: "rounded-xl px-5 py-2.5 font-semibold" },
+      });
       return;
     }
 
@@ -353,12 +403,30 @@ export default function JadwalLayananForm() {
     if (!form.waktu_mulai) {
       setError("Waktu mulai harus diisi");
       setSaving(false);
+      Swal.fire({
+        icon: "warning",
+        title: "Data Tidak Lengkap",
+        text: "Waktu mulai harus diisi!",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#185FA5",
+        background: "#fff",
+        customClass: { popup: "rounded-2xl", confirmButton: "rounded-xl px-5 py-2.5 font-semibold" },
+      });
       return;
     }
 
     if (!isTimeValidForToday(form.tanggal, form.waktu_mulai)) {
       setError("Waktu mulai tidak boleh kurang dari jam sekarang untuk hari ini");
       setSaving(false);
+      Swal.fire({
+        icon: "warning",
+        title: "Waktu Tidak Valid",
+        text: "Waktu mulai tidak boleh kurang dari jam sekarang untuk hari ini!",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#185FA5",
+        background: "#fff",
+        customClass: { popup: "rounded-2xl", confirmButton: "rounded-xl px-5 py-2.5 font-semibold" },
+      });
       return;
     }
 
@@ -367,12 +435,30 @@ export default function JadwalLayananForm() {
       if (form.waktu_selesai <= form.waktu_mulai) {
         setError("Waktu selesai harus lebih besar dari waktu mulai");
         setSaving(false);
+        Swal.fire({
+          icon: "warning",
+          title: "Waktu Tidak Valid",
+          text: "Waktu selesai harus lebih besar dari waktu mulai!",
+          confirmButtonText: "OK",
+          confirmButtonColor: "#185FA5",
+          background: "#fff",
+          customClass: { popup: "rounded-2xl", confirmButton: "rounded-xl px-5 py-2.5 font-semibold" },
+        });
         return;
       }
       
       if (!isTimeValidForToday(form.tanggal, form.waktu_selesai)) {
         setError("Waktu selesai tidak boleh kurang dari jam sekarang untuk hari ini");
         setSaving(false);
+        Swal.fire({
+          icon: "warning",
+          title: "Waktu Tidak Valid",
+          text: "Waktu selesai tidak boleh kurang dari jam sekarang untuk hari ini!",
+          confirmButtonText: "OK",
+          confirmButtonColor: "#185FA5",
+          background: "#fff",
+          customClass: { popup: "rounded-2xl", confirmButton: "rounded-xl px-5 py-2.5 font-semibold" },
+        });
         return;
       }
     }
@@ -393,20 +479,54 @@ export default function JadwalLayananForm() {
       } else {
         await createJadwalLayanan(payload);
       }
+      
+      // SweetAlert2 untuk sukses
+      await Swal.fire({
+        icon: "success",
+        title: isEdit ? "Jadwal Berhasil Diperbarui!" : "Jadwal Berhasil Ditambahkan!",
+        text: isEdit 
+          ? "Data jadwal layanan telah diperbarui dengan sukses." 
+          : "Jadwal layanan baru telah ditambahkan ke sistem.",
+        timer: 2000,
+        showConfirmButton: false,
+        background: "#fff",
+        backdrop: `rgba(0,0,0,0.4)`,
+        customClass: {
+          popup: "rounded-2xl",
+        },
+      });
+      
       navigate("/jadwal-layanan");
     } catch (err) {
       const apiErr = err?.response?.data;
+      let errorMessage = "Gagal menyimpan data jadwal.";
+      
       if (apiErr?.error === "validation" && Array.isArray(apiErr?.fields)) {
-        setError(apiErr.fields.map((f) => `${f.field}: ${f.message}`).join("; "));
+        errorMessage = apiErr.fields.map((f) => `${f.field}: ${f.message}`).join("; ");
       } else {
-        setError(apiErr?.error || apiErr?.details || "Gagal menyimpan data jadwal.");
+        errorMessage = apiErr?.error || apiErr?.details || errorMessage;
       }
+      
+      setError(errorMessage);
+      
+      // SweetAlert2 untuk error save
+      Swal.fire({
+        icon: "error",
+        title: "Gagal Menyimpan",
+        text: errorMessage,
+        confirmButtonText: "OK",
+        confirmButtonColor: "#185FA5",
+        background: "#fff",
+        backdrop: `rgba(0,0,0,0.4)`,
+        customClass: {
+          popup: "rounded-2xl",
+          confirmButton: "rounded-xl px-5 py-2.5 font-semibold",
+        },
+      });
     } finally {
       setSaving(false);
     }
   };
-
-  const isTodayDate = form.tanggal === new Date().toISOString().split('T')[0];
 
   return (
     <MainLayout>
@@ -500,7 +620,6 @@ export default function JadwalLayananForm() {
                     onChange={handleTanggalChange}
                     className={inputClass}
                     required
-                    min={new Date().toISOString().split('T')[0]}
                   />
                 </FormField>
 
@@ -513,7 +632,6 @@ export default function JadwalLayananForm() {
                       onChange={handleWaktuMulaiChange}
                       className={`${inputClass} max-w-[140px]`}
                       required
-                      min={isTodayDate ? getMinTimeForToday() : undefined}
                     />
                     <span className="text-sm text-slate-400">—</span>
                     <input
@@ -522,7 +640,6 @@ export default function JadwalLayananForm() {
                       value={form.waktu_selesai}
                       onChange={handleWaktuSelesaiChange}
                       className={`${inputClass} max-w-[140px]`}
-                      min={form.waktu_mulai || undefined}
                     />
                   </div>
                 </FormField>

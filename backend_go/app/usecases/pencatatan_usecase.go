@@ -90,7 +90,26 @@ func (u *pencatatanUsecase) GetPendudukByKategori(kategori string, desaID *int32
             pemeriksaanTerakhir = exam
         }
 
-        masihDalamRentang := umur >= minAge && umur <= maxAge
+        var masihDalamRentang bool
+        fiveYearsLater := p.TanggalLahir.AddDate(5, 0, 0)
+        tenYearsLater := p.TanggalLahir.AddDate(10, 0, 0)
+        nineteenYearsLater := p.TanggalLahir.AddDate(19, 0, 0)
+        sixtyYearsLater := p.TanggalLahir.AddDate(60, 0, 0)
+
+        now := time.Now()
+        switch kategori {
+        case "balita":
+            masihDalamRentang = !p.TanggalLahir.After(now) && !now.After(fiveYearsLater)
+        case "anak":
+            masihDalamRentang = now.After(fiveYearsLater) && !now.After(tenYearsLater)
+        case "remaja":
+            masihDalamRentang = now.After(tenYearsLater) && !now.After(nineteenYearsLater)
+        case "dewasa":
+            masihDalamRentang = now.After(nineteenYearsLater) && !now.After(sixtyYearsLater)
+        case "lansia":
+            masihDalamRentang = now.After(sixtyYearsLater)
+        }
+
         wrapper := models.PendudukWithPemeriksaan{
             IDKependudukan:      p.IDKependudukan,
             NIK:                 p.NIK,
@@ -117,18 +136,26 @@ func (u *pencatatanUsecase) ValidasiUmurKategori(pendudukID int32, kategori stri
     if err != nil {
         return false, err
     }
-    umur := utils.HitungUmur(penduduk.TanggalLahir)
+
+    now := time.Now()
+    tglLahir := penduduk.TanggalLahir
+
+    fiveYearsLater := tglLahir.AddDate(5, 0, 0)
+    tenYearsLater := tglLahir.AddDate(10, 0, 0)
+    nineteenYearsLater := tglLahir.AddDate(19, 0, 0)
+    sixtyYearsLater := tglLahir.AddDate(60, 0, 0)
+
     switch kategori {
     case "balita":
-        return umur >= 0 && umur <= 5, nil
+        return !tglLahir.After(now) && !now.After(fiveYearsLater), nil
     case "anak":
-        return umur >= 5 && umur <= 9, nil
+        return now.After(fiveYearsLater) && !now.After(tenYearsLater), nil
     case "remaja":
-        return umur >= 10 && umur <= 18, nil
+        return now.After(tenYearsLater) && !now.After(nineteenYearsLater), nil
     case "dewasa":
-        return umur >= 19 && umur <= 59, nil
+        return now.After(nineteenYearsLater) && !now.After(sixtyYearsLater), nil
     case "lansia":
-        return umur >= 60, nil
+        return now.After(sixtyYearsLater), nil
     default:
         return false, nil
     }

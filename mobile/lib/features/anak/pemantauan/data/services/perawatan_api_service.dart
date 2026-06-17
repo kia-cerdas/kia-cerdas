@@ -97,6 +97,34 @@ class PerawatanApiService {
     }
   }
 
+  // Create bulk perawatan
+  Future<List<PerawatanModel>> createBulkPerawatan(BulkPerawatanRequest request) async {
+    try {
+      print('POST bulk perawatan payload: ${request.toJson()}');
+      final response = await dio.post(
+        '$baseUrl/perawatan/bulk',
+        data: request.toJson(),
+      );
+      
+      if ((response.statusCode == 201 || response.statusCode == 200) &&
+          response.data != null) {
+        final data = response.data['data'] as List?;
+        if (data != null) {
+          return data
+              .map((item) => PerawatanModel.fromJson(item as Map<String, dynamic>))
+              .toList();
+        }
+        return [];
+      }
+      throw Exception('Failed to create bulk perawatan: ${response.statusMessage}');
+    } on DioException catch (e) {
+      final detail = _extractErrorDetail(e);
+      throw Exception('Error creating bulk perawatan: $detail');
+    } catch (e) {
+      throw Exception('Error creating bulk perawatan: $e');
+    }
+  }
+
   // Get perawatan by ID
   Future<PerawatanModel> getPerawatanById(int id) async {
     try {

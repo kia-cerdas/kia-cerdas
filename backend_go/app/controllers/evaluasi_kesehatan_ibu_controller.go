@@ -293,3 +293,31 @@ func (c *EvaluasiKesehatanIbuController) GetMine(ctx echo.Context) error {
 		Data:       data,
 	})
 }
+
+
+
+
+
+
+
+
+// Untuk hasil evaluasi kehamilan bagian Profil
+
+func (c *EvaluasiKesehatanIbuController) GetByKehamilanIDForOrangtua(ctx echo.Context) error {
+	kehamilanID, err := strconv.ParseInt(ctx.Param("id"), 10, 32)
+	if err != nil {
+		return ctx.JSON(http.StatusBadRequest, models.Response{StatusCode: http.StatusBadRequest, Message: "invalid id"})
+	}
+
+	claims, ok := ctx.Get("auth_claims").(*models.AuthClaims)
+	if !ok || claims == nil {
+		return ctx.JSON(http.StatusUnauthorized, models.Response{StatusCode: http.StatusUnauthorized, Message: "token tidak valid"})
+	}
+
+	data, err := c.usecase.GetByKehamilanIDForOrangtua(int32(kehamilanID), claims.UserID)
+	if err != nil {
+		return ctx.JSON(http.StatusForbidden, models.Response{StatusCode: http.StatusForbidden, Message: err.Error()})
+	}
+
+	return ctx.JSON(http.StatusOK, models.Response{StatusCode: http.StatusOK, Data: data})
+}

@@ -102,6 +102,40 @@ func (c *PemantauanIbuHamilController) SaveMine(ctx echo.Context) error {
 
 
 
+func (c *PemantauanIbuHamilController) GetByKehamilanID(ctx echo.Context) error {
+	claims, ok := ctx.Get("auth_claims").(*models.AuthClaims)
+	if !ok || claims == nil {
+		return ctx.JSON(http.StatusUnauthorized, models.Response{
+			StatusCode: http.StatusUnauthorized,
+			Message:    "token tidak valid",
+		})
+	}
+ 
+	idParam := ctx.Param("kehamilan_id")
+	kehamilanID, err := strconv.Atoi(idParam)
+	if err != nil || kehamilanID <= 0 {
+		return ctx.JSON(http.StatusBadRequest, models.Response{
+			StatusCode: http.StatusBadRequest,
+			Message:    "kehamilan_id tidak valid",
+		})
+	}
+ 
+	data, err := c.usecase.GetByKehamilanID(claims.UserID, int32(kehamilanID))
+	if err != nil {
+		return ctx.JSON(http.StatusNotFound, models.Response{
+			StatusCode: http.StatusNotFound,
+			Message:    err.Error(),
+		})
+	}
+ 
+	return ctx.JSON(http.StatusOK, models.Response{
+		StatusCode: http.StatusOK,
+		Data:       data,
+	})
+}
+
+
+
 // ─── BAGIAN KADER ────────────────────────────────────────────────────────────
 
 // GetAll mengambil semua data pemantauan ibu hamil untuk ditampilkan ke kader.

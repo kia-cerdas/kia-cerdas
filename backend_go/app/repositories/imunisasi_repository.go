@@ -47,6 +47,8 @@ func (m *Main) GetAturanVaksinAnak() ([]models.AturanVaksinAnak, error) {
 	var aturan []models.AturanVaksinAnak
 
 	err := m.postgres.
+		Preload("DosisVaksin").
+		Preload("DosisSebelumRel").
 		Where("deleted_at IS NULL").
 		Order("id ASC").
 		Find(&aturan).Error

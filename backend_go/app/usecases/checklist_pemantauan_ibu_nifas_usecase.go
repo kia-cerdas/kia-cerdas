@@ -49,11 +49,21 @@ func (u *ChecklistPemantauanIbuNifasUsecase) GetByKehamilanIDAndHariNifas(
 	return u.repo.GetByKehamilanIDAndHariNifas(kehamilanID, hariNifas)
 }
 
+func (u *ChecklistPemantauanIbuNifasUsecase) findKehamilanByUserID(userID int32) (*models.Kehamilan, error) {
+	kehamilan, err := u.kehamilanRepo.FindAktifByUserID(userID)
+	if err == nil {
+		return kehamilan, nil
+	}
+	// Aktif tidak ditemukan → coba NIFAS
+	return u.kehamilanRepo.FindNifasByUserID(userID)
+}
+
 func (u *ChecklistPemantauanIbuNifasUsecase) GetByUserIDAndHariNifas(
 	userID int32,
 	hariNifas int32,
 ) (*models.ChecklistPemantauanIbuNifas, error) {
-	kehamilan, err := u.kehamilanRepo.FindAktifByUserID(userID)
+	// [SCOPE: modul-ibu / nifas] gunakan findKehamilanByUserID agar support NIFAS
+	kehamilan, err := u.findKehamilanByUserID(userID)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +72,8 @@ func (u *ChecklistPemantauanIbuNifasUsecase) GetByUserIDAndHariNifas(
 }
 
 func (u *ChecklistPemantauanIbuNifasUsecase) GetFilledDaysByUserID(userID int32) ([]int32, error) {
-	kehamilan, err := u.kehamilanRepo.FindAktifByUserID(userID)
+	// [SCOPE: modul-ibu / nifas] gunakan findKehamilanByUserID agar support NIFAS
+	kehamilan, err := u.findKehamilanByUserID(userID)
 	if err != nil {
 		return nil, err
 	}
@@ -71,13 +82,15 @@ func (u *ChecklistPemantauanIbuNifasUsecase) GetFilledDaysByUserID(userID int32)
 }
 
 func (u *ChecklistPemantauanIbuNifasUsecase) GetFilledDaysWithStatusByUserID(userID int32) ([]repositories.FilledDayStatus, error) {
-	kehamilan, err := u.kehamilanRepo.FindAktifByUserID(userID)
+	// [SCOPE: modul-ibu / nifas] gunakan findKehamilanByUserID agar support NIFAS
+	kehamilan, err := u.findKehamilanByUserID(userID)
 	if err != nil {
 		return nil, err
 	}
 
 	return u.repo.GetFilledDaysWithStatusByKehamilanID(kehamilan.ID)
 }
+
 
 
 

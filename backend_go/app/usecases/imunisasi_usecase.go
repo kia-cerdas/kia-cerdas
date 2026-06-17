@@ -87,11 +87,11 @@ func (m *Main) GenerateJadwalImunisasi(
 
 			var tanggalEstimasi time.Time
 
-			if rule.DosisSebelumnyaID != nil {
+			if rule.DosisSebelumID != nil {
 				riwayat, err :=
 					m.repository.GetRiwayatImunisasi(
 						anak.ID,
-						int64(*rule.DosisSebelumnyaID),
+						int64(*rule.DosisSebelumID),
 					)
 
 				if err != nil {
@@ -211,10 +211,10 @@ func (m *Main) GenerateJadwalImunisasiByAnakID(anakID int32) error {
 
 		var tanggalEstimasi time.Time
 
-		if rule.DosisSebelumnyaID != nil {
+		if rule.DosisSebelumID != nil {
 			riwayat, err := m.repository.GetRiwayatImunisasi(
 				anak.ID,
-				int64(*rule.DosisSebelumnyaID),
+				int64(*rule.DosisSebelumID),
 			)
 			if err != nil {
 				continue
@@ -304,4 +304,9 @@ func calculateStatusID(
 	default:
 		return 5
 	}
+}
+
+// GetAturanVaksinAnak returns all aturan vaksin anak (for color coding in frontend)
+func (m *Main) GetAturanVaksinAnak() ([]models.AturanVaksinAnak, error) {
+	return m.repository.GetAturanVaksinAnak()
 }

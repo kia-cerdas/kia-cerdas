@@ -5,6 +5,7 @@ import 'warna_air_kencing_screen.dart';
 import 'tanda_bahaya_screen.dart';
 import 'lila_screen.dart';
 import 'perawatan/perawatan_perkembangan_screen.dart';
+import 'deteksi_gejala_darurat_screen.dart';
 
 class MenuPemantauanScreen extends StatelessWidget {
   // const MenuPemantauanScreen({Key? key}) : super(key: key);
@@ -145,7 +146,25 @@ class MenuPemantauanScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-
+                  // MENU: DETEKSI GEJALA DARURAT
+                  InkWell(
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => DeteksiGejalaDaruratScreen(anak: anak),
+                      ),
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    child: _menuCard(
+                      icon: Icons.notification_important_rounded,
+                      title: 'Deteksi Gejala Darurat',
+                      subtitle: 'Deteksi cepat gejala tanpa rentang usia',
+                      color: const Color(0xFFFFF1F2),
+                      iconBgColor: const Color(0xFFFFE4E6),
+                      iconColor: const Color(0xFFE11D48),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
 
                   InkWell(
                     onTap: () => Navigator.push(

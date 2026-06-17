@@ -8,10 +8,7 @@ import { getCurrentUser, isDokterUser, isBidanUser } from "../../services/auth";
 import {
   getDokterT1CompleteByKehamilanId,
   deleteDokterT1Complete,
-  getCatatanT1ByKehamilanId,
-  createCatatanT1,
-  updateCatatanT1,
-  deleteCatatanT1,
+  updateDokterT1Complete,
 } from "../../services/pemeriksaanDokter";
 import {
   ArrowLeft,
@@ -60,25 +57,21 @@ function InfoRow({ label, value, highlight = false }) {
 function StatusBadge({ value }) {
   if (!value || value === "-") return <span className="text-gray-400 text-sm italic">-</span>;
   return value === "Normal" ? (
-    <span className="inline-flex items-center gap-1 text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-semibold">
-      <CheckCircle size={10} /> Normal
-    </span>
+    <span className="text-xs text-emerald-700 font-semibold">Normal</span>
   ) : (
-    <span className="inline-flex items-center gap-1 text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-semibold">
-      <XCircle size={10} /> Abnormal
-    </span>
+    <span className="text-xs text-red-700 font-semibold">Abnormal</span>
   );
 }
 
 function ReaktifBadge({ value }) {
   if (!value || value === "-") return <span className="text-gray-400 text-sm italic">-</span>;
   return value === "NonReaktif" || value === "Non Reaktif" ? (
-    <span className="inline-flex items-center gap-1 text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full font-semibold">
-      <CheckCircle size={10} /> Non Reaktif
+    <span className="text-xs text-emerald-700 font-semibold">
+      Non Reaktif
     </span>
   ) : (
-    <span className="inline-flex items-center gap-1 text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full font-semibold">
-      <XCircle size={10} /> Reaktif
+    <span className="text-xs text-red-700 font-semibold">
+      Reaktif
     </span>
   );
 }
@@ -200,246 +193,6 @@ function DetailSection({
   );
 }
 
-// ─── Modal Catatan ────────────────────────────────────────────────────────────
-
-// ─── Modal Catatan ────────────────────────────────────────────────────────────
-
-function ModalCatatan({ kehamilanId, catatan, onClose, onSaved }) {
-  const isEdit = Boolean(catatan);
-  
-  // Fungsi helper untuk validasi tanggal
-  const isDateAfterToday = (dateStr) => {
-    if (!dateStr) return false;
-    const today = new Date().toISOString().split("T")[0];
-    return dateStr > today;
-  };
-  
-  const [form, setForm] = useState({
-    tanggal_periksa_stamp_paraf: catatan?.tanggal_periksa_stamp_paraf
-      ? catatan.tanggal_periksa_stamp_paraf.split("T")[0]
-      : "",
-    keluhan_pemeriksaan_tindakan_saran:
-      catatan?.keluhan_pemeriksaan_tindakan_saran || "",
-    tanggal_kembali: catatan?.tanggal_kembali
-      ? catatan.tanggal_kembali.split("T")[0]
-      : "",
-  });
-  const [saving, setSaving] = useState(false);
-  const [fieldError, setFieldError] = useState("");
-  const [validationErrors, setValidationErrors] = useState({});
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-    // Hapus error field yang sedang diubah
-    if (validationErrors[name]) {
-      setValidationErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[name];
-        return newErrors;
-      });
-    }
-    setFieldError("");
-  };
-
-  // Fungsi validasi form
-  const validateForm = () => {
-    const errors = {};
-    
-    // Validasi Tanggal Periksa - WAJIB DIISI & TIDAK BOLEH MELEBIHI HARI INI
-    if (!form.tanggal_periksa_stamp_paraf) {
-      errors.tanggal_periksa_stamp_paraf = "Tanggal periksa harus diisi";
-    } else if (isDateAfterToday(form.tanggal_periksa_stamp_paraf)) {
-      errors.tanggal_periksa_stamp_paraf = "Tanggal periksa tidak boleh melebihi hari ini";
-    }
-    
-    // Validasi Keluhan - WAJIB DIISI
-    if (!form.keluhan_pemeriksaan_tindakan_saran.trim()) {
-      errors.keluhan_pemeriksaan_tindakan_saran = "Keluhan / pemeriksaan / tindakan / saran harus diisi";
-    }
-    
-    // ✅ Validasi Tanggal Kembali - WAJIB DIISI (boleh melebihi hari ini / boleh di masa depan)
-    if (!form.tanggal_kembali) {
-      errors.tanggal_kembali = "Tanggal kembali harus diisi";
-    }
-    // HAPUS validasi isDateAfterToday untuk tanggal_kembali
-    
-    return errors;
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    // Jalankan validasi
-    const errors = validateForm();
-    if (Object.keys(errors).length > 0) {
-      setValidationErrors(errors);
-      setFieldError("Mohon lengkapi data yang wajib diisi dengan benar.");
-      return;
-    }
-    
-    setSaving(true);
-    try {
-      const payload = {
-        kehamilan_id: kehamilanId,
-        tanggal_periksa_stamp_paraf: form.tanggal_periksa_stamp_paraf,
-        keluhan_pemeriksaan_tindakan_saran:
-          form.keluhan_pemeriksaan_tindakan_saran.trim(),
-        tanggal_kembali: form.tanggal_kembali,
-      };
-
-      if (isEdit) {
-        await updateCatatanT1(catatan.id_catatan, payload);
-      } else {
-        await createCatatanT1(payload);
-      }
-      onSaved();
-      onClose();
-    } catch (err) {
-      const msg =
-        err.response?.data?.message || err.message || "Terjadi kesalahan";
-      setFieldError("Gagal menyimpan: " + msg);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-        onClick={onClose}
-      />
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg z-10 overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-4 bg-indigo-50 border-b border-indigo-100">
-          <div className="flex items-center gap-2 text-indigo-700">
-            <StickyNote size={18} />
-            <h2 className="font-bold text-sm">
-              {isEdit ? "Edit Catatan" : "Tambah Catatan Baru"}
-            </h2>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-1.5 rounded-full hover:bg-indigo-100 transition text-indigo-500"
-          >
-            <X size={16} />
-          </button>
-        </div>
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {/* Field Tanggal Periksa */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-              Tanggal Periksa / Stempel / Paraf <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="date"
-              name="tanggal_periksa_stamp_paraf"
-              value={form.tanggal_periksa_stamp_paraf}
-              onChange={handleChange}
-              max={new Date().toISOString().split("T")[0]}
-              className={`w-full border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 transition ${
-                validationErrors.tanggal_periksa_stamp_paraf
-                  ? "border-red-500 bg-red-50"
-                  : "border-gray-200"
-              }`}
-            />
-            {validationErrors.tanggal_periksa_stamp_paraf && (
-              <p className="text-xs text-red-500 font-medium mt-1">
-                {validationErrors.tanggal_periksa_stamp_paraf}
-              </p>
-            )}
-          </div>
-          
-          {/* Field Keluhan */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-              Keluhan / Pemeriksaan / Tindakan / Saran{" "}
-              <span className="text-red-500">*</span>
-            </label>
-            <textarea
-              name="keluhan_pemeriksaan_tindakan_saran"
-              value={form.keluhan_pemeriksaan_tindakan_saran}
-              onChange={handleChange}
-              placeholder="Tuliskan keluhan pasien, hasil pemeriksaan, tindakan yang dilakukan, atau saran dokter..."
-              rows={5}
-              className={`w-full border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 transition resize-none ${
-                validationErrors.keluhan_pemeriksaan_tindakan_saran
-                  ? "border-red-500 bg-red-50"
-                  : "border-gray-200"
-              }`}
-            />
-            {validationErrors.keluhan_pemeriksaan_tindakan_saran && (
-              <p className="text-xs text-red-500 font-medium mt-1">
-                {validationErrors.keluhan_pemeriksaan_tindakan_saran}
-              </p>
-            )}
-          </div>
-          
-          {/* Field Tanggal Kembali - Boleh di masa depan */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-              Tanggal Kembali (Kontrol Selanjutnya) <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="date"
-              name="tanggal_kembali"
-              value={form.tanggal_kembali}
-              onChange={handleChange}
-              // HAPUS max attribute - boleh pilih tanggal berapa saja (masa depan)
-              className={`w-full border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 transition ${
-                validationErrors.tanggal_kembali
-                  ? "border-red-500 bg-red-50"
-                  : "border-gray-200"
-              }`}
-            />
-            {validationErrors.tanggal_kembali && (
-              <p className="text-xs text-red-500 font-medium mt-1">
-                {validationErrors.tanggal_kembali}
-              </p>
-            )}
-          </div>
-          
-          {/* Error umum */}
-          {fieldError && (
-            <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-3 py-2">
-              <AlertCircle size={14} className="text-red-500 shrink-0" />
-              <p className="text-xs text-red-600">{fieldError}</p>
-            </div>
-          )}
-          
-          {/* Tombol aksi */}
-          <div className="flex gap-3 pt-1">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 py-2 rounded-xl border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50 transition"
-            >
-              Batal
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="flex-1 flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white py-2 rounded-xl text-sm font-semibold transition"
-            >
-              {saving ? (
-                <Loader2 className="animate-spin" size={15} />
-              ) : (
-                <Save size={15} />
-              )}
-              {saving
-                ? "Menyimpan..."
-                : isEdit
-                ? "Simpan Perubahan"
-                : "Tambah Catatan"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
-
 // ─── Komponen Utama ───────────────────────────────────────────────────────────
 
 export default function PemeriksaanDokterT1CompleteDetail() {
@@ -451,11 +204,7 @@ export default function PemeriksaanDokterT1CompleteDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const [catatanList, setCatatanList] = useState([]);
-  const [loadingCatatan, setLoadingCatatan] = useState(false);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editCatatan, setEditCatatan] = useState(null);
- const [canEdit, setCanEdit] = useState(false);
+  const [canEdit, setCanEdit] = useState(false);
   const [canDelete, setCanDelete] = useState(false);
    // ✅ Cek role user saat komponen mount
   useEffect(() => {
@@ -501,31 +250,6 @@ export default function PemeriksaanDokterT1CompleteDetail() {
     fetchData();
   }, [id]);
 
-  // ── Fetch catatan ──────────────────────────────────────────────────────
-  const fetchCatatan = useCallback(async () => {
-    if (!kehamilan) return;
-    setLoadingCatatan(true);
-    try {
-      const res = await getCatatanT1ByKehamilanId(kehamilan.id);
-      if (Array.isArray(res)) {
-        setCatatanList(res);
-      } else if (res && Array.isArray(res.data)) {
-        setCatatanList(res.data);
-      } else {
-        setCatatanList([]);
-      }
-    } catch (err) {
-      console.error("Error fetch catatan:", err);
-      setCatatanList([]);
-    } finally {
-      setLoadingCatatan(false);
-    }
-  }, [kehamilan]);
-
-  useEffect(() => {
-    fetchCatatan();
-  }, [fetchCatatan]);
-
   // ── Hapus pemeriksaan utama ────────────────────────────────────────────
   const handleDelete = async () => {
     // Pastikan ID tersedia
@@ -541,7 +265,7 @@ export default function PemeriksaanDokterT1CompleteDetail() {
 
     const result = await Swal.fire({
       title: "Hapus Data Pemeriksaan T1?",
-      html: "<p class='text-sm'>Apakah Anda yakin ingin menghapus semua data pemeriksaan Trimester 1 ini?</p><p class='text-xs text-red-600 mt-2'>⚠️ Seluruh Catatan Pelayanan pada Trimester ini juga akan ikut terhapus.</p>",
+      html: "<p class='text-sm'>Apakah Anda yakin ingin menghapus semua data pemeriksaan Trimester 1 ini?</p>",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#dc2626",
@@ -553,21 +277,13 @@ export default function PemeriksaanDokterT1CompleteDetail() {
     if (!result.isConfirmed) return;
 
     try {
-      // Hapus semua catatan terlebih dahulu
-      if (catatanList.length > 0) {
-        const deletePromises = catatanList.map((c) =>
-          deleteCatatanT1(c.id_catatan)
-        );
-        await Promise.all(deletePromises);
-      }
-
       // Hapus pemeriksaan utama
       await deleteDokterT1Complete(dokterId);
 
       await Swal.fire({
         icon: "success",
         title: "Berhasil!",
-        text: "Data pemeriksaan dan catatan terkait berhasil dihapus.",
+        text: "Data pemeriksaan berhasil dihapus.",
         timer: 2000,
         showConfirmButton: false,
       });
@@ -582,58 +298,6 @@ export default function PemeriksaanDokterT1CompleteDetail() {
         text: errorMsg,
       });
     }
-  };
-
-  // ── Hapus satu catatan ─────────────────────────────────────────────────
-  const handleDeleteCatatan = async (idCatatan) => {
-    if (!idCatatan) return;
-    const result = await Swal.fire({
-      title: "Hapus Catatan?",
-      text: "Apakah Anda yakin ingin menghapus catatan ini?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#dc2626",
-      cancelButtonColor: "#6b7280",
-      confirmButtonText: "Ya, Hapus",
-      cancelButtonText: "Batal",
-    });
-
-    if (!result.isConfirmed) return;
-
-    try {
-      await deleteCatatanT1(idCatatan);
-      await Swal.fire({
-        icon: "success",
-        title: "Berhasil!",
-        text: "Catatan berhasil dihapus.",
-        timer: 1500,
-        showConfirmButton: false,
-      });
-      fetchCatatan();
-    } catch (err) {
-      const errorMsg =
-        err.response?.data?.message || err.message || "Terjadi kesalahan";
-      Swal.fire({
-        icon: "error",
-        title: "Gagal Menghapus",
-        text: errorMsg,
-      });
-    }
-  };
-
-  const handleTambahCatatan = () => {
-    setEditCatatan(null);
-    setModalOpen(true);
-  };
-
-  const handleEditCatatan = (catatan) => {
-    setEditCatatan(catatan);
-    setModalOpen(true);
-  };
-
-  const handleModalClose = () => {
-    setModalOpen(false);
-    setEditCatatan(null);
   };
 
   // ── Loading ────────────────────────────────────────────────────────────
@@ -724,20 +388,14 @@ export default function PemeriksaanDokterT1CompleteDetail() {
               </p>
             </div>
           </div>
-           {/* ✅ Badge Role */}
-          <div className={`px-3 py-1 rounded-full text-xs font-semibold ${
-            canEdit ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
-          }`}>
-            {canEdit ? '✏️ Mode Edit (Dokter)' : '👁️ Mode Baca (Bidan)'}
-          </div>
         </div>
 
         {/* ✅ Informasi akses untuk BIDAN */}
         {!canEdit && (
           <div className="mb-6 p-3 bg-blue-50 rounded-lg border border-blue-200">
             <p className="text-sm text-blue-700 flex items-center gap-2">
-              <AlertCircle size={16} />
-              Anda login sebagai BIDAN. Data hanya dapat dilihat, tidak dapat diedit atau dihapus.
+              <Eye size={16} />
+              Anda dalam mode baca (Bidan). Data hanya dapat dilihat, tidak dapat diubah.
             </p>
           </div>
         )}
@@ -991,11 +649,11 @@ export default function PemeriksaanDokterT1CompleteDetail() {
                   </span>
                   {d.usg_kecurigaan_temuan_abnormal === "Ya" ? (
                     <span className="inline-flex items-center gap-1 text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-semibold">
-                      <XCircle size={10} /> Ya
+                      Ya
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-1 text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-semibold">
-                      <CheckCircle size={10} /> Tidak
+                      Tidak
                     </span>
                   )}
                 </div>
@@ -1199,11 +857,11 @@ export default function PemeriksaanDokterT1CompleteDetail() {
                 </span>
                 {lab?.skrining_jiwa_perlu_rujukan === "Ya" ? (
                   <span className="inline-flex items-center gap-1 text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-semibold w-fit">
-                    <XCircle size={10} /> Ya, Perlu Rujukan
+                    Ya, Perlu Rujukan
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1 text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-semibold w-fit">
-                    <CheckCircle size={10} /> Tidak Perlu
+                    Tidak Perlu
                   </span>
                 )}
               </div>
@@ -1232,124 +890,32 @@ export default function PemeriksaanDokterT1CompleteDetail() {
             </div>
           </DetailSection>
 
-          {/* Catatan Pelayanan */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-4 bg-indigo-50 border-b border-indigo-100">
-              <div className="flex items-center gap-2 text-indigo-700">
-                <StickyNote size={17} />
-                <span className="font-semibold text-sm">
-                  Catatan Pelayanan Trimester 1
-                </span>
-                {catatanList.length > 0 && (
-                  <span className="bg-indigo-200 text-indigo-800 text-xs font-bold px-2 py-0.5 rounded-full">
-                    {catatanList.length}
-                  </span>
-                )}
+          {/* Catatan Pemeriksaan */}
+          <DetailSection
+            icon={StickyNote}
+            title="Catatan Pemeriksaan"
+            colorCls="bg-amber-50 text-amber-700 border-amber-100"
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <InfoRow
+                label="Tanggal Periksa / Stempel / Paraf"
+                value={fmtDate(d.tanggal_periksa_stamp_paraf)}
+              />
+              <InfoRow
+                label="Tanggal Kembali"
+                value={fmtDate(d.tanggal_kembali)}
+              />
+              <div className="sm:col-span-2">
+                <InfoRow
+                  label="Keluhan / Pemeriksaan / Tindakan / Saran"
+                  value={d.keluhan_pemeriksaan_tindakan_saran}
+                />
               </div>
-              <button
-                type="button"
-                onClick={handleTambahCatatan}
-                className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-1.5 rounded-xl text-xs font-semibold transition shadow-sm"
-              >
-                <Plus size={14} /> Tambah Catatan
-              </button>
             </div>
-            <div className="p-5">
-              {loadingCatatan ? (
-                <div className="flex items-center justify-center py-8 gap-2 text-gray-400">
-                  <Loader2 className="animate-spin" size={20} />
-                  <span className="text-sm">Memuat catatan...</span>
-                </div>
-              ) : catatanList.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-10 text-center">
-                  <div className="w-14 h-14 bg-indigo-50 rounded-full flex items-center justify-center mb-3">
-                    <MessageSquarePlus size={24} className="text-indigo-300" />
-                  </div>
-                  <p className="text-sm font-medium text-gray-500 mb-1">
-                    Belum ada catatan pelayanan
-                  </p>
-                  <p className="text-xs text-gray-400 mb-4">
-                    Tambahkan catatan keluhan, tindakan, atau saran untuk
-                    kunjungan ini
-                  </p>
-                  <button
-                    type="button"
-                    onClick={handleTambahCatatan}
-                    className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition"
-                  >
-                    <Plus size={15} /> Tambah Catatan Pertama
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {catatanList.map((catatan, idx) => (
-                    <div
-                      key={catatan.id_catatan}
-                      className="group relative bg-gray-50 hover:bg-indigo-50/40 border border-gray-100 hover:border-indigo-200 rounded-2xl p-4 transition-all"
-                    >
-                      <div className="absolute top-4 left-4 w-6 h-6 bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center text-xs font-bold">
-                        {idx + 1}
-                      </div>
-                      <div className="ml-9">
-                        <div className="flex flex-wrap items-center gap-3 mb-3">
-                          {catatan.tanggal_periksa_stamp_paraf && (
-                            <div className="flex items-center gap-1.5 text-xs text-indigo-600 bg-indigo-100 px-2.5 py-1 rounded-full font-medium">
-                              <Calendar size={11} />
-                              {fmtDate(catatan.tanggal_periksa_stamp_paraf)}
-                            </div>
-                          )}
-                          {catatan.tanggal_kembali && (
-                            <div className="flex items-center gap-1.5 text-xs text-teal-600 bg-teal-100 px-2.5 py-1 rounded-full font-medium">
-                              <CalendarCheck size={11} />
-                              Kembali: {fmtDate(catatan.tanggal_kembali)}
-                            </div>
-                          )}
-                        </div>
-                        <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
-                          {catatan.keluhan_pemeriksaan_tindakan_saran || (
-                            <span className="italic text-gray-400">
-                              Tidak ada isi catatan
-                            </span>
-                          )}
-                        </p>
-                      </div>
-                      <div className="absolute top-3 right-3 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button
-                          type="button"
-                          onClick={() => handleEditCatatan(catatan)}
-                          className="p-1.5 rounded-lg bg-white border border-amber-200 text-amber-600 hover:bg-amber-50 transition shadow-sm"
-                          title="Edit catatan"
-                        >
-                          <Pencil size={13} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            handleDeleteCatatan(catatan.id_catatan)
-                          }
-                          className="p-1.5 rounded-lg bg-white border border-red-200 text-red-500 hover:bg-red-50 transition shadow-sm"
-                          title="Hapus catatan"
-                        >
-                          <Trash2 size={13} />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
+          </DetailSection>
         </div>
       </div>
-
-      {modalOpen && (
-        <ModalCatatan
-          kehamilanId={kehamilan?.id}
-          catatan={editCatatan}
-          onClose={handleModalClose}
-          onSaved={fetchCatatan}
-        />
-      )}
     </MainLayout>
   );
 }
+

@@ -1,22 +1,25 @@
-import React, { useEffect, useState, useMemo } from "react";
-import { useParams } from "react-router-dom";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import MainLayout from "../../components/Layout/MainLayout";
 import AlertNotification from "../../components/AlertNotification";
 import { PelayananGiziService } from "../../services/Pelayanan-gizi-anak";
-import { 
-  Plus, Baby, Loader2, Check, X, Save, 
-  Utensils, Droplets, Info, ChevronRight, Calendar
+import { getAnakById } from "../../services/Anak";
+import {
+  Plus, Baby, Loader2, Check, X, Save,
+  Utensils, Droplets, Info, ChevronRight, Calendar, ArrowLeft, User
 } from 'lucide-react';
 
 const PelayananGiziIndex = () => {
   const { id: anakId } = useParams();
-  
+  const navigate = useNavigate();
+
   // --- STATE MANAGEMENT ---
   const [riwayat, setRiwayat] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [notification, setNotification] = useState(null);
+  const [anakData, setAnakData] = useState(null);
 
   const authUser = useMemo(() => {
     try {
@@ -27,12 +30,25 @@ const PelayananGiziIndex = () => {
     }
   }, []);
 
+  const calculateAgeInMonths = useCallback((birthDateString) => {
+    if (!birthDateString) return 1;
+    const birth = new Date(birthDateString);
+    const now = new Date();
+    const diffYears = now.getFullYear() - birth.getFullYear();
+    const diffMonths = now.getMonth() - birth.getMonth();
+    let months = diffYears * 12 + diffMonths;
+    if (now.getDate() < birth.getDate()) months--;
+    return months < 1 ? 1 : months > 60 ? 60 : months;
+  }, []);
+
+  const ageNow = anakData ? calculateAgeInMonths(anakData.tanggal_lahir) : null;
+
   const initialForm = {
-    bulan_ke: 1,
+    bulan_ke: ageNow || 1,
     asi: {
       frekuensi_menyusui: "",
       posisi_menyusui: "baik",
-      asiperah: "tidak" 
+      asiperah: "tidak"
     },
     mpasi: {
       sudah_mpasi: false,
@@ -54,7 +70,8 @@ const PelayananGiziIndex = () => {
   const [formData, setFormData] = useState(initialForm);
 
   // --- LOGIC FETCH & TABEL ---
-  const kolomBulan = ["0", "1", "2", "3", "4", "5", "6 - 8", "9 - 11", "12 - 23", "23 - 59"];
+  // Bulan 0 dihapus karena tidak relevan secara klinis (bayi 0 bulan hanya ASI)
+  const kolomBulan = ["1", "2", "3", "4", "5", "6 - 8", "9 - 11", "12 - 23", "23 - 59"];
 
   const fetchRiwayat = async () => {
     setLoading(true);
@@ -68,7 +85,30 @@ const PelayananGiziIndex = () => {
     }
   };
 
-  useEffect(() => { if (anakId) fetchRiwayat(); }, [anakId]);
+  const fetchAnak = async () => {
+    try {
+      const res = await getAnakById(anakId);
+      if (res && res.data) setAnakData(res.data);
+    } catch (err) {
+      console.error("Gagal mengambil data anak:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (anakId) {
+      fetchRiwayat();
+      fetchAnak();
+    }
+  }, [anakId]);
+
+  const handleOpenModal = () => {
+    const currentAge = anakData ? calculateAgeInMonths(anakData.tanggal_lahir) : 1;
+    setFormData({
+      ...initialForm,
+      bulan_ke: currentAge
+    });
+    setIsModalOpen(true);
+  };
 
   const isMatchBulan = (bulanData, labelKolom) => {
     if (labelKolom.includes("-")) {
@@ -89,46 +129,46 @@ const PelayananGiziIndex = () => {
   };
 
   // --- FORM HANDLERS ---
-// --- FORM HANDLERS ---
-const requestPayload = useMemo(() => {
-  const formatFrekuensi = () => {
-    const utama = formData.mpasi.frekuensi_makan.makanan_utama || "0";
-    const selingan = formData.mpasi.frekuensi_makan.makanan_selingan || "0";
-    const cleanUtama = utama.replace('/hari', '').toLowerCase();
-    const cleanSelingan = selingan.replace('/hari', '').toLowerCase();
-    return `${cleanUtama} utama, ${cleanSelingan} selingan`;
-  };
+  // --- FORM HANDLERS ---
+  const requestPayload = useMemo(() => {
+    const formatFrekuensi = () => {
+      const utama = formData.mpasi.frekuensi_makan.makanan_utama || "0";
+      const selingan = formData.mpasi.frekuensi_makan.makanan_selingan || "0";
+      const cleanUtama = utama.replace('/hari', '').toLowerCase();
+      const cleanSelingan = selingan.replace('/hari', '').toLowerCase();
+      return `${cleanUtama} utama, ${cleanSelingan} selingan`;
+    };
 
-  const bulan = parseInt(formData.bulan_ke);
+    const bulan = parseInt(formData.bulan_ke);
 
-  return {
-    anak_id: parseInt(anakId),
-    tanggal: new Date().toISOString().split('T')[0],
-    tenaga_kesehatan_id: parseInt(authUser.id || authUser.user_id || 0),
-    bulan_ke: bulan,
-    lokasi: authUser.lokasi || "Puskesmas Medan",
+    return {
+      anak_id: parseInt(anakId),
+      tanggal: new Date().toISOString().split('T')[0],
+      tenaga_kesehatan_id: parseInt(authUser.id || authUser.user_id || 0),
+      bulan_ke: bulan,
+      lokasi: authUser.lokasi || "Puskesmas Medan",
 
-    asi: bulan < 24 ? {
-      frekuensi_menyusui: parseInt(formData.asi.frekuensi_menyusui) || 0,
-      posisi_menyusui: formData.asi.posisi_menyusui,
-      asi_perah: formData.asi.asiperah
-    } : null,
+      asi: bulan < 24 ? {
+        frekuensi_menyusui: parseInt(formData.asi.frekuensi_menyusui) || 0,
+        posisi_menyusui: formData.asi.posisi_menyusui,
+        asi_perah: formData.asi.asiperah
+      } : null,
 
-    mpasi: (bulan >= 6) ? {
-      diberikan_mp_asi: formData.mpasi.sudah_mpasi,
-      variasi_mpasi: formData.mpasi.varian_mpasi.map(v => v.toLowerCase()),
-      jumlah_makan_perporsi: formData.mpasi.jumlah_makan || "-",
-      frekuensi_makan_perhari: formData.mpasi.sudah_mpasi ? formatFrekuensi() : "-"
-    } : null,
-    
-    obat_cacing: (bulan >= 24) ? formData.obat_cacing : null,
-    jenis_pemberian_susu: bulan < 24 ? formData.jenis_pemberian_susu : "",
-    masih_menyusui: (bulan >= 6) ? formData.masih_menyusui : null,
-    menggunakan_formula: (bulan < 24) ? (formData.jenis_pemberian_susu === "ASI + Formula" || formData.jenis_pemberian_susu === "Formula") : false,
-    alasan_formula: (bulan < 24 && (formData.jenis_pemberian_susu === "ASI + Formula" || formData.jenis_pemberian_susu === "Formula")) ? formData.alasan_formula : "",
-    usia_mulai_mpasi: (bulan >= 6 && formData.mpasi.sudah_mpasi) ? parseInt(formData.usia_mulai_mpasi) : null
-  };
-}, [formData, anakId, authUser]);
+      mpasi: (bulan >= 6) ? {
+        diberikan_mp_asi: formData.mpasi.sudah_mpasi,
+        variasi_mpasi: formData.mpasi.varian_mpasi.map(v => v.toLowerCase()),
+        jumlah_makan_perporsi: formData.mpasi.jumlah_makan || "-",
+        frekuensi_makan_perhari: formData.mpasi.sudah_mpasi ? formatFrekuensi() : "-"
+      } : null,
+
+      obat_cacing: (bulan >= 24) ? formData.obat_cacing : null,
+      jenis_pemberian_susu: bulan < 24 ? formData.jenis_pemberian_susu : "",
+      masih_menyusui: (bulan >= 6) ? formData.masih_menyusui : null,
+      menggunakan_formula: (bulan < 24) ? (formData.jenis_pemberian_susu === "ASI + Formula" || formData.jenis_pemberian_susu === "Formula") : false,
+      alasan_formula: (bulan < 24 && (formData.jenis_pemberian_susu === "ASI + Formula" || formData.jenis_pemberian_susu === "Formula")) ? formData.alasan_formula : "",
+      usia_mulai_mpasi: (bulan >= 6 && formData.mpasi.sudah_mpasi) ? parseInt(formData.usia_mulai_mpasi) : null
+    };
+  }, [formData, anakId, authUser]);
 
   const handleSave = async () => {
     const bulan = parseInt(formData.bulan_ke);
@@ -174,32 +214,35 @@ const requestPayload = useMemo(() => {
   };
   return (
     <MainLayout>
-      <AlertNotification 
-        notification={notification} 
-        onClose={() => setNotification(null)} 
+      <AlertNotification
+        notification={notification}
+        onClose={() => setNotification(null)}
         onRetry={notification?.type === "error" ? () => {
           setNotification(null);
           setIsModalOpen(true);
         } : null}
       />
       <div className="max-w-7xl mx-auto p-4 md:p-8 bg-slate-50 min-h-screen font-sans">
-        
+
+        {/* NAVIGASI KEMBALI */}
+        <button
+          onClick={() => navigate(`/data-anak/dashboard/${anakId}`)}
+          className="flex items-center gap-2 px-6 py-2 border border-blue-600 text-blue-600 hover:bg-blue-50 rounded-full font-medium text-sm transition-all group w-fit mb-6 mt-2"
+        >
+          <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Kembali
+        </button>
+
         {/* HEADER SECTION */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
           <div>
-            <nav className="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-              <span>Rekam Medis</span>
-              <ChevronRight size={12} />
-              <span className="text-blue-600">Monitoring Gizi</span>
-            </nav>
             <h1 className="text-3xl font-bold text-slate-800 tracking-tight flex items-center gap-3">
               <Baby className="text-blue-600" size={32} />
               Monitoring Gizi & Nutrisi
             </h1>
             <p className="text-slate-500 text-sm mt-1">Pantau perkembangan asupan nutrisi anak secara berkala.</p>
           </div>
-          <button 
-            onClick={() => setIsModalOpen(true)}
+          <button
+            onClick={handleOpenModal}
             className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold text-sm shadow-md transition-all active:scale-95"
           >
             <Plus size={18} /> Tambah Data Pelayanan
@@ -240,7 +283,7 @@ const requestPayload = useMemo(() => {
                   <DataRow label="Variasi: Karbohidrat" type="check" kolom={kolomBulan} getContent={getCellContent} fn={(d) => d.MPASI?.variasi_mpasi?.some(v => ["nasi", "beras", "bubur", "makanan pokok"].includes(v.toLowerCase()))} />
                   <DataRow label="Variasi: Protein Hewani/Nabati" type="check" kolom={kolomBulan} getContent={getCellContent} fn={(d) => d.MPASI?.variasi_mpasi?.some(v => ["lauk", "protein", "ayam", "ikan", "telur"].includes(v.toLowerCase()))} />
                   <DataRow label="Variasi: Sayur & Buah" type="check" kolom={kolomBulan} getContent={getCellContent} fn={(d) => d.MPASI?.variasi_mpasi?.some(v => ["sayur", "buah"].includes(v.toLowerCase()))} />
-                  
+
                   <SectionHeader label="Porsi & Jadwal Makan" />
                   <DataRow label="Jumlah Porsi per Makan" type="text" kolom={kolomBulan} getContent={getCellContent} fn={(d) => d.MPASI?.jumlah_makan_perporsi} />
                   <DataRow label="Frekuensi Makan per Hari" type="text" kolom={kolomBulan} getContent={getCellContent} fn={(d) => d.MPASI?.frekuensi_makan_perhari} />
@@ -260,12 +303,19 @@ const requestPayload = useMemo(() => {
         {isModalOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm overflow-y-auto">
             <div className="bg-white w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in duration-200">
-              
+
               {/* MODAL HEADER */}
               <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-10">
                 <div>
                   <h2 className="text-xl font-bold text-slate-800">Form Input Pelayanan Gizi</h2>
-                  <p className="text-xs text-slate-400 mt-1 uppercase font-bold tracking-widest">ID Anak: {anakId} • Petugas: {authUser.nama}</p>
+                  <div className="flex items-center gap-3 mt-1">
+                    <p className="text-xs text-slate-400 uppercase font-bold tracking-widest">Petugas: {authUser.nama}</p>
+                    {ageNow && (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-blue-700 text-[10px] font-black rounded-full border border-blue-100">
+                        <User size={10} /> Usia Anak: <strong>{ageNow} Bulan</strong>
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400">
                   <X size={20} />
@@ -274,14 +324,9 @@ const requestPayload = useMemo(() => {
 
               {/* MODAL BODY */}
               <div className="p-8 overflow-y-auto custom-scrollbar bg-slate-50/30">
-                
+
                 {/* INFO BANNER */}
-                <div className="flex items-start gap-4 bg-blue-50 p-4 rounded-2xl border border-blue-100 mb-8">
-                  <Info size={20} className="text-blue-600 shrink-0 mt-0.5" />
-                  <div className="text-sm text-blue-800 leading-relaxed">
-                    <strong>Informasi:</strong> Data yang Anda masukkan akan digunakan oleh sistem AI untuk menghasilkan saran medis dan jadwal kunjungan berikutnya secara otomatis.
-                  </div>
-                </div>
+
 
                 {/* EDUCATIONAL/SCHEDULE BANNER FOR OBAT CACING */}
                 {parseInt(formData.bulan_ke) < 24 ? (
@@ -295,12 +340,12 @@ const requestPayload = useMemo(() => {
                   <div className="flex items-start gap-4 bg-rose-50 p-4 rounded-2xl border border-rose-100 mb-6">
                     <Info size={20} className="text-rose-600 shrink-0 mt-0.5" />
                     <div className="text-sm text-rose-800 leading-relaxed">
-                    <strong>🚨 Jadwal Suplementasi Obat Cacing:</strong> Anak berada di usia <strong>{`${formData.bulan_ke} bulan >= 24 bulan`}</strong>. Jadwalkan pemberian obat cacing dan catat statusnya di bawah.</div>
+                      <strong>🚨 Jadwal Suplementasi Obat Cacing:</strong> Anak berada di usia <strong>{`${formData.bulan_ke} bulan >= 24 bulan`}</strong>. Jadwalkan pemberian obat cacing dan catat statusnya di bawah.</div>
                   </div>
                 )}
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  
+
                   {/* LEFT COLUMN: BASIC & ASI */}
                   <div className="space-y-6">
                     <section className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
@@ -308,14 +353,16 @@ const requestPayload = useMemo(() => {
                         <Calendar size={18} className="text-blue-500" /> Waktu Kunjungan
                       </h4>
                       <div className="space-y-1">
-                        <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Bulan Ke-</label>
-                        <select 
+                        <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                          Bulan Ke-{ageNow ? ` (Usia Sekarang: ${ageNow} Bulan)` : ""}
+                        </label>
+                        <select
                           className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-semibold outline-none focus:ring-2 ring-blue-100 transition-all"
                           value={formData.bulan_ke}
                           onChange={(e) => {
                             const newBulan = parseInt(e.target.value);
                             setFormData({
-                              ...formData, 
+                              ...formData,
                               bulan_ke: newBulan,
                               mpasi: {
                                 ...formData.mpasi,
@@ -324,7 +371,11 @@ const requestPayload = useMemo(() => {
                             });
                           }}
                         >
-                          {[...Array(60)].map((_, m) => <option key={m} value={m + 1}>Bulan {m + 1}</option>)}
+                          {[...Array(60)].map((_, m) => (
+                            <option key={m} value={m + 1}>
+                              Bulan {m + 1}{ageNow === m + 1 ? " ← Usia Sekarang" : ""}
+                            </option>
+                          ))}
                         </select>
                       </div>
                     </section>
@@ -333,10 +384,10 @@ const requestPayload = useMemo(() => {
                         <h4 className="text-sm font-bold text-slate-800 mb-2 flex items-center gap-2">
                           <Droplets size={18} className="text-blue-500" /> Pola Pemberian ASI
                         </h4>
-                        
+
                         <div className="space-y-1">
                           <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Jenis Pemberian Susu</label>
-                          <select 
+                          <select
                             className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none"
                             value={formData.jenis_pemberian_susu}
                             onChange={(e) => {
@@ -358,10 +409,10 @@ const requestPayload = useMemo(() => {
                         {(formData.jenis_pemberian_susu === "ASI + Formula" || formData.jenis_pemberian_susu === "Formula") && (
                           <div className="space-y-1 animate-in fade-in duration-200">
                             <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Alasan Pemberian Formula</label>
-                            <select 
+                            <select
                               className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none"
                               value={formData.alasan_formula}
-                              onChange={(e) => setFormData({...formData, alasan_formula: e.target.value})}
+                              onChange={(e) => setFormData({ ...formData, alasan_formula: e.target.value })}
                             >
                               <option value="">Pilih Alasan...</option>
                               <option value="Produksi ASI kurang">Produksi ASI kurang</option>
@@ -375,21 +426,21 @@ const requestPayload = useMemo(() => {
 
                         <div className="space-y-1">
                           <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Frekuensi Menyusui (Kali/Hari)</label>
-                          <input 
-                            type="number" placeholder="Contoh: 8" 
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:bg-white focus:ring-2 ring-blue-100 outline-none transition-all" 
-                            value={formData.asi.frekuensi_menyusui} 
-                            onChange={(e) => setFormData({...formData, asi: {...formData.asi, frekuensi_menyusui: e.target.value}})} 
+                          <input
+                            type="number" placeholder="Contoh: 8"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:bg-white focus:ring-2 ring-blue-100 outline-none transition-all"
+                            value={formData.asi.frekuensi_menyusui}
+                            onChange={(e) => setFormData({ ...formData, asi: { ...formData.asi, frekuensi_menyusui: e.target.value } })}
                           />
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-1">
                             <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Posisi Menyusu</label>
-                            <select 
+                            <select
                               className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none"
                               value={formData.asi.posisi_menyusui}
-                              onChange={(e) => setFormData({...formData, asi: {...formData.asi, posisi_menyusui: e.target.value}})}
+                              onChange={(e) => setFormData({ ...formData, asi: { ...formData.asi, posisi_menyusui: e.target.value } })}
                             >
                               <option value="baik">Sudah Baik</option>
                               <option value="tidak">Perlu Perbaikan</option>
@@ -397,10 +448,10 @@ const requestPayload = useMemo(() => {
                           </div>
                           <div className="space-y-1">
                             <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Gunakan ASIP?</label>
-                            <select 
+                            <select
                               className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none"
                               value={formData.asi.asiperah}
-                              onChange={(e) => setFormData({...formData, asi: {...formData.asi, asiperah: e.target.value}})}
+                              onChange={(e) => setFormData({ ...formData, asi: { ...formData.asi, asiperah: e.target.value } })}
                             >
                               <option value="tidak">Tidak</option>
                               <option value="ya">Ya</option>
@@ -417,10 +468,10 @@ const requestPayload = useMemo(() => {
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-1">
                             <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Masih Mendapat ASI?</label>
-                            <select 
+                            <select
                               className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none"
                               value={formData.masih_menyusui ? "ya" : "tidak"}
-                              onChange={(e) => setFormData({...formData, masih_menyusui: e.target.value === "ya"})}
+                              onChange={(e) => setFormData({ ...formData, masih_menyusui: e.target.value === "ya" })}
                             >
                               <option value="ya">Ya</option>
                               <option value="tidak">Tidak</option>
@@ -429,7 +480,7 @@ const requestPayload = useMemo(() => {
 
                           <div className="space-y-1">
                             <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Jenis Pemberian Susu</label>
-                            <select 
+                            <select
                               className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none"
                               value={formData.jenis_pemberian_susu}
                               onChange={(e) => {
@@ -452,10 +503,10 @@ const requestPayload = useMemo(() => {
                         {(formData.jenis_pemberian_susu === "ASI + Formula" || formData.jenis_pemberian_susu === "Formula") && (
                           <div className="space-y-1 animate-in fade-in duration-200">
                             <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Alasan Pemberian Formula</label>
-                            <select 
+                            <select
                               className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none"
                               value={formData.alasan_formula}
-                              onChange={(e) => setFormData({...formData, alasan_formula: e.target.value})}
+                              onChange={(e) => setFormData({ ...formData, alasan_formula: e.target.value })}
                             >
                               <option value="">Pilih Alasan...</option>
                               <option value="Produksi ASI kurang">Produksi ASI kurang</option>
@@ -469,21 +520,21 @@ const requestPayload = useMemo(() => {
 
                         <div className="space-y-1">
                           <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Frekuensi Menyusui (Kali/Hari)</label>
-                          <input 
-                            type="number" placeholder="Contoh: 8" 
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:bg-white focus:ring-2 ring-blue-100 outline-none transition-all" 
-                            value={formData.asi.frekuensi_menyusui} 
-                            onChange={(e) => setFormData({...formData, asi: {...formData.asi, frekuensi_menyusui: e.target.value}})} 
+                          <input
+                            type="number" placeholder="Contoh: 8"
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:bg-white focus:ring-2 ring-blue-100 outline-none transition-all"
+                            value={formData.asi.frekuensi_menyusui}
+                            onChange={(e) => setFormData({ ...formData, asi: { ...formData.asi, frekuensi_menyusui: e.target.value } })}
                           />
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-1">
                             <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Posisi Menyusu</label>
-                            <select 
+                            <select
                               className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none"
                               value={formData.asi.posisi_menyusui}
-                              onChange={(e) => setFormData({...formData, asi: {...formData.asi, posisi_menyusui: e.target.value}})}
+                              onChange={(e) => setFormData({ ...formData, asi: { ...formData.asi, posisi_menyusui: e.target.value } })}
                             >
                               <option value="baik">Sudah Baik</option>
                               <option value="tidak">Perlu Perbaikan</option>
@@ -491,10 +542,10 @@ const requestPayload = useMemo(() => {
                           </div>
                           <div className="space-y-1">
                             <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Gunakan ASIP?</label>
-                            <select 
+                            <select
                               className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none"
                               value={formData.asi.asiperah}
-                              onChange={(e) => setFormData({...formData, asi: {...formData.asi, asiperah: e.target.value}})}
+                              onChange={(e) => setFormData({ ...formData, asi: { ...formData.asi, asiperah: e.target.value } })}
                             >
                               <option value="tidak">Tidak</option>
                               <option value="ya">Ya</option>
@@ -509,10 +560,10 @@ const requestPayload = useMemo(() => {
                         </h4>
                         <div className="space-y-1">
                           <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Masih Menyusui?</label>
-                          <select 
+                          <select
                             className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none"
                             value={formData.masih_menyusui ? "ya" : "tidak"}
-                            onChange={(e) => setFormData({...formData, masih_menyusui: e.target.value === "ya"})}
+                            onChange={(e) => setFormData({ ...formData, masih_menyusui: e.target.value === "ya" })}
                           >
                             <option value="ya">Ya</option>
                             <option value="tidak">Tidak</option>
@@ -530,11 +581,11 @@ const requestPayload = useMemo(() => {
                         <div className="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-100">
                           <span className="text-xs font-semibold text-slate-600">Apakah obat cacing sudah diberikan?</span>
                           <div className="flex bg-slate-200/60 p-0.5 rounded-lg">
-                            {[ { l: 'Sudah', v: true }, { l: 'Belum', v: false } ].map(item => (
+                            {[{ l: 'Sudah', v: true }, { l: 'Belum', v: false }].map(item => (
                               <button
                                 key={item.l}
                                 type="button"
-                                onClick={() => setFormData({...formData, obat_cacing: item.v})}
+                                onClick={() => setFormData({ ...formData, obat_cacing: item.v })}
                                 className={`px-4 py-1.5 text-[10px] font-bold rounded-md transition-all ${formData.obat_cacing === item.v ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500'}`}
                               >
                                 {item.l.toUpperCase()}
@@ -563,11 +614,11 @@ const requestPayload = useMemo(() => {
                             <Utensils size={18} className="text-orange-500" /> Status MPASI
                           </h4>
                           <div className="flex bg-slate-100 p-1 rounded-lg">
-                            {[ { l: 'Sudah', v: true }, { l: 'Belum', v: false } ].map(item => (
-                              <button 
+                            {[{ l: 'Sudah', v: true }, { l: 'Belum', v: false }].map(item => (
+                              <button
                                 key={item.l}
                                 type="button"
-                                onClick={() => setFormData({...formData, mpasi: {...formData.mpasi, sudah_mpasi: item.v}})}
+                                onClick={() => setFormData({ ...formData, mpasi: { ...formData.mpasi, sudah_mpasi: item.v } })}
                                 className={`px-4 py-1.5 text-[10px] font-bold rounded-md transition-all ${formData.mpasi.sudah_mpasi === item.v ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}
                               >
                                 {item.l.toUpperCase()}
@@ -587,15 +638,15 @@ const requestPayload = useMemo(() => {
 
                         {formData.mpasi.sudah_mpasi ? (
                           <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-                            
+
                             <div className="space-y-1">
                               <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Usia Mulai MPASI (Bulan)</label>
-                              <input 
-                                type="number" 
-                                placeholder="Contoh: 6" 
-                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:bg-white focus:ring-2 ring-orange-100 outline-none transition-all" 
-                                value={formData.usia_mulai_mpasi} 
-                                onChange={(e) => setFormData({...formData, usia_mulai_mpasi: e.target.value})} 
+                              <input
+                                type="number"
+                                placeholder="Contoh: 6"
+                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:bg-white focus:ring-2 ring-orange-100 outline-none transition-all"
+                                value={formData.usia_mulai_mpasi}
+                                onChange={(e) => setFormData({ ...formData, usia_mulai_mpasi: e.target.value })}
                               />
                             </div>
 
@@ -605,14 +656,14 @@ const requestPayload = useMemo(() => {
                                 {['Nasi', 'Sayur', 'Buah', 'Lauk Pauk', 'Lemak'].map(item => {
                                   const isSelected = formData.mpasi.varian_mpasi.includes(item);
                                   return (
-                                    <button 
-                                      key={item} 
+                                    <button
+                                      key={item}
                                       type="button"
                                       onClick={() => {
-                                        const next = isSelected 
-                                          ? formData.mpasi.varian_mpasi.filter(i => i !== item) 
+                                        const next = isSelected
+                                          ? formData.mpasi.varian_mpasi.filter(i => i !== item)
                                           : [...formData.mpasi.varian_mpasi, item];
-                                        setFormData({...formData, mpasi: {...formData.mpasi, varian_mpasi: next}});
+                                        setFormData({ ...formData, mpasi: { ...formData.mpasi, varian_mpasi: next } });
                                       }}
                                       className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${isSelected ? 'bg-orange-50 border-orange-200 text-orange-600' : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'}`}
                                     >
@@ -626,10 +677,10 @@ const requestPayload = useMemo(() => {
                             <div className="space-y-4">
                               <div className="space-y-1">
                                 <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Porsi per Makan</label>
-                                <select 
+                                <select
                                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 ring-orange-100 transition-all"
                                   value={formData.mpasi.jumlah_makan}
-                                  onChange={(e) => setFormData({...formData, mpasi: {...formData.mpasi, jumlah_makan: e.target.value}})}
+                                  onChange={(e) => setFormData({ ...formData, mpasi: { ...formData.mpasi, jumlah_makan: e.target.value } })}
                                 >
                                   <option value="">Pilih Ukuran Porsi...</option>
                                   <option value="2 - 3 sdm (1/2 mangkok ukuran 250 ml)">2 - 3 sdm (1/2 mangkok 250 ml)</option>
@@ -642,10 +693,10 @@ const requestPayload = useMemo(() => {
                               <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1">
                                   <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Makanan Utama</label>
-                                  <select 
+                                  <select
                                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 ring-orange-100"
                                     value={formData.mpasi.frekuensi_makan.makanan_utama}
-                                    onChange={(e) => setFormData({...formData, mpasi: {...formData.mpasi, frekuensi_makan: {...formData.mpasi.frekuensi_makan, makanan_utama: e.target.value}}})}
+                                    onChange={(e) => setFormData({ ...formData, mpasi: { ...formData.mpasi, frekuensi_makan: { ...formData.mpasi.frekuensi_makan, makanan_utama: e.target.value } } })}
                                   >
                                     <option value="">Frekuensi...</option>
                                     <option value="1x/hari">1x / hari</option>
@@ -655,10 +706,10 @@ const requestPayload = useMemo(() => {
                                 </div>
                                 <div className="space-y-1">
                                   <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Selingan</label>
-                                  <select 
+                                  <select
                                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:ring-2 ring-orange-100"
                                     value={formData.mpasi.frekuensi_makan.makanan_selingan}
-                                    onChange={(e) => setFormData({...formData, mpasi: {...formData.mpasi, frekuensi_makan: {...formData.mpasi.frekuensi_makan, makanan_selingan: e.target.value}}})}
+                                    onChange={(e) => setFormData({ ...formData, mpasi: { ...formData.mpasi, frekuensi_makan: { ...formData.mpasi.frekuensi_makan, makanan_selingan: e.target.value } } })}
                                   >
                                     <option value="">Frekuensi...</option>
                                     <option value="0x/hari">Tidak Ada</option>
@@ -683,15 +734,15 @@ const requestPayload = useMemo(() => {
 
               {/* MODAL FOOTER */}
               <div className="p-6 border-t border-slate-100 bg-white flex justify-end items-center gap-3">
-                <button 
-                  onClick={() => setIsModalOpen(false)} 
+                <button
+                  onClick={() => setIsModalOpen(false)}
                   className="px-6 py-2.5 text-slate-500 font-bold text-sm hover:bg-slate-50 rounded-xl transition-all"
                 >
                   Batal
                 </button>
-                <button 
-                  onClick={handleSave} 
-                  disabled={submitting} 
+                <button
+                  onClick={handleSave}
+                  disabled={submitting}
                   className="px-8 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm shadow-lg shadow-blue-100 transition-all flex items-center gap-2 disabled:opacity-50"
                 >
                   {submitting ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}

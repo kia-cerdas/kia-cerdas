@@ -44,26 +44,29 @@ func (m *Main) GetAllRequestPerubahanJadwal() (
 func (m *Main) RequestPerubahanJadwal(
 	userID int32,
 	jadwalID uint,
-	tanggalBaru string,
+	jadwalLayananID int32,
 	alasan string,
 ) error {
 
 	jadwal, err :=
 		m.repository.GetJadwalByID(jadwalID)
 
+	jadwalLayanan, err := m.repository.GetJadwalLayananByID(
+		jadwalLayananID,
+	)
 	if err != nil {
 		return err
 	}
 
 	request := models.RequestPerubahanImunisasi{
 		IDJadwalImunisasi: int32(jadwalID),
-		IDStatusRequest:   2, // pending
+		IDStatusRequest:   2,
 		TanggalSebelum: jadwal.TanggalEstimasi.
 			Format("2006-01-02"),
-		TanggalBaru: tanggalBaru,
-		Alasan:      alasan,
+		TanggalBaru: jadwalLayanan.Tanggal.
+			Format("2006-01-02"),
+		Alasan: alasan,
 	}
-
 	return m.repository.
 		CreateRequestPerubahanJadwal(
 			&request,

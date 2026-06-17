@@ -68,8 +68,8 @@ function normalizeRisk(risk) {
   if (!risk || risk.trim() === "") return "Belum Diperiksa";
   const upperRisk = risk.toUpperCase();
   if (upperRisk === "PERLU RUJUKAN" || upperRisk === "TINGGI") return "Tinggi";
-  if (upperRisk === "PERLU TINDAKAN" || upperRisk === "SEDANG" || upperRisk === "SEDAMNG") return "Sedang";
-  if (upperRisk === "NORMAL") return "Normal";
+  if (upperRisk === "PERLU TINDAKAN" || upperRisk === "SEDANG") return "Sedang";
+  if (upperRisk === "NORMAL" || upperRisk === "RENDAH" || upperRisk === "RISIKO RENDAH") return "Normal";
   return "Belum Diperiksa";
 }
 function getFilterFromRisk(risk) {
@@ -568,7 +568,7 @@ export default function Dashboard() {
           fontSize: 13,
           color: "#0c4a6e"
         }}>
-          <span>📍</span>
+          <span></span>
           <span>
             Menampilkan data untuk <strong>{user.desa_nama || 'Desa Anda'}</strong>
             {user.role === 'superadmin' && (
@@ -596,7 +596,7 @@ export default function Dashboard() {
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               <div style={{ background: "rgba(255,255,255,0.2)", borderRadius: 12, padding: 8 }}>{icons.calendar}</div>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 500, opacity: 0.9 }}>Jadwal Layanan Hari Ini</div>
+                <div style={{ fontSize: 14, fontWeight: 500, opacity: 0.9 }}>Jadwal Layanan Imunisasi Hari Ini</div>
                 <div style={{ fontSize: 28, fontWeight: "bold" }}>{todayScheduleCount} sesi</div>
                 <div style={{ fontSize: 11, opacity: 0.7 }}>Klik tombol untuk kelola jadwal</div>
               </div>
@@ -709,7 +709,7 @@ export default function Dashboard() {
 
               {/* Penjelasan tambahan */}
               <div style={{ fontSize: 10, color: "#64748b", marginTop: 12, textAlign: "center", background: "#f1f5f9", padding: "6px", borderRadius: 6 }}>
-                💡 Klik batang untuk melihat daftar individu. Warna batang menunjukkan tingkat risiko.
+                 Klik batang untuk melihat daftar individu. Warna batang menunjukkan tingkat risiko.
               </div>
             </div>
 
@@ -752,12 +752,12 @@ export default function Dashboard() {
                 </div>
                 {!selectedDusun && (
                   <div style={{ fontSize: 11, marginBottom: 12, background: "#f8fafc", padding: "6px 10px", borderRadius: 8, color: "#334155" }}>
-                    💡 <strong>Informasi:</strong> Daftar ini akan muncul setelah Anda mengklik batang risiko pada grafik di sebelah kiri. Klik nama untuk melihat detail.
+                     <strong>Informasi:</strong> Daftar ini akan muncul setelah Anda mengklik batang risiko pada grafik di sebelah kiri. Klik nama untuk melihat detail.
                   </div>
                 )}
                 {selectedDusun && (
                   <p style={{ fontSize: 11, marginBottom: 12, fontStyle: "italic", background: "#f8fafc", padding: "6px 10px", borderRadius: 8 }}>
-                    💡 Klik nama ibu untuk pemeriksaan. Tombol <strong>Rujuk</strong> untuk kasus perlu rujukan.
+                     Klik nama ibu untuk pemeriksaan. Tombol <strong>Rujuk</strong> untuk kasus perlu rujukan.
                   </p>
                 )}
               </div>

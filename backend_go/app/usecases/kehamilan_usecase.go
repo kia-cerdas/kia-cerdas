@@ -172,40 +172,40 @@ func HitungUKDariHPHT(hpht time.Time) int32 {
 	return weeks
 }
 func (u *kehamilanUsecase) Create(kehamilan *models.Kehamilan) error {
-    if kehamilan.IbuID == 0 {
-        return errors.New("ibu_id wajib diisi")
-    }
-    
-    // 🔧 PERBAIKAN: Cek apakah ibu masih memiliki kehamilan aktif
-    hasActive, err := u.repo.ExistsActiveByIbuID(kehamilan.IbuID)
-    if err != nil {
-        return err
-    }
-    
-    if hasActive {
-        return errors.New("ibu masih memiliki kehamilan aktif. Selesaikan kehamilan saat ini terlebih dahulu")
-    }
-    
-    if kehamilan.BB_Awal <= 0 {
-        return errors.New("bb_awal tidak valid")
-    }
-    
-    imt, err := calculateIMT(kehamilan.BB_Awal, kehamilan.TB)
-    if err != nil {
-        return err
-    }
-    kehamilan.IMT_Awal = imt
-    
-    if !kehamilan.HPHT.IsZero() {
-        kehamilan.UKKehamilanSaatIni = HitungUKDariHPHT(kehamilan.HPHT)
-    }
-    
-    // Set default status kehamilan
-    if kehamilan.StatusKehamilan == "" {
-        kehamilan.StatusKehamilan = "TRIMESTER 1"
-    }
-    
-    return u.repo.Create(kehamilan)
+	if kehamilan.IbuID == 0 {
+		return errors.New("ibu_id wajib diisi")
+	}
+
+	// 🔧 PERBAIKAN: Cek apakah ibu masih memiliki kehamilan aktif
+	hasActive, err := u.repo.ExistsActiveByIbuID(kehamilan.IbuID)
+	if err != nil {
+		return err
+	}
+
+	if hasActive {
+		return errors.New("ibu masih memiliki kehamilan aktif. Selesaikan kehamilan saat ini terlebih dahulu")
+	}
+
+	if kehamilan.BB_Awal <= 0 {
+		return errors.New("bb_awal tidak valid")
+	}
+
+	imt, err := calculateIMT(kehamilan.BB_Awal, kehamilan.TB)
+	if err != nil {
+		return err
+	}
+	kehamilan.IMT_Awal = imt
+
+	if !kehamilan.HPHT.IsZero() {
+		kehamilan.UKKehamilanSaatIni = HitungUKDariHPHT(kehamilan.HPHT)
+	}
+
+	// Set default status kehamilan
+	if kehamilan.StatusKehamilan == "" {
+		kehamilan.StatusKehamilan = "TRIMESTER 1"
+	}
+
+	return u.repo.Create(kehamilan)
 }
 
 func (u *kehamilanUsecase) GetByID(id int32) (*models.Kehamilan, error) {

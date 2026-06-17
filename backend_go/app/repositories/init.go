@@ -62,9 +62,11 @@ type Main struct {
 	RiwayatProsesMelahirkan       *RiwayatProsesMelahirkanRepository
 	PelayananIbuNifas             *PelayananIbuNifasRepository
 	CatatanPelayananNifas         *CatatanPelayananNifasRepository
+	CatatanPelayananKehamilan     *CatatanPelayananKehamilanRepository
 	Rujukan                       *RujukanRepository
 	JenisPelayanan                JenisPelayananRepository
 	KategoriUmur                  KategoriUmurRepository
+	GejalaDaruratAnak             GejalaDaruratAnakRepository
 
 	// Repository tambahan
 	// KesehatanLingkunganDanCatatanKader *KesehatanLingkunganDanCatatanKaderRepository
@@ -108,15 +110,24 @@ type Main struct {
 	EdukasiJadwalHarianMPASI JadwalHarianMPASIRepository
 	JadwalLayanan            JadwalLayananRepository
 	EdukasiResepMPASI        ResepMPASIRepository
+
+	// Vaksin & Dosis Vaksin
+	Vaksin      VaksinRepository
+	DosisVaksin DosisVaksinRepository
 	LaporanIbu               LaporanIbuRepository
 	LaporanAnak              LaporanAnakRepository
+	LaporanRemaja            LaporanRemajaRepository
+	LaporanDewasa            LaporanDewasaRepository
+	LaporanLansia            LaporanLansiaRepository
 	PrediksiStunting         PrediksiStuntingRepository
 	PemeriksaanAnak          PemeriksaanAnakRepository
 	PemeriksaanRemaja        PemeriksaanRemajaRepository
 	PemeriksaanDewasa        PemeriksaanDewasaRepository
 	PemeriksaanLansia        PemeriksaanLansiaRepository
-	Form                     FormRepository // Repository untuk Form (misalnya untuk pertanyaan pemeriksaan)
+	Form                     FormRepository
 	Pemeriksaan              PemeriksaanRepository
+	PencatatanImunisasi      *PencatatanImunisasiRepository
+	PuskesmasDashboard       *PuskesmasDashboardRepository
 }
 
 // DB returns the underlying *gorm.DB instance for direct queries and transactions.
@@ -173,6 +184,7 @@ func Init(opts Options) *Main {
 	m.RiwayatProsesMelahirkan = NewRiwayatProsesMelahirkanRepository(opts.Postgres)
 	m.PelayananIbuNifas = NewPelayananIbuNifasRepository(opts.Postgres)
 	m.CatatanPelayananNifas = NewCatatanPelayananNifasRepository(opts.Postgres)
+	m.CatatanPelayananKehamilan = NewCatatanPelayananKehamilanRepository(opts.Postgres)
 	m.Rujukan = NewRujukanRepository(opts.Postgres)
 
 	m.Neonatus = NewPelayananNeonatusRepository(opts.Postgres)
@@ -192,6 +204,7 @@ func Init(opts Options) *Main {
 	// m.SkriningPemantauan = NewSkriningPemantauanRepository(opts.Postgres)
 	m.JenisPelayanan = NewJenisPelayananRepository(opts.Postgres)
 	m.KategoriUmur = NewKategoriUmurRepository(opts.Postgres)
+	m.GejalaDaruratAnak = NewGejalaDaruratAnakRepository(opts.Postgres)
 
 	// Repository tambahan
 	m.KeluhanAnak = NewKeluhanAnakRepository(opts.Postgres)
@@ -220,8 +233,15 @@ func Init(opts Options) *Main {
 	m.EdukasiJadwalHarianMPASI = NewJadwalHarianMPASIRepository(opts.Postgres)
 	m.JadwalLayanan = NewJadwalLayananRepository(opts.Postgres)
 	m.EdukasiResepMPASI = NewResepMPASIRepository(opts.Postgres)
+
+	// Vaksin & Dosis Vaksin
+	m.Vaksin = NewVaksinRepository(opts.Postgres)
+	m.DosisVaksin = NewDosisVaksinRepository(opts.Postgres)
 	m.LaporanIbu = NewLaporanIbuRepository(opts.Postgres)
 	m.LaporanAnak = NewLaporanAnakRepository(opts.Postgres)
+	m.LaporanRemaja = NewLaporanRemajaRepository(opts.Postgres)
+	m.LaporanDewasa = NewLaporanDewasaRepository(opts.Postgres)
+	m.LaporanLansia = NewLaporanLansiaRepository(opts.Postgres)
 	m.PrediksiStunting = NewPrediksiStuntingRepository(opts.Postgres)
 	m.PemeriksaanAnak = NewPemeriksaanAnakRepository(opts.Postgres)
 	m.PemeriksaanRemaja = NewPemeriksaanRemajaRepository(opts.Postgres)
@@ -229,6 +249,8 @@ func Init(opts Options) *Main {
 	m.PemeriksaanLansia = NewPemeriksaanLansiaRepository(opts.Postgres)
 	m.Form = NewFormRepository(opts.Postgres) // Inisialisasi FormRepository dengan database yang sesuai
 	m.Pemeriksaan = NewPemeriksaanRepository(opts.Postgres)
+	m.PencatatanImunisasi = NewPencatatanImunisasiRepository(opts.Postgres)
+	m.PuskesmasDashboard = NewPuskesmasDashboardRepository(opts.Postgres)
 	// return m
 
 	// MODUL IBU

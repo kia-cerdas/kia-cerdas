@@ -372,18 +372,13 @@ export default function SkriningDMGestasional() {
           </div>
 
           {!isActive && (
-            <div className="bg-gray-100 border-l-4 border-gray-500 p-3 rounded text-gray-700 text-base flex items-center gap-2">
+            <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg text-blue-700 text-base flex items-center gap-2">
               <EyeOff size={16} /> Kehamilan ini sudah selesai (NON-AKTIF). Data hanya dapat dilihat, tidak dapat diubah.
             </div>
           )}
-          {!canEdit && isActive && isBidan && (
+          {!canEdit && isActive && (
             <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg text-blue-700 text-base flex items-center gap-2">
-              <Eye size={16} /> <span><strong>Mode Lihat — Bidan.</strong> Skrining DM Gestasional dikelola oleh Dokter. Anda hanya dapat melihat data ini.</span>
-            </div>
-          )}
-          {!canEdit && isActive && !isBidan && (
-            <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg text-blue-700 text-base flex items-center gap-2">
-              <Eye size={16} /> Anda dalam mode baca. Data hanya dapat dilihat, tidak dapat diubah.
+              <Eye size={16} /> Anda dalam mode baca (Bidan). Data hanya dapat dilihat, tidak dapat diubah.
             </div>
           )}
 

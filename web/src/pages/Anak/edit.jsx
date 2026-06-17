@@ -17,7 +17,9 @@ export default function EditAnak() {
     nama: "",
     jenis_kelamin: "",
     tanggal_lahir: "",
-    berat_lahir_kg: ""
+    berat_lahir_kg: "",
+    tinggi_lahir_cm: "",
+    lingkar_kepala_cm: ""
   });
 
   useEffect(() => {
@@ -37,7 +39,9 @@ export default function EditAnak() {
             nama: data.nama || data.penduduk?.nama_lengkap || "",
             jenis_kelamin: data.jenis_kelamin || data.penduduk?.jenis_kelamin || "",
             tanggal_lahir: formattedDate,
-            berat_lahir_kg: data.berat_lahir_kg || ""
+            berat_lahir_kg: data.berat_lahir_kg || "",
+            tinggi_lahir_cm: data.tinggi_lahir_cm || "",
+            lingkar_kepala_cm: data.lingkar_kepala_cm || ""
           });
         } else {
           setGeneralError("Data anak tidak ditemukan.");
@@ -78,7 +82,9 @@ export default function EditAnak() {
     try {
       const payload = {
         ...form,
-        berat_lahir_kg: parseFloat(form.berat_lahir_kg)
+        berat_lahir_kg: parseFloat(form.berat_lahir_kg),
+        tinggi_lahir_cm: parseFloat(form.tinggi_lahir_cm) || null,
+        lingkar_kepala_cm: parseFloat(form.lingkar_kepala_cm) || null
       };
       await updateAnak(id, payload);
       alert("Perubahan data anak telah disimpan.");
@@ -142,6 +148,14 @@ export default function EditAnak() {
                   <label className="block text-sm font-semibold text-gray-700 mb-1">Berat Lahir (kg) <span className="text-red-500">*</span></label>
                   <input type="number" step="0.01" name="berat_lahir_kg" value={form.berat_lahir_kg} onChange={handleChange} placeholder="Contoh: 3.2" className={`w-full p-3 rounded-lg border outline-none transition-all ${errors.berat_lahir_kg ? "border-red-500 bg-red-50" : "border-gray-300 focus:ring-2 focus:ring-indigo-500"}`} />
                   {errors.berat_lahir_kg && <p className="mt-1 text-xs text-red-600">{errors.berat_lahir_kg}</p>}
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Tinggi Lahir (cm)</label>
+                  <input type="number" step="0.1" name="tinggi_lahir_cm" value={form.tinggi_lahir_cm} onChange={handleChange} placeholder="Contoh: 50" className="w-full p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none transition-all" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">Lingkar Kepala Lahir (cm)</label>
+                  <input type="number" step="0.1" name="lingkar_kepala_cm" value={form.lingkar_kepala_cm} onChange={handleChange} placeholder="Contoh: 34" className="w-full p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 outline-none transition-all" />
                 </div>
               </div>
               <div className="pt-6 border-t flex flex-col md:flex-row gap-4 justify-end">

@@ -303,14 +303,17 @@ func (u *SuperadminUserUsecase) CreateAdminDesaUser(req *SuperadminCreateAdminDe
 	if err != nil {
 		return nil, customerror.NewNotFoundError("penduduk tidak ditemukan")
 	}
+	// Jika nomor HP tidak diisi di request, ambil dari data penduduk
 	if normalizedPhone == "" && penduduk.Telepon != "" {
 		normalizedPhone, err = normalizePhoneNumber(penduduk.Telepon)
 		if err != nil {
-			return nil, err
+			// Jika normalisasi gagal, tetap lanjutkan (akan ter-handle di bawah)
+			normalizedPhone = ""
 		}
 	}
+	// Nomor HP wajib diisi (dari request atau dari penduduk)
 	if normalizedPhone == "" {
-		return nil, customerror.NewBadRequestError("penduduk belum memiliki nomor telepon. Silakan lengkapi data kependudukan terlebih dahulu.")
+		return nil, customerror.NewBadRequestError("nomor hp wajib diisi (isi di form atau lengkapi data kependudukan)")
 	}
 	pendudukDesaID := penduduk.DesaID
 	if pendudukDesaID == nil || *pendudukDesaID == 0 {
@@ -398,14 +401,17 @@ func (u *SuperadminUserUsecase) CreateKaderUser(req *SuperadminCreateKaderUserRe
 	if err != nil {
 		return nil, customerror.NewNotFoundError("penduduk tidak ditemukan")
 	}
+	// Jika nomor HP tidak diisi di request, ambil dari data penduduk
 	if normalizedPhone == "" && penduduk.Telepon != "" {
 		normalizedPhone, err = normalizePhoneNumber(penduduk.Telepon)
 		if err != nil {
-			return nil, err
+			// Jika normalisasi gagal, tetap lanjutkan (akan ter-handle di bawah)
+			normalizedPhone = ""
 		}
 	}
+	// Nomor HP wajib diisi (dari request atau dari penduduk)
 	if normalizedPhone == "" {
-		return nil, customerror.NewBadRequestError("penduduk belum memiliki nomor telepon. Silakan lengkapi data kependudukan terlebih dahulu.")
+		return nil, customerror.NewBadRequestError("nomor hp wajib diisi (isi di form atau lengkapi data kependudukan)")
 	}
 	pendudukDesaID := penduduk.DesaID
 	if pendudukDesaID == nil || *pendudukDesaID == 0 {
@@ -514,14 +520,17 @@ func (u *SuperadminUserUsecase) CreateUser(req *SuperadminCreateUserRequest) (*m
 		if err != nil {
 			return nil, customerror.NewNotFoundError("penduduk tidak ditemukan")
 		}
+		// Jika nomor HP tidak diisi di request, ambil dari data penduduk
 		if normalizedPhone == "" && penduduk.Telepon != "" {
 			normalizedPhone, err = normalizePhoneNumber(penduduk.Telepon)
 			if err != nil {
-				return nil, err
+				// Jika normalisasi gagal, tetap lanjutkan (akan ter-handle di bawah)
+				normalizedPhone = ""
 			}
 		}
+		// Nomor HP wajib diisi (dari request atau dari penduduk)
 		if normalizedPhone == "" {
-			return nil, customerror.NewBadRequestError("penduduk belum memiliki nomor telepon. Silakan lengkapi data kependudukan terlebih dahulu.")
+			return nil, customerror.NewBadRequestError("nomor hp wajib diisi (isi di form atau lengkapi data kependudukan)")
 		}
 		pendudukDesaID = penduduk.DesaID
 		if pendudukDesaID == nil || *pendudukDesaID == 0 {
@@ -786,9 +795,14 @@ func (u *SuperadminUserUsecase) CreateIbuUser(req *SuperadminCreateUserRequest) 
 	
 	// Normalisasi email dan phone
 	email := strings.ToLower(strings.TrimSpace(req.Email))
-	normalizedPhone, err := normalizePhoneNumber(req.PhoneNumber)
-	if err != nil {
-		return nil, customerror.NewBadRequestError("nomor telepon tidak valid: " + err.Error())
+	var normalizedPhone string
+	var err error
+	if req.PhoneNumber != "" {
+		normalizedPhone, err = normalizePhoneNumber(req.PhoneNumber)
+		if err != nil {
+			// Jika format tidak valid dari request, set kosong (akan coba ambil dari penduduk)
+			normalizedPhone = ""
+		}
 	}
 	
 	// Cek apakah penduduk valid
@@ -801,13 +815,14 @@ func (u *SuperadminUserUsecase) CreateIbuUser(req *SuperadminCreateUserRequest) 
 	if normalizedPhone == "" && penduduk.Telepon != "" {
 		normalizedPhone, err = normalizePhoneNumber(penduduk.Telepon)
 		if err != nil {
-			return nil, err
+			// Jika normalisasi gagal, tetap lanjutkan (akan ter-handle di bawah)
+			normalizedPhone = ""
 		}
 	}
 	
 	// Validasi nomor telepon (wajib untuk akun Ibu)
 	if normalizedPhone == "" {
-		return nil, customerror.NewBadRequestError("penduduk belum memiliki nomor telepon. Silakan lengkapi data kependudukan terlebih dahulu.")
+		return nil, customerror.NewBadRequestError("nomor hp wajib diisi (isi di form atau lengkapi data kependudukan)")
 	}
 	
 	// Cek desa penduduk

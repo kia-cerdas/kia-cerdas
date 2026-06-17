@@ -19,6 +19,7 @@ import {
   ClipboardList,
   EyeOff,
   XCircle,
+  AlertTriangle,
 } from "lucide-react";
 
 export default function SkriningPreeklampsia() {
@@ -252,6 +253,26 @@ export default function SkriningPreeklampsia() {
 
   const isRujukan = hitungRisiko() === "PERLU RUJUKAN";
 
+  // Handler untuk tombol rujukan
+  const handleRujukClick = (e) => {
+    e.preventDefault();
+    Swal.fire({
+      title: "Konfirmasi Rujukan",
+      text: `Ibu ini memiliki status risiko preeklampsia "${hitungRisiko()}". Lanjutkan ke form rujukan?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Ya, Rujuk",
+      cancelButtonText: "Batal",
+      reverseButtons: true,
+    }).then((result) => {
+      if (result.isConfirmed) {
+        navigate(`/data-ibu/${ibuId}/rujukan?kehamilan_id=${kehamilan.id}&source=preeklampsia`);
+      }
+    });
+  };
+
   // Komponen checkbox dengan gaya design system
   const CheckboxItem = ({ name, label, description }) => {
     const isChecked = form[name];
@@ -282,14 +303,14 @@ export default function SkriningPreeklampsia() {
             <div className="p-4 bg-[#185FA5]/10 rounded-full">
               <ClipboardList size={48} className="text-[#185FA5]" />
             </div>
-            <h3 className="text-[22px] font-semibold text-gray-800">Belum Ada Data Skrining Preeklampsia</h3>
+            <h3 className="text-[22px] font-semibold text-[#185FA5]">Belum Ada Data Skrining Preeklampsia</h3>
             <p className="text-base text-gray-500 max-w-md">
               Silakan lakukan skrining preeklampsia untuk ibu hamil ini.
             </p>
             {canEdit && (
               <button
                 onClick={() => setIsEditing(true)}
-                className="bg-[#185FA5] text-white rounded-full px-6 py-2.5 font-semibold flex items-center gap-2 text-base"
+                className="bg-[#185FA5] text-white rounded-lg px-5 py-2.5 font-semibold flex items-center gap-2 text-base"
               >
                 <Plus size={18} /> Mulai Skrining
               </button>
@@ -459,6 +480,15 @@ export default function SkriningPreeklampsia() {
               <Edit2 size={18} /> Edit Skrining
             </button>
           )}
+          {/* Tombol Rujuk: muncul jika PERLU RUJUKAN, dan hanya untuk bidan (canEdit) */}
+          {isRujukan && canEdit && (
+            <button
+              onClick={handleRujukClick}
+              className="bg-red-600 hover:bg-red-700 text-white rounded-full px-5 py-2.5 flex items-center gap-2 text-base font-semibold shadow-md hover:shadow-lg animate-pulse"
+            >
+              <AlertTriangle size={18} /> Rujuk Segera
+            </button>
+          )}
           <button
             onClick={() => navigate(`/data-ibu/${ibuId}?kehamilan_id=${kehamilan.id}`)}
             className="border border-[#185FA5] text-[#185FA5] rounded-full px-5 py-2.5 flex items-center gap-2 text-base font-semibold hover:bg-[#185FA5]/5"
@@ -611,7 +641,7 @@ export default function SkriningPreeklampsia() {
           />
         </div>
         <div className="mt-4">
-          <label className="block font-semibold mb-2 text-base text-gray-800">
+          <label className="block font-semibold mb-2 text-sm text-gray-800">
             Kesimpulan Klinis (Opsional)
           </label>
           <textarea
@@ -619,7 +649,7 @@ export default function SkriningPreeklampsia() {
             value={form.kesimpulan}
             onChange={handleChange}
             disabled={!canEdit}
-            className="w-full border border-gray-300 rounded-lg px-4 py-3 text-base focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5]"
+            className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5]"
             rows="3"
             placeholder="Tambahkan catatan khusus hasil skrining..."
           />
@@ -679,18 +709,13 @@ export default function SkriningPreeklampsia() {
           </div>
 
           {!isActive && (
-            <div className="bg-gray-100 border-l-4 border-gray-500 p-3 rounded text-gray-700 text-base flex items-center gap-2">
+            <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg text-blue-700 text-base flex items-center gap-2">
               <EyeOff size={16} /> Kehamilan ini sudah selesai (NON-AKTIF). Data hanya dapat dilihat, tidak dapat diubah.
             </div>
           )}
-          {!canEdit && isActive && isDokter && (
+          {!canEdit && isActive && (
             <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg text-blue-700 text-base flex items-center gap-2">
-              <Eye size={16} /> <span><strong>Mode Lihat — Dokter.</strong> Skrining Preeklampsia dikelola oleh Bidan. Anda hanya dapat melihat data ini.</span>
-            </div>
-          )}
-          {!canEdit && isActive && !isDokter && (
-            <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg text-blue-700 text-base flex items-center gap-2">
-              <Eye size={16} /> Anda dalam mode baca. Data hanya dapat dilihat, tidak dapat diubah.
+              <Eye size={16} /> Anda dalam mode baca (Dokter). Data hanya dapat dilihat, tidak dapat diubah.
             </div>
           )}
 

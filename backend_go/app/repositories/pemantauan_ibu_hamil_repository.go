@@ -88,6 +88,25 @@ func (r *PemantauanIbuHamilRepository) Upsert(data *models.PemantauanIbuHamil) e
 	return err
 }
 
+// Untuk profil pemantauan ibu
+func (r *PemantauanIbuHamilRepository) ValidateKehamilanOwner(userID int32, kehamilanID int32) error {
+	var count int64
+	err := r.db.
+		Table("kehamilan AS k").
+		Joins("JOIN ibu AS i ON i.id = k.ibu_id").
+		Joins("JOIN penduduk AS p ON p.id = i.penduduk_id").
+		Joins("JOIN pengguna AS u ON u.penduduk_id = p.id").
+		Where("u.id = ? AND k.id = ?", userID, kehamilanID).
+		Count(&count).Error
+	if err != nil {
+		return err
+	}
+	if count == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	return nil
+}
+
 // ─── BAGIAN KADER ────────────────────────────────────────────────────────────
 
 func (r *PemantauanIbuHamilRepository) FindAllWithKehamilan() ([]models.PemantauanIbuHamil, error) {

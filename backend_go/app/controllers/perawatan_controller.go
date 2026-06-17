@@ -56,6 +56,47 @@ func (m *Main) CreatePerawatan(c echo.Context) error {
 	)
 }
 
+// CreateBulkPerawatan handles POST /perawatan/bulk to create/update multiple perawatan records
+// @Summary Create bulk perawatan
+// @Description Create or update multiple perawatan milestone/achievement records for a child at once
+// @Tags Perawatan
+// @Accept json
+// @Produce json
+// @Param request body models.BulkPerawatanRequest true "Bulk Perawatan request"
+// @Router /perawatan/bulk [post]
+func (m *Main) CreateBulkPerawatan(c echo.Context) error {
+	var req models.BulkPerawatanRequest
+	if err := c.Bind(&req); err != nil {
+		return helpers.Response(c, http.StatusBadRequest, []string{"format request tidak valid"})
+	}
+
+	if len(req.Data) == 0 {
+		return helpers.Response(c, http.StatusBadRequest, []string{"data tidak boleh kosong"})
+	}
+
+	var data []models.Perawatan
+	var usecaseErr error
+
+	claims, ok := c.Get("auth_claims").(*models.AuthClaims)
+	if ok && claims != nil && claims.Role == "ibu" {
+		data, usecaseErr = m.usecases.Perawatan.CreateBulkPerawatanForIbu(req, claims.UserID)
+	} else {
+		data, usecaseErr = m.usecases.Perawatan.CreateBulkPerawatan(req)
+	}
+
+	if usecaseErr != nil {
+		return helpers.Response(c, customerror.GetStatusCode(usecaseErr), []string{usecaseErr.Error()})
+	}
+
+	return helpers.StandardResponse(
+		c,
+		http.StatusOK,
+		[]string{"berhasil menyimpan perawatan"},
+		data,
+		nil,
+	)
+}
+
 // GetPerawatanByID handles GET /perawatan/:id to retrieve a single perawatan
 // @Summary Get perawatan by ID
 // @Description Retrieve a specific perawatan record by ID

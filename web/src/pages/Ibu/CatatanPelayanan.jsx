@@ -74,11 +74,9 @@ export default function CatatanPelayanan() {
         "Keluhan / pemeriksaan / tindakan / saran harus diisi";
     }
 
-    // ✅ Validasi Tanggal Kembali - WAJIB DIISI & TIDAK BOLEH MELEBIHI HARI INI
+    // ✅ Validasi Tanggal Kembali - WAJIB DIISI
     if (!form.tanggal_kembali) {
       errors.tanggal_kembali = "Tanggal kembali harus diisi";
-    } else if (isDateAfterToday(form.tanggal_kembali)) {
-      errors.tanggal_kembali = "Tanggal kembali tidak boleh melebihi hari ini";
     }
 
     return errors;
@@ -421,7 +419,6 @@ export default function CatatanPelayanan() {
                 value={form.tanggal_kembali}
                 onChange={handleChange}
                 required
-                max={new Date().toISOString().split("T")[0]}
                 className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
                   validationErrors.tanggal_kembali
                     ? "border-red-500 bg-red-50"

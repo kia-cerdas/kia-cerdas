@@ -56,6 +56,7 @@ func (r *KehamilanRepository) Delete(id int32) error {
 	}
 	return nil
 }
+
 // UpdateStatusKehamilan hanya mengubah kolom status_kehamilan berdasarkan ID
 func (r *KehamilanRepository) UpdateStatusKehamilan(id int32, status string) error {
 	return r.db.Model(&models.Kehamilan{}).
@@ -143,23 +144,23 @@ func (r *KehamilanRepository) UpdateUsiaDanStatusKehamilan(id int32, usia int32,
 }
 
 func (r *KehamilanRepository) FindAktifByUserID(userID int32) (*models.Kehamilan, error) {
-    var kehamilan models.Kehamilan
+	var kehamilan models.Kehamilan
 
-    err := r.db.
-        Table("kehamilan AS k").
-        Select("k.*").
-        Joins("JOIN ibu AS i ON i.id = k.ibu_id").
-        Joins("JOIN penduduk AS p ON p.id = i.penduduk_id").
-        Joins("JOIN pengguna AS u ON u.penduduk_id = p.id").
-        Where("u.id = ?", userID).
-        Where("k.status_kehamilan IN ?", []string{"aktif", "TRIMESTER 1", "TRIMESTER 2", "TRIMESTER 3"}).
-        Order("k.created_at DESC").
-        First(&kehamilan).Error
+	err := r.db.
+		Table("kehamilan AS k").
+		Select("k.*").
+		Joins("JOIN ibu AS i ON i.id = k.ibu_id").
+		Joins("JOIN penduduk AS p ON p.id = i.penduduk_id").
+		Joins("JOIN pengguna AS u ON u.penduduk_id = p.id").
+		Where("u.id = ?", userID).
+		Where("k.status_kehamilan IN ?", []string{"aktif", "TRIMESTER 1", "TRIMESTER 2", "TRIMESTER 3"}).
+		Order("k.created_at DESC").
+		First(&kehamilan).Error
 
-    if err != nil {
-        return nil, err
-    }
-    return &kehamilan, nil
+	if err != nil {
+		return nil, err
+	}
+	return &kehamilan, nil
 }
 
 // func (r *KehamilanRepository) ExistsActiveByIbuID(ibuID int32) (bool, error) {
@@ -167,5 +168,30 @@ func (r *KehamilanRepository) FindAktifByUserID(userID int32) (*models.Kehamilan
 // }
 
 func (r *KehamilanRepository) UpdateAllActiveGestationalAge() error {
-    return nil
+	return nil
+}
+
+
+
+
+
+// Untuk bagian pemantauan NIFAS
+func (r *KehamilanRepository) FindNifasByUserID(userID int32) (*models.Kehamilan, error) {
+	var kehamilan models.Kehamilan
+ 
+	err := r.db.
+		Table("kehamilan AS k").
+		Select("k.*").
+		Joins("JOIN ibu AS i ON i.id = k.ibu_id").
+		Joins("JOIN penduduk AS p ON p.id = i.penduduk_id").
+		Joins("JOIN pengguna AS u ON u.penduduk_id = p.id").
+		Where("u.id = ?", userID).
+		Where("k.status_kehamilan = ?", "NIFAS").
+		Order("k.created_at DESC").
+		First(&kehamilan).Error
+ 
+	if err != nil {
+		return nil, err
+	}
+	return &kehamilan, nil
 }

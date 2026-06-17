@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import MainLayout from "../components/Layout/MainLayout";
 import api from "../services/api";
+import Swal from "sweetalert2";
 
 // Komponen modal untuk detail pemeriksaan (bisa dipisah ke file sendiri)
 function DetailPemeriksaanModal({ data, onClose }) {
@@ -120,7 +121,12 @@ export default function DetailPenduduk() {
       setModalOpen(true);
     } catch (err) {
       console.error(err);
-      alert("Gagal memuat detail pemeriksaan");
+      Swal.fire({
+        icon: "error",
+        title: "Gagal Memuat Detail",
+        text: "Gagal memuat detail pemeriksaan",
+        confirmButtonColor: "#185FA5",
+      });
     } finally {
       setLoadingDetail(false);
     }

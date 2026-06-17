@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart'; // Ditambahkan untuk debugPrint jika diperlukan
 import 'package:http/http.dart' as http;
+import 'package:ta_pa2_pa3_project/core/network/app_http_client.dart';
 import 'package:ta_pa2_pa3_project/core/constants/api_constants.dart';
 import 'package:ta_pa2_pa3_project/core/services/auth_session.dart';
 import 'package:ta_pa2_pa3_project/features/ibu/imunisasi/data/models/imunisasi_model.dart';
@@ -11,7 +12,7 @@ class ImunisasiService {
 
   ImunisasiService({
     http.Client? client,
-  }) : _client = client ?? http.Client();
+  }) : _client = client ?? AppHttpClient();
 
   Map<String, String> get _headers {
     final token = AuthSession.token;
@@ -134,20 +135,20 @@ class ImunisasiService {
     }
   }
 
-  Future<void> requestPerubahanJadwal(
-    int jadwalId,
-    String tanggalBaru,
-    String alasan,
-  ) async {
+Future<void> requestPerubahanJadwal(
+  int jadwalId,
+  int jadwalLayananId,
+  String alasan,
+) async {
     final uri = Uri.parse(
       '${ApiConstants.baseUrl}/ibu/jadwal-imunisasi/$jadwalId/request-perubahan',
     );
 
     try {
-      final body = jsonEncode({
-        "tanggal_baru": tanggalBaru,
-        "alasan": alasan,
-      });
+final body = jsonEncode({
+  "jadwal_layanan_id": jadwalLayananId,
+  "alasan": alasan,
+});
 
       final response = await _client.post(
         uri,
@@ -197,6 +198,44 @@ class ImunisasiService {
     }
   }
 
+Future<List<JadwalLayananModel>>
+    getJadwalLayananUpcoming() async {
+  final uri = Uri.parse(
+    '${ApiConstants.baseUrl}/ibu/jadwal-layanan?upcoming=true',
+  );
+
+  try {
+    final response = await _client.get(
+      uri,
+      headers: _headers,
+    );
+debugPrint(response.body);
+    if (response.statusCode == 404) {
+      return [];
+    }
+
+    final data = jsonDecode(response.body);
+    debugPrint("Jumlah jadwal: ${data.length}");
+
+    if (data is List) {
+      return data
+          .map(
+            (e) => JadwalLayananModel.fromJson(
+              Map<String, dynamic>.from(e),
+            ),
+          )
+          .toList();
+    }
+
+    return [];
+  } catch (e) {
+    debugPrint(
+      'Error getJadwalLayananUpcoming: $e',
+    );
+    rethrow;
+  }
+  
+}
   void dispose() {
     _client.close();
   }

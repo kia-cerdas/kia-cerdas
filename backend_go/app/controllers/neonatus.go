@@ -3,6 +3,7 @@ package controllers
 import (
 	"errors"
 	"fmt"
+	"monitoring-service/app/helpers"
 	"monitoring-service/app/models"
 	"monitoring-service/app/usecases"
 	"net/http"
@@ -72,7 +73,7 @@ func (c *NeonatusController) GetByAnakID(ctx echo.Context) error {
 				"error": err.Error(),
 			})
 		}
-		return ctx.JSON(http.StatusOK, data)
+		return helpers.StandardResponse(ctx, http.StatusOK, "berhasil", data, nil)
 	}
 
 	anakID, err := ParseInt(anakIDStr, "anak_id")
@@ -89,7 +90,7 @@ func (c *NeonatusController) GetByAnakID(ctx echo.Context) error {
 		})
 	}
 
-	return ctx.JSON(http.StatusOK, data)
+	return helpers.StandardResponse(ctx, http.StatusOK, "berhasil", data, nil)
 }
 
 // // get by id kunjungan

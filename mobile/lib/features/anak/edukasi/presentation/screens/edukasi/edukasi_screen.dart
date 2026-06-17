@@ -5,7 +5,7 @@ import 'package:ta_pa2_pa3_project/features/anak/informasi_umum/data/services/in
 import 'pola_asuh_screen.dart';
 import 'package:ta_pa2_pa3_project/features/anak/informasi_umum/presentation/screens/informasi_umum/informasi_umum_detail_screen.dart';
 import 'package:ta_pa2_pa3_project/features/anak/informasi_umum/presentation/screens/informasi_umum/informasi_umum_screen.dart';
-import 'package:ta_pa2_pa3_project/features/anak/pemantauan/presentation/screens/perawatan/pilih_perawatan_screen.dart';
+// import 'package:ta_pa2_pa3_project/features/anak/pemantauan/presentation/screens/perawatan/pilih_perawatan_screen.dart';
 
 class EdukasiScreen extends StatefulWidget {
   final int? anakId;
@@ -153,15 +153,15 @@ class _EdukasiScreenState extends State<EdukasiScreen> {
                       gradient: const [Color(0xFFDCFCE7), Color(0xFFF0FDF4)],
                       iconColor: const Color(0xFF059669),
                       onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => PilihPerawatanScreen(
-                              anakId: widget.anakId,
-                              anakName: widget.anakName,
-                            ),
-                          ),
-                        );
+                        // Navigator.push(
+                        //   context,
+                        //   MaterialPageRoute(
+                        //     builder: (context) => PilihPerawatanScreen(
+                        //       anakId: widget.anakId,
+                        //       anakName: widget.anakName,
+                        //     ),
+                        //   ),
+                        // );
                       },
                     ),
                   ],

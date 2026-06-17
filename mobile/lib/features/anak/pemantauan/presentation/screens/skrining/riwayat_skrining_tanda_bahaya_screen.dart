@@ -6,12 +6,10 @@ import 'package:ta_pa2_pa3_project/features/anak/pemantauan/presentation/screens
 
 class RiwayatSkriningTandaBahayaScreen extends StatefulWidget {
   final Map<String, dynamic>? anak;
-  final bool showAllRecords;
 
   const RiwayatSkriningTandaBahayaScreen({
     super.key,
     this.anak,
-    this.showAllRecords = false,
   });
 
   @override
@@ -25,22 +23,27 @@ class _RiwayatSkriningTandaBahayaScreenState
   bool _loading = true;
   List<LembarPemantauanModel> _records = const [];
   final Set<int> _verifyingIds = {};
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
 
   String get _namaAnak => (widget.anak?['nama'] ?? 'Si Kecil').toString();
   String get _usiaAnak =>
       (widget.anak?['usia_teks'] ?? 'Usia tidak diketahui').toString();
-  bool get _isKaderMode =>
-      widget.showAllRecords ||
-      (AuthSession.role?.trim().toLowerCase() == 'kader');
 
   @override
   void initState() {
     super.initState();
     _loadRecords();
+    _searchController.addListener(() {
+      setState(() {
+        _searchQuery = _searchController.text;
+      });
+    });
   }
 
   @override
   void dispose() {
+    _searchController.dispose();
     _service.dispose();
     super.dispose();
   }
@@ -56,7 +59,7 @@ class _RiwayatSkriningTandaBahayaScreenState
           ? anakRaw
           : int.tryParse((anakRaw ?? '').toString()) ?? 0;
 
-      final records = _isKaderMode || anakId <= 0
+      final records = anakId <= 0
           ? await _service.getSemuaPemantauan()
           : await _service.getRiwayatPemantauan(anakId);
 
@@ -180,12 +183,25 @@ class _RiwayatSkriningTandaBahayaScreenState
 
   String _periodeLabel(LembarPemantauanModel record) {
     final satuan = record.rentangUsia?.satuanWaktu.toLowerCase().trim() ?? '';
+    final namaRentang = record.rentangUsia?.namaRentang;
     final periode = record.periodeWaktu;
-    if (satuan == 'hari') return 'Hari ke-$periode';
-    if (satuan == 'minggu') return 'Minggu ke-$periode';
-    if (satuan == 'bulan') return 'Bulan ke-$periode';
-    if (satuan == 'tahun') return 'Tahun ke-$periode';
-    return 'Periode ke-$periode';
+    
+    int displayNumber = periode;
+    if (namaRentang != null) {
+      final match = RegExp(r'^(\d+)').firstMatch(namaRentang.trim());
+      if (match != null) {
+        int startNum = int.tryParse(match.group(1) ?? '0') ?? 0;
+        if (startNum > 0) {
+          displayNumber = startNum + (periode - 1);
+        }
+      }
+    }
+
+    if (satuan == 'hari') return 'Hari ke-$displayNumber';
+    if (satuan == 'minggu') return 'Minggu ke-$displayNumber';
+    if (satuan == 'bulan') return 'Bulan ke-$displayNumber';
+    if (satuan == 'tahun') return 'Tahun ke-$displayNumber';
+    return 'Periode ke-$displayNumber';
   }
 
   String _examinerLabel(String value) {
@@ -219,16 +235,26 @@ class _RiwayatSkriningTandaBahayaScreenState
     final child = record.anak;
     final candidates = <dynamic>[
       child?['kehamilan'] is Map<String, dynamic>
-          ? (child!['kehamilan'] as Map<String, dynamic>)['ibu'] is Map<String, dynamic>
-              ? ((child['kehamilan'] as Map<String, dynamic>)['ibu'] as Map<String, dynamic>)['kependudukan'] is Map<String, dynamic>
-                  ? (((child['kehamilan'] as Map<String, dynamic>)['ibu'] as Map<String, dynamic>)['kependudukan'] as Map<String, dynamic>)['nama_lengkap']
+          ? (child!['kehamilan'] as Map<String, dynamic>)['ibu']
+                  is Map<String, dynamic>
+              ? ((child['kehamilan'] as Map<String, dynamic>)['ibu']
+                          as Map<String, dynamic>)['kependudukan']
+                      is Map<String, dynamic>
+                  ? (((child['kehamilan'] as Map<String, dynamic>)['ibu']
+                          as Map<String, dynamic>)['kependudukan']
+                      as Map<String, dynamic>)['nama_lengkap']
                   : null
               : null
           : null,
       child?['kehamilan'] is Map<String, dynamic>
-          ? (child!['kehamilan'] as Map<String, dynamic>)['ibu'] is Map<String, dynamic>
-              ? ((child['kehamilan'] as Map<String, dynamic>)['ibu'] as Map<String, dynamic>)['kependudukan'] is Map<String, dynamic>
-                  ? (((child['kehamilan'] as Map<String, dynamic>)['ibu'] as Map<String, dynamic>)['kependudukan'] as Map<String, dynamic>)['nama']
+          ? (child!['kehamilan'] as Map<String, dynamic>)['ibu']
+                  is Map<String, dynamic>
+              ? ((child['kehamilan'] as Map<String, dynamic>)['ibu']
+                          as Map<String, dynamic>)['kependudukan']
+                      is Map<String, dynamic>
+                  ? (((child['kehamilan'] as Map<String, dynamic>)['ibu']
+                          as Map<String, dynamic>)['kependudukan']
+                      as Map<String, dynamic>)['nama']
                   : null
               : null
           : null,
@@ -243,11 +269,63 @@ class _RiwayatSkriningTandaBahayaScreenState
     return '';
   }
 
+  void _showConfirmationDialog({
+    required BuildContext context,
+    required String title,
+    required String content,
+    required VoidCallback onConfirm,
+  }) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title:
+              Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+          content: Text(content),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Batal', style: TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                onConfirm();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2563EB),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text('Ya'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final totalPending = _records
         .where((record) => record.status == 'Menunggu verifikasi')
         .length;
+
+    final filteredRecords = _records.where((record) {
+      final query = _searchQuery.toLowerCase();
+      if (query.isEmpty) return true;
+      final childName = _childName(record).toLowerCase();
+      final motherName = _motherName(record).toLowerCase();
+      final exam = record.namaPemeriksa.toLowerCase();
+      return childName.contains(query) ||
+          motherName.contains(query) ||
+          exam.contains(query);
+    }).toList();
+
     return Scaffold(
       backgroundColor: const Color(0xFFF1F5F9),
       appBar: AppBar(
@@ -256,7 +334,7 @@ class _RiwayatSkriningTandaBahayaScreenState
         centerTitle: false,
         iconTheme: const IconThemeData(color: Colors.black),
         title: Text(
-          _isKaderMode ? 'Verifikasi Skrining' : 'Riwayat Skrining',
+          'Riwayat Skrining',
           style: TextStyle(
             color: Colors.black,
             fontWeight: FontWeight.w600,
@@ -267,88 +345,39 @@ class _RiwayatSkriningTandaBahayaScreenState
         onRefresh: _loadRecords,
         child: _loading
             ? const Center(child: CircularProgressIndicator())
-            : _records.isEmpty
-                ? ListView(
-                    padding: const EdgeInsets.all(20),
-                    children: [
-                      const SizedBox(height: 24),
-                      if (!_isKaderMode) _buildPrimaryActionCard(),
-                      if (_isKaderMode) _buildKaderSummaryCard(totalPending),
-                      const SizedBox(height: 16),
-                      _buildEmptyState(context),
-                    ],
-                  )
-                : ListView(
-                    padding: const EdgeInsets.all(16),
-                    children: [
-                      if (!_isKaderMode) _buildPrimaryActionCard(),
-                      if (_isKaderMode) _buildKaderSummaryCard(totalPending),
-                      const SizedBox(height: 16),
-                      _buildHeaderCard(),
-                      const SizedBox(height: 16),
-                      ..._records.map((record) {
+            : ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  _buildPrimaryActionCard(),
+                  const SizedBox(height: 16),
+                  if (_records.isEmpty)
+                    _buildEmptyState(context)
+                  else ...[
+                    _buildHeaderCard(),
+                    const SizedBox(height: 16),
+                    if (filteredRecords.isEmpty)
+                      const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(20.0),
+                          child: Text('Data tidak ditemukan.'),
+                        ),
+                      )
+                    else
+                      ...filteredRecords.map((record) {
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 12),
                           child: _buildRecordCard(record),
                         );
                       }),
-                    ],
-                  ),
+                  ],
+                ],
+              ),
       ),
     );
   }
 
   Widget _buildHeaderCard() {
-    if (_isKaderMode) {
-      return Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 52,
-              height: 52,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                color: Color(0xFFE0F2FE),
-              ),
-              child: const Icon(
-                Icons.verified_user_rounded,
-                color: Color(0xFF2563EB),
-              ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Lembar menunggu verifikasi',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Tap Setujui atau Tolak pada data yang sudah di cek.',
-                    style: TextStyle(
-                      fontSize: 12.5,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      );
-    }
+
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -519,11 +548,8 @@ class _RiwayatSkriningTandaBahayaScreenState
     final selectedGejalaList = detailSelesai
         .map((d) => d.kategoriTandaSakit?.gejala ?? 'Gejala tidak diketahui')
         .toList();
-    final statusIcon = _statusIcon(record.status);
     final childLabel = _childName(record);
     final motherLabel = _motherName(record);
-    final isPending = record.status == 'Menunggu verifikasi';
-    final isBusy = _verifyingIds.contains(record.id);
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -550,7 +576,7 @@ class _RiwayatSkriningTandaBahayaScreenState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      _isKaderMode ? childLabel : (record.rentangUsia?.namaRentang ?? '-'),
+                      (record.rentangUsia?.namaRentang ?? '-'),
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w800,
@@ -558,54 +584,11 @@ class _RiwayatSkriningTandaBahayaScreenState
                       ),
                     ),
                     const SizedBox(height: 6),
-                    if (_isKaderMode && motherLabel.isNotEmpty) ...[
-                      Text(
-                        'Ibu: $motherLabel',
-                        style: TextStyle(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.grey.shade700,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                    ],
-                    if (_isKaderMode) ...[
-                      Text(
-                        '${record.rentangUsia?.namaRentang ?? '-'} · ${_periodeLabel(record)}',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey.shade700,
-                        ),
-                      ),
-                    ] else ...[
-                      Text(
-                        _periodeLabel(record),
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey.shade700,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Row(
-                  children: [
-                    Icon(statusIcon, size: 14, color: statusColor),
-                    const SizedBox(width: 6),
                     Text(
-                      record.status,
+                      _periodeLabel(record),
                       style: TextStyle(
-                        color: statusColor,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                        color: Colors.grey.shade700,
                       ),
                     ),
                   ],
@@ -616,8 +599,6 @@ class _RiwayatSkriningTandaBahayaScreenState
           const SizedBox(height: 14),
           _infoRow(
               Icons.calendar_today_rounded, 'Tanggal', record.tanggalPeriksa),
-          const SizedBox(height: 8),
-          _infoRow(Icons.badge_rounded, 'Pemeriksa', examiner),
           const SizedBox(height: 8),
           _infoRow(
             Icons.checklist_rounded,
@@ -682,81 +663,7 @@ class _RiwayatSkriningTandaBahayaScreenState
               ),
             ),
           ],
-          const SizedBox(height: 8),
-          _infoRow(
-            Icons.verified_rounded,
-            _isKaderMode ? 'Update status' : 'Tgl verifikasi',
-            record.status == 'Menunggu verifikasi' ? '-' : record.updatedAt,
-          ),
-          if (_isKaderMode) ...[
-            const SizedBox(height: 12),
-            if (isPending)
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: isBusy
-                          ? null
-                          : () => _verifyRecord(record, 'Ditolak'),
-                      icon: isBusy
-                          ? const SizedBox(
-                              width: 14,
-                              height: 14,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.close_rounded),
-                      label: const Text('Tolak'),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: FilledButton.icon(
-                      onPressed: isBusy
-                          ? null
-                          : () => _verifyRecord(record, 'Diterima'),
-                      icon: isBusy
-                          ? const SizedBox(
-                              width: 14,
-                              height: 14,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.check_rounded),
-                      label: const Text('Setujui'),
-                    ),
-                  ),
-                ],
-              )
-            else
-              Container(
-                width: double.infinity,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF8FAFC),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
-                ),
-                child: Text(
-                  'Sudah diverifikasi oleh $examiner',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade700,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-          ],
-          if (record.status != 'Diterima') ...[
-            const SizedBox(height: 12),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: OutlinedButton.icon(
-                onPressed: () => _showRecordHelp(record),
-                icon: const Icon(Icons.help_outline_rounded),
-                label: const Text('Lihat Detail'),
-              ),
-            ),
-          ],
+
         ],
       ),
     );
@@ -807,9 +714,7 @@ class _RiwayatSkriningTandaBahayaScreenState
           ),
           const SizedBox(height: 16),
           Text(
-            _isKaderMode
-                ? 'Belum ada data menunggu verifikasi'
-                : 'Belum ada riwayat skrining',
+            'Belum ada riwayat skrining',
             textAlign: TextAlign.center,
             style: const TextStyle(
               fontSize: 18,
@@ -819,9 +724,7 @@ class _RiwayatSkriningTandaBahayaScreenState
           ),
           const SizedBox(height: 8),
           Text(
-            _isKaderMode
-                ? 'Data skrining anak yang masuk akan tampil di sini untuk diverifikasi.'
-                : 'Hasil skrining yang sudah disimpan akan muncul di sini.',
+            'Hasil skrining yang sudah disimpan akan muncul di sini.',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 13,
@@ -830,14 +733,13 @@ class _RiwayatSkriningTandaBahayaScreenState
             ),
           ),
           const SizedBox(height: 16),
-          if (!_isKaderMode)
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: _openPemantauanHariIni,
-                child: const Text('Isi Pemantauan Hari Ini'),
-              ),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton(
+              onPressed: _openPemantauanHariIni,
+              child: const Text('Isi Pemantauan Hari Ini'),
             ),
+          ),
           const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { 
   Plus, X, Save, Loader2, Calendar, MessageSquare, 
-  ChevronLeft, Trash2, Edit3, Stethoscope
+  ChevronLeft, ArrowLeft, Trash2, Edit3, Stethoscope
 } from "lucide-react";
 import MainLayout from "../../../components/Layout/MainLayout";
 import AlertNotification from "../../../components/AlertNotification";
@@ -12,6 +12,7 @@ import {
   updateKeluhan, 
   deleteKeluhan 
 } from "../../../services/keluhanAnak";
+import { getCurrentUser } from "../../../services/auth";
 
 const KeluhanAnak = () => {
   const { id } = useParams();
@@ -47,13 +48,15 @@ const KeluhanAnak = () => {
   }, [id]);
 
   const handleOpenModal = (item = null) => {
+    const user = getCurrentUser();
+    const loginName = user?.nama || user?.name || "";
     if (item) {
       setEditingId(item.id);
       setFormData({
         tanggal: item.tanggal ? item.tanggal.split('T')[0] : new Date().toISOString().split('T')[0],
         keluhan: item.keluhan || "",
         tindakan: item.tindakan || "",
-        pemeriksa: item.pemeriksa || ""
+        pemeriksa: item.pemeriksa || loginName
       });
     } else {
       setEditingId(null);
@@ -61,7 +64,7 @@ const KeluhanAnak = () => {
         tanggal: new Date().toISOString().split('T')[0],
         keluhan: "",
         tindakan: "",
-        pemeriksa: ""
+        pemeriksa: loginName
       });
     }
     setIsModalOpen(true);
@@ -141,10 +144,10 @@ const KeluhanAnak = () => {
           {/* Header */}
           <div className="mb-8">
             <button 
-              onClick={() => navigate(-1)}
-              className="flex items-center gap-2 text-sm text-slate-400 hover:text-blue-600 transition-colors mb-4 font-bold"
+              onClick={() => navigate(`/data-anak/dashboard/${id}`)}
+              className="flex items-center gap-2 px-6 py-2 border border-blue-600 text-blue-600 hover:bg-blue-50 rounded-full font-medium text-sm transition-all group w-fit mb-4 mt-2"
             >
-              <ChevronLeft size={16} /> Kembali
+              <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Kembali
             </button>
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
               <div className="flex items-center gap-5">
@@ -280,13 +283,13 @@ const KeluhanAnak = () => {
               </div>
 
               <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Pemeriksa (Opsional)</label>
+                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Pemeriksa</label>
                 <input
                   type="text"
                   placeholder="Nama Bidan / Kader"
                   value={formData.pemeriksa}
-                  onChange={(e) => setFormData({ ...formData, pemeriksa: e.target.value })}
-                  className="w-full bg-slate-50 border border-slate-100 rounded-[20px] py-4 px-6 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  readOnly
+                  className="w-full bg-slate-100 border border-slate-200 rounded-[20px] py-4 px-6 text-sm font-bold text-slate-500 cursor-not-allowed outline-none"
                 />
               </div>
 

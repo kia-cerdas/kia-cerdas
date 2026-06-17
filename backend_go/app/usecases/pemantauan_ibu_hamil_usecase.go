@@ -14,6 +14,8 @@ type PemantauanIbuHamilUsecase interface {
 	// Kader
 	GetAll() ([]models.PemantauanIbuHamil, error)
 	Verify(id int32, namaKader string, tanggalVerifikasi *time.Time) error
+	// Untuk profil pemantauan ibu
+	GetByKehamilanID(userID int32, kehamilanID int32) ([]models.PemantauanIbuHamil, error)
 }
 
 type pemantauanIbuHamilUsecase struct {
@@ -104,6 +106,22 @@ func (u *pemantauanIbuHamilUsecase) SaveMine(
 	}
 
 	return data, nil
+}
+
+func (u *pemantauanIbuHamilUsecase) GetByKehamilanID(userID int32, kehamilanID int32) ([]models.PemantauanIbuHamil, error) {
+	if userID == 0 {
+		return nil, errors.New("user_id tidak valid")
+	}
+	if kehamilanID == 0 {
+		return nil, errors.New("kehamilan_id tidak valid")
+	}
+
+	// Validasi: pastikan kehamilan ini milik user yang login
+	if err := u.repo.ValidateKehamilanOwner(userID, kehamilanID); err != nil {
+		return nil, errors.New("kehamilan tidak ditemukan atau bukan milik user ini")
+	}
+
+	return u.repo.FindByKehamilanID(kehamilanID)
 }
 
 // ─── BAGIAN KADER ────────────────────────────────────────────────────────────

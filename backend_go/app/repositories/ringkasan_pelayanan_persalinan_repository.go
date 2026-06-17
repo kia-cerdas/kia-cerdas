@@ -64,6 +64,11 @@ func (r *RingkasanPelayananPersalinanRepository) GetMine(
 }
 
 func (r *RingkasanPelayananPersalinanRepository) Delete(id int32) error {
+	// First, set ringkasan_pelayanan_persalinan_id to NULL in related keterangan_lahir records
+	if err := r.db.Exec("UPDATE keterangan_lahir SET ringkasan_pelayanan_persalinan_id = NULL WHERE ringkasan_pelayanan_persalinan_id = ?", id).Error; err != nil {
+		return err
+	}
+
 	result := r.db.Delete(&models.RingkasanPelayananPersalinan{}, id)
 	if result.Error != nil {
 		return result.Error

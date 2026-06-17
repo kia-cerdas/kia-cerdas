@@ -137,8 +137,8 @@ export default function RencanaPersalinanDetail() {
 
         {/* Mode baca */}
         {!canEdit && (
-          <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg mb-4 text-blue-700 text-sm flex items-center gap-2">
-            <Home size={16} /> Anda dalam mode baca (Dokter). Data hanya dapat dilihat, tidak dapat diubah.
+          <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg text-blue-700 text-base flex items-center gap-2">
+            <Eye size={16} /> Anda dalam mode baca (Dokter). Data hanya dapat dilihat, tidak dapat diubah.
           </div>
         )}
 

@@ -60,7 +60,7 @@ class _PerawatanScreenIntegratedState extends State<PerawatanScreenIntegrated>
       _loadingStatus[range] = true;
       _errorStatus[range] = '';
     }
-    
+
     if (mounted) {
       setState(() {});
     }
@@ -68,12 +68,12 @@ class _PerawatanScreenIntegratedState extends State<PerawatanScreenIntegrated>
     for (final range in _ageRanges) {
       try {
         print('Loading kategori capaian for: $range, anakId: ${widget.anakId}');
-        
+
         // Load kategori capaian
         final kategori =
             await _apiService.getKategoriCapaianByRentangUsia(range);
         print('✓ Loaded ${kategori.length} kategori for $range');
-        
+
         _kategoriByCageRange[range] = kategori;
 
         // Load existing perawatan data
@@ -81,7 +81,7 @@ class _PerawatanScreenIntegratedState extends State<PerawatanScreenIntegrated>
           final perawatan = await _apiService
               .getPerawatanByAnakIdAndRentangUsia(widget.anakId, range);
           print('✓ Loaded ${perawatan.length} perawatan data for $range');
-          
+
           for (final item in perawatan) {
             _checklist[item.kategoriCapaianId] = item.jawaban;
           }
@@ -178,7 +178,8 @@ class _PerawatanScreenIntegratedState extends State<PerawatanScreenIntegrated>
           labelColor: const Color(0xFFD97706),
           unselectedLabelColor: Colors.grey,
           indicatorColor: const Color(0xFFD97706),
-          labelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
+          labelStyle:
+              const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
           tabs: _ageRanges.map((range) => Tab(text: range)).toList(),
         ),
       ),
@@ -280,7 +281,8 @@ class _PerawatanScreenIntegratedState extends State<PerawatanScreenIntegrated>
           _buildChecklistTable(kategori, rentangUsia),
           const SizedBox(height: 20),
           ElevatedButton.icon(
-            onPressed: _isSubmitting ? null : () => _submitChecklist(rentangUsia),
+            onPressed:
+                _isSubmitting ? null : () => _submitChecklist(rentangUsia),
             icon: const Icon(Icons.save),
             label: _isSubmitting
                 ? const SizedBox(
@@ -440,8 +442,8 @@ class _PerawatanScreenIntegratedState extends State<PerawatanScreenIntegrated>
                         width: 28,
                         child: Text(
                           '${i + 1}',
-                          style:
-                              const TextStyle(fontSize: 12, color: Colors.black54),
+                          style: const TextStyle(
+                              fontSize: 12, color: Colors.black54),
                         ),
                       ),
                       Expanded(
