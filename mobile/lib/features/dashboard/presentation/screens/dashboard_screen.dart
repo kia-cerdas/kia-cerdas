@@ -1,4 +1,4 @@
-// import 'package:flutter/material.dart';
+﻿// import 'package:flutter/material.dart';
 // import 'package:ta_pa2_pa3_project/core/services/auth_session.dart';
 // import 'package:ta_pa2_pa3_project/core/themes/app_theme.dart';
 // import 'package:ta_pa2_pa3_project/features/anak/mpasi/presentation/screens/mpasi_menu_screen.dart';
@@ -939,7 +939,7 @@
 //           onTap: () => Navigator.push(
 //             context,
 //             MaterialPageRoute(
-//                 builder: (_) => const PilihAnakScreen(tujuan: 'bahaya')),
+//                 builder: (_) => const PilihAnakScreen(tujuan: 'darurat')),
 //           ),
 //           child: Container(
 //             padding: const EdgeInsets.all(14),
@@ -2584,7 +2584,7 @@
 //           onTap: () => Navigator.push(
 //             context,
 //             MaterialPageRoute(
-//                 builder: (_) => const PilihAnakScreen(tujuan: 'bahaya')),
+//                 builder: (_) => const PilihAnakScreen(tujuan: 'darurat')),
 //           ),
 //           child: Container(
 //             padding: const EdgeInsets.all(14),
@@ -3829,7 +3829,7 @@
 //           onTap: () => Navigator.push(
 //             context,
 //             MaterialPageRoute(
-//                 builder: (_) => const PilihAnakScreen(tujuan: 'bahaya')),
+//                 builder: (_) => const PilihAnakScreen(tujuan: 'darurat')),
 //           ),
 //           child: Container(
 //             padding: const EdgeInsets.all(14),
@@ -5376,17 +5376,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           )
         else if (_anakSaya != null && _anakSaya!.isNotEmpty)
-          SizedBox(
-            height: 100,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              clipBehavior: Clip.none, // Supaya bayangan card tidak terpotong
-              itemCount: _anakSaya!.length,
-              itemBuilder: (context, index) {
-                return _buildAnakCard(_anakSaya![index]);
-              },
-            ),
-          )
+          _anakSaya!.length == 1
+              // 1 anak -> full width
+              ? _buildAnakCard(_anakSaya![0], fullWidth: true)
+              // > 1 anak -> horizontal scroll, kartu 75%
+              : SizedBox(
+                  height: 100,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    clipBehavior: Clip.none,
+                    itemCount: _anakSaya!.length,
+                    itemBuilder: (context, index) {
+                      return _buildAnakCard(_anakSaya![index]);
+                    },
+                  ),
+                )
         else
           Container(
             padding: const EdgeInsets.all(16),
@@ -5501,7 +5505,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           onTap: () => Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (_) => const PilihAnakScreen(tujuan: 'bahaya')),
+                builder: (_) => const PilihAnakScreen(tujuan: 'darurat')),
           ),
           child: Container(
             padding: const EdgeInsets.all(14),
@@ -5537,12 +5541,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildAnakCard(IbuAnakModel anak) {
+  Widget _buildAnakCard(IbuAnakModel anak, {bool fullWidth = false}) {
     return Container(
-      margin: const EdgeInsets.only(right: 16),
+      margin: fullWidth ? EdgeInsets.zero : const EdgeInsets.only(right: 16),
       padding: const EdgeInsets.all(16),
-      width: MediaQuery.of(context).size.width *
-          0.75, // Biar card berikutnya ngintip
+      width: fullWidth
+          ? double.infinity
+          : MediaQuery.of(context).size.width * 0.75, // Biar card berikutnya ngintip
       decoration: BoxDecoration(
         color: const Color(0xFFEFF6FF), // Background biru sangat muda
         borderRadius: BorderRadius.circular(16),

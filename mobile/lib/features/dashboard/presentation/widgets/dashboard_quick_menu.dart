@@ -77,69 +77,62 @@ class DashboardTumbuhQuickMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    // Tetap pakai ukuran kartu lama, tetapi batasi lebar layout agar hanya muat 2 kartu per baris.
-    final itemWidth = (screenWidth - 40 - 24) / 3;
-    final itemHeight = itemWidth * 1.15;
-    final gridWidth = (itemWidth * 2) + 12;
-
-    return Center(
-      child: SizedBox(
-        width: gridWidth,
-        child: Wrap(
-          alignment: WrapAlignment.center,
-          spacing: 12,
-          runSpacing: 12,
-          children: items.map((item) {
-            return SizedBox(
-              width: itemWidth,
-              height: itemHeight,
-              child: InkWell(
-                onTap: item['onTap'] as VoidCallback? ?? () {},
-                borderRadius: BorderRadius.circular(16),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 6,
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(item['icon'] as IconData,
-                          color: item['color'] as Color),
-                      const SizedBox(height: 6),
-                      Text(
-                        item['label'] as String,
-                        style: const TextStyle(fontSize: 12),
-                        textAlign: TextAlign.center,
-                      ),
-                      if (item['desc'] != null) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          item['desc'] as String,
-                          style: const TextStyle(
-                            fontSize: 10,
-                            color: Colors.black54,
-                          ),
-                          textAlign: TextAlign.center,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ),
-            );
-          }).toList(),
-        ),
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
+        childAspectRatio: 1.3,
       ),
+      itemCount: items.length,
+      itemBuilder: (context, i) {
+        final item = items[i];
+        return InkWell(
+          onTap: item['onTap'] as VoidCallback? ?? () {},
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 6,
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(item['icon'] as IconData,
+                    color: item['color'] as Color, size: 28),
+                const SizedBox(height: 8),
+                Text(
+                  item['label'] as String,
+                  style: const TextStyle(
+                      fontSize: 13, fontWeight: FontWeight.w600),
+                  textAlign: TextAlign.center,
+                ),
+                if (item['desc'] != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    item['desc'] as String,
+                    style: const TextStyle(
+                      fontSize: 10,
+                      color: Colors.black54,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
