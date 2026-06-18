@@ -243,31 +243,37 @@ class _UbahJadwalScreenState extends State<UbahJadwalScreen> {
                       const SizedBox(height: 16),
 
                       // ================= EDIT DATE =================
+                      
                       _buildCard(
                         title: "Ubah Tanggal Estimasi",
                         children: [
-                          DropdownButtonFormField<JadwalLayananModel>(
-                            value: selectedJadwal,
-                            decoration: InputDecoration(
-                              labelText: "Pilih Jadwal Posyandu",
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            items: jadwalLayanan.map((item) {
-                              return DropdownMenuItem(
-                                value: item,
-                                child: Text(
-                                  "${DateFormat('dd MMM yyyy').format(item.tanggal)} - ${item.layanan}",
-                                ),
-                              );
-                            }).toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                selectedJadwal = value;
-                              });
-                            },
-                          ),
+                          Text("Jumlah jadwal: ${jadwalLayanan.length}"),
+DropdownButtonFormField<JadwalLayananModel>(
+  
+  isExpanded: true,
+  value: selectedJadwal,
+  decoration: InputDecoration(
+    labelText: "Pilih Jadwal Posyandu",
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+    ),
+  ),
+  items: jadwalLayanan.map((item) {
+    return DropdownMenuItem<JadwalLayananModel>(
+      value: item,
+      child: Text(
+        "${DateFormat('dd MMM yyyy').format(item.tanggal)} - ${item.layanan}",
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
+  }).toList(),
+  onChanged: (value) {
+    debugPrint("Dipilih: ${value?.id}");
+    setState(() {
+      selectedJadwal = value;
+    });
+  },
+)
                         ],
                       ),
 
