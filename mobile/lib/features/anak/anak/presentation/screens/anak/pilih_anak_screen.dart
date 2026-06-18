@@ -8,6 +8,7 @@ import 'package:ta_pa2_pa3_project/features/anak/pemantauan/presentation/screens
 import 'package:ta_pa2_pa3_project/features/anak/pertumbuhan/presentation/screens/pertumbuhan_info_screen.dart';
 import 'package:ta_pa2_pa3_project/features/anak/pemantauan/presentation/screens/skrining/pemantauan_menu_screen.dart';
 import 'package:ta_pa2_pa3_project/features/anak/catatan/presentation/screens/catatan_menu_screen.dart';
+import 'package:ta_pa2_pa3_project/features/anak/pemantauan/presentation/screens/deteksi_gejala_darurat_screen.dart';
 
 class PilihAnakScreen extends StatefulWidget {
   final String tujuan;
@@ -206,6 +207,15 @@ class _PilihAnakScreenState extends State<PilihAnakScreen> {
         context,
         MaterialPageRoute(
           builder: (_) => PemantauanMenuScreen(anak: anakMap),
+        ),
+      );
+      return;
+    }
+    if (widget.tujuan == 'darurat') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => DeteksiGejalaDaruratScreen(anak: anakMap),
         ),
       );
       return;

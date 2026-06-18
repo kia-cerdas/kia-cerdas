@@ -560,6 +560,17 @@ class _AbsensiKelasIbuHamilScreenState
   List<AbsensiKelasIbuHamilModel> _absensiList = [];
   bool _isLoading = false;
 
+  // ── Pagination ──
+  static const int _pageSize = 10;
+  int _currentPage = 0;
+
+  int get _totalPages => (_absensiList.length / _pageSize).ceil().clamp(1, 999);
+  List<AbsensiKelasIbuHamilModel> get _pagedList {
+    final start = _currentPage * _pageSize;
+    final end = (start + _pageSize).clamp(0, _absensiList.length);
+    return _absensiList.sublist(start, end);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -577,7 +588,10 @@ class _AbsensiKelasIbuHamilScreenState
     setState(() => _isLoading = true);
     try {
       final list = await _apiService.getMine();
-      setState(() => _absensiList = list);
+      setState(() {
+        _absensiList = list;
+        _currentPage = 0;
+      });
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -601,21 +615,8 @@ class _AbsensiKelasIbuHamilScreenState
   bool get _adaYangBelumVerifikasi =>
       _absensiList.any((a) => a.status == 'Menunggu Verifikasi');
 
-  // Popup konfirmasi saat ibu menekan tombol back.
-  void _showExitPopup() {
-    showVerificationPopup(
-      context: context,
-      type: VerificationPopupType.exit,
-      title: 'Yakin ingin keluar?',
-      content:
-          'Apakah Anda yakin ingin keluar dari halaman ini? Data yang belum dikirim tidak akan tersimpan.',
-      onConfirm: () {
-        Navigator.pop(context); // tutup popup
-        Navigator.pop(context); // keluar dari halaman
-      },
-      onCancel: () => Navigator.pop(context),
-    );
-  }
+
+
 
   // =============================================================
   // BOTTOM SHEET: form "Isi Absensi Baru"
@@ -913,7 +914,7 @@ class _AbsensiKelasIbuHamilScreenState
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: _showExitPopup,
+          onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           'Absensi Kelas Ibu Hamil',
@@ -928,13 +929,7 @@ class _AbsensiKelasIbuHamilScreenState
           child: Container(color: Colors.white24, height: 1.0),
         ),
       ),
-      body: PopScope(
-        canPop: false,
-        onPopInvoked: (didPop) {
-          if (didPop) return;
-          _showExitPopup();
-        },
-        child: _isLoading
+      body: _isLoading
             ? const Center(child: CircularProgressIndicator())
             : RefreshIndicator(
                 onRefresh: _loadAbsensi,
@@ -1068,10 +1063,11 @@ class _AbsensiKelasIbuHamilScreenState
                               ),
                             ),
                             const Divider(height: 1),
-                            // Baris-baris data (dinamis, tak terbatas)
-                            ...List.generate(_absensiList.length, (i) {
-                              final item = _absensiList[i];
-                              final isLast = i == _absensiList.length - 1;
+                            // Baris-baris data (paginated)
+                            ...List.generate(_pagedList.length, (i) {
+                              final globalIndex = _currentPage * _pageSize + i;
+                              final item = _pagedList[i];
+                              final isLast = i == _pagedList.length - 1;
                               return Column(
                                 children: [
                                   Padding(
@@ -1081,7 +1077,7 @@ class _AbsensiKelasIbuHamilScreenState
                                       children: [
                                         SizedBox(
                                           width: 28,
-                                          child: Text('${i + 1}',
+                                          child: Text('${globalIndex + 1}',
                                               style: const TextStyle(
                                                   fontSize: 13,
                                                   color: Color(0xFF374151))),
@@ -1120,6 +1116,58 @@ class _AbsensiKelasIbuHamilScreenState
                                 ],
                               );
                             }),
+                            // ── Pagination controls ──
+                            if (_totalPages > 1) ...[
+                              const Divider(height: 1),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 10),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      'Halaman ${_currentPage + 1} dari $_totalPages',
+                                      style: const TextStyle(
+                                          fontSize: 12,
+                                          color: Color(0xFF6B7280)),
+                                    ),
+                                    Row(
+                                      children: [
+                                        IconButton(
+                                          icon: const Icon(
+                                              Icons.chevron_left_rounded),
+                                          onPressed: _currentPage > 0
+                                              ? () => setState(
+                                                  () => _currentPage--)
+                                              : null,
+                                          iconSize: 20,
+                                          padding: EdgeInsets.zero,
+                                          constraints:
+                                              const BoxConstraints(),
+                                          color: AppColors.primary,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        IconButton(
+                                          icon: const Icon(
+                                              Icons.chevron_right_rounded),
+                                          onPressed:
+                                              _currentPage < _totalPages - 1
+                                                  ? () => setState(
+                                                      () => _currentPage++)
+                                                  : null,
+                                          iconSize: 20,
+                                          padding: EdgeInsets.zero,
+                                          constraints:
+                                              const BoxConstraints(),
+                                          color: AppColors.primary,
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ] else ...[
                             const Padding(
                               padding: EdgeInsets.fromLTRB(16, 0, 16, 20),
@@ -1201,7 +1249,6 @@ class _AbsensiKelasIbuHamilScreenState
                   ],
                 ),
               ),
-      ),
     );
   }
 }

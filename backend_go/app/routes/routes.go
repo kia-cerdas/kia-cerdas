@@ -321,6 +321,7 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	tenaga.GET("/perawatan", controller.GetPerawatanByAnakID)
 	tenaga.GET("/perawatan/:id", controller.GetPerawatanByID)
 	tenaga.POST("/perawatan", controller.CreatePerawatan)
+	tenaga.POST("/perawatan/bulk", controller.CreateBulkPerawatan)
 	tenaga.PUT("/perawatan/:id", controller.UpdatePerawatan)
 	tenaga.DELETE("/perawatan/:id", controller.DeletePerawatan)
 	// tenaga.GET("/perawatan", controller.GetPerawatanByAnakID)
@@ -886,6 +887,7 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	ibu.GET("/perawatan/anak/:anak_id", controller.GetPerawatanByAnakID)
 	ibu.GET("/perawatan/anak/:anak_id/rentang-usia/:rentang_usia", controller.GetPerawatanByAnakIDAndRentangUsia)
 	ibu.POST("/perawatan", controller.CreatePerawatan)
+	ibu.POST("/perawatan/bulk", controller.CreateBulkPerawatan)
 	ibu.PUT("/perawatan/:id", controller.UpdatePerawatan)
 	ibu.DELETE("/perawatan/:id", controller.DeletePerawatan)
 	// Catatan: Ibu tidak memiliki akses UPDATE/DELETE/VERIFY untuk menjaga integritas rekam medis
