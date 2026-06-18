@@ -141,7 +141,8 @@ class _GrafikEvaluasiKehamilanScreenState
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      backgroundColor: _C.primary,
+      // backgroundColor: _C.primary,
+      backgroundColor: AppColors.primary,
       foregroundColor: Colors.white,
       elevation: 0,
       title: const Text(
