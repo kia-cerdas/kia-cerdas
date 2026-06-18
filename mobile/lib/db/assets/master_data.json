@@ -1,0 +1,390 @@
+{
+  "edukasi_informasi_umum": [
+    {
+      "id": "1",
+      "tipe": "",
+      "judul": "Pentingnya Gizi Seimbang (Update)",
+      "umur_target": "",
+      "durasi_baca": "",
+      "ringkasan": "",
+      "konten": "Konten diperbarui.",
+      "yang_perlu_diingat": "",
+      "thumbnail_url": "",
+      "is_active": 0,
+      "created_at": "2026-06-04 06:25:38",
+      "updated_at": "2026-06-11 08:34:05",
+      "deleted_at": "2026-06-11 08:35:41"
+    },
+    {
+      "id": "2",
+      "tipe": "panduan",
+      "judul": "Menjaga Kebersihan Rumah untuk Kesehatan Anak",
+      "umur_target": "0–12 Tahun",
+      "durasi_baca": "4 Menit",
+      "ringkasan": "Rumah yang bersih dan sehat membantu melindungi anak dari penyakit serta menciptakan lingkungan yang nyaman untuk tumbuh dan berkembang.",
+      "konten": "Kebersihan rumah memiliki peran penting dalam menjaga kesehatan keluarga. Membersihkan lantai, kamar mandi, dapur, serta memastikan sampah dibuang secara rutin dapat mengurangi risiko penyebaran penyakit. Ventilasi yang baik juga membantu menjaga kualitas udara di dalam rumah. Orang tua dapat melibatkan anak dalam kegiatan sederhana seperti merapikan mainan dan membuang sampah pada tempatnya agar mereka belajar menjaga kebersihan sejak dini.",
+      "yang_perlu_diingat": "Buang sampah setiap hari.\nBersihkan area bermain anak secara rutin.\nPastikan ventilasi rumah berfungsi baik.\nHindari genangan air yang dapat menjadi sarang nyamuk.",
+      "thumbnail_url": "https://images.unsplash.com/photo-1527515637462-cff94eecc1ac",
+      "is_active": 1,
+      "created_at": "2026-06-04 06:26:25",
+      "updated_at": "2026-06-04 06:26:25",
+      "deleted_at": null
+    },
+    {
+      "id": "3",
+      "tipe": "edukasi",
+      "judul": "Mencegah Kecelakaan Anak di Dalam Rumah",
+      "umur_target": "0–12 Tahun",
+      "durasi_baca": "4 Menit",
+      "ringkasan": "Sebagian besar kecelakaan pada anak dapat dicegah dengan menciptakan lingkungan rumah yang aman.",
+      "konten": "Anak memiliki rasa ingin tahu yang tinggi sehingga berisiko mengalami cedera apabila lingkungan rumah tidak aman. Simpan benda tajam, obat-obatan, cairan pembersih, dan barang berbahaya lainnya di tempat yang tidak dapat dijangkau anak. Gunakan pelindung pada stop kontak listrik dan pengaman pada tangga jika diperlukan. Pengawasan orang tua tetap menjadi langkah utama dalam mencegah kecelakaan pada anak.",
+      "yang_perlu_diingat": "Simpan obat dan bahan kimia di tempat tertutup.\nJauhkan benda tajam dari jangkauan anak.\nAwasi anak saat bermain.\nPastikan perabot rumah aman untuk anak.",
+      "thumbnail_url": "https://images.unsplash.com/photo-1516627145497-ae6968895b74",
+      "is_active": 1,
+      "created_at": "2026-06-04 06:27:27",
+      "updated_at": "2026-06-04 06:27:27",
+      "deleted_at": null
+    },
+    {
+      "id": "4",
+      "tipe": "tips",
+      "judul": "Cara Menjaga Kebersihan Mainan Anak",
+      "umur_target": "0–10 Tahun",
+      "durasi_baca": "4 Menit",
+      "ringkasan": "Mainan yang bersih membantu melindungi anak dari paparan kuman dan bakteri penyebab penyakit.",
+      "konten": "Mainan yang sering digunakan anak dapat menjadi tempat berkumpulnya debu, kotoran, dan kuman. Oleh karena itu, mainan perlu dibersihkan secara berkala sesuai jenis bahannya. Mainan plastik dapat dicuci menggunakan air dan sabun, sedangkan mainan berbahan kain perlu dicuci secara rutin. Selain membersihkan, orang tua juga perlu memeriksa kondisi mainan untuk memastikan tidak ada bagian yang rusak atau berbahaya.",
+      "yang_perlu_diingat": "Bersihkan mainan secara rutin.\nBuang mainan yang rusak atau pecah.\nSimpan mainan di tempat yang bersih.\nCuci tangan anak setelah bermain di luar rumah.",
+      "thumbnail_url": "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4",
+      "is_active": 1,
+      "created_at": "2026-06-04 06:28:17",
+      "updated_at": "2026-06-04 06:28:17",
+      "deleted_at": null
+    },
+    {
+      "id": "5",
+      "tipe": "artikel",
+      "judul": "Menciptakan Lingkungan Bermain yang Aman dan Nyaman",
+      "umur_target": "1–12 Tahun",
+      "durasi_baca": "4 Menit",
+      "ringkasan": "Lingkungan bermain yang aman membantu anak belajar, berinteraksi, dan berkembang secara optimal.",
+      "konten": "Bermain merupakan bagian penting dalam proses tumbuh kembang anak. Area bermain perlu dijaga agar tetap bersih, bebas dari benda berbahaya, dan sesuai dengan usia anak. Pastikan tidak terdapat kabel listrik terbuka, benda tajam, atau permukaan licin yang dapat menyebabkan cedera. Selain itu, pilih mainan yang sesuai usia dan memiliki standar keamanan yang baik. Lingkungan bermain yang aman membuat anak lebih leluasa untuk bereksplorasi dan belajar.",
+      "yang_perlu_diingat": "Pastikan area bermain bersih dan aman.\nGunakan mainan sesuai usia anak.\nAwasi anak saat bermain.\nPeriksa kondisi mainan secara berkala.",
+      "thumbnail_url": "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9",
+      "is_active": 1,
+      "created_at": "2026-06-04 06:29:07",
+      "updated_at": "2026-06-07 09:44:06",
+      "deleted_at": null
+    },
+    {
+      "id": "7",
+      "tipe": "panduan",
+      "judul": "Panduan untuk menyuci tangan pada anak",
+      "umur_target": "",
+      "durasi_baca": "",
+      "ringkasan": "Mencuci tangan menggunakan air bersih dan dengan sabun",
+      "konten": "Mencuci tangan menggunakan air bersih dan dengan sabun tangan  dan membilas dengan air mengalir kembali hingga bersih",
+      "yang_perlu_diingat": "Menggunakan air bersih dan sabun",
+      "thumbnail_url": "https://vnwpsqadeavtsesrvuii.supabase.co/storage/v1/object/public/image/mencucitangan.png",
+      "is_active": 1,
+      "created_at": "2026-06-09 03:18:01",
+      "updated_at": "2026-06-16 16:16:57",
+      "deleted_at": null
+    },
+    {
+      "id": "8",
+      "tipe": "panduan",
+      "judul": "Pentingnya Gizi Seimbang",
+      "umur_target": "",
+      "durasi_baca": "",
+      "ringkasan": "",
+      "konten": "Konten mengenai gizi seimbang untuk bayi dan ibu hamil.",
+      "yang_perlu_diingat": "",
+      "thumbnail_url": "",
+      "is_active": 1,
+      "created_at": "2026-06-11 08:24:13",
+      "updated_at": "2026-06-14 13:32:34",
+      "deleted_at": null
+    }
+  ],
+  "edukasi_menyusui_asi": [
+    {
+      "id": "2",
+      "judul": "Teknik Menyusui yang Nyaman dan Efektif",
+      "isi": "Teknik menyusui yang tepat membantu bayi mendapatkan ASI secara optimal sekaligus mencegah keluhan pada ibu. Posisi yang nyaman dan pelekatan yang benar dapat membuat proses menyusui lebih lancar dan menyenangkan.",
+      "manfaat_asi": "Memenuhi kebutuhan cairan bayi.\nMendukung pertumbuhan berat badan yang sehat.\nMenurunkan risiko penyakit infeksi.\nMembantu perkembangan sistem pencernaan bayi.\nMenjadi sumber nutrisi alami terbaik.",
+      "cara": "Pegang bayi menghadap payudara.\nKepala dan badan bayi berada dalam satu garis lurus.\nSentuhkan puting ke bibir bayi.\nTunggu hingga mulut bayi terbuka lebar.\nDekatkan bayi ke payudara, bukan payudara ke bayi.",
+      "masalah": "Bayi sering melepas puting.\nBayi tampak tidak kenyang.\nNyeri saat menyusui.\nBayi tertidur terlalu cepat saat menyusu.",
+      "solusi": "Pastikan pelekatan sudah benar.\nBangunkan bayi secara perlahan jika tertidur.\nGanti posisi menyusui bila terasa nyeri.\nKonsultasikan dengan konselor laktasi jika diperlukan.",
+      "gambar_url": "https://i.pinimg.com/1200x/1f/51/1e/1f511e6ac5b1188bfafa764b80e3c873.jpg",
+      "created_at": "2026-06-04 07:05:58",
+      "updated_at": "2026-06-04 17:16:30"
+    },
+    {
+      "id": "3",
+      "judul": "Mengatasi Produksi ASI yang Terasa Kurang",
+      "isi": "Banyak ibu merasa produksi ASI kurang pada minggu-minggu awal setelah melahirkan. Padahal, produksi ASI umumnya akan meningkat jika bayi sering menyusu and ibu mendapatkan nutrisi serta istirahat yang cukup.",
+      "manfaat_asi": "Membantu perkembangan otak bayi.\nMelindungi bayi dari penyakit.\nMengurangi risiko obesitas di masa depan.\nMendukung tumbuh kembang optimal\nMenyediakan nutrisi sesuai kebutuhan bayi.",
+      "cara": "Susui bayi sesuai keinginan bayi.\nKosongkan satu payudara sebelum berpindah.\nPastikan bayi melekat dengan baik.\nHindari pemberian susu formula tanpa indikasi medis.\nTetap lakukan kontak kulit dengan bayi.",
+      "masalah": "Produksi ASI dirasa sedikit.\nBayi sering menangis.\nPayudara terasa tidak penuh.\nIbu merasa cemas.",
+      "solusi": "Tingkatkan frekuensi menyusui.\nPerbanyak minum air putih.\nKonsumsi makanan bergizi seimbang.\nIstirahat yang cukup dan kelola stres.",
+      "gambar_url": "https://i.pinimg.com/736x/bc/18/d4/bc18d41d8a3d3c974af9e0ee4a4d3219.jpg",
+      "created_at": "2026-06-04 07:08:58",
+      "updated_at": "2026-06-04 07:08:58"
+    },
+    {
+      "id": "4",
+      "judul": "Mencegah dan Mengatasi Puting Lecet Saat Menyusui",
+      "isi": "Puting lecet merupakan salah satu keluhan yang sering dialami ibu menyusui, terutama pada minggu pertama setelah melahirkan. Kondisi ini biasanya disebabkan oleh pelekatan yang kurang tepat dan dapat diatasi dengan perawatan yang sesuai.",
+      "manfaat_asi": "Memberikan perlindungan imun alami.\nMembantu perkembangan organ bayi.\nMendukung kesehatan saluran cerna.\nMemenuhi kebutuhan energi bayi.\nMembantu bayi tumbuh sehat.",
+      "cara": "Pastikan bayi membuka mulut lebar.\nBayi harus mengisap sebagian besar areola.\nGunakan posisi menyusui yang nyaman.\nLepaskan hisapan bayi dengan benar sebelum memindahkan posisi.\nGanti posisi menyusui secara berkala.",
+      "masalah": "Puting lecet.\nNyeri saat menyusui.\nPerdarahan ringan pada puting.\nBayi sulit melekat.",
+      "solusi": "Perbaiki teknik pelekatan.\nOleskan beberapa tetes ASI pada puting.\nBiarkan puting kering secara alami.\nKonsultasikan ke tenaga kesehatan bila luka tidak membaik.",
+      "gambar_url": "https://i.pinimg.com/736x/a8/22/be/a822bebe4924428958b4faac747be45d.jpg",
+      "created_at": "2026-06-04 17:52:59",
+      "updated_at": "2026-06-04 17:52:59"
+    },
+    {
+      "id": "5",
+      "judul": "Peran ASI dalam Membangun Kesehatan Bayi Sejak Dini",
+      "isi": "ASI tidak hanya berfungsi sebagai sumber makanan, tetapi juga memberikan perlindungan terhadap berbagai penyakit dan membantu perkembangan bayi secara menyeluruh. Pemberian ASI eksklusif selama enam bulan pertama merupakan investasi kesehatan jangka panjang bagi anak.",
+      "manfaat_asi": "Menurunkan risiko diare dan infeksi saluran napas.\nMendukung perkembangan otak.\nMeningkatkan sistem kekebalan tubuh.\nMembantu pembentukan ikatan emosional.\nMengurangi risiko penyakit kronis di masa depan",
+      "cara": "Mulai menyusui sesegera mungkin setelah lahir.\nSusui bayi sesuai kebutuhan.\nPastikan posisi dan pelekatan benar.\nBerikan ASI eksklusif selama 6 bulan.\nLanjutkan pemberian ASI hingga usia 2 tahun atau lebih.",
+      "masalah": "Bayi menolak menyusu.\nPayudara bengkak.\nSaluran ASI tersumbat.\nIbu merasa lelah saat menyusui.",
+      "solusi": "Tetap susui bayi secara rutin.\nLakukan pijat payudara ringan.\nKompres hangat sebelum menyusui.\nMinta dukungan keluarga untuk membantu perawatan bayi dan pekerjaan rumah tangga.",
+      "gambar_url": "https://plus.unsplash.com/premium_photo-1681885399983-20394f8a7fe2?q=80&w=691&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "created_at": "2026-06-04 17:57:13",
+      "updated_at": "2026-06-04 17:57:13"
+    }
+  ],
+  "edukasi_setelah_melahirkan": [
+    {
+      "id": "2",
+      "judul": "Mengenali Tanda Bahaya Setelah Melahirkan",
+      "gambar_url": "https://i.pinimg.com/736x/e8/a1/13/e8a11355a1bd2a7b7ef02d5791b0294d.jpg",
+      "isi": "Ibu perlu mengenali tanda bahaya pada masa nifas agar dapat segera memperoleh pertolongan medis. Beberapa tanda yang perlu diwaspadai antara lain perdarahan berlebihan, demam tinggi, nyeri hebat pada perut atau luka jahitan, serta keluarnya cairan berbau tidak sedap dari jalan lahir. Jika mengalami salah satu gejala tersebut, segera periksakan diri ke fasilitas kesehatan.",
+      "created_at": "2026-06-04 06:55:33",
+      "updated_at": "2026-06-04 06:55:33"
+    },
+    {
+      "id": "3",
+      "judul": "Pentingnya Nutrisi bagi Ibu Pasca Persalinan",
+      "gambar_url": "https://i.pinimg.com/736x/48/8c/f4/488cf415a03b6a065edc861610e99f90.jpg",
+      "isi": "After melahirkan, tubuh membutuhkan asupan nutrisi yang cukup untuk mempercepat penyembuhan dan mendukung produksi ASI. Ibu dianjurkan mengonsumsi makanan yang mengandung protein, zat besi, kalsium, vitamin, dan mineral. Perbanyak konsumsi buah, sayur, serta air putih untuk menjaga kesehatan tubuh dan mencegah dehidrasi.",
+      "created_at": "2026-06-04 06:56:58",
+      "updated_at": "2026-06-04 06:56:58"
+    },
+    {
+      "id": "4",
+      "judul": "Menjaga Kesehatan Mental Setelah Melahirkan",
+      "gambar_url": "https://i.pinimg.com/736x/11/01/11/110111702e7016f827a59c10c41f9beb.jpg",
+      "isi": "Perubahan hormon dan tanggung jawab baru sebagai orang tua dapat memengaruhi kondisi emosional ibu. Perasaan sedih, mudah menangis, atau cemas ringan pada beberapa hari pertama setelah melahirkan dapat terjadi. Namun, jika keluhan berlangsung lama dan mengganggu aktivitas sehari-hari, ibu perlu berkonsultasi dengan tenaga kesehatan untuk mendapatkan bantuan yang tepat.",
+      "created_at": "2026-06-04 06:58:24",
+      "updated_at": "2026-06-04 06:58:24"
+    },
+    {
+      "id": "5",
+      "judul": "Pentingnya Kontrol Nifas Setelah Persalinan",
+      "gambar_url": "https://i.pinimg.com/1200x/39/b7/cd/39b7cda6881d2fa6c5c538b6a4ebabb5.jpg",
+      "isi": "Pemeriksaan nifas merupakan bagian penting dari perawatan ibu setelah melahirkan. Melalui kunjungan kontrol, tenaga kesehatan dapat memantau kondisi rahim, luka persalinan, tekanan darah, produksi ASI, serta kesehatan ibu secara keseluruhan. Pemeriksaan rutin membantu mendeteksi masalah kesehatan lebih dini sehingga dapat ditangani dengan cepat dan tepat.",
+      "created_at": "2026-06-04 07:00:30",
+      "updated_at": "2026-06-04 07:00:30"
+    }
+  ],
+  "edukasi_tanda_melahirkan": [
+    {
+      "id": "2",
+      "judul": "Air Ketuban Pecah Sebagai Tanda Persalinan",
+      "isi": "Pecahnya air ketuban merupakan salah satu tanda bahwa persalinan dapat segera terjadi. Cairan ketuban biasanya keluar dari jalan lahir dan tidak dapat ditahan seperti saat buang air kecil. Warna cairan umumnya bening atau sedikit kekuningan. Jika air ketuban berwarna hijau, cokelat, atau berbau tidak normal, segera periksakan diri ke fasilitas kesehatan.",
+      "tanda": "Keluarnya cairan dari jalan lahir.\nCairan terus mengalir atau merembes.\nTidak dapat ditahan.\nDapat disertai kontraksi.",
+      "tindakan": "Gunakan pembalut bersih.\nCatat waktu pecahnya ketuban.\nHindari memasukkan benda apa pun ke vagina.\nSegera ke fasilitas kesehatan untuk pemeriksaan.",
+      "gambar_url": "https://i.pinimg.com/736x/80/a9/ca/80a9cab7dbdba25d8ce2c7f1232e358f.jpg",
+      "created_at": "2026-06-04 06:41:27",
+      "updated_at": "2026-06-04 06:41:27"
+    },
+    {
+      "id": "3",
+      "judul": "Tanda-Tanda Melahirkan dan Persiapan Persalinan",
+      "isi": "Menjelang persalinan, ibu hamil perlu mengenali tanda-tanda melahirkan agar dapat segera memperoleh penanganan yang tepat di fasilitas kesehatan. Tanda persalinan biasanya muncul ketika usia kehamilan mendekati 37–40 minggu dan ditandai dengan perubahan fisik maupun kontraksi yang semakin teratur.",
+      "tanda": "Kontraksi terasa semakin kuat dan muncul secara teratur.\nKeluar lendir bercampur darah dari jalan lahir.\nPecah ketuban, baik sedikit maupun banyak.\nNyeri punggung bawah yang menjalar ke perut.\nFrekuensi kontraksi semakin sering dan durasinya semakin lama.\nBayi terasa turun ke area panggul sehingga ibu lebih sering buang air kecil.",
+      "tindakan": "Tetap tenang dan catat jarak antar kontraksi.\nSegera hubungi tenaga kesehatan atau bidan terdekat.\nSiapkan dokumen penting seperti buku KIA dan kartu identitas.\nPastikan perlengkapan ibu dan bayi sudah dibawa.\nSegera ke fasilitas kesehatan jika ketuban pecah atau terjadi perdarahan.\nHindari menunda pemeriksaan apabila gerakan janin berkurang.",
+      "gambar_url": "https://i.pinimg.com/736x/d3/b7/13/d3b71384ab75f71daeb8c784c7050022.jpg",
+      "created_at": "2026-06-04 16:52:40",
+      "updated_at": "2026-06-04 16:56:52"
+    },
+    {
+      "id": "4",
+      "judul": "Persiapan Menghadapi Persalinan Normal dengan Aman",
+      "isi": "Menjelang hari perkiraan lahir, ibu hamil perlu mempersiapkan diri secara fisik maupun mental. Persiapan yang baik membantu proses persalinan berjalan lebih lancar dan mengurangi kecemasan saat menghadapi kontraksi.",
+      "tanda": "Kontraksi teratur yang semakin kuat.\nKeluar lendir bercampur darah.\nPecah ketuban.\nRasa tekanan yang meningkat pada panggul.\nNyeri punggung bawah yang terus berlanjut.\nPerubahan posisi bayi menjadi lebih rendah.",
+      "tindakan": "Siapkan tas persalinan sejak usia kehamilan 36 minggu.\nPastikan kendaraan atau transportasi telah tersedia.\nSimpan nomor kontak bidan, dokter, dan keluarga.\nKonsumsi makanan ringan serta cukup cairan bila masih diperbolehkan.\nLakukan teknik pernapasan untuk membantu mengurangi rasa nyeri.\nDatangi fasilitas kesehatan sesuai anjuran tenaga kesehatan atau ketika muncul tanda persalinan aktif.",
+      "gambar_url": "https://plus.unsplash.com/premium_photo-1661764146760-cc945ab351e5?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "created_at": "2026-06-04 16:59:51",
+      "updated_at": "2026-06-04 16:59:51"
+    },
+    {
+      "id": "5",
+      "judul": "Mengenali Persalinan Aktif dan Kapan Harus ke Fasilitas Kesehatan",
+      "isi": "Persalinan aktif merupakan fase ketika pembukaan serviks berlangsung lebih cepat dan kontraksi menjadi semakin kuat. Pada tahap ini, ibu hamil perlu segera menuju fasilitas kesehatan agar proses persalinan dapat dipantau dengan aman oleh tenaga kesehatan. Memahami perbedaan antara kontraksi palsu dan kontraksi persalinan aktif dapat membantu ibu mengambil keputusan yang tepat.",
+      "tanda": "Kontraksi terjadi setiap 3–5 menit dan semakin kuat.\nKontraksi tidak berkurang meskipun ibu beristirahat atau mengubah posisi tubuh.\nNyeri terasa dari punggung bawah hingga menjalar ke perut bagian depan.\nKeluar cairan ketuban yang terus menerus dari jalan lahir.\nMuncul tekanan kuat pada panggul dan keinginan untuk mengejan.\nServiks mulai membuka sehingga proses persalinan berlangsung aktif.",
+      "tindakan": "Segera bersiap menuju rumah sakit, puskesmas, atau klinik bersalin.\nBawa buku KIA, hasil pemeriksaan kehamilan, dan dokumen penting lainnya.\nPastikan ada pendamping yang membantu selama perjalanan.\nTetap makan dan minum secukupnya jika masih diperbolehkan tenaga kesehatan.\nHindari panik dan lakukan teknik pernapasan yang telah dipelajari selama kehamilan.\nSegera mencari pertolongan darurat apabila terjadi perdarahan banyak, ketuban berwarna hijau kecokelatan, atau gerakan janin berkurang",
+      "gambar_url": "https://i.pinimg.com/736x/9c/32/98/9c3298307c25f2cd6e6c0c661c5c86a2.jpg",
+      "created_at": "2026-06-04 17:02:48",
+      "updated_at": "2026-06-09 09:03:23"
+    }
+  ],
+  "edukasi_trimester": [
+    {
+      "id": "2",
+      "trimester": "1",
+      "kategori": null,
+      "judul": "Pentingnya Asam Folat pada Trimester Pertama",
+      "isi": "Asam folat merupakan salah satu nutrisi penting yang dibutuhkan selama trimester pertama kehamilan. Nutrisi ini berperan dalam pembentukan sistem saraf janin dan membantu mencegah kelainan tabung saraf seperti spina bifida.\n\nSumber asam folat dapat diperoleh dari sayuran hijau, kacang-kacangan, buah jeruk, alpukat, dan suplemen yang diberikan oleh tenaga kesehatan. Ibu hamil dianjurkan mengonsumsi asam folat sesuai dosis yang direkomendasikan sejak sebelum kehamilan hingga trimester pertama.\n\nSelain asam folat, ibu juga perlu menjaga pola makan yang sehat dan melakukan pemeriksaan kehamilan secara rutin.",
+      "gambar_url": "https://images.unsplash.com/photo-1490645935967-10de6ba17061",
+      "created_at": "2026-06-04 06:34:11",
+      "updated_at": "2026-06-04 06:34:11"
+    },
+    {
+      "id": "3",
+      "trimester": "2",
+      "kategori": "Janin",
+      "judul": "Trimester 2: Masa Pertumbuhan Janin yang Pesat",
+      "isi": "Trimester kedua berlangsung dari minggu ke-13 hingga minggu ke-27. Pada masa ini sebagian besar keluhan mual mulai berkurang dan ibu biasanya merasa lebih nyaman dibandingkan trimester pertama.\n\nJanin mengalami pertumbuhan yang sangat cepat, sehingga kebutuhan nutrisi ibu meningkat. Konsumsilah makanan yang kaya protein, zat besi, kalsium, vitamin, dan mineral untuk mendukung perkembangan janin.\n\nIbu juga dapat mulai melakukan aktivitas fisik ringan seperti berjalan kaki atau senam hamil sesuai anjuran tenaga kesehatan. Pemeriksaan kehamilan tetap perlu dilakukan secara rutin untuk memantau pertumbuhan dan perkembangan janin.",
+      "gambar_url": "https://images.unsplash.com/photo-1505751172876-fa1923c5c528",
+      "created_at": "2026-06-04 06:34:31",
+      "updated_at": "2026-06-04 06:34:31"
+    },
+    {
+      "id": "4",
+      "trimester": "3",
+      "kategori": null,
+      "judul": "Trimester 3: Persiapan Menjelang Persalinan",
+      "isi": "Trimester ketiga berlangsung dari minggu ke-28 hingga menjelang persalinan. Pada periode ini janin semakin besar dan ibu mungkin merasakan nyeri punggung, sesak napas ringan, serta lebih sering buang air kecil.\n\nPersiapkan kebutuhan persalinan sejak dini, termasuk dokumen penting, perlengkapan ibu dan bayi, serta rencana transportasi menuju fasilitas kesehatan. Kenali tanda-tanda persalinan seperti kontraksi teratur, keluarnya lendir bercampur darah, atau pecahnya air ketuban.\n\nTetap konsumsi makanan bergizi, cukup istirahat, dan lakukan pemeriksaan kehamilan sesuai jadwal agar kondisi ibu dan janin selalu terpantau.",
+      "gambar_url": "https://images.unsplash.com/photo-1517841905240-472988babdf9",
+      "created_at": "2026-06-04 06:34:51",
+      "updated_at": "2026-06-04 06:34:51"
+    },
+    {
+      "id": "5",
+      "trimester": "3",
+      "kategori": "",
+      "judul": "Mengenali Tanda Bahaya pada Trimester Ketiga",
+      "isi": "Selama trimester ketiga, ibu hamil perlu mengenali tanda-tanda bahaya yang memerlukan penanganan segera. Beberapa tanda yang perlu diwaspadai antara lain perdarahan dari jalan lahir, nyeri perut hebat, sakit kepala berat yang tidak membaik, pembengkakan berlebihan pada wajah dan tangan, serta berkurangnya gerakan janin.\n\nApabila mengalami salah satu tanda tersebut, segera datang ke fasilitas kesehatan terdekat untuk mendapatkan pemeriksaan dan penanganan yang tepat.\n\nDeteksi dini terhadap tanda bahaya dapat membantu mencegah komplikasi yang berisiko bagi ibu maupun bayi. Tetap lakukan pemeriksaan antenatal secara rutin dan ikuti anjuran tenaga kesehatan selama masa kehamilan.",
+      "gambar_url": "https://images.unsplash.com/photo-1526256262350-7da7584cf5eb",
+      "created_at": "2026-06-04 06:35:11",
+      "updated_at": "2026-06-04 06:35:11"
+    }
+  ],
+  "jadwal_harian_mpasi": [
+    {"id": "1", "bulan_min": 6, "bulan_max": 8, "waktu": "07:00", "aktivitas": "ASI atau Susu Formula", "created_at": "2026-06-04 17:32:45", "updated_at": "2026-06-04 17:32:45", "deleted_at": null},
+    {"id": "2", "bulan_min": 6, "bulan_max": 8, "waktu": "09:00", "aktivitas": "MPASI Pagi", "created_at": "2026-06-04 17:32:45", "updated_at": "2026-06-04 17:32:45", "deleted_at": null},
+    {"id": "3", "bulan_min": 6, "bulan_max": 8, "waktu": "12:00", "aktivitas": "ASI atau Susu Formula", "created_at": "2026-06-04 17:32:45", "updated_at": "2026-06-04 17:32:45", "deleted_at": null},
+    {"id": "4", "bulan_min": 6, "bulan_max": 8, "waktu": "15:00", "aktivitas": "Snack Buah Puree", "created_at": "2026-06-04 17:32:45", "updated_at": "2026-06-04 17:32:45", "deleted_at": null},
+    {"id": "5", "bulan_min": 6, "bulan_max": 8, "waktu": "18:00", "aktivitas": "MPASI Sore", "created_at": "2026-06-04 17:32:45", "updated_at": "2026-06-04 17:32:45", "deleted_at": null},
+    {"id": "6", "bulan_min": 9, "bulan_max": 11, "waktu": "07:00", "aktivitas": "Sarapan MPASI", "created_at": "2026-06-04 17:32:45", "updated_at": "2026-06-04 17:32:45", "deleted_at": null},
+    {"id": "7", "bulan_min": 9, "bulan_max": 11, "waktu": "10:00", "aktivitas": "Snack Buah", "created_at": "2026-06-04 17:32:45", "updated_at": "2026-06-04 17:32:45", "deleted_at": null},
+    {"id": "8", "bulan_min": 9, "bulan_max": 11, "waktu": "12:00", "aktivitas": "Makan Siang MPASI", "created_at": "2026-06-04 17:32:45", "updated_at": "2026-06-04 17:32:45", "deleted_at": null},
+    {"id": "9", "bulan_min": 9, "bulan_max": 11, "waktu": "15:00", "aktivitas": "Snack Sehat", "created_at": "2026-06-04 17:32:45", "updated_at": "2026-06-04 17:32:45", "deleted_at": null},
+    {"id": "10", "bulan_min": 9, "bulan_max": 11, "waktu": "18:00", "aktivitas": "Makan Malam MPASI", "created_at": "2026-06-04 17:32:45", "updated_at": "2026-06-04 17:32:45", "deleted_at": null},
+    {"id": "11", "bulan_min": 12, "bulan_max": 24, "waktu": "07:00", "aktivitas": "Sarapan", "created_at": "2026-06-04 17:32:45", "updated_at": "2026-06-04 17:32:45", "deleted_at": null},
+    {"id": "12", "bulan_min": 12, "bulan_max": 24, "waktu": "10:00", "aktivitas": "Snack Pagi", "created_at": "2026-06-04 17:32:45", "updated_at": "2026-06-04 17:32:45", "deleted_at": null},
+    {"id": "13", "bulan_min": 12, "bulan_max": 24, "waktu": "12:00", "aktivitas": "Makan Siang", "created_at": "2026-06-04 17:32:45", "updated_at": "2026-06-04 17:32:45", "deleted_at": null},
+    {"id": "14", "bulan_min": 12, "bulan_max": 24, "waktu": "15:00", "aktivitas": "Snack Sore", "created_at": "2026-06-04 17:32:45", "updated_at": "2026-06-04 17:32:45", "deleted_at": null},
+    {"id": "15", "bulan_min": 12, "bulan_max": 24, "waktu": "18:00", "aktivitas": "Makan Malam", "created_at": "2026-06-04 17:32:45", "updated_at": "2026-06-04 17:32:45", "deleted_at": null}
+  ],
+  "master_standar_antropometri": [
+    {"id": "1", "parameter": "bb_u", "jenis_kelamin": "Laki-laki", "nilai_sumbu_x": 0.0, "sd_3_neg": 2.1, "sd_2_neg": 2.5, "sd_1_neg": 2.9, "median": 3.3, "sd_1_pos": 3.9, "sd_2_pos": 4.4, "sd_3_pos": 5.0, "created_at": "2026-06-04 17:51:50", "updated_at": "2026-06-04 17:51:50", "deleted_at": null},
+    {"id": "2", "parameter": "bb_u", "jenis_kelamin": "Laki-laki", "nilai_sumbu_x": 1.0, "sd_3_neg": 2.9, "sd_2_neg": 3.4, "sd_1_neg": 3.9, "median": 4.5, "sd_1_pos": 5.1, "sd_2_pos": 5.8, "sd_3_pos": 6.6, "created_at": "2026-06-04 17:51:50", "updated_at": "2026-06-04 17:51:50", "deleted_at": null},
+    {"id": "3", "parameter": "bb_u", "jenis_kelamin": "Laki-laki", "nilai_sumbu_x": 2.0, "sd_3_neg": 3.8, "sd_2_neg": 4.3, "sd_1_neg": 4.9, "median": 5.6, "sd_1_pos": 6.3, "sd_2_pos": 7.1, "sd_3_pos": 8.0, "created_at": "2026-06-04 17:51:50", "updated_at": "2026-06-04 17:51:50", "deleted_at": null},
+    {"id": "4", "parameter": "bb_u", "jenis_kelamin": "Laki-laki", "nilai_sumbu_x": 3.0, "sd_3_neg": 4.4, "sd_2_neg": 5.0, "sd_1_neg": 5.7, "median": 6.4, "sd_1_pos": 7.2, "sd_2_pos": 8.0, "sd_3_pos": 9.0, "created_at": "2026-06-04 17:51:50", "updated_at": "2026-06-04 17:51:50", "deleted_at": null},
+    {"id": "5", "parameter": "bb_u", "jenis_kelamin": "Laki-laki", "nilai_sumbu_x": 4.0, "sd_3_neg": 4.9, "sd_2_neg": 5.6, "sd_1_neg": 6.2, "median": 7.0, "sd_1_pos": 7.8, "sd_2_pos": 8.7, "sd_3_pos": 9.7, "created_at": "2026-06-04 17:51:50", "updated_at": "2026-06-04 17:51:50", "deleted_at": null}
+  ],
+  "materi_mpasi": [
+    {"id": "1", "judul": "Memulai MPASI Usia 6 Bulan", "konten": "MPASI mulai diberikan saat bayi berusia 6 bulan dengan tetap melanjutkan ASI. Mulailah dengan makanan lumat yang kaya zat besi dan protein hewani.", "gambar_url": "https://example.com/mpasi-6bulan.jpg", "bulan_min": 6, "bulan_max": 8, "created_at": "2026-06-04 17:32:45", "updated_at": "2026-06-04 17:32:45", "deleted_at": null},
+    {"id": "2", "judul": "Pentingnya Protein Hewani", "konten": "Protein hewani seperti telur, ikan, ayam, hati ayam, dan daging penting untuk mendukung pertumbuhan optimal dan mencegah stunting.", "gambar_url": "https://example.com/protein-hewani.jpg", "bulan_min": 6, "bulan_max": 24, "created_at": "2026-06-04 17:32:45", "updated_at": "2026-06-04 17:32:45", "deleted_at": null},
+    {"id": "3", "judul": "Tanda Bayi Siap MPASI", "konten": "Bayi mampu duduk dengan bantuan, tertarik pada makanan, dan refleks menjulurkan lidah mulai berkurang.", "gambar_url": "https://example.com/siap-mpasi.jpg", "bulan_min": 6, "bulan_max": 6, "created_at": "2026-06-04 17:32:45", "updated_at": "2026-06-04 17:32:45", "deleted_at": null},
+    {"id": "4", "judul": "Pencegahan Stunting Melalui MPASI", "konten": "MPASI harus mengandung karbohidrat, protein hewani, sayur, buah, dan lemak sehat untuk memenuhi kebutuhan gizi anak.", "gambar_url": "https://example.com/cegah-stunting.jpg", "bulan_min": 6, "bulan_max": 24, "created_at": "2026-06-04 17:32:45", "updated_at": "2026-06-04 17:32:45", "deleted_at": null},
+    {"id": "5", "judul": "Prinsip Isi Piring MPASI", "konten": "Setiap porsi MPASI idealnya terdiri dari sumber karbohidrat, protein hewani, protein nabati, sayur, dan lemak tambahan.", "gambar_url": "https://example.com/isi-piring.jpg", "bulan_min": 6, "bulan_max": 24, "created_at": "2026-06-04 17:32:45", "updated_at": "2026-06-04 17:32:45", "deleted_at": null}
+  ],
+  "resep_mpasi": [
+    {
+      "id": "1",
+      "bulan_min": 6,
+      "bulan_max": 8,
+      "judul": "Puree Labu Kuning",
+      "tipe": "Sarapan",
+      "gambar_url": "https://static.promediateknologi.id/crop/197x340:895x724/1200x0/webp/photo/p1/648/2023/12/31/Jepretan-Layar-2023-12-31-pukul-155842-1182715361.png",
+      "waktu_persiapan": 15,
+      "kalori": 120,
+      "porsi": 1,
+      "bahan_bahan": "Labu kuning 100 gram, ASI atau air matang secukupnya",
+      "cara_membuat": "Kukus labu hingga lunak, Blender hingga halus, Sajikan hangat",
+      "manfaat": "Kaya vitamin A untuk kesehatan mata dan daya tahan tubuh",
+      "tips": "Gunakan labu yang matang dan segar",
+      "created_at": "2026-06-04 17:32:45",
+      "updated_at": "2026-06-04 17:32:45",
+      "deleted_at": null
+    },
+    {
+      "id": "2",
+      "bulan_min": 6,
+      "bulan_max": 8,
+      "judul": "Bubur Ayam Wortel",
+      "tipe": "Makan Siang",
+      "gambar_url": "https://example.com/bubur-ayam.jpg",
+      "waktu_persiapan": 30,
+      "kalori": 180,
+      "porsi": 1,
+      "bahan_bahan": "Beras 20 gram, Dada ayam 30 gram, Wortel 20 gram, Air secukupnya",
+      "cara_membuat": "Masak beras hingga menjadi bubur, Tambahkan ayam dan wortel, Masak hingga matang lalu haluskan",
+      "manfaat": "Sumber protein dan vitamin untuk pertumbuhan",
+      "tips": "Tambahkan sedikit minyak setelah matang",
+      "created_at": "2026-06-04 17:32:45",
+      "updated_at": "2026-06-04 17:32:45",
+      "deleted_at": null
+    }
+  ],
+  "roles": [
+    {"id": "1", "name": "Admin_desa", "description": "", "created_at": "2026-06-03 16:57:06", "updated_at": "2026-06-03 16:57:06", "is_deleted": null},
+    {"id": "2", "name": "Superadmin", "description": "", "created_at": "2026-06-03 16:57:06", "updated_at": "2026-06-03 16:57:06", "is_deleted": null},
+    {"id": "3", "name": "Tenaga-kesehatan", "description": "", "created_at": "2026-06-03 16:57:07", "updated_at": "2026-06-03 16:57:07", "is_deleted": null},
+    {"id": "4", "name": "Dokter", "description": "", "created_at": "2026-06-03 16:57:07", "updated_at": "2026-06-03 16:57:07", "is_deleted": null},
+    {"id": "5", "name": "Kader", "description": "", "created_at": "2026-06-03 16:57:07", "updated_at": "2026-06-03 16:57:07", "is_deleted": null},
+    {"id": "6", "name": "Bidan", "description": "", "created_at": "2026-06-03 16:57:08", "updated_at": "2026-06-03 16:57:08", "is_deleted": null},
+    {"id": "7", "name": "Ibu", "description": "", "created_at": "2026-06-03 16:57:08", "updated_at": "2026-06-03 16:57:08", "is_deleted": null}
+  ],
+  "status_jadwal": [
+    {"id": "1", "nama_status": "Mendekati"},
+    {"id": "2", "nama_status": "Jatuh Tempo"},
+    {"id": "3", "nama_status": "Terlewat"},
+    {"id": "4", "nama_status": "Terlambat"},
+    {"id": "5", "nama_status": "Krisis"},
+    {"id": "6", "nama_status": "Selesai"}
+  ],
+  "status_request": [
+    {"id": "1", "status_request": "Terima"},
+    {"id": "2", "status_request": "Menunggu"},
+    {"id": "3", "status_request": "Tolak"}
+  ],
+  "aturan_porsi_mpasi": [
+    {"id": "1", "bulan_min": 6, "bulan_max": 8, "tekstur": "Bubur saring kental, puree, makanan lumat", "frekuensi": "2-3 kali makan utama + 1-2 kali selingan", "porsi": "2-3 sendok makan hingga 1/2 mangkuk 250 ml", "created_at": "2026-06-04 17:31:36", "updated_at": "2026-06-04 17:31:36", "deleted_at": null},
+    {"id": "2", "bulan_min": 9, "bulan_max": 11, "tekstur": "Makanan briefcase halus atau makanan yang mudah digenggam", "frekuensi": "3-4 kali makan utama + 1-2 kali selingan", "porsi": "1/2 hingga 3/4 mangkuk 250 ml", "created_at": "2026-06-04 17:31:36", "updated_at": "2026-06-04 17:31:36", "deleted_at": null}
+  ],
+  "dosis_vaksin": [
+    {"id": "1", "nama_dosis": "HB-0", "id_vaksin": "1", "jumlah_dosis": "1", "created_at": null, "updated_at": null, "deleted_at": null},
+    {"id": "2", "nama_dosis": "BCG", "id_vaksin": "2", "jumlah_dosis": "1", "created_at": null, "updated_at": null, "deleted_at": null},
+    {"id": "3", "nama_dosis": "Polio OPV-1", "id_vaksin": "3", "jumlah_dosis": "1", "created_at": null, "updated_at": null, "deleted_at": null},
+    {"id": "4", "nama_dosis": "DPT-HB-Hib-1", "id_vaksin": "4", "jumlah_dosis": "1", "created_at": null, "updated_at": null, "deleted_at": null}
+  ],
+  "edukasi_imd": [
+    {
+      "id": "2",
+      "judul": "IMD Membantu Bayi Mendapatkan Kolostrum",
+      "isi": "Kolostrum adalah ASI pertama yang keluar setelah persalinan dan mengandung berbagai zat gizi serta antibodi penting bagi bayi. Melalui IMD, bayi memiliki kesempatan lebih besar untuk mendapatkan kolostrum secara optimal sehingga kesehatan bayi pada masa awal kehidupan dapat lebih terjaga.",
+      "manfaat": "Membantu bayi memperoleh kolostrum.\nMeningkatkan sistem kekebalan tubuh bayi.\nMengurangi risiko infeksi.\nMendukung kesehatan saluran pencernaan bayi.\nMembantu pertumbuhan bayi yang optimal.",
+      "langkah": "Letakkan bayi di dada ibu segera setelah lahir.\nPastikan kontak kulit berlangsung terus-menerus.\nJangan memberikan makanan atau minuman lain.\nBiarkan bayi bergerak mencari puting ibu.\nDampingi proses menyusu pertama hingga selesai.",
+      "gambar_url": "https://images.unsplash.com/photo-1504439468489-c8920d796a29",
+      "created_at": "2026-06-04 06:46:32",
+      "updated_at": "2026-06-04 06:46:32"
+    }
+  ]
+}

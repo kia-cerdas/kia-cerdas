@@ -350,8 +350,8 @@ func (u *AdminTenagaKesehatanUsecase) CreatePosyandu(req *AdminCreatePosyanduReq
 	return nil
 }
 
-func (u *AdminTenagaKesehatanUsecase) ListPosyandu(search string) ([]repositories.PosyanduItem, error) {
-	return u.kependudukanRepo.ListPosyandu(search)
+func (u *AdminTenagaKesehatanUsecase) ListPosyandu(search string, desaID *int32) ([]repositories.PosyanduItem, error) {
+	return u.kependudukanRepo.ListPosyandu(search, desaID)
 }
 
 func (u *AdminTenagaKesehatanUsecase) ListPenduduk(search string) ([]repositories.EligiblePendudukItem, error) {

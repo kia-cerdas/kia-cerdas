@@ -22,7 +22,6 @@ class _ImunisasiScreenState extends State<ImunisasiScreen> {
   final ImunisasiService _service = ImunisasiService();
   Future<List<ImunisasiModel>>? _futureJadwal;
 
-  bool _isUpdating = false;
   @override
   void initState() {
     super.initState();
@@ -46,30 +45,6 @@ class _ImunisasiScreenState extends State<ImunisasiScreen> {
       'id_ID',
     ).format(date);
   }
-
-  // Future<void> _setSelesai(int jadwalId) async {
-  //   try {
-  //     setState(() {
-  //       _isUpdating = true;
-  //     });
-
-  //     await _service.setJadwalSelesai(jadwalId);
-
-  //     _loadData();
-  //   } catch (e) {
-  //     if (mounted) {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(content: Text(e.toString())),
-  //       );
-  //     }
-  //   } finally {
-  //     if (mounted) {
-  //       setState(() {
-  //         _isUpdating = false;
-  //       });
-  //     }
-  //   }
-  // }
 
   Color getStatusColor(String status) {
     switch (status.toLowerCase()) {
@@ -147,9 +122,10 @@ class _ImunisasiScreenState extends State<ImunisasiScreen> {
     );
   }
 
+  // PERBAIKAN: Mengubah tipe parameter dari dynamic menjadi JadwalImunisasiModel yang aman
   Widget _buildImunisasiItem(
     BuildContext context,
-    dynamic item, {
+    JadwalImunisasiModel item, {
     required bool isEditable,
   }) {
     final date = item.tanggalEstimasi;
@@ -164,14 +140,10 @@ class _ImunisasiScreenState extends State<ImunisasiScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-
-        /// OUTLINE ABU-ABU
         border: Border.all(
           color: Colors.grey.shade300,
           width: 1,
         ),
-
-        /// SHADOW HALUS (tetap dipertahankan biar tidak flat)
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.03),
@@ -187,7 +159,6 @@ class _ImunisasiScreenState extends State<ImunisasiScreen> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                /// TANGGAL (TETAP NETRAL)
                 Container(
                   width: 72,
                   padding: const EdgeInsets.symmetric(vertical: 12),
@@ -216,15 +187,11 @@ class _ImunisasiScreenState extends State<ImunisasiScreen> {
                     ],
                   ),
                 ),
-
                 const SizedBox(width: 14),
-
-                /// INFO
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      /// STATUS (ONLY THIS CHANGES COLOR)
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 10,
@@ -243,9 +210,7 @@ class _ImunisasiScreenState extends State<ImunisasiScreen> {
                           ),
                         ),
                       ),
-
                       const SizedBox(height: 10),
-
                       Text(
                         item.namaDosis,
                         style: const TextStyle(
@@ -254,9 +219,7 @@ class _ImunisasiScreenState extends State<ImunisasiScreen> {
                           color: Color(0xFF1E293B),
                         ),
                       ),
-
                       const SizedBox(height: 6),
-
                       Text(
                         'Jadwal imunisasi',
                         style: TextStyle(
@@ -269,137 +232,73 @@ class _ImunisasiScreenState extends State<ImunisasiScreen> {
                 ),
               ],
             ),
-
             const SizedBox(height: 16),
-
             const Divider(),
-
             const SizedBox(height: 12),
-
-            /// BUTTONS (TETAP)
-            Column(
+            Row(
               children: [
-                /// ROW 1: ACTION UTAMA + SEKUNDER
-                Row(
-                  children: [
-                    /// UBAH JADWAL
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: item.statusId == 6
-                            ? null
-                            : () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => UbahJadwalScreen(
-                                      jadwalId: item.jadwalId,
-                                    ),
-                                  ),
-                                );
-                              },
-                        icon: Icon(
-                          Icons.event_repeat_rounded,
-                          size: 18,
-                          color:
-                              item.statusId == 6 ? Colors.grey : Colors.black,
-                        ),
-                        label: Text(
-                          'Ubah Jadwal',
-                          style: TextStyle(
-                            color:
-                                item.statusId == 6 ? Colors.grey : Colors.black,
-                          ),
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          side: BorderSide(color: Colors.grey.shade300),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: item.statusId == 6
+                        ? null
+                        : () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => UbahJadwalScreen(
+                                  jadwalId: item.jadwalId,
+                                ),
+                              ),
+                            );
+                          },
+                    icon: Icon(
+                      Icons.event_repeat_rounded,
+                      size: 18,
+                      color: item.statusId == 6 ? Colors.grey : Colors.black,
+                    ),
+                    label: Text(
+                      'Ubah Jadwal',
+                      style: TextStyle(
+                        color: item.statusId == 6 ? Colors.grey : Colors.black,
                       ),
                     ),
-
-                    const SizedBox(width: 10),
-
-                    /// LIHAT RINCIAN
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          showImunisasiDetailModal(context, item);
-                        },
-                        icon: const Icon(
-                          Icons.article_outlined,
-                          size: 18,
-                          color: Colors.white,
-                        ),
-                        label: const Text(
-                          'Rincian Imunisasi',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF2563EB),
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
+                    style: OutlinedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      side: BorderSide(color: Colors.grey.shade300),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
                       ),
                     ),
-                  ],
+                  ),
                 ),
-
-                /// ROW 2: SELESAI (FULL WIDTH)
-                // if (item.statusId != 6) ...[
-                //   const SizedBox(height: 10),
-                //   SizedBox(
-                //     width: double.infinity,
-                //     child: ElevatedButton(
-                //       onPressed:
-                //           _isUpdating ? null : () => _setSelesai(item.jadwalId),
-                //       style: ElevatedButton.styleFrom(
-                //         backgroundColor: Colors.green,
-                //         disabledBackgroundColor: Colors.grey,
-                //         elevation: 0,
-                //         padding: const EdgeInsets.symmetric(vertical: 14),
-                //         shape: RoundedRectangleBorder(
-                //           borderRadius: BorderRadius.circular(14),
-                //         ),
-                //       ),
-                //       child: _isUpdating
-                //           ? const SizedBox(
-                //               width: 18,
-                //               height: 18,
-                //               child: CircularProgressIndicator(
-                //                 strokeWidth: 2,
-                //                 color: Colors.white,
-                //               ),
-                //             )
-                //           : Row(
-                //               mainAxisAlignment: MainAxisAlignment.center,
-                //               children: const [
-                //                 Icon(
-                //                   Icons.task_alt,
-                //                   color: Colors.white,
-                //                   size: 18,
-                //                 ),
-                //                 SizedBox(width: 8),
-                //                 Text(
-                //                   'Selesai',
-                //                   style: TextStyle(
-                //                     color: Colors.white,
-                //                     fontWeight: FontWeight.bold,
-                //                   ),
-                //                 ),
-                //               ],
-                //             ),
-                //     ),
-                //   ),
-                // ],
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      showImunisasiDetailModal(context, item);
+                    },
+                    icon: const Icon(
+                      Icons.article_outlined,
+                      size: 18,
+                      color: Colors.white,
+                    ),
+                    label: const Text(
+                      'Rincian Imunisasi',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2563EB),
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                  ),
+                ),
               ],
-            )
+            ),
           ],
         ),
       ),
@@ -478,7 +377,6 @@ class _ImunisasiScreenState extends State<ImunisasiScreen> {
                     separatorBuilder: (context, index) =>
                         const SizedBox(height: 18),
                     itemBuilder: (context, index) {
-                      /// HEADER INFO (INDEX 0)
                       if (index == 0) {
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 6),
@@ -488,34 +386,28 @@ class _ImunisasiScreenState extends State<ImunisasiScreen> {
 
                       final anak = data[index - 1];
 
-                      final perhatian = anak.jadwal.where((j) {
+                      // PERBAIKAN: Menegaskan tipe objek iterasi (j) sebagai JadwalImunisasiModel
+                      final List<JadwalImunisasiModel> perhatian = anak.jadwal.where((JadwalImunisasiModel j) {
                         final status = j.status.toLowerCase();
                         return status == 'terlewat' ||
                             status == 'krisis' ||
                             status == 'terlambat';
                       }).toList();
 
-                      final mendekati = anak.jadwal.where((j) {
+                      final List<JadwalImunisasiModel> mendekati = anak.jadwal.where((JadwalImunisasiModel j) {
                         final status = j.status.toLowerCase();
                         return status == 'mendekati' || status == 'jatuh tempo';
                       }).toList();
 
-                      final selesai = anak.jadwal.where((j) {
+                      final List<JadwalImunisasiModel> selesai = anak.jadwal.where((JadwalImunisasiModel j) {
                         final status = j.status.toLowerCase();
                         return status == 'selesai' ||
                             status == 'sudah dilakukan';
                       }).toList();
 
-                      final lainnya = anak.jadwal.where((j) {
-                        return !perhatian.contains(j) &&
-                            !mendekati.contains(j) &&
-                            !selesai.contains(j);
-                      }).toList();
-
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          /// HEADER ANAK
                           Container(
                             margin: const EdgeInsets.only(bottom: 10),
                             padding: const EdgeInsets.all(16),
@@ -575,8 +467,6 @@ class _ImunisasiScreenState extends State<ImunisasiScreen> {
                               ],
                             ),
                           ),
-
-                          /// SECTION
                           if (perhatian.isNotEmpty) ...[
                             _buildSectionHeader(
                               title: 'Butuh Perhatian',
@@ -588,7 +478,6 @@ class _ImunisasiScreenState extends State<ImunisasiScreen> {
                                 context, item,
                                 isEditable: true)),
                           ],
-
                           if (mendekati.isNotEmpty) ...[
                             _buildSectionHeader(
                               title: 'Akan Datang',
@@ -600,7 +489,6 @@ class _ImunisasiScreenState extends State<ImunisasiScreen> {
                                 context, item,
                                 isEditable: true)),
                           ],
-
                           if (selesai.isNotEmpty) ...[
                             _buildSectionHeader(
                               title: 'Selesai',
@@ -627,7 +515,8 @@ class _ImunisasiScreenState extends State<ImunisasiScreen> {
   }
 }
 
-void showImunisasiDetailModal(BuildContext context, dynamic item) {
+// PERBAIKAN PARAMETER: Mengubah dari dynamic menjadi JadwalImunisasiModel
+void showImunisasiDetailModal(BuildContext context, JadwalImunisasiModel item) {
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
@@ -658,7 +547,7 @@ void showImunisasiDetailModal(BuildContext context, dynamic item) {
 }
 
 class _ImunisasiDetailModalContent extends StatelessWidget {
-  final dynamic item;
+  final JadwalImunisasiModel item; // PERBAIKAN: Tipe eksplisit
 
   const _ImunisasiDetailModalContent({required this.item});
 
@@ -706,7 +595,6 @@ class _ImunisasiDetailModalContent extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        /// HANDLE BAR
         Center(
           child: Container(
             margin: const EdgeInsets.only(top: 12, bottom: 16),
@@ -718,12 +606,10 @@ class _ImunisasiDetailModalContent extends StatelessWidget {
             ),
           ),
         ),
-
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Column(
             children: [
-              /// HERO
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
@@ -762,10 +648,7 @@ class _ImunisasiDetailModalContent extends StatelessWidget {
                   ],
                 ),
               ),
-
               const SizedBox(height: 16),
-
-              /// ✅ INI YANG KAMU MAU (WARNING BOX)
               if (isNeedAttention) ...[
                 Container(
                   width: double.infinity,
@@ -799,15 +682,9 @@ class _ImunisasiDetailModalContent extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
               ],
-
-              /// DESKRIPSI
               _buildBox("Tentang Vaksin", item.deskripsi),
-
               const SizedBox(height: 12),
-
-              /// EFEK SAMPING
               _buildBox("Efek Samping", item.efekSamping),
-
               const SizedBox(height: 24),
             ],
           ),

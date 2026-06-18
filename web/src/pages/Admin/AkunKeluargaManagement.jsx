@@ -13,6 +13,31 @@ import {
 } from "../../services/adminAkunKeluarga";
 import { listDesa } from "../../services/desa";
 
+// Dropdown options
+const GOLONGAN_DARAH_OPTIONS = ["", "A", "B", "AB", "O", "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+const AGAMA_OPTIONS = ["", "Islam", "Kristen Protestan", "Katolik", "Hindu", "Buddha", "Konghucu"];
+const PENDIDIKAN_OPTIONS = ["", "Tidak/Belum Sekolah", "Belum Tamat SD/Sederajat", "Tamat SD/Sederajat", "SLTP/Sederajat", "SLTA/Sederajat", "Diploma I/II", "Akademi/Diploma III/S.Muda", "Diploma IV/Strata I", "Strata II", "Strata III"];
+
+// Validation helpers
+const validateNIK = (nik) => {
+  if (!nik) return { valid: false, message: "NIK wajib diisi" };
+  if (!/^\d+$/.test(nik)) return { valid: false, message: "NIK hanya boleh berisi angka" };
+  if (nik.length !== 16) return { valid: false, message: "NIK harus 16 digit" };
+  return { valid: true, message: "" };
+};
+
+const validateNoKK = (noKK) => {
+  if (!noKK) return { valid: false, message: "No KK wajib diisi" };
+  if (!/^\d+$/.test(noKK)) return { valid: false, message: "No KK hanya boleh berisi angka" };
+  if (noKK.length !== 16) return { valid: false, message: "No KK harus 16 digit" };
+  return { valid: true, message: "" };
+};
+
+const handleNumericInput = (value, maxLength = 16) => {
+  // Remove non-digit characters and limit length
+  return value.replace(/\D/g, '').slice(0, maxLength);
+};
+
 const emptyMember = {
   nik: "",
   nama_lengkap: "",
@@ -140,8 +165,11 @@ const AkunKeluargaManagement = () => {
 
   const handleSaveHeader = async () => {
     if (!selectedKKId) return;
-    if (!headerForm.no_kk) {
-      setErrorMessage("No KK wajib diisi");
+    
+    // Validate No KK
+    const noKKValidation = validateNoKK(headerForm.no_kk);
+    if (!noKKValidation.valid) {
+      setErrorMessage(noKKValidation.message);
       return;
     }
 
@@ -189,8 +217,16 @@ const AkunKeluargaManagement = () => {
 
   const saveEditMember = async () => {
     if (!selectedKKId || !editingPendudukId) return;
-    if (!editMemberForm.nik || !editMemberForm.nama_lengkap) {
-      setErrorMessage("NIK dan nama lengkap anggota wajib diisi");
+    
+    // Validate NIK
+    const nikValidation = validateNIK(editMemberForm.nik);
+    if (!nikValidation.valid) {
+      setErrorMessage(nikValidation.message);
+      return;
+    }
+    
+    if (!editMemberForm.nama_lengkap) {
+      setErrorMessage("Nama lengkap anggota wajib diisi");
       return;
     }
 
@@ -215,8 +251,16 @@ const AkunKeluargaManagement = () => {
 
   const handleAddMember = async () => {
     if (!selectedKKId) return;
-    if (!addForm.nik || !addForm.nama_lengkap || !addForm.tanggal_lahir) {
-      setErrorMessage("NIK, nama lengkap, dan tanggal lahir anggota baru wajib diisi");
+    
+    // Validate NIK
+    const nikValidation = validateNIK(addForm.nik);
+    if (!nikValidation.valid) {
+      setErrorMessage(nikValidation.message);
+      return;
+    }
+    
+    if (!addForm.nama_lengkap || !addForm.tanggal_lahir) {
+      setErrorMessage("Nama lengkap dan tanggal lahir anggota baru wajib diisi");
       return;
     }
 
@@ -409,13 +453,16 @@ const AkunKeluargaManagement = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
-                    <label className="text-sm text-slate-600">No KK</label>
+                    <label className="text-sm text-slate-600">No KK <span className="text-red-500">*</span></label>
                     <input
                       type="text"
                       value={headerForm.no_kk}
-                      onChange={(e) => setHeaderForm((prev) => ({ ...prev, no_kk: e.target.value }))}
+                      onChange={(e) => setHeaderForm((prev) => ({ ...prev, no_kk: handleNumericInput(e.target.value, 16) }))}
                       className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2"
+                      placeholder="16 digit angka"
+                      maxLength={16}
                     />
+                    <p className="text-xs text-slate-500 mt-0.5">{headerForm.no_kk.length}/16 digit</p>
                   </div>
                   <div>
                     <label className="text-sm text-slate-600">Tanggal Terbit</label>
@@ -448,10 +495,12 @@ const AkunKeluargaManagement = () => {
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                               <input
                                 value={editMemberForm.nik}
-                                onChange={(e) => setEditMemberForm((prev) => ({ ...prev, nik: e.target.value }))}
+                                onChange={(e) => setEditMemberForm((prev) => ({ ...prev, nik: handleNumericInput(e.target.value, 16) }))}
                                 className="rounded-xl border border-slate-200 px-3 py-2"
-                                placeholder="NIK"
+                                placeholder="NIK (16 digit)"
+                                maxLength={16}
                               />
+                              <span className="text-xs text-slate-500">{editMemberForm.nik.length}/16</span>
                               <input
                                 value={editMemberForm.nama_lengkap}
                                 onChange={(e) => setEditMemberForm((prev) => ({ ...prev, nama_lengkap: e.target.value }))}
@@ -575,10 +624,12 @@ const AkunKeluargaManagement = () => {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mt-2">
                     <input
                       value={addForm.nik}
-                      onChange={(e) => setAddForm((prev) => ({ ...prev, nik: e.target.value }))}
+                      onChange={(e) => setAddForm((prev) => ({ ...prev, nik: handleNumericInput(e.target.value, 16) }))}
                       className="rounded-xl border border-slate-200 px-3 py-2"
-                      placeholder="NIK"
+                      placeholder="NIK (16 digit)"
+                      maxLength={16}
                     />
+                    <span className="text-xs text-slate-500">{addForm.nik.length}/16</span>
                     <input
                       value={addForm.nama_lengkap}
                       onChange={(e) => setAddForm((prev) => ({ ...prev, nama_lengkap: e.target.value }))}

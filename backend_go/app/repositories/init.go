@@ -128,6 +128,7 @@ type Main struct {
 	Pemeriksaan              PemeriksaanRepository
 	PencatatanImunisasi      *PencatatanImunisasiRepository
 	PuskesmasDashboard       *PuskesmasDashboardRepository
+	RingkasanDesa            *RingkasanDesaRepository
 }
 
 // DB returns the underlying *gorm.DB instance for direct queries and transactions.
@@ -251,6 +252,7 @@ func Init(opts Options) *Main {
 	m.Pemeriksaan = NewPemeriksaanRepository(opts.Postgres)
 	m.PencatatanImunisasi = NewPencatatanImunisasiRepository(opts.Postgres)
 	m.PuskesmasDashboard = NewPuskesmasDashboardRepository(opts.Postgres)
+	m.RingkasanDesa = NewRingkasanDesaRepository(opts.Postgres)
 	// return m
 
 	// MODUL IBU

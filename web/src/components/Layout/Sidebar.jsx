@@ -29,6 +29,8 @@ import {
   CalendarClock,
   BookOpenCheck,
   History,
+  Home,
+  Building2,
 } from "lucide-react";
 import logo from "./LOGO.png";
 
@@ -191,6 +193,8 @@ const Sidebar = () => {
       { path: "/superadmin/kelola-user", name: "Kelola Bidan&Kader&Admin desa", icon: ShieldPlus },
       { path: "/superadmin/kelola-user-per-desa", name: "Kelola Akun User Per Desa", icon: Users },
       { path: "/superadmin/kelola-desa", name: "Kelola Desa", icon: TableProperties },
+      { path: "/superadmin/kelola-puskesmas", name: "Kelola Puskesmas", icon: Building2 },
+      { path: "/superadmin/kelola-posyandu", name: "Kelola Posyandu", icon: Home },
       // { path: "/superadmin/audit-trail", name: "Audit Trail", icon: History },
       { path: "/superadmin/form-versi", name: "Kelola Form Versi", icon: BriefcaseMedical },
     ],
