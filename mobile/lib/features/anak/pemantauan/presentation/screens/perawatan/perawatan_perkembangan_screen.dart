@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import '../../../../pemantauan/data/models/perawatan_model.dart';
 import '../../../../pemantauan/data/services/perawatan_api_service.dart';
@@ -25,7 +25,7 @@ class _PerawatanPerkembanganScreenState
   late PerawatanApiService _apiService;
 
   final List<String> _ageRanges = [
-    '29 hari-3 bulan',
+    '0-3 bulan',
     '3-6 bulan',
     '6-9 bulan',
     '9-12 bulan',
@@ -38,16 +38,16 @@ class _PerawatanPerkembanganScreenState
   ];
 
   final Map<String, String> _ageRangeDisplay = {
-    '29 hari-3 bulan': '29h-3b',
-    '3-6 bulan': '3-6b',
-    '6-9 bulan': '6-9b',
-    '9-12 bulan': '9-12b',
-    '12-18 bulan': '12-18b',
-    '18-24 bulan': '18-24b',
-    '2-3 tahun': '2-3th',
-    '3-4 tahun': '3-4th',
-    '4-5 tahun': '4-5th',
-    '5-6 tahun': '5-6th',
+    '0-3 bulan': '0-3 bulan',
+    '3-6 bulan': '3-6 bulan',
+    '6-9 bulan': '6-9 bulan',
+    '9-12 bulan': '9-12 bulan',
+    '12-18 bulan': '12-18 bulan',
+    '18-24 bulan': '18-24 bulan',
+    '2-3 tahun': '2-3 tahun',
+    '3-4 tahun': '3-4 tahun',
+    '4-5 tahun': '4-5 tahun',
+    '5-6 tahun': '5-6 tahun',
   };
 
   int _selectedAgeIndex = 0;
@@ -65,6 +65,9 @@ class _PerawatanPerkembanganScreenState
 
   // Tanggal periksa (sama untuk seluruh submit)
   DateTime _tanggalPeriksa = DateTime.now();
+
+  // Dirty state: true jika ada perubahan checklist yang belum disimpan
+  bool _isDirty = false;
 
   @override
   void initState() {
@@ -142,19 +145,23 @@ class _PerawatanPerkembanganScreenState
     }
   }
 
-  void _showExitPopup() {
-    showVerificationPopup(
-      context: context,
-      type: VerificationPopupType.exit,
-      title: 'Yakin ingin keluar?',
-      content:
-          'Apakah Anda yakin ingin keluar tanpa menyimpan? Data yang belum disimpan akan hilang dan tidak dapat dikembalikan.',
-      onConfirm: () {
-        Navigator.pop(context);
-        Navigator.pop(context);
-      },
-      onCancel: () => Navigator.pop(context),
-    );
+  void _handleBackPress() {
+    if (_isDirty) {
+      showVerificationPopup(
+        context: context,
+        type: VerificationPopupType.exit,
+        title: 'Yakin ingin keluar?',
+        content:
+            'Apakah Anda yakin ingin keluar tanpa menyimpan? Data yang belum disimpan akan hilang dan tidak dapat dikembalikan.',
+        onConfirm: () {
+          Navigator.pop(context);
+          Navigator.pop(context);
+        },
+        onCancel: () => Navigator.pop(context),
+      );
+    } else {
+      Navigator.pop(context);
+    }
   }
 
   void _showSavePopup(String range) {
@@ -239,6 +246,7 @@ class _PerawatanPerkembanganScreenState
       _idsByRange[range] = ids;
       if (failCount == 0) {
         _submittedByRange[range] = true;
+        _isDirty = false;
       }
     });
 
@@ -517,14 +525,14 @@ class _PerawatanPerkembanganScreenState
         foregroundColor: Colors.white,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: _showExitPopup,
+          onPressed: _handleBackPress,
         ),
       ),
       body: PopScope(
-        canPop: false,
+        canPop: !_isDirty,
         onPopInvoked: (didPop) {
           if (didPop) return;
-          _showExitPopup();
+          _handleBackPress();
         },
         child: _buildKuesionerTab(),
       ),
@@ -1165,6 +1173,7 @@ class _PerawatanPerkembanganScreenState
                                           _checklistByRange[range] ?? {});
                                       map[item.id] = (v == true) ? true : null;
                                       _checklistByRange[range] = map;
+                                      _isDirty = true;
                                     });
                                   },
                           ),
@@ -1185,6 +1194,7 @@ class _PerawatanPerkembanganScreenState
                                           _checklistByRange[range] ?? {});
                                       map[item.id] = (v == true) ? false : null;
                                       _checklistByRange[range] = map;
+                                      _isDirty = true;
                                     });
                                   },
                           ),
