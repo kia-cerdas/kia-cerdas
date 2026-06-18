@@ -33,7 +33,7 @@ class CatatanMenuScreen extends StatefulWidget {
 
 class _CatatanMenuScreenState extends State<CatatanMenuScreen> {
   int _selectedTab = 0;
-  final _tabLabels = ['Neonatus', 'Kesehatan Anak', 'Kesehatan Gigi', 'LILA'];
+  final _tabLabels = ['Neonatus', 'Keluhan Anak', 'Kesehatan Gigi', 'LILA'];
   final _tabIcons = [Icons.child_care_outlined, Icons.favorite_border, Icons.medical_services_outlined, Icons.straighten];
 
   // Services
@@ -261,7 +261,7 @@ Widget _buildTabChips() {
   }
   
   Widget _buildSectionTitle() {
-    final titles = ['Catatan Neonatus', 'Catatan Pelayanan Kesehatan', 'Catatan Kesehatan Gigi', 'Catatan LiLA'];
+    final titles = ['Catatan Neonatus', 'Keluhan Anak', 'Catatan Kesehatan Gigi', 'Catatan LiLA'];
     final counts = [_neonatusList.length, _keluhanList.length, _gigiList.length, _lilaList.length];
     final loading = [_loadingNeonatus, _loadingKeluhan, _loadingGigi, _loadingLila];
 
