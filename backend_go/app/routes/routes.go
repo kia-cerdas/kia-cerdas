@@ -321,6 +321,7 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	tenaga.GET("/perawatan", controller.GetPerawatanByAnakID)
 	tenaga.GET("/perawatan/:id", controller.GetPerawatanByID)
 	tenaga.POST("/perawatan", controller.CreatePerawatan)
+	tenaga.POST("/perawatan/bulk", controller.CreateBulkPerawatan)
 	tenaga.PUT("/perawatan/:id", controller.UpdatePerawatan)
 	tenaga.DELETE("/perawatan/:id", controller.DeletePerawatan)
 	// tenaga.GET("/perawatan", controller.GetPerawatanByAnakID)
@@ -768,7 +769,7 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	ibuk.GET("/pemeriksaan-kehamilan/:id", controller.PemeriksaanKehamilan.GetByIDForOrangtua)
 
 	// Skrining Preeklampsia
-	ibuk .GET("/skrining-preeklampsia/me", controller.SkriningPreeklampsia.GetMine)
+	ibuk.GET("/skrining-preeklampsia/me", controller.SkriningPreeklampsia.GetMine)
 	ibuk.GET("/skrining-preeklampsia/:id", controller.SkriningPreeklampsia.GetByIDForOrangtua)
 
 	ibuk.GET("/rujukan/:id", controller.Rujukan.GetByIDForOrangtua)
@@ -837,18 +838,17 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	ibuk.GET("/catatan-pelayanan-nifas/me", controller.CatatanPelayananNifas.GetMine)
 
 	ibuk.GET("/catatan-pelayanan-kehamilan/me", controller.CatatanPelayananKehamilan.GetMine)
-	
+
 	// Profile
 	ibuk.GET("/profil", controller.ProfilIbu.GetProfilSaya)
 	ibuk.GET("/neonatus/anak/:anak_id", controller.Neonatus.GetByAnakIDForIbu)
 	ibuk.GET("/neonatus/:id", controller.Neonatus.GetByIDForIbu)
-		// Riwayat Kehamilan Ibu
-	ibuk.GET("/kehamilan/:id/detail", controller.DetailKehamilanIbu.GetDetail) 
+	// Riwayat Kehamilan Ibu
+	ibuk.GET("/kehamilan/:id/detail", controller.DetailKehamilanIbu.GetDetail)
 
 	ibuk.GET("/kehamilan/:id/evaluasi-kesehatan-ibu", controller.EvaluasiKesehatanIbu.GetByKehamilanIDForOrangtua)
 	// Profil pemantauan ibu hamil
 	ibuk.GET("/pemantauan-ibu-hamil/by-kehamilan/:kehamilan_id", controller.PemantauanIbuHamil.GetByKehamilanID)
-
 
 	// ibu := e.Group("/ibu")
 	ibu.Use(middlewares.JWTAuth(controller.JWTSecret()))
@@ -886,6 +886,7 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	ibu.GET("/perawatan/anak/:anak_id", controller.GetPerawatanByAnakID)
 	ibu.GET("/perawatan/anak/:anak_id/rentang-usia/:rentang_usia", controller.GetPerawatanByAnakIDAndRentangUsia)
 	ibu.POST("/perawatan", controller.CreatePerawatan)
+	ibu.POST("/perawatan/bulk", controller.CreateBulkPerawatan)
 	ibu.PUT("/perawatan/:id", controller.UpdatePerawatan)
 	ibu.DELETE("/perawatan/:id", controller.DeletePerawatan)
 	// Catatan: Ibu tidak memiliki akses UPDATE/DELETE/VERIFY untuk menjaga integritas rekam medis
@@ -896,6 +897,8 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	ibu.PUT("/jadwal-imunisasi/:id/tanggal-estimasi", controller.UpdateTanggalEstimasi)
 	ibu.GET("/jadwal-imunisasi/:id", controller.GetJadwalByID)
 	ibu.PUT("/jadwal-imunisasi/:id/selesai", controller.SetJadwalSelesai)
+
+	ibu.GET("/jadwal-layanan", controller.JadwalLayanan.GetAll)
 
 	// Request Perubahan Jadwal Imunisasi Ibu
 	ibu.POST("/jadwal-imunisasi/:id/request-perubahan", controller.RequestPerubahanJadwal)
@@ -941,7 +944,6 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	kader.GET("/bbl/anak/:anak_id", controller.Bbl.GetByAnakID)
 	kader.PUT("/bbl/anak/:anak_id/verifikasi", controller.Bbl.Verify)
 	kader.GET("/bbl", controller.Bbl.GetAll)
-
 
 	// ==================== KELUHAN ANAK ====================
 	ibu.GET("/keluhan-anak", controller.KeluhanAnak.GetByAnakIDForIbu)
