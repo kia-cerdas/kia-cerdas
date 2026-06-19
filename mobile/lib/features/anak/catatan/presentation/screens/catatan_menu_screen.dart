@@ -122,6 +122,14 @@ class _CatatanMenuScreenState extends State<CatatanMenuScreen> {
     return '${d.day} ${months[d.month - 1]} ${d.year}';
   }
 
+  String _formatUsiaBulan(int totalBulan) {
+    if (totalBulan < 12) return '$totalBulan Bulan';
+    final tahun = totalBulan ~/ 12;
+    final sisaBulan = totalBulan % 12;
+    if (sisaBulan == 0) return '$tahun Tahun';
+    return '$tahun Tahun $sisaBulan Bulan';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -324,7 +332,7 @@ Widget _buildTabChips() {
         final item = _gigiList[i];
         return _buildRecordCard(
           icon: Icons.medical_services_outlined,
-          title: 'Pemeriksaan Gigi - Bulan ke-${item.bulan}',
+          title: 'Pemeriksaan Gigi - Usia ${_formatUsiaBulan(item.bulan)}',
           subtitle: 'Gigi: ${item.jumlahGigi} | Berlubang: ${item.gigiBerlubang}',
           description: 'Plak: ${item.statusPlak} | Risiko: ${item.resikoGigiBerlubang}',
           date: _fmtDateShort(item.tanggal),
@@ -347,7 +355,7 @@ Widget _buildTabChips() {
         final item = _lilaList[i];
         return _buildRecordCard(
           icon: Icons.straighten_outlined,
-          title: 'Pengukuran LiLA - Bulan ke-${item.bulan}',
+          title: 'Pengukuran LiLA - Usia ${_formatUsiaBulan(item.bulan)}',
           subtitle: 'Hasil LiLA: ${item.hasilLila} cm',
           description: 'Kategori Risiko: ${item.kategoriRisiko}',
           date: _fmtDateShort(item.tanggal),
