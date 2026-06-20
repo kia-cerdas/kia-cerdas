@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { login, getCurrentUser, getUserRedirectRoute, isAuthenticated } from "../services/auth";
+import Swal from "sweetalert2";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -25,11 +26,32 @@ const Login = () => {
     setError("");
     try {
       await login(identifier, password);
-      const user = getCurrentUser(); // ambil dari localStorage
+      const user = getCurrentUser();
       const targetRoute = getUserRedirectRoute(user);
+
+      // Popup sukses
+      await Swal.fire({
+        icon: "success",
+        title: "Login Berhasil!",
+        text: `Selamat datang, ${user?.name || user?.email || "User"}!`,
+        timer: 1500,
+        showConfirmButton: false,
+        timerProgressBar: true,
+      });
+
       navigate(targetRoute, { replace: true });
     } catch (err) {
-      setError(err.response?.data?.message || "Login gagal");
+      const message = err.response?.data?.message || "Username/email atau password salah. Silakan coba lagi.";
+      setError(message);
+
+      // Popup gagal
+      Swal.fire({
+        icon: "error",
+        title: "Login Gagal",
+        text: message,
+        confirmButtonColor: "#185FA5",
+        confirmButtonText: "Coba Lagi",
+      });
     } finally {
       setLoading(false);
     }

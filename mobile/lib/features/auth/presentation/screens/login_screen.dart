@@ -38,12 +38,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       String? deviceFcmToken;
-      // try {
-      //   deviceFcmToken = await FirebaseMessaging.instance.getToken();
-      //   debugPrint("Berhasil mendapatkan FCM Token: $deviceFcmToken");
-      // } catch (e) {
-      //   debugPrint("Gagal mendapatkan FCM Token: $e");
-      // }
       try {
         deviceFcmToken = await FirebaseMessaging.instance
             .getToken()
@@ -60,14 +54,47 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (!mounted) return;
-// AMBIL ROLE DARI SESSION YANG BARU DISIMPAN
+
       final role = AuthSession.role?.toLowerCase();
+
+      // Popup login berhasil
+      await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.check_circle, color: Colors.green, size: 28),
+              const SizedBox(width: 8),
+              const Text(
+                'Login Berhasil!',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          content: Text(
+            'Selamat datang, ${AuthSession.userName ?? "User"}!',
+            style: const TextStyle(fontSize: 14, color: Colors.black87),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+
+      if (!mounted) return;
+
       Widget destination;
       if (role == 'kader') {
-        destination =
-            const DashboardKaderScreen(); // Arahkan ke dashboard kader
+        destination = const DashboardKaderScreen();
       } else {
-        destination = const DashboardScreen(); // Default ke dashboard ibu
+        destination = const DashboardScreen();
       }
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (_) => destination),
@@ -75,8 +102,47 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
+
+      // Extract clean error message
+      String message = e.toString();
+      if (message.startsWith('Exception: ')) {
+        message = message.substring(11);
+      }
+      if (message.isEmpty) {
+        message = 'Username/email atau password salah. Silakan coba lagi.';
+      }
+
+      // Popup login gagal
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.error, color: Colors.red, size: 28),
+              const SizedBox(width: 8),
+              const Text(
+                'Login Gagal',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          content: Text(
+            message,
+            style: const TextStyle(fontSize: 14, color: Colors.black87),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text(
+                'Coba Lagi',
+                style: TextStyle(color: Color(0xFF185FA5), fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
       );
     } finally {
       if (mounted) {
