@@ -96,7 +96,7 @@ func (c *PencatatanImunisasiController) GetByAnakID(ctx echo.Context) error {
 	// DEBUG: Log untuk melihat data bidan_petugas
 	for i, record := range data {
 		if record.BidanPetugas != nil {
-			ctx.Logger().Info("Record ", i, " - id_bidan_petugas: ", *record.IdBidanPetugas, " - BidanPetugas loaded: ", record.BidanPetugas.Name)
+			ctx.Logger().Info("Record ", i, " - id_bidan_petugas: ", *record.IdBidanPetugas, " - BidanPetugas loaded: ", record.BidanPetugas.Username)
 		} else {
 			ctx.Logger().Info("Record ", i, " - id_bidan_petugas: ", record.IdBidanPetugas, " - BidanPetugas is nil")
 		}

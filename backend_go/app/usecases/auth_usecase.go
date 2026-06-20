@@ -232,7 +232,7 @@ func (m *Main) Register(req *models.RegisterRequest) error {
 	}
 
 	user := &models.User{
-		Name:       req.Name,
+		Username:   req.Name,
 		Email:      req.Email,
 		IsActive:   true,
 		Password:   string(hashedPassword),
@@ -269,19 +269,26 @@ func (m *Main) Login(req *models.LoginRequest) (*models.LoginResponse, error) {
 
 	var user *models.User
 	var err error
-	if isEmail(identifier) {
+	switch {
+	case isEmail(identifier):
+		// Identifier berupa email
 		user, err = m.repository.GetUserByEmail(strings.ToLower(identifier))
-	} else {
-		normalizedPhoneNumber, nErr := normalizePhoneNumber(identifier)
-		if nErr != nil {
-			return nil, customerror.NewBadRequestError("identifier harus email atau nomor hp valid")
+	default:
+		// Coba sebagai username (kolom `nama`) terlebih dahulu.
+		user, err = m.repository.GetUserByUsername(identifier)
+		if err != nil {
+			if _, ok := err.(customerror.NotFoundError); ok {
+				// Username tidak ditemukan: jika identifier berformat nomor hp, coba sebagai nomor hp.
+				if normalizedPhoneNumber, nErr := normalizePhoneNumber(identifier); nErr == nil {
+					user, err = m.repository.GetUserByPhoneNumber(normalizedPhoneNumber)
+				}
+			}
 		}
-		user, err = m.repository.GetUserByPhoneNumber(normalizedPhoneNumber)
 	}
 
 	if err != nil {
 		if _, ok := err.(customerror.NotFoundError); ok {
-			return nil, customerror.NewBadRequestError("email/nomor hp atau password salah")
+			return nil, customerror.NewBadRequestError("username/email/nomor hp atau password salah")
 		}
 		return nil, err
 	}
@@ -291,7 +298,7 @@ func (m *Main) Login(req *models.LoginRequest) (*models.LoginResponse, error) {
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
-		return nil, customerror.NewBadRequestError("email/nomor hp atau password salah")
+		return nil, customerror.NewBadRequestError("username/email/nomor hp atau password salah")
 	}
 
 	canonicalRoleName := normalizeRoleName(user.Role.Name)
@@ -354,7 +361,7 @@ func (m *Main) Login(req *models.LoginRequest) (*models.LoginResponse, error) {
 		TokenType:     "Bearer",
 		ExpiresIn:     expiresIn,
 		UserID:        user.ID,
-		Name:          user.Name,
+		Name:          user.Username,
 		Email:         user.Email,
 		Role:          user.Role.Name,
 		TargetApp:     destination.TargetApp,

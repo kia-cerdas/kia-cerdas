@@ -1,7 +1,7 @@
 // src/components/Layout/Header.jsx
 import { useState, useRef, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { LogOut, ChevronDown, User } from "lucide-react";
+import { LogOut, ChevronDown, User, Menu, X } from "lucide-react";
 import { getCurrentUser, logout } from "../../services/auth";
 
 const headerByPath = (pathname) => {
@@ -127,7 +127,7 @@ const headerByPath = (pathname) => {
   }
 
   return {
-    title: "KIA Cerdas",
+    title: "Generasi Sehat",
     subtitle: "Sistem layanan kesehatan ibu dan anak untuk wilayah desa.",
     variant: "default",
   };
@@ -141,7 +141,7 @@ const formatRole = (role) => {
   return "Petugas Medis";
 };
 
-const Header = () => {
+const Header = ({ onToggleSidebar, isSidebarOpen }) => {
   const user = getCurrentUser();
   const location = useLocation();
   const pageHeader = headerByPath(location.pathname);
@@ -165,9 +165,35 @@ const Header = () => {
   };
 
   return (
-    <header className="px-6 py-4 border-b border-gray-100 bg-white relative z-50">
-      <div className="bg-gradient-to-r from-blue-700 via-cyan-600 to-teal-600 text-white rounded-2xl p-4 md:p-5 shadow-lg flex flex-col md:flex-row md:items-start justify-between gap-3">
-        <div className="min-w-0">
+    <header className="px-4 md:px-6 py-4 border-b border-gray-100 bg-white relative z-50">
+      <div className="bg-[#185FA5] md:bg-gradient-to-r md:from-blue-700 md:via-cyan-600 md:to-teal-600 text-white rounded-2xl p-4 md:p-5 shadow-lg flex items-start justify-between gap-3">
+        {/* Container untuk hamburger dengan width tetap agar tidak jump */}
+        <div className="w-9 h-9 flex-shrink-0">
+          {/* Hamburger Menu - Saat sidebar tertutup */}
+          {!isSidebarOpen && (
+            <button
+              onClick={onToggleSidebar}
+              className="flex items-center justify-center w-9 h-9 rounded-lg hover:bg-white/10 transition-colors"
+              aria-label="Open Menu"
+              title="Buka Menu"
+            >
+              <Menu size={20} className="text-white" />
+            </button>
+          )}
+          {/* Close Button - Saat sidebar terbuka (mobile) */}
+          {isSidebarOpen && (
+            <button
+              onClick={onToggleSidebar}
+              className="flex items-center justify-center w-9 h-9 rounded-lg hover:bg-white/10 transition-colors md:hidden"
+              aria-label="Close Menu"
+              title="Tutup Menu"
+            >
+              <X size={20} className="text-white" />
+            </button>
+          )}
+        </div>
+
+        <div className="min-w-0 flex-1">
           <h1 className="text-xl md:text-2xl font-bold leading-tight">{pageHeader.title}</h1>
           <p className="text-cyan-100 mt-1.5 text-xs md:text-sm leading-relaxed">{pageHeader.subtitle}</p>
           {pageHeader.note && (
@@ -175,15 +201,15 @@ const Header = () => {
           )}
         </div>
 
-        <div className="relative md:flex-shrink-0" ref={dropdownRef}>
+        <div className="relative flex-shrink-0" ref={dropdownRef}>
           <button
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             className={`flex items-center gap-2.5 p-1.5 pr-2.5 rounded-2xl transition-all duration-200 border ${
               isDropdownOpen ? "bg-white/20 border-white/30" : "border-white/20 hover:bg-white/15"
             }`}
           >
-            <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-sm">
-              {user?.name?.charAt(0) || "B"}
+            <div className="w-9 h-9 rounded-full bg-[#185FA5] flex items-center justify-center text-white flex-shrink-0">
+              <User size={18} className="text-white" />
             </div>
 
             <div className="text-left hidden sm:block">

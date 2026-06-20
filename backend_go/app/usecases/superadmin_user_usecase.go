@@ -254,7 +254,7 @@ func (u *SuperadminUserUsecase) CreateBidanUser(req *SuperadminCreateBidanUserRe
 	pendudukID64 := int64(req.PendudukID)
 	err = u.repo.DB().Transaction(func(tx *gorm.DB) error {
 		createdUser = models.User{
-			Name:       strings.TrimSpace(req.Name),
+			Username:   strings.TrimSpace(req.Name),
 			Email:      email,
 			IsActive:   true,
 			Password:   hashedPassword,
@@ -359,7 +359,7 @@ func (u *SuperadminUserUsecase) CreateAdminDesaUser(req *SuperadminCreateAdminDe
 	var user *models.User
 	err = u.repo.DB().Transaction(func(tx *gorm.DB) error {
 		user = &models.User{
-			Name:       strings.TrimSpace(req.Name),
+			Username:   strings.TrimSpace(req.Name),
 			Email:      email,
 			IsActive:   true,
 			Password:   hashedPassword,
@@ -464,7 +464,7 @@ func (u *SuperadminUserUsecase) CreateKaderUser(req *SuperadminCreateKaderUserRe
 	var createdKader models.Kader
 	err = u.repo.DB().Transaction(func(tx *gorm.DB) error {
 		createdUser = models.User{
-			Name:       strings.TrimSpace(req.Name),
+			Username:   strings.TrimSpace(req.Name),
 			Email:      email,
 			IsActive:   true,
 			Password:   hashedPassword,
@@ -585,7 +585,7 @@ func (u *SuperadminUserUsecase) CreateUser(req *SuperadminCreateUserRequest) (*m
 	var user *models.User
 	err = u.repo.DB().Transaction(func(tx *gorm.DB) error {
 		user = &models.User{
-			Name:       strings.TrimSpace(req.Name),
+			Username:   strings.TrimSpace(req.Name),
 			Email:      email,
 			IsActive:   true,
 			Password:   hashedPassword,
@@ -880,7 +880,7 @@ func (u *SuperadminUserUsecase) CreateIbuUser(req *SuperadminCreateUserRequest) 
 	// Simpan ke database dengan transaction
 	err = u.repo.DB().Transaction(func(tx *gorm.DB) error {
 		user = &models.User{
-			Name:       strings.TrimSpace(req.Name),
+			Username:   strings.TrimSpace(req.Name),
 			Email:      email,
 			IsActive:   true,
 			Password:   hashedPassword,
