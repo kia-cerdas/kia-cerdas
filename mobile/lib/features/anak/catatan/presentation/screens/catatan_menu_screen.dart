@@ -134,13 +134,15 @@ class _CatatanMenuScreenState extends State<CatatanMenuScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF1F5F9),
-      body: Column(
-        children: [
-          _buildHeader(),
-          _buildTabChips(),
-          _buildSectionTitle(),
-          Expanded(child: _buildContent()),
-        ],
+      body: RepaintBoundary(
+        child: Column(
+          children: [
+            _buildHeader(),
+            _buildTabChips(),
+            _buildSectionTitle(),
+            Expanded(child: _buildContent()),
+          ],
+        ),
       ),
     );
   }
@@ -241,9 +243,8 @@ Widget _buildTabChips() {
                 duration: const Duration(milliseconds: 200),
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 decoration: BoxDecoration(
-                  color: selected ? _kBlue : Colors.white,
+                  color: selected ? _kBlue : Colors.grey.shade200,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: selected ? _kBlue : const Color(0xFFD1D5DB)),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -411,15 +412,14 @@ Widget _buildTabChips() {
       padding: const EdgeInsets.only(bottom: 10),
       child: Material(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: Colors.grey.shade200),
+        ),
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
           onTap: onTap,
           child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade200),
-            ),
             child: IntrinsicHeight(
               child: Row(
                 children: [

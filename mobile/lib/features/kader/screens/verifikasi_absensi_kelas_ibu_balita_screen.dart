@@ -19,9 +19,9 @@ class _VerifikasiAbsensiKelasIbuBalitaScreenState extends State<VerifikasiAbsens
   bool _isLoading = true;
   String _errorMessage = '';
 
-  /// Filter status: null = semua, true = sudah diverifikasi (Diterima/Ditolak),
-  /// false = belum diverifikasi (Menunggu Verifikasi).
-  bool? _filterVerified;
+  /// Filter status: null = semua, 'Menunggu' = belum diverifikasi,
+  /// 'Diterima' = diverifikasi diterima, 'Ditolak' = diverifikasi ditolak.
+  String? _filterStatus;
 
   @override
   void initState() {
@@ -98,16 +98,16 @@ class _VerifikasiAbsensiKelasIbuBalitaScreenState extends State<VerifikasiAbsens
     }
   }
 
-  /// Ringkasan Total / Belum / Sudah diverifikasi -- pola yang sama dengan
-  /// menu "Kelas Ibu Hamil" agar konsisten antar menu verifikasi kader.
   Widget _buildSummaryRow() {
     return Row(
       children: [
         _summaryPill(label: 'Semua', count: _absensiList.length, color: Colors.blueGrey),
-        const SizedBox(width: 8),
-        _summaryPill(label: 'Belum Verif', count: _jumlahBelumVerif, color: Colors.orange),
-        const SizedBox(width: 8),
-        _summaryPill(label: 'Sudah Diverifikasi', count: _jumlahSudahVerif, color: Colors.green),
+        const SizedBox(width: 6),
+        _summaryPill(label: 'Menunggu', count: _jumlahBelumVerif, color: Colors.orange),
+        const SizedBox(width: 6),
+        _summaryPill(label: 'Terverifikasi', count: _jumlahDiterima, color: Colors.green),
+        const SizedBox(width: 6),
+        _summaryPill(label: 'Tidak Valid', count: _jumlahDitolak, color: Colors.red),
       ],
     );
   }
@@ -119,7 +119,7 @@ class _VerifikasiAbsensiKelasIbuBalitaScreenState extends State<VerifikasiAbsens
   }) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10),
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 2),
         decoration: BoxDecoration(
           color: color.withOpacity(0.1),
           borderRadius: BorderRadius.circular(12),
@@ -129,10 +129,10 @@ class _VerifikasiAbsensiKelasIbuBalitaScreenState extends State<VerifikasiAbsens
           children: [
             Text(
               '$count',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: color),
             ),
             const SizedBox(height: 2),
-            Text(label, style: TextStyle(fontSize: 11, color: color), textAlign: TextAlign.center),
+            Text(label, style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.w600), textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis),
           ],
         ),
       ),
@@ -147,26 +147,32 @@ class _VerifikasiAbsensiKelasIbuBalitaScreenState extends State<VerifikasiAbsens
           _filterChip(label: 'Semua (${_absensiList.length})', value: null),
           const SizedBox(width: 8),
           _filterChip(
-            label: 'Belum Verif ($_jumlahBelumVerif)',
-            value: false,
+            label: 'Menunggu ($_jumlahBelumVerif)',
+            value: 'Menunggu',
             color: Colors.orange,
           ),
           const SizedBox(width: 8),
           _filterChip(
-            label: 'Sudah Diverifikasi ($_jumlahSudahVerif)',
-            value: true,
+            label: 'Terverifikasi ($_jumlahDiterima)',
+            value: 'Terverifikasi',
             color: Colors.green,
+          ),
+          const SizedBox(width: 8),
+          _filterChip(
+            label: 'Tidak Valid ($_jumlahDitolak)',
+            value: 'Tidak Valid',
+            color: Colors.red,
           ),
         ],
       ),
     );
   }
 
-  Widget _filterChip({required String label, required bool? value, Color? color}) {
-    final isSelected = _filterVerified == value;
+  Widget _filterChip({required String label, required String? value, Color? color}) {
+    final isSelected = _filterStatus == value;
     final activeColor = color ?? Colors.teal;
     return GestureDetector(
-      onTap: () => setState(() => _filterVerified = value),
+      onTap: () => setState(() => _filterStatus = value),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
         decoration: BoxDecoration(
@@ -229,11 +235,11 @@ class _VerifikasiAbsensiKelasIbuBalitaScreenState extends State<VerifikasiAbsens
   String _getStatusText(String? status) {
     switch(status) {
       case 'Diterima':
-        return 'Diterima';
+        return 'Terverifikasi';
       case 'Ditolak':
-        return 'Ditolak';
+        return 'Tidak Valid';
       default:
-        return 'Menunggu Verifikasi';
+        return 'Menunggu';
     }
   }
 
@@ -262,8 +268,8 @@ class _VerifikasiAbsensiKelasIbuBalitaScreenState extends State<VerifikasiAbsens
   }
 
   int get _jumlahBelumVerif => _absensiList.where(_isPending).length;
-  int get _jumlahSudahVerif =>
-      _absensiList.where((item) => !_isPending(item)).length;
+  int get _jumlahDiterima => _absensiList.where(_isVerified).length;
+  int get _jumlahDitolak => _absensiList.where(_isRejected).length;
 
   @override
   Widget build(BuildContext context) {
@@ -332,8 +338,14 @@ class _VerifikasiAbsensiKelasIbuBalitaScreenState extends State<VerifikasiAbsens
                             final q = _searchQuery.toLowerCase();
                             final matchesSearch = item.namaIbu.toLowerCase().contains(q) ||
                                 item.namaAnak.toLowerCase().contains(q);
-                            final matchesFilter = _filterVerified == null ||
-                                _filterVerified == !_isPending(item);
+                            bool matchesFilter = true;
+                            if (_filterStatus == 'Menunggu') {
+                              matchesFilter = _isPending(item);
+                            } else if (_filterStatus == 'Terverifikasi') {
+                              matchesFilter = _isVerified(item);
+                            } else if (_filterStatus == 'Tidak Valid') {
+                              matchesFilter = _isRejected(item);
+                            }
                             return matchesSearch && matchesFilter;
                           }).toList();
 

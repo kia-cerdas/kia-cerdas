@@ -319,9 +319,8 @@ class _NeonatusDetailContent extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: const Color(0xFFF8FAFC),
+            color: const Color(0xFFF1F5F9),
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.grey.shade300),
           ),
           child: Row(
             children: [
@@ -346,9 +345,8 @@ class _NeonatusDetailContent extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: isChecked ? const Color(0xFFF0FDF4) : Colors.white,
+        color: isChecked ? const Color(0xFFDCFCE7) : const Color(0xFFF1F5F9),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: isChecked ? Colors.green : Colors.grey.shade300),
       ),
       child: Row(
         children: [
@@ -390,9 +388,8 @@ class _NeonatusDetailContent extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
               decoration: BoxDecoration(
-                color: isNR ? const Color(0xFF185FA5) : Colors.grey.shade100,
+                color: isNR ? const Color(0xFF185FA5) : const Color(0xFFF1F5F9),
                 borderRadius: const BorderRadius.horizontal(left: Radius.circular(8)),
-                border: Border.all(color: isNR ? const Color(0xFF185FA5) : Colors.grey.shade300),
               ),
               child: Text(
                 'NR',
@@ -406,9 +403,8 @@ class _NeonatusDetailContent extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
               decoration: BoxDecoration(
-                color: isR ? Colors.red : Colors.grey.shade100,
+                color: isR ? Colors.red : const Color(0xFFF1F5F9),
                 borderRadius: const BorderRadius.horizontal(right: Radius.circular(8)),
-                border: Border.all(color: isR ? Colors.red : Colors.grey.shade300),
               ),
               child: Text(
                 'R',

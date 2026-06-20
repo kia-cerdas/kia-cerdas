@@ -197,11 +197,11 @@ class _RiwayatSkriningTandaBahayaScreenState
       }
     }
 
-    if (satuan == 'hari') return 'Hari ke-$displayNumber';
-    if (satuan == 'minggu') return 'Minggu ke-$displayNumber';
-    if (satuan == 'bulan') return 'Bulan ke-$displayNumber';
-    if (satuan == 'tahun') return 'Tahun ke-$displayNumber';
-    return 'Periode ke-$displayNumber';
+    if (satuan == 'hari') return '$displayNumber Hari';
+    if (satuan == 'minggu') return '$displayNumber Minggu';
+    if (satuan == 'bulan') return '$displayNumber Bulan';
+    if (satuan == 'tahun') return '$displayNumber Tahun';
+    return '$displayNumber Periode';
   }
 
   String _examinerLabel(String value) {
@@ -348,13 +348,15 @@ class _RiwayatSkriningTandaBahayaScreenState
             : ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
-                  _buildPrimaryActionCard(),
-                  const SizedBox(height: 16),
                   if (_records.isEmpty)
                     _buildEmptyState(context)
                   else ...[
                     _buildHeaderCard(),
                     const SizedBox(height: 16),
+                  _buildPrimaryActionCard(),
+                  const SizedBox(height: 16),
+                    // _buildInfoCard(),
+                    // const SizedBox(height: 16),
                     if (filteredRecords.isEmpty)
                       const Center(
                         child: Padding(
@@ -431,15 +433,6 @@ class _RiwayatSkriningTandaBahayaScreenState
                     color: Color(0xFF475569),
                   ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'Ini adalah catatan pemantauan bayimu. Tap untuk lihat detail atau tambah catatan baru.',
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    height: 1.4,
-                    color: Colors.grey.shade700,
-                  ),
-                ),
               ],
             ),
           ),
@@ -447,6 +440,34 @@ class _RiwayatSkriningTandaBahayaScreenState
       ),
     );
   }
+
+    // Widget _buildInfoCard() {
+    //   return Container(
+    //     padding: const EdgeInsets.all(14),
+    //     decoration: BoxDecoration(
+    //       color: const Color(0xFFEFF6FF),
+    //       borderRadius: BorderRadius.circular(16),
+    //       border: Border.all(color: const Color(0xFFBFDBFE)),
+    //     ),
+    //     child: const Row(
+    //       crossAxisAlignment: CrossAxisAlignment.start,
+    //       children: [
+    //         Icon(Icons.info_outline_rounded, color: Color(0xFF2563EB)),
+    //         SizedBox(width: 12),
+    //         Expanded(
+    //           child: Text(
+    //             'Berikut adalah riwayat gejala yang ditemukan. Ketuk tombol "Isi Pemantauan Hari Ini" di atas untuk menambah data baru.',
+    //             style: TextStyle(
+    //               fontSize: 12.5,
+    //               height: 1.4,
+    //               color: Color(0xFF1E3A8A),
+    //             ),
+    //           ),
+    //         ),
+    //       ],
+    //     ),
+    //   );
+    // }
 
   Widget _buildPrimaryActionCard() {
     return Container(
@@ -461,7 +482,7 @@ class _RiwayatSkriningTandaBahayaScreenState
         children: [
           const Row(
             children: [
-              Icon(Icons.play_circle_fill_rounded, color: Color(0xFF2563EB)),
+              Icon(Icons.info_outline_rounded, color: Color(0xFF2563EB)),
               SizedBox(width: 8),
               Expanded(
                 child: Text(

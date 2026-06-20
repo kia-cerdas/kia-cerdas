@@ -198,16 +198,17 @@ class _PemantauanMenuScreenState extends State<PemantauanMenuScreen> {
         border: Border.all(color: const Color(0xFFDBEAFE)),
       ),
       child: const Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(Icons.info_outline_rounded, size: 18, color: Color(0xFF2563EB)),
           SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Kelompok usia yang sesuai, lalu ketuk Skrining sekarang untuk mulai.',
+              'Sistem akan otomatis menyesuaikan lembar pemantauan dengan usia anak Anda saat ini.',
               style: TextStyle(
                 fontSize: 12.5,
                 height: 1.45,
-                color: Color(0xFF334155),
+                color: Color(0xFF1E3A8A),
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -350,17 +351,18 @@ class _PemantauanMenuScreenState extends State<PemantauanMenuScreen> {
         borderRadius: BorderRadius.circular(22),
         border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
-      child: Row(
+      child: const Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.auto_awesome_rounded, color: Color(0xFF2563EB)),
-          const SizedBox(width: 12),
+          Icon(Icons.touch_app_rounded, color: Color(0xFF2563EB)),
+          SizedBox(width: 12),
           Expanded(
             child: Text(
-              'Setelah memilih kelompok usia, Anda langsung masuk ke lembar pemantauan yang sesuai.',
+              'Ketuk tombol "Skrining sekarang" di bawah ini untuk mulai mengisi.',
               style: TextStyle(
                 fontSize: 12.5,
                 height: 1.4,
-                color: Colors.grey.shade700,
+                color: Color(0xFF334155),
               ),
             ),
           ),
