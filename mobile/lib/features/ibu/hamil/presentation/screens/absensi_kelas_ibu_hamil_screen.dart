@@ -620,7 +620,7 @@ class _AbsensiKelasIbuHamilScreenState
                       ),
                       child: Row(
                         children: const [
-                          Icon(Icons.lock_clock_rounded,
+                          Icon(Icons.hourglass_top_rounded,
                               size: 16, color: Color(0xFFEA580C)),
                           SizedBox(width: 8),
                           Expanded(
