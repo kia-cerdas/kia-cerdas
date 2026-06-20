@@ -904,6 +904,7 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	ibu.POST("/jadwal-imunisasi/:id/request-perubahan", controller.RequestPerubahanJadwal)
 	ibu.POST("/test-fcm", controller.TestFCM)
 	ibu.POST("/test-reminder", controller.TestReminder)
+	ibu.POST("/test-posyandu-reminder", controller.TestPosyanduReminder)
 
 	kader := e.Group("/kader")
 	kader.Use(middlewares.JWTAuth(controller.JWTSecret()))

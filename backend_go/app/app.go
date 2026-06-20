@@ -58,26 +58,25 @@ func (m *Main) startCronJob() {
 		if err := kehamilanUC.UpdateAllActiveGestationalAge(); err != nil {
 			log.Printf("[CRON] kehamilan error: %v", err)
 		}
+		// 42 Update status jadwal imunisasi
+		if err := m.usecase.UpdateStatusJadwal(); err != nil {
+			log.Printf("[CRON] update status jadwal imunisasi error: %v", err)
+		} else {
+			log.Println("[CRON] update status jadwal imunisasi selesai")
+		}
 
-		// 2. reminder imunisasi
+		// 3. reminder imunisasi
 		if err := m.usecase.ProcessReminder(); err != nil {
 			log.Printf("[CRON] reminder error: %v", err)
 		} else {
 			log.Println("[CRON] reminder selesai")
 		}
 
-		// 3. Reminder kontrol pemeriksaan kehamilan
+		// 4. Reminder kontrol pemeriksaan kehamilan
 		if err := m.usecase.ProcessKontrolReminder(); err != nil {
 			log.Printf("[CRON] reminder kontrol error: %v", err)
 		} else {
 			log.Println("[CRON] reminder kontrol selesai")
-		}
-
-		// 4. Update status jadwal imunisasi
-		if err := m.usecase.UpdateStatusJadwal(); err != nil {
-			log.Printf("[CRON] update status jadwal imunisasi error: %v", err)
-		} else {
-			log.Println("[CRON] update status jadwal imunisasi selesai")
 		}
 
 		// 5. Update overdue kunjungan imunisasi
@@ -85,6 +84,13 @@ func (m *Main) startCronJob() {
 			log.Printf("[CRON] overdue kunjungan imunisasi error: %v", err)
 		} else {
 			log.Println("[CRON] overdue kunjungan imunisasi selesai")
+		}
+
+		// 6. Reminder jadwal posyandu H-3
+		if err := m.usecase.ProcessPosyanduReminder(); err != nil {
+			log.Printf("[CRON] posyandu reminder error: %v", err)
+		} else {
+			log.Println("[CRON] posyandu reminder selesai")
 		}
 	})
 	if err != nil {
