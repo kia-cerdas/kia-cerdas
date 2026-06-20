@@ -243,10 +243,10 @@ func (c *IbuController) Delete(ctx echo.Context) error {
 }
 func (c *IbuController) GetDashboard(ctx echo.Context) error {
 	// Ambil desa_id dan role dari context (sudah diset middleware)
-	desaID := middlewares.GetDesaID(ctx)
+	posyanduID := middlewares.GetPosyanduID(ctx)
 	role := middlewares.GetRole(ctx)
 
-	list, err := c.usecase.GetDashboard(desaID, role)
+	list, err := c.usecase.GetDashboard(posyanduID, role)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, models.Response{
 			StatusCode: 500,

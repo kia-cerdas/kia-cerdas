@@ -174,7 +174,7 @@ func (u *Main) send(
 	namaAnak := "Anak"
 
 	if err == nil && anak != nil && anak.Penduduk != nil {
-		namaAnak = anak.Penduduk.NamaLengkap
+		namaAnak = anak.Penduduk.NamaAnggotaKeluarga
 	}
 
 	// 4. ambil nama imunisasi (dosis vaksin)

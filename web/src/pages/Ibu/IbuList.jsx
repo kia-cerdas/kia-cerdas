@@ -223,13 +223,26 @@
               <p className="text-xl font-bold text-gray-800">{totalSedang}</p>
             </button>
 
-            <div className="bg-white rounded-lg shadow-sm p-3 border-l-4 border-[#3B6D11]">
+            <button
+              onClick={() => filterByRisiko("NORMAL")}
+              className={`bg-white rounded-lg shadow-sm p-3 border-l-4 border-[#3B6D11] text-left hover:shadow-md transition ${
+                filterRisiko === "NORMAL" && !showHistory ? "ring-2 ring-green-300" : ""
+              }`}
+            >
+              <div className="flex items-center gap-2 border-[#3B6D11] mb-1">
+                <Activity size={16} />
+                <span className="text-sm font-medium">RISIKO RENDAH/NORMAL</span>
+              </div>
+              <p className="text-xl font-bold text-gray-800">{totalNormal}</p>
+            </button>
+
+            {/* <div className="bg-white rounded-lg shadow-sm p-3 border-l-4 border-[#3B6D11]">
               <div className="flex items-center gap-2 text-[#3B6D11] mb-1">
                 <UserCheck size={16} />
                 <span className="text-sm font-medium">RISIKO RENDAH/NORMAL</span>
               </div>
                <p className="text-xl font-bold text-gray-800">{totalNormal}</p>
-            </div>
+            </div> */}
           </div>
 
           {/* SEARCH & FILTERS */}

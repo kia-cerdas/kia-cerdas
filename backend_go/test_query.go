@@ -41,7 +41,7 @@ func main() {
 	// check an child (anak) gender representation in database
 	var child models.Anak
 	if err := db.Preload("Penduduk").First(&child).Error; err == nil {
-		fmt.Printf("First Child: ID=%d, Nama=%s, Gender=%s\n", child.ID, child.Penduduk.NamaLengkap, child.Penduduk.JenisKelamin)
+		fmt.Printf("First Child: ID=%d, Nama=%s, Gender=%s\n", child.ID, child.Penduduk.NamaAnggotaKeluarga, child.Penduduk.JenisKelamin)
 	} else {
 		fmt.Printf("Error getting child: %v\n", err)
 	}

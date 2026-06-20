@@ -41,10 +41,10 @@ func (c *LaporanIbuController) Preview(ctx echo.Context) error {
 	}
 
 	// Ambil desa_id dan role dari context (sudah diset middleware JWT)
-	desaID := middlewares.GetDesaID(ctx)
+	posyanduID := middlewares.GetPosyanduID(ctx)
 	role := middlewares.GetRole(ctx)
 
-	data, err := c.usecase.GetLaporanIbu(bulan, tahun, desaID, role)
+	data, err := c.usecase.GetLaporanIbu(bulan, tahun, posyanduID, role)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
 			"message": err.Error(),
@@ -79,10 +79,10 @@ func (c *LaporanIbuController) ExportExcel(ctx echo.Context) error {
 		}
 	}
 
-	desaID := middlewares.GetDesaID(ctx)
+	posyanduID := middlewares.GetPosyanduID(ctx)
 	role := middlewares.GetRole(ctx)
 
-	file, err := c.usecase.ExportExcelLaporanIbu(bulan, tahun, desaID, role)
+	file, err := c.usecase.ExportExcelLaporanIbu(bulan, tahun, posyanduID, role)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
 			"message": err.Error(),

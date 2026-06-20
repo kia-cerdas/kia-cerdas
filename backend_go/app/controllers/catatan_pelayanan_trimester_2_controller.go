@@ -84,7 +84,7 @@ func (c *CatatanPelayananTrimester2Controller) Update(ctx echo.Context) error {
 	if err != nil {
 		return ctx.JSON(http.StatusBadRequest, models.Response{StatusCode: http.StatusBadRequest, Message: "invalid id"})
 	}
-	var req createCatatanT1Request
+	var req createCatatanT2Request
 	if err := ctx.Bind(&req); err != nil {
 		return ctx.JSON(http.StatusBadRequest, models.Response{StatusCode: http.StatusBadRequest, Message: err.Error()})
 	}

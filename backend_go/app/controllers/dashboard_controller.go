@@ -18,10 +18,10 @@ func NewDashboardController(dashboardUsecase usecases.DashboardUsecase) *Dashboa
 }
 
 func (c *DashboardController) GetJumlahPerKelompokUsia(ctx echo.Context) error {
-	desaID := middlewares.GetDesaID(ctx)
+	posyanduID := middlewares.GetPosyanduID(ctx)
 	role := middlewares.GetRole(ctx)
 
-	data, err := c.dashboardUsecase.GetJumlahPerKelompokUsia(desaID, role)
+	data, err := c.dashboardUsecase.GetJumlahPerKelompokUsia(posyanduID, role)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, models.Response{
 			StatusCode: http.StatusInternalServerError,
@@ -35,10 +35,10 @@ func (c *DashboardController) GetJumlahPerKelompokUsia(ctx echo.Context) error {
 }
 
 func (c *DashboardController) GetKesehatanPerKelompok(ctx echo.Context) error {
-	desaID := middlewares.GetDesaID(ctx)
+	posyanduID := middlewares.GetPosyanduID(ctx)
 	role := middlewares.GetRole(ctx)
 
-	data, err := c.dashboardUsecase.GetKesehatanPerKelompok(desaID, role)
+	data, err := c.dashboardUsecase.GetKesehatanPerKelompok(posyanduID, role)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, models.Response{
 			StatusCode: http.StatusInternalServerError,
@@ -52,10 +52,10 @@ func (c *DashboardController) GetKesehatanPerKelompok(ctx echo.Context) error {
 }
 
 func (c *DashboardController) GetCakupanPemeriksaan(ctx echo.Context) error {
-	desaID := middlewares.GetDesaID(ctx)
+	v := middlewares.GetPosyanduID(ctx)
 	role := middlewares.GetRole(ctx)
 
-	data, err := c.dashboardUsecase.GetCakupanPemeriksaan(desaID, role)
+	data, err := c.dashboardUsecase.GetCakupanPemeriksaan(v, role)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, models.Response{
 			StatusCode: http.StatusInternalServerError,

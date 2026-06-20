@@ -24,10 +24,10 @@ func (ctrl *PencatatanController) GetDaftarPenduduk(c echo.Context) error {
     if kategori == "" {
         return c.JSON(http.StatusBadRequest, map[string]string{"error": "kategori tidak boleh kosong"})
     }
-    desaID := middlewares.GetDesaID(c)
+    posyanduID := middlewares.GetPosyanduID(c)
     role := middlewares.GetRole(c)
 
-    data, err := ctrl.usecase.GetPendudukByKategori(kategori, desaID, role)
+    data, err := ctrl.usecase.GetPendudukByKategori(kategori, posyanduID, role)
     if err != nil {
         return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
     }

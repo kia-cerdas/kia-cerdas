@@ -101,3 +101,37 @@ func (r *AnakRepository) Delete(id int32) error {
 	}
 	return nil
 }
+
+func (r *AnakRepository) FindAllByPosyanduID(posyanduID int32) ([]models.Anak, error) {
+	var anaks []models.Anak
+	
+	// Join dengan tabel penduduk untuk filter posyandu_id
+	err := r.db.
+		Preload("Penduduk").
+		Preload("Kehamilan").
+		Preload("Kehamilan.Ibu").
+		Preload("Kehamilan.Ibu.Kependudukan").
+		Joins("JOIN penduduk ON penduduk.id = anak.penduduk_id").
+		Where("penduduk.posyandu_id = ?", posyanduID).
+		Where("anak.deleted_at IS NULL").
+		Find(&anaks).Error
+	
+	return anaks, err
+}
+
+// // FindAllByDesaID mendapatkan semua anak berdasarkan desa_id
+// func (r *AnakRepository) FindAllByDesaID(desaID int32) ([]models.Anak, error) {
+// 	var anaks []models.Anak
+	
+// 	err := r.db.
+// 		Preload("Penduduk").
+// 		Preload("Kehamilan").
+// 		Preload("Kehamilan.Ibu").
+// 		Preload("Kehamilan.Ibu.Kependudukan").
+// 		Joins("JOIN penduduk ON penduduk.id = anak.penduduk_id").
+// 		Where("penduduk.desa_id = ?", desaID).
+// 		Where("anak.deleted_at IS NULL").
+// 		Find(&anaks).Error
+	
+// 	return anaks, err
+// }

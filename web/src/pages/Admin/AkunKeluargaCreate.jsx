@@ -1,464 +1,1072 @@
-import React, { useState } from "react";
-import { Plus, Trash2, Send } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { 
+  Plus, Trash2, Edit, Search, X, Filter, 
+  ChevronLeft, ChevronRight, Users,
+  RefreshCw
+} from "lucide-react";
 import MainLayout from "../../components/Layout/MainLayout";
-import { createAkunKeluargaAdmin } from "../../services/adminAkunKeluarga";
+import { 
+  getPendudukWithFilters, 
+  getPendudukById,
+  createKependudukan, 
+  updateKependudukan, 
+  deleteKependudukan 
+} from "../../services/kependudukan";
 import { listDesa } from "../../services/desa";
-
-const getTodayDate = () => {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, "0");
-  const d = String(now.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-};
+import { getAllPosyandu } from "../../services/posyandu";
 
 // Dropdown options
 const GOLONGAN_DARAH_OPTIONS = ["", "A", "B", "AB", "O", "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 const AGAMA_OPTIONS = ["", "Islam", "Kristen Protestan", "Katolik", "Hindu", "Buddha", "Konghucu"];
 const PENDIDIKAN_OPTIONS = ["", "Tidak/Belum Sekolah", "Belum Tamat SD/Sederajat", "Tamat SD/Sederajat", "SLTP/Sederajat", "SLTA/Sederajat", "Diploma I/II", "Akademi/Diploma III/S.Muda", "Diploma IV/Strata I", "Strata II", "Strata III"];
-
-// Validation helpers
-const validateNIK = (nik) => {
-  if (!nik) return { valid: false, message: "NIK wajib diisi" };
-  if (!/^\d+$/.test(nik)) return { valid: false, message: "NIK hanya boleh berisi angka" };
-  if (nik.length !== 16) return { valid: false, message: "NIK harus 16 digit" };
-  return { valid: true, message: "" };
-};
-
-const validateNoKK = (noKK) => {
-  if (!noKK) return { valid: false, message: "No KK wajib diisi" };
-  if (!/^\d+$/.test(noKK)) return { valid: false, message: "No KK hanya boleh berisi angka" };
-  if (noKK.length !== 16) return { valid: false, message: "No KK harus 16 digit" };
-  return { valid: true, message: "" };
-};
-
-const handleNumericInput = (value, maxLength = 16) => {
-  // Remove non-digit characters and limit length
-  return value.replace(/\D/g, '').slice(0, maxLength);
-};
-
-const createEmptyMember = () => ({
-  nik: "",
-  nama_lengkap: "",
-  jenis_kelamin: "Laki-laki",
-  tanggal_lahir: "",
-  tempat_lahir: "",
-  golongan_darah: "",
-  agama: "",
-  status_perkawinan: "",
-  pekerjaan: "",
-  pendidikan_terakhir: "",
-  baca_huruf: "Ya",
-  kedudukan_keluarga: "",
-  dusun: "",
-  asal_penduduk: "Lahir",
-  tujuan_pindah: "",
-  tempat_meninggal: "",
-  keterangan: "",
-  kecamatan: "",
-  desa_id: "",
-  is_non_ktp: "false",
-  telepon: "",
-  tanggal_penambahan: "",
-  tanggal_pengurangan: "",
-});
+const STATUS_OPTIONS = ["", "Kawin", "Belum Kawin", "Cerai Hidup", "Cerai Mati"];
+const HUBUNGAN_OPTIONS = ["", "Kepala Keluarga", "Istri", "Anak", "Menantu", "Cucu", "Orang Tua", "Mertua", "Keluarga Lainnya"];
+const JENIS_KELAMIN_OPTIONS = ["Laki-laki", "Perempuan"];
+const KEWARGANEGARAAN_OPTIONS = ["WNI", "WNA"];
 
 const cardClass = "bg-white rounded-2xl shadow-sm border border-slate-100";
 
-const AdminAkunKeluargaCreate = () => {
-  const [form, setForm] = useState({
-    no_kk: "",
-    tanggal_terbit: getTodayDate(),
-    anggota_keluarga: [createEmptyMember()],
-  });
-  const [submitting, setSubmitting] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
-  const [desasList, setDesasList] = useState([]);
+// Modal Component
+const Modal = ({ isOpen, onClose, title, children }) => {
+  if (!isOpen) return null;
+  
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+          <h2 className="text-xl font-semibold text-slate-800">{title}</h2>
+          <button 
+            onClick={onClose}
+            className="p-2 hover:bg-slate-100 rounded-full transition-colors"
+          >
+            <X size={20} className="text-slate-500" />
+          </button>
+        </div>
+        <div className="p-6">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+};
 
-  React.useEffect(() => {
-    const fetchDesas = async () => {
+// Form Modal for Create/Edit
+const FormPenduduk = ({ 
+  initialData = null, 
+  onSubmit, 
+  onCancel, 
+  submitting,
+  desasList,
+  posyanduList
+}) => {
+  const isEdit = !!initialData;
+  const [formData, setFormData] = useState({
+    nik: "",
+    nama_anggota_keluarga: "",
+    jenis_kelamin: "Laki-laki",
+    tanggal_lahir: "",
+    tempat_lahir: "",
+    golongan_darah: "",
+    agama: "",
+    status: "",
+    pekerjaan: "",
+    pendidikan: "",
+    kewarganegaraan: "WNI",
+    etnis_suku: "",
+    hubungan: "",
+    rw: "",
+    rt: "",
+    dusun: "",
+    alamat: "",
+    kode_keluarga: "",
+    nama_kepala_keluarga: "",
+    telepon: "",
+    desa_id: "",
+    posyandu_id: "",
+  });
+
+  useEffect(() => {
+    if (initialData) {
+      console.log("📋 [FormPenduduk] Initial data:", initialData);
+      
+      // Format tanggal lahir untuk input date (YYYY-MM-DD)
+      let tanggalLahir = "";
+      if (initialData.tanggal_lahir) {
+        try {
+          const date = new Date(initialData.tanggal_lahir);
+          // Cek apakah tanggal valid (bukan 0001-01-01)
+          if (date.getFullYear() > 1) {
+            tanggalLahir = date.toISOString().split('T')[0];
+          } else {
+            tanggalLahir = "";
+          }
+        } catch {
+          tanggalLahir = "";
+        }
+      }
+
+      setFormData({
+        nik: initialData.nik || "",
+        nama_anggota_keluarga: initialData.nama_anggota_keluarga || "",
+        jenis_kelamin: initialData.jenis_kelamin || "Laki-laki",
+        tanggal_lahir: tanggalLahir,
+        tempat_lahir: initialData.tempat_lahir || "",
+        golongan_darah: initialData.golongan_darah || "",
+        agama: initialData.agama || "",
+        status: initialData.status || "",
+        pekerjaan: initialData.pekerjaan || "",
+        pendidikan: initialData.pendidikan || "",
+        kewarganegaraan: initialData.kewarganegaraan || "WNI",
+        etnis_suku: initialData.etnis_suku || "",
+        hubungan: initialData.hubungan || "",
+        rw: initialData.rw || "",
+        rt: initialData.rt || "",
+        dusun: initialData.dusun || "",
+        alamat: initialData.alamat || "",
+        kode_keluarga: initialData.kode_keluarga || "",
+        nama_kepala_keluarga: initialData.nama_kepala_keluarga || "",
+        telepon: initialData.telepon || "",
+        desa_id: initialData.desa_id || "",
+        posyandu_id: initialData.posyandu_id || "",
+      });
+    }
+  }, [initialData]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSubmit(formData);
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* NIK */}
+        <div>
+          <label className="text-sm text-slate-600 font-medium">NIK <span className="text-red-500">*</span></label>
+          <input
+            type="text"
+            name="nik"
+            value={formData.nik}
+            onChange={handleChange}
+            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            placeholder="16 digit angka"
+            maxLength={16}
+            required
+          />
+        </div>
+
+        {/* Nama Lengkap */}
+        <div>
+          <label className="text-sm text-slate-600 font-medium">Nama Lengkap <span className="text-red-500">*</span></label>
+          <input
+            type="text"
+            name="nama_anggota_keluarga"
+            value={formData.nama_anggota_keluarga}
+            onChange={handleChange}
+            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            placeholder="Nama lengkap"
+            required
+          />
+        </div>
+
+        {/* Jenis Kelamin */}
+        <div>
+          <label className="text-sm text-slate-600 font-medium">Jenis Kelamin <span className="text-red-500">*</span></label>
+          <select
+            name="jenis_kelamin"
+            value={formData.jenis_kelamin}
+            onChange={handleChange}
+            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          >
+            {JENIS_KELAMIN_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+          </select>
+        </div>
+
+        {/* Tanggal Lahir */}
+        <div>
+          <label className="text-sm text-slate-600 font-medium">Tanggal Lahir <span className="text-red-500">*</span></label>
+          <input
+            type="date"
+            name="tanggal_lahir"
+            value={formData.tanggal_lahir}
+            onChange={handleChange}
+            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            required
+          />
+        </div>
+
+        {/* Tempat Lahir */}
+        <div>
+          <label className="text-sm text-slate-600 font-medium">Tempat Lahir</label>
+          <input
+            type="text"
+            name="tempat_lahir"
+            value={formData.tempat_lahir}
+            onChange={handleChange}
+            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            placeholder="Kota/Kabupaten lahir"
+          />
+        </div>
+
+        {/* Golongan Darah */}
+        <div>
+          <label className="text-sm text-slate-600 font-medium">Golongan Darah</label>
+          <select
+            name="golongan_darah"
+            value={formData.golongan_darah}
+            onChange={handleChange}
+            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          >
+            {GOLONGAN_DARAH_OPTIONS.map(opt => <option key={opt} value={opt}>{opt || "-- Pilih --"}</option>)}
+          </select>
+        </div>
+
+        {/* Agama */}
+        <div>
+          <label className="text-sm text-slate-600 font-medium">Agama</label>
+          <select
+            name="agama"
+            value={formData.agama}
+            onChange={handleChange}
+            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          >
+            {AGAMA_OPTIONS.map(opt => <option key={opt} value={opt}>{opt || "-- Pilih --"}</option>)}
+          </select>
+        </div>
+
+        {/* Status Perkawinan */}
+        <div>
+          <label className="text-sm text-slate-600 font-medium">Status Perkawinan</label>
+          <select
+            name="status"
+            value={formData.status}
+            onChange={handleChange}
+            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          >
+            {STATUS_OPTIONS.map(opt => <option key={opt} value={opt}>{opt || "-- Pilih --"}</option>)}
+          </select>
+        </div>
+
+        {/* Pekerjaan */}
+        <div>
+          <label className="text-sm text-slate-600 font-medium">Pekerjaan</label>
+          <input
+            type="text"
+            name="pekerjaan"
+            value={formData.pekerjaan}
+            onChange={handleChange}
+            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            placeholder="Pekerjaan"
+          />
+        </div>
+
+        {/* Pendidikan Terakhir */}
+        <div>
+          <label className="text-sm text-slate-600 font-medium">Pendidikan Terakhir</label>
+          <select
+            name="pendidikan"
+            value={formData.pendidikan}
+            onChange={handleChange}
+            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          >
+            {PENDIDIKAN_OPTIONS.map(opt => <option key={opt} value={opt}>{opt || "-- Pilih --"}</option>)}
+          </select>
+        </div>
+
+        {/* Kewarganegaraan */}
+        <div>
+          <label className="text-sm text-slate-600 font-medium">Kewarganegaraan</label>
+          <select
+            name="kewarganegaraan"
+            value={formData.kewarganegaraan}
+            onChange={handleChange}
+            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          >
+            {KEWARGANEGARAAN_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+          </select>
+        </div>
+
+        {/* Etnis/Suku */}
+        <div>
+          <label className="text-sm text-slate-600 font-medium">Etnis/Suku</label>
+          <input
+            type="text"
+            name="etnis_suku"
+            value={formData.etnis_suku}
+            onChange={handleChange}
+            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            placeholder="Contoh: Jawa, Sunda"
+          />
+        </div>
+
+        {/* Hubungan Keluarga */}
+        <div>
+          <label className="text-sm text-slate-600 font-medium">Hubungan Keluarga <span className="text-red-500">*</span></label>
+          <select
+            name="hubungan"
+            value={formData.hubungan}
+            onChange={handleChange}
+            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            required
+          >
+            {HUBUNGAN_OPTIONS.map(opt => <option key={opt} value={opt}>{opt || "-- Pilih --"}</option>)}
+          </select>
+        </div>
+
+        {/* Kode Keluarga */}
+        <div>
+          <label className="text-sm text-slate-600 font-medium">Kode Keluarga</label>
+          <input
+            type="text"
+            name="kode_keluarga"
+            value={formData.kode_keluarga}
+            onChange={handleChange}
+            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            placeholder="KK-2024-001"
+          />
+        </div>
+
+        {/* Nama Kepala Keluarga */}
+        <div>
+          <label className="text-sm text-slate-600 font-medium">Nama Kepala Keluarga</label>
+          <input
+            type="text"
+            name="nama_kepala_keluarga"
+            value={formData.nama_kepala_keluarga}
+            onChange={handleChange}
+            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            placeholder="Nama kepala keluarga"
+          />
+        </div>
+
+        {/* RW */}
+        <div>
+          <label className="text-sm text-slate-600 font-medium">RW</label>
+          <input
+            type="text"
+            name="rw"
+            value={formData.rw}
+            onChange={handleChange}
+            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            placeholder="001"
+          />
+        </div>
+
+        {/* RT */}
+        <div>
+          <label className="text-sm text-slate-600 font-medium">RT</label>
+          <input
+            type="text"
+            name="rt"
+            value={formData.rt}
+            onChange={handleChange}
+            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            placeholder="002"
+          />
+        </div>
+
+        {/* Dusun */}
+        <div>
+          <label className="text-sm text-slate-600 font-medium">Dusun</label>
+          <input
+            type="text"
+            name="dusun"
+            value={formData.dusun}
+            onChange={handleChange}
+            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            placeholder="Nama dusun"
+          />
+        </div>
+
+        {/* Alamat */}
+        <div>
+          <label className="text-sm text-slate-600 font-medium">Alamat</label>
+          <input
+            type="text"
+            name="alamat"
+            value={formData.alamat}
+            onChange={handleChange}
+            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            placeholder="Alamat lengkap"
+          />
+        </div>
+
+        {/* No. Telepon */}
+        <div>
+          <label className="text-sm text-slate-600 font-medium">No. Telepon</label>
+          <input
+            type="text"
+            name="telepon"
+            value={formData.telepon}
+            onChange={handleChange}
+            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            placeholder="081234567890"
+          />
+        </div>
+
+        {/* Desa */}
+        <div>
+          <label className="text-sm text-slate-600 font-medium">Desa <span className="text-red-500">*</span></label>
+          <select
+            name="desa_id"
+            value={formData.desa_id}
+            onChange={handleChange}
+            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            required
+          >
+            <option value="">-- Pilih Desa --</option>
+            {desasList.map((d) => (
+              <option key={d.id} value={d.id}>{d.nama_desa}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Posyandu */}
+        <div>
+          <label className="text-sm text-slate-600 font-medium">Posyandu</label>
+          <select
+            name="posyandu_id"
+            value={formData.posyandu_id}
+            onChange={handleChange}
+            className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          >
+            <option value="">-- Pilih Posyandu --</option>
+            {posyanduList.map((p) => (
+              <option key={p.id} value={p.id}>{p.nama}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+      <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-slate-200">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50"
+        >
+          Batal
+        </button>
+        <button
+          type="submit"
+          disabled={submitting}
+          className="px-6 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-60"
+        >
+          {submitting ? "Menyimpan..." : isEdit ? "Update" : "Simpan"}
+        </button>
+      </div>
+    </form>
+  );
+};
+
+// Main Component
+const AdminPendudukList = () => {
+  // State
+  const [penduduks, setPenduduks] = useState([]);
+  const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, total_pages: 1 });
+  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [desasList, setDesasList] = useState([]);
+  const [posyanduList, setPosyanduList] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [editingData, setEditingData] = useState(null);
+  const [search, setSearch] = useState("");
+  const [filters, setFilters] = useState({
+    rw: "",
+    rt: "",
+    dusun: "",
+    kode_keluarga: "",
+    status: "",
+    hubungan: "",
+    desa_id: "",
+    posyandu_id: "",
+  });
+  const [showFilters, setShowFilters] = useState(false);
+  const [message, setMessage] = useState({ type: "", text: "" });
+
+  // Fetch data
+  const fetchData = async (params = {}) => {
+    setLoading(true);
+    try {
+      console.log("🔍 [fetchData] Fetching with params:", { 
+        page: pagination.page, 
+        limit: pagination.limit, 
+        search, 
+        filters, 
+        ...params 
+      });
+      
+      const result = await getPendudukWithFilters({
+        page: pagination.page,
+        limit: pagination.limit,
+        search: search || undefined,
+        ...filters,
+        ...params,
+      });
+      
+      console.log("✅ [fetchData] Result:", result);
+      
+      // Handle response array langsung
+      if (Array.isArray(result)) {
+        setPenduduks(result);
+        setPagination({
+          page: pagination.page || 1,
+          limit: pagination.limit || 10,
+          total: result.length,
+          total_pages: Math.ceil(result.length / (pagination.limit || 10)) || 1,
+        });
+      } else if (result && typeof result === 'object' && result.items !== undefined) {
+        setPenduduks(result.items || []);
+        setPagination(result.pagination || { 
+          page: 1, 
+          limit: 10, 
+          total: 0, 
+          total_pages: 1 
+        });
+      } else {
+        setPenduduks([]);
+        setPagination({
+          page: 1,
+          limit: 10,
+          total: 0,
+          total_pages: 1,
+        });
+      }
+    } catch (error) {
+      console.error("❌ [fetchData] Error:", error);
+      setMessage({ type: "error", text: error?.message || "Gagal memuat data" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch master data
+  useEffect(() => {
+    const fetchMaster = async () => {
       try {
-        const data = await listDesa();
-        setDesasList(data);
+        console.log("📥 [fetchMaster] Loading master data...");
+        const [desas, posyandus] = await Promise.all([
+          listDesa(),
+          getAllPosyandu()
+        ]);
+        setDesasList(desas || []);
+        setPosyanduList(posyandus || []);
+        console.log("✅ [fetchMaster] Desa:", desas?.length, "Posyandu:", posyandus?.length);
       } catch (err) {
-        console.error("Gagal memuat daftar desa", err);
+        console.error("❌ [fetchMaster] Error:", err);
+        setMessage({ type: "error", text: "Gagal memuat data master" });
       }
     };
-    fetchDesas();
+    fetchMaster();
   }, []);
 
-  const setTopField = (name, value) => {
-    setForm((prev) => ({ ...prev, [name]: value }));
+  // Initial fetch
+  useEffect(() => {
+    fetchData();
+  }, [pagination.page, pagination.limit]);
+
+  // Handle search
+  const handleSearch = () => {
+    console.log("🔍 [handleSearch] Searching:", search);
+    fetchData({ page: 1 });
   };
 
-  const setMemberField = (index, name, value) => {
-    setForm((prev) => {
-      const nextMembers = [...prev.anggota_keluarga];
-      nextMembers[index] = { ...nextMembers[index], [name]: value };
+  const handleSearchKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
 
-      return {
-        ...prev,
-        anggota_keluarga: nextMembers,
-      };
+  // Handle filter
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilters(prev => ({ ...prev, [name]: value }));
+  };
+
+  const applyFilters = () => {
+    console.log("🔍 [applyFilters] Filters:", filters);
+    setShowFilters(false);
+    fetchData({ page: 1 });
+  };
+
+  const clearFilters = () => {
+    console.log("🔄 [clearFilters] Resetting filters");
+    setFilters({
+      rw: "",
+      rt: "",
+      dusun: "",
+      kode_keluarga: "",
+      status: "",
+      hubungan: "",
+      desa_id: "",
+      posyandu_id: "",
     });
+    setSearch("");
+    fetchData({ page: 1 });
   };
 
-  const addMember = () => {
-    setForm((prev) => ({
-      ...prev,
-      anggota_keluarga: [...prev.anggota_keluarga, createEmptyMember()],
-    }));
+  // Handle CRUD
+  const handleCreate = () => {
+    console.log("➕ [handleCreate] Opening create modal");
+    setEditingData(null);
+    setShowModal(true);
   };
 
-  const removeMember = (index) => {
-    setForm((prev) => {
-      if (prev.anggota_keluarga.length === 1) {
-        return prev;
+  const handleEdit = async (data) => {
+    // Ambil ID dari data (support berbagai format)
+    const id = data.id || data.IDKependudukan;
+    console.log("✏️ [handleEdit] Editing ID:", id);
+    
+    try {
+      // Ambil data lengkap dari API
+      const fullData = await getPendudukById(id);
+      console.log("✅ [handleEdit] Full data from API:", fullData);
+      
+      // Set data lengkap ke editingData
+      setEditingData(fullData);
+      setShowModal(true);
+    } catch (error) {
+      console.error("❌ [handleEdit] Error fetching full data:", error);
+      
+      // Fallback: gunakan data dari tabel jika gagal fetch
+      console.warn("⚠️ [handleEdit] Using table data as fallback");
+      setEditingData(data);
+      setShowModal(true);
+      setMessage({ type: "error", text: "Gagal memuat data lengkap, menggunakan data yang tersedia" });
+      setTimeout(() => setMessage({ type: "", text: "" }), 3000);
+    }
+  };
+
+  const handleDelete = async (id, name) => {
+    if (!window.confirm(`Yakin ingin menghapus data "${name}"?`)) return;
+    
+    try {
+      console.log("🗑️ [handleDelete] Deleting ID:", id);
+      await deleteKependudukan(id);
+      setMessage({ type: "success", text: "Data berhasil dihapus" });
+      fetchData();
+      setTimeout(() => setMessage({ type: "", text: "" }), 3000);
+    } catch (error) {
+      console.error("❌ [handleDelete] Error:", error);
+      const errorMsg = error?.message || "Gagal menghapus data";
+      setMessage({ type: "error", text: errorMsg });
+    }
+  };
+
+  const handleSubmit = async (formData) => {
+    console.log("📝 [handleSubmit] Form data:", formData);
+    setSubmitting(true);
+    setMessage({ type: "", text: "" });
+    
+    try {
+      // Format tanggal ke ISO 8601
+      let tanggalLahir = "";
+      if (formData.tanggal_lahir) {
+        try {
+          const date = new Date(formData.tanggal_lahir);
+          tanggalLahir = date.toISOString();
+          console.log("📅 [handleSubmit] Formatted date:", tanggalLahir);
+        } catch (error) {
+          console.warn("⚠️ [handleSubmit] Date format error:", error);
+          tanggalLahir = formData.tanggal_lahir;
+        }
       }
 
-      const nextMembers = prev.anggota_keluarga.filter((_, i) => i !== index);
-
-      return {
-        ...prev,
-        anggota_keluarga: nextMembers,
+      const payload = {
+        rw: formData.rw || "",
+        rt: formData.rt || "",
+        dusun: formData.dusun || "",
+        alamat: formData.alamat || "",
+        kode_keluarga: formData.kode_keluarga || "",
+        nama_kepala_keluarga: formData.nama_kepala_keluarga || "",
+        nik: formData.nik || "",
+        nama_anggota_keluarga: formData.nama_anggota_keluarga || "",
+        jenis_kelamin: formData.jenis_kelamin || "Laki-laki",
+        hubungan: formData.hubungan || "",
+        tempat_lahir: formData.tempat_lahir || "",
+        tanggal_lahir: tanggalLahir,
+        status: formData.status || "",
+        agama: formData.agama || "",
+        golongan_darah: formData.golongan_darah || "",
+        kewarganegaraan: formData.kewarganegaraan || "WNI",
+        etnis_suku: formData.etnis_suku || "",
+        pendidikan: formData.pendidikan || "",
+        pekerjaan: formData.pekerjaan || "",
+        telepon: formData.telepon || "",
+        desa_id: formData.desa_id ? parseInt(formData.desa_id, 10) : null,
+        posyandu_id: formData.posyandu_id ? parseInt(formData.posyandu_id, 10) : null,
       };
-    });
-  };
 
-  const validate = () => {
-    // Validate No KK
-    const noKKValidation = validateNoKK(form.no_kk);
-    if (!noKKValidation.valid) return noKKValidation.message;
-    
-    if (!form.tanggal_terbit) return "Tanggal terbit wajib diisi";
-    if (form.anggota_keluarga.length === 0) return "Anggota keluarga minimal 1 orang";
+      console.log("📦 [handleSubmit] Final payload:", JSON.stringify(payload, null, 2));
 
-    for (let i = 0; i < form.anggota_keluarga.length; i += 1) {
-      const member = form.anggota_keluarga[i];
-      const idx = i + 1;
+      if (editingData) {
+        const id = editingData.id || editingData.IDKependudukan;
+        console.log(`✏️ [handleSubmit] Updating ID: ${id}`);
+        await updateKependudukan(id, payload);
+        setMessage({ type: "success", text: "Data berhasil diupdate" });
+      } else {
+        console.log("➕ [handleSubmit] Creating new data");
+        await createKependudukan(payload);
+        setMessage({ type: "success", text: "Data berhasil ditambahkan" });
+      }
       
-      // Validate NIK
-      const nikValidation = validateNIK(member.nik);
-      if (!nikValidation.valid) return `Anggota #${idx}: ${nikValidation.message}`;
-      
-      if (!member.nama_lengkap.trim()) return `Nama anggota #${idx} wajib diisi`;
-      if (!member.tanggal_lahir) return `Tanggal lahir anggota #${idx} wajib diisi`;
-      if (!member.kedudukan_keluarga.trim()) return `Kedudukan keluarga anggota #${idx} wajib diisi`;
-    }
-
-    return "";
-  };
-
-  const buildPayload = () => {
-    return {
-      no_kk: form.no_kk.trim(),
-      tanggal_terbit: form.tanggal_terbit,
-      anggota_keluarga: form.anggota_keluarga.map((member) => ({
-        nik: member.nik.trim(),
-        nama_lengkap: member.nama_lengkap.trim(),
-        jenis_kelamin: member.jenis_kelamin,
-        tanggal_lahir: member.tanggal_lahir,
-        tempat_lahir: member.tempat_lahir.trim(),
-        golongan_darah: member.golongan_darah.trim(),
-        agama: member.agama.trim(),
-        status_perkawinan: member.status_perkawinan.trim(),
-        pekerjaan: member.pekerjaan.trim(),
-        pendidikan_terakhir: member.pendidikan_terakhir.trim(),
-        baca_huruf: member.baca_huruf,
-        kedudukan_keluarga: member.kedudukan_keluarga.trim(),
-        dusun: member.dusun.trim(),
-        asal_penduduk: member.asal_penduduk.trim(),
-        tujuan_pindah: member.tujuan_pindah.trim(),
-        tempat_meninggal: member.tempat_meninggal.trim(),
-        keterangan: member.keterangan.trim(),
-        kecamatan: member.kecamatan.trim(),
-        desa_id: member.desa_id ? parseInt(member.desa_id, 10) : null,
-        // is_non_ktp: false = KTP Warga Setempat (default)
-        // is_non_ktp: true = BUKAN KTP Warga Setempat
-        is_non_ktp: member.is_non_ktp === "false",
-        tanggal_penambahan: member.tanggal_penambahan,
-        tanggal_pengurangan: member.tanggal_pengurangan,
-        telepon: member.telepon.trim(),
-      })),
-    };
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setSuccessMessage("");
-    setErrorMessage("");
-
-    const validationError = validate();
-    if (validationError) {
-      setErrorMessage(validationError);
-      return;
-    }
-
-    setSubmitting(true);
-    try {
-      const payload = buildPayload();
-      await createAkunKeluargaAdmin(payload);
-      setSuccessMessage("Kartu keluarga berhasil dibuat.");
-      setForm({
-        no_kk: "",
-        tanggal_terbit: getTodayDate(),
-        anggota_keluarga: [createEmptyMember()],
-      });
+      setShowModal(false);
+      setEditingData(null);
+      fetchData();
+      setTimeout(() => setMessage({ type: "", text: "" }), 3000);
     } catch (error) {
-      const apiMessage = error?.response?.data?.message;
-      const text = Array.isArray(apiMessage) ? apiMessage.join(", ") : apiMessage;
-      setErrorMessage(text || "Gagal membuat kartu keluarga");
+      console.error("❌ [handleSubmit] Error caught!");
+      console.error("❌ [handleSubmit] Error response:", error.response?.data);
+      
+      let errorText = "Gagal menyimpan data";
+      if (error.response?.data?.message) {
+        const msg = error.response.data.message;
+        errorText = Array.isArray(msg) ? msg.join(", ") : msg;
+      } else if (error.message) {
+        errorText = error.message;
+      }
+      
+      setMessage({ type: "error", text: errorText });
     } finally {
       setSubmitting(false);
+      console.log("🏁 [handleSubmit] Finished");
+    }
+  };
+
+  const handlePageChange = (newPage) => {
+    if (newPage < 1 || newPage > pagination.total_pages) return;
+    console.log("📄 [handlePageChange] Page:", newPage);
+    setPagination(prev => ({ ...prev, page: newPage }));
+  };
+
+  // Format date
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "-";
+    try {
+      const date = new Date(dateStr);
+      // Cek apakah tanggal valid
+      if (date.getFullYear() <= 1) return "-";
+      return date.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    } catch {
+      return dateStr;
     }
   };
 
   return (
     <MainLayout>
       <div className="space-y-6">
-
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {successMessage && (
-            <div className="rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3 text-emerald-700 text-sm">
-              {successMessage}
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-indigo-50 rounded-2xl">
+              <Users className="w-6 h-6 text-indigo-600" />
             </div>
-          )}
-          {errorMessage && (
-            <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-red-700 text-sm">
-              {errorMessage}
+            <div>
+              <h1 className="text-2xl font-bold text-slate-800">Data Penduduk</h1>
+              <p className="text-sm text-slate-500">Kelola data penduduk</p>
             </div>
-          )}
+          </div>
+          <button
+            onClick={handleCreate}
+            className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 text-white px-4 py-2 text-sm font-medium hover:bg-indigo-700 transition-colors"
+          >
+            <Plus size={16} />
+            Tambah Penduduk
+          </button>
+        </div>
 
-          <section className={`${cardClass} p-5`}>
-            <h2 className="text-lg font-semibold text-slate-800">Data Kartu Keluarga</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-              <div>
-                <label className="text-sm text-slate-600">No KK <span className="text-red-500">*</span></label>
-                <input
-                  type="text"
-                  value={form.no_kk}
-                  onChange={(e) => setTopField("no_kk", handleNumericInput(e.target.value, 16))}
-                  className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="3201012026040006 (16 digit)"
-                  maxLength={16}
-                  required
-                />
-                <p className="text-xs text-slate-500 mt-1">{form.no_kk.length}/16 digit</p>
-              </div>
-              <div>
-                <label className="text-sm text-slate-600">Tanggal Terbit</label>
-                <input
-                  type="date"
-                  value={form.tanggal_terbit}
-                  onChange={(e) => setTopField("tanggal_terbit", e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                />
-              </div>
+        {/* Message */}
+        {message.text && (
+          <div className={`rounded-xl px-4 py-3 text-sm flex items-center gap-2 ${
+            message.type === 'success' ? 'bg-emerald-50 border border-emerald-200 text-emerald-700' :
+            message.type === 'error' ? 'bg-red-50 border border-red-200 text-red-700' :
+            'bg-blue-50 border border-blue-200 text-blue-700'
+          }`}>
+            <span>{message.type === 'success' ? '✓' : message.type === 'error' ? '✕' : 'ℹ'}</span>
+            {message.text}
+          </div>
+        )}
+
+        {/* Search & Filter */}
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex-1 min-w-[200px] relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
+              placeholder="Cari NIK, Nama, atau Kode Keluarga..."
+              className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+          <button
+            onClick={handleSearch}
+            className="px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
+          >
+            Cari
+          </button>
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors"
+          >
+            <Filter size={16} />
+            Filter
+          </button>
+          <button
+            onClick={clearFilters}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors"
+          >
+            <RefreshCw size={16} />
+            Reset
+          </button>
+        </div>
+
+        {/* Filter Panel */}
+        {showFilters && (
+          <div className={`${cardClass} p-5 grid grid-cols-2 md:grid-cols-4 gap-4`}>
+            <div>
+              <label className="text-sm text-slate-600">RW</label>
+              <input
+                type="text"
+                name="rw"
+                value={filters.rw}
+                onChange={handleFilterChange}
+                className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder="RW"
+              />
             </div>
-          </section>
-
-          <section className={`${cardClass} p-5`}>
-            <div className="flex items-center justify-between gap-3">
-              <h2 className="text-lg font-semibold text-slate-800">Anggota Keluarga</h2>
-              <button
-                type="button"
-                onClick={addMember}
-                className="inline-flex items-center gap-2 rounded-xl bg-blue-600 text-white px-3 py-2 text-sm hover:bg-blue-700"
+            <div>
+              <label className="text-sm text-slate-600">RT</label>
+              <input
+                type="text"
+                name="rt"
+                value={filters.rt}
+                onChange={handleFilterChange}
+                className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder="RT"
+              />
+            </div>
+            <div>
+              <label className="text-sm text-slate-600">Dusun</label>
+              <input
+                type="text"
+                name="dusun"
+                value={filters.dusun}
+                onChange={handleFilterChange}
+                className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder="Dusun"
+              />
+            </div>
+            <div>
+              <label className="text-sm text-slate-600">Kode Keluarga</label>
+              <input
+                type="text"
+                name="kode_keluarga"
+                value={filters.kode_keluarga}
+                onChange={handleFilterChange}
+                className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder="KK-2024-001"
+              />
+            </div>
+            <div>
+              <label className="text-sm text-slate-600">Status</label>
+              <select
+                name="status"
+                value={filters.status}
+                onChange={handleFilterChange}
+                className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
-                <Plus size={16} />
-                Tambah Anggota
+                <option value="">Semua</option>
+                {STATUS_OPTIONS.filter(s => s).map(opt => (
+                  <option key={opt} value={opt}>{opt}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-sm text-slate-600">Hubungan</label>
+              <select
+                name="hubungan"
+                value={filters.hubungan}
+                onChange={handleFilterChange}
+                className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value="">Semua</option>
+                {HUBUNGAN_OPTIONS.filter(s => s).map(opt => (
+                  <option key={opt} value={opt}>{opt}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-sm text-slate-600">Desa</label>
+              <select
+                name="desa_id"
+                value={filters.desa_id}
+                onChange={handleFilterChange}
+                className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value="">Semua Desa</option>
+                {desasList.map((d) => (
+                  <option key={d.id} value={d.id}>{d.nama_desa}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-sm text-slate-600">Posyandu</label>
+              <select
+                name="posyandu_id"
+                value={filters.posyandu_id}
+                onChange={handleFilterChange}
+                className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value="">Semua Posyandu</option>
+                {posyanduList.map((p) => (
+                  <option key={p.id} value={p.id}>{p.nama}</option>
+                ))}
+              </select>
+            </div>
+            <div className="col-span-2 md:col-span-4 flex justify-end gap-2 pt-2">
+              <button
+                onClick={clearFilters}
+                className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50"
+              >
+                Reset
+              </button>
+              <button
+                onClick={applyFilters}
+                className="px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700"
+              >
+                Terapkan Filter
               </button>
             </div>
-
-            <div className="space-y-4 mt-4">
-              {form.anggota_keluarga.map((member, index) => (
-                <div key={index} className="rounded-2xl border border-slate-200 p-4 bg-slate-50/50">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold text-slate-800">Anggota #{index + 1}</h3>
-                    <button
-                      type="button"
-                      onClick={() => removeMember(index)}
-                      disabled={form.anggota_keluarga.length === 1}
-                      className="inline-flex items-center gap-1 text-sm px-2 py-1 rounded-lg text-red-600 hover:bg-red-50 disabled:opacity-40 disabled:cursor-not-allowed"
-                    >
-                      <Trash2 size={14} />
-                      Hapus
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <label className="text-sm text-slate-600">NIK <span className="text-red-500">*</span></label>
-                      <input 
-                        type="text" 
-                        value={member.nik} 
-                        onChange={(e) => setMemberField(index, "nik", handleNumericInput(e.target.value, 16))} 
-                        className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" 
-                        placeholder="16 digit angka"
-                        maxLength={16}
-                        required 
-                      />
-                      <p className="text-xs text-slate-500 mt-0.5">{member.nik.length}/16 digit</p>
-                    </div>
-                    <div>
-                      <label className="text-sm text-slate-600">Nama Lengkap</label>
-                      <input type="text" value={member.nama_lengkap} onChange={(e) => setMemberField(index, "nama_lengkap", e.target.value)} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" required />
-                    </div>
-                    <div>
-                      <label className="text-sm text-slate-600">Jenis Kelamin</label>
-                      <select value={member.jenis_kelamin} onChange={(e) => setMemberField(index, "jenis_kelamin", e.target.value)} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2">
-                        <option>Laki-laki</option>
-                        <option>Perempuan</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="text-sm text-slate-600">Tanggal Lahir</label>
-                      <input type="date" value={member.tanggal_lahir} onChange={(e) => setMemberField(index, "tanggal_lahir", e.target.value)} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" required />
-                    </div>
-                    <div>
-                      <label className="text-sm text-slate-600">Tempat Lahir</label>
-                      <input type="text" value={member.tempat_lahir} onChange={(e) => setMemberField(index, "tempat_lahir", e.target.value)} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" />
-                    </div>
-                    <div>
-                      <label className="text-sm text-slate-600">Golongan Darah</label>
-                      <select 
-                        value={member.golongan_darah} 
-                        onChange={(e) => setMemberField(index, "golongan_darah", e.target.value)} 
-                        className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2"
-                      >
-                        {GOLONGAN_DARAH_OPTIONS.map((option) => (
-                          <option key={option} value={option}>
-                            {option || "-- Pilih Golongan Darah --"}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="text-sm text-slate-600">Agama</label>
-                      <select 
-                        value={member.agama} 
-                        onChange={(e) => setMemberField(index, "agama", e.target.value)} 
-                        className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2"
-                      >
-                        {AGAMA_OPTIONS.map((option) => (
-                          <option key={option} value={option}>
-                            {option || "-- Pilih Agama --"}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="text-sm text-slate-600">Status Perkawinan</label>
-                      <input type="text" value={member.status_perkawinan} onChange={(e) => setMemberField(index, "status_perkawinan", e.target.value)} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" />
-                    </div>
-                    <div>
-                      <label className="text-sm text-slate-600">Pekerjaan</label>
-                      <input type="text" value={member.pekerjaan} onChange={(e) => setMemberField(index, "pekerjaan", e.target.value)} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" />
-                    </div>
-
-                    <div>
-                      <label className="text-sm text-slate-600">Pendidikan Terakhir</label>
-                      <select 
-                        value={member.pendidikan_terakhir} 
-                        onChange={(e) => setMemberField(index, "pendidikan_terakhir", e.target.value)} 
-                        className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2"
-                      >
-                        {PENDIDIKAN_OPTIONS.map((option) => (
-                          <option key={option} value={option}>
-                            {option || "-- Pilih Pendidikan Terakhir --"}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="text-sm text-slate-600">Baca Huruf</label>
-                      <select value={member.baca_huruf} onChange={(e) => setMemberField(index, "baca_huruf", e.target.value)} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2">
-                        <option>Ya</option>
-                        <option>Tidak</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="text-sm text-slate-600">Kedudukan Keluarga</label>
-                      <input type="text" value={member.kedudukan_keluarga} onChange={(e) => setMemberField(index, "kedudukan_keluarga", e.target.value)} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" placeholder="Kepala Keluarga / Istri / Anak" required />
-                    </div>
-                    <div>
-                      <label className="text-sm text-slate-600">Desa</label>
-                      <select value={member.desa_id} onChange={(e) => setMemberField(index, "desa_id", e.target.value)} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" required>
-                        <option value="">-- Pilih Desa --</option>
-                        {desasList.map(d => (
-                          <option key={d.id} value={d.id}>{d.nama_desa}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="text-sm text-slate-600">Kecamatan</label>
-                      <input type="text" value={member.kecamatan} onChange={(e) => setMemberField(index, "kecamatan", e.target.value)} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" />
-                    </div>
-                    <div>
-                      <label className="text-sm text-slate-600">Status KTP</label>
-                      <select value={member.is_non_ktp} onChange={(e) => setMemberField(index, "is_non_ktp", e.target.value)} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2">
-                        <option value="false">KTP Warga Setempat</option>
-                        <option value="true">Bukan KTP Warga Setempat</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="text-sm text-slate-600">No. Telepon (opsional)</label>
-                      <input type="text" value={member.telepon} onChange={(e) => setMemberField(index, "telepon", e.target.value)} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" placeholder="Contoh: 081234567890" />
-                    </div>
-
-                    <div>
-                      <label className="text-sm text-slate-600">Tanggal Penambahan (opsional)</label>
-                      <input type="date" value={member.tanggal_penambahan} onChange={(e) => setMemberField(index, "tanggal_penambahan", e.target.value)} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" />
-                    </div>
-                    <div>
-                      <label className="text-sm text-slate-600">Tanggal Pengurangan (opsional)</label>
-                      <input type="date" value={member.tanggal_pengurangan} onChange={(e) => setMemberField(index, "tanggal_pengurangan", e.target.value)} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" />
-                    </div>
-
-                    <div>
-                      <label className="text-sm text-slate-600">Dusun / Alamat Ringkas</label>
-                      <input type="text" value={member.dusun} onChange={(e) => setMemberField(index, "dusun", e.target.value)} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" />
-                    </div>
-                    <div>
-                      <label className="text-sm text-slate-600">Asal Penduduk</label>
-                      <input type="text" value={member.asal_penduduk} onChange={(e) => setMemberField(index, "asal_penduduk", e.target.value)} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" />
-                    </div>
-                    <div>
-                      <label className="text-sm text-slate-600">Tujuan Pindah (opsional)</label>
-                      <input type="text" value={member.tujuan_pindah} onChange={(e) => setMemberField(index, "tujuan_pindah", e.target.value)} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" />
-                    </div>
-                    <div>
-                      <label className="text-sm text-slate-600">Tempat Meninggal (opsional)</label>
-                      <input type="text" value={member.tempat_meninggal} onChange={(e) => setMemberField(index, "tempat_meninggal", e.target.value)} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" />
-                    </div>
-                    <div>
-                      <label className="text-sm text-slate-600">Keterangan (opsional)</label>
-                      <input type="text" value={member.keterangan} onChange={(e) => setMemberField(index, "keterangan", e.target.value)} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2" />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <div className="flex justify-end">
-            <button
-              type="submit"
-              disabled={submitting}
-              className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 text-white px-5 py-2.5 font-medium hover:bg-indigo-700 disabled:opacity-60"
-            >
-              <Send size={16} />
-              {submitting ? "Menyimpan..." : "Simpan Kartu Keluarga"}
-            </button>
           </div>
-        </form>
+        )}
+
+        {/* Table */}
+        <div className={`${cardClass} overflow-hidden`}>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-slate-50 border-b border-slate-200">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">No</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">NIK</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Nama</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Jenis Kelamin</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Hubungan</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Kode Keluarga</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Desa</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase tracking-wider">Aksi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {loading ? (
+                  <tr>
+                    <td colSpan="8" className="px-4 py-8 text-center text-slate-500">Memuat data...</td>
+                  </tr>
+                ) : penduduks.length === 0 ? (
+                  <tr>
+                    <td colSpan="8" className="px-4 py-8 text-center text-slate-500">Tidak ada data</td>
+                  </tr>
+                ) : (
+                  penduduks.map((item, index) => {
+                    const itemId = item.id || item.IDKependudukan || index;
+                    return (
+                      <tr key={itemId} className="hover:bg-slate-50 transition-colors">
+                        <td className="px-4 py-3 text-sm text-slate-600">
+                          {(pagination.page - 1) * pagination.limit + index + 1}
+                        </td>
+                        <td className="px-4 py-3 text-sm font-mono text-slate-700">{item.nik || '-'}</td>
+                        <td className="px-4 py-3 text-sm font-medium text-slate-800">
+                          {item.nama_anggota_keluarga || item.nama_lengkap || '-'}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-slate-600">{item.jenis_kelamin || '-'}</td>
+                        <td className="px-4 py-3 text-sm text-slate-600">{item.hubungan || '-'}</td>
+                        <td className="px-4 py-3 text-sm text-slate-600">{item.kode_keluarga || '-'}</td>
+                        <td className="px-4 py-3 text-sm text-slate-600">
+                          {item.desa?.nama_desa || '-'}
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <div className="flex items-center justify-center gap-2">
+                            <button
+                              onClick={() => handleEdit(item)}
+                              className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors"
+                              title="Edit"
+                            >
+                              <Edit size={16} />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(itemId, item.nama_anggota_keluarga || item.nama_lengkap)}
+                              className="p-1.5 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
+                              title="Hapus"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination */}
+          {pagination.total > 0 && (
+            <div className="px-4 py-3 border-t border-slate-200 flex items-center justify-between">
+              <div className="text-sm text-slate-500">
+                Menampilkan {((pagination.page - 1) * pagination.limit) + 1} - {Math.min(pagination.page * pagination.limit, pagination.total)} dari {pagination.total} data
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handlePageChange(pagination.page - 1)}
+                  disabled={pagination.page === 1}
+                  className="p-2 rounded-lg border border-slate-200 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50"
+                >
+                  <ChevronLeft size={16} />
+                </button>
+                <span className="text-sm text-slate-600">
+                  Halaman {pagination.page} dari {pagination.total_pages}
+                </span>
+                <button
+                  onClick={() => handlePageChange(pagination.page + 1)}
+                  disabled={pagination.page === pagination.total_pages}
+                  className="p-2 rounded-lg border border-slate-200 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50"
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Modal Create/Edit */}
+      <Modal
+        isOpen={showModal}
+        onClose={() => {
+          setShowModal(false);
+          setEditingData(null);
+        }}
+        title={editingData ? "Edit Penduduk" : "Tambah Penduduk"}
+      >
+        <FormPenduduk
+          initialData={editingData}
+          onSubmit={handleSubmit}
+          onCancel={() => {
+            setShowModal(false);
+            setEditingData(null);
+          }}
+          submitting={submitting}
+          desasList={desasList}
+          posyanduList={posyanduList}
+        />
+      </Modal>
     </MainLayout>
   );
 };
 
-export default AdminAkunKeluargaCreate;
+export default AdminPendudukList;

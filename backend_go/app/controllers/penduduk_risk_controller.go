@@ -25,7 +25,7 @@ func (ctrl *PendudukRiskController) GetPendudukByRisk(c echo.Context) error {
         kelompok = c.QueryParam("kategori")
     }
     risiko := c.QueryParam("risiko")
-    desaID := middlewares.GetDesaID(c)
+    posyanduID := middlewares.GetPosyanduID(c)
     role := middlewares.GetRole(c)
 
     if kelompok == "" {
@@ -34,7 +34,7 @@ func (ctrl *PendudukRiskController) GetPendudukByRisk(c echo.Context) error {
         })
     }
 
-    result, err := ctrl.usecase.GetPendudukByRisk(kelompok, risiko, desaID, role)
+    result, err := ctrl.usecase.GetPendudukByRisk(kelompok, risiko, posyanduID, role)
     if err != nil {
         return c.JSON(http.StatusInternalServerError, map[string]string{
             "error": err.Error(),

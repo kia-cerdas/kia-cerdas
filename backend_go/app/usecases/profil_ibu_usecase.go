@@ -328,27 +328,26 @@ func (u *profilIbuUsecase) GetProfilSaya(userID int32) (*ProfilIbuResponse, erro
 	// 5. Isi dari Kependudukan
 	if ibu.Kependudukan != nil {
 		k := ibu.Kependudukan
-		resp.NomorTelepon = k.Telepon
+		// resp.NomorTelepon = k.Telepon
 		if k.NIK != nil {
 			resp.NIK = *k.NIK
 		}
-		resp.NamaLengkap = k.NamaLengkap
+		resp.NamaLengkap = k.NamaAnggotaKeluarga
 		resp.TempatLahir = k.TempatLahir
 		if !k.TanggalLahir.IsZero() {
 			resp.TanggalLahir = k.TanggalLahir.Format("2006-01-02")
 		}
 		resp.GolonganDarah = k.GolonganDarah
 		resp.Agama = k.Agama
-		resp.Pendidikan = k.PendidikanTerakhir
+		resp.Pendidikan = k.Pendidikan
 		resp.Pekerjaan = k.Pekerjaan
-		resp.StatusPerkawinan = k.StatusPerkawinan
+		resp.StatusPerkawinan = k.Hubungan
 		resp.Dusun = k.Dusun
 		if k.DesaID != nil {
 			if desa, err := u.desaRepo.FindByID(*k.DesaID); err == nil && desa != nil {
 				resp.Desa = desa.NamaDesa
 			}
 		}
-		resp.Kecamatan = k.Kecamatan
 	}
 
 	// 6. Susun riwayat kehamilan beserta riwayat persalinan sebelumnya
