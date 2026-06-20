@@ -65,9 +65,9 @@ class _LoginScreenState extends State<LoginScreen> {
       Widget destination;
       if (role == 'kader') {
         destination =
-            const DashboardKaderScreen(); // Arahkan ke dashboard kader
+            const DashboardKaderScreen();
       } else {
-        destination = const DashboardScreen(); // Default ke dashboard ibu
+        destination = const DashboardScreen();
       }
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (_) => destination),
