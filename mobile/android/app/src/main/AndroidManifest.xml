@@ -23,7 +23,7 @@
     </queries>
 
     <application
-        android:label="KIA Cerdas"
+        android:label="Generasi Sehat"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

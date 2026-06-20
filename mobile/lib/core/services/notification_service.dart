@@ -8,6 +8,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../../firebase_options.dart';
 
+const _androidChannel = AndroidNotificationChannel(
+  'kia_app_channel',
+  'KIA App Notifications',
+  description: 'Notifikasi pengingat imunisasi dan layanan KIA',
+  importance: Importance.max,
+);
+
+
 // Background message handler must be a top-level function
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   try {
@@ -16,9 +24,6 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     );
   } catch (_) {}
 
-  // You can perform background handling here (e.g., log, save to DB)
-  // Note: showing local notifications from background works but may
-  // require additional platform setup.
   return;
 }
 
@@ -37,14 +42,16 @@ class NotificationService {
       return;
     }
 
-    // Request permissions and initialize local notifications
-    if (Platform.isIOS) {
-      await FirebaseMessaging.instance.requestPermission(
-        alert: true,
-        badge: true,
-        sound: true,
-      );
-    }
+    // Request permissions — Android 13+ also needs explicit permission
+    await FirebaseMessaging.instance.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+
+    await _localNotificationsPlugin
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(_androidChannel);
 
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -87,16 +94,15 @@ class NotificationService {
 
   static Future<void> _showLocalNotificationFromRemote(RemoteMessage message) async {
     final notification = message.notification;
-    final android = message.notification?.android;
 
     final title = notification?.title ?? '';
     final body = notification?.body ?? '';
 
-    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+    final AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
-      'kia_app_channel',
-      'KIA App Notifications',
-      channelDescription: 'Notifications for KIA app',
+      _androidChannel.id,
+      _androidChannel.name,
+      channelDescription: _androidChannel.description,
       importance: Importance.max,
       priority: Priority.high,
       playSound: true,
@@ -104,7 +110,7 @@ class NotificationService {
 
     const DarwinNotificationDetails iOSPlatformChannelSpecifics = DarwinNotificationDetails();
 
-    const NotificationDetails platformChannelSpecifics = NotificationDetails(
+    final NotificationDetails platformChannelSpecifics = NotificationDetails(
       android: androidPlatformChannelSpecifics,
       iOS: iOSPlatformChannelSpecifics,
     );

@@ -12,6 +12,14 @@ import (
 	"firebase.google.com/go/v4/messaging"
 )
 
+var bulanID = [...]string{
+	"", "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+	"Juli", "Agustus", "September", "Oktober", "November", "Desember",
+}
+
+func formatTanggalID(t time.Time) string {
+	return fmt.Sprintf("%02d %s %d", t.Day(), bulanID[t.Month()], t.Year())
+}
 func (u *Main) sendFCM(
 	token,
 	title,
@@ -101,7 +109,7 @@ func (u *Main) ProcessReminder() error {
 		case 3:
 			if j.StatusID == 1 && !j.IsSentH3 {
 				title = "Imunisasi 3 Hari Lagi"
-				body = "Halo Ibu " + j.NamaAnak + ", jadwal imunisasi " + j.NamaDosis + " semakin dekat (3 hari lagi). Ketepatan waktu membantu menjaga perlindungan anak tetap optimal. Silakan kunjungi Posyandu atau Puskesmas terdekat."
+				body = "Halo Ibu " + j.NamaAnak + ", jadwal imunisasi " + j.NamaDosis + " 3 hari lagi. Ketepatan waktu membantu menjaga perlindungan anak tetap optimal. Silakan kunjungi Posyandu atau Puskesmas terdekat."
 				needSend = true
 				u.repository.MarkSent(j.JadwalID, "h3")
 			}
@@ -383,7 +391,7 @@ func (u *Main) ProcessPosyanduReminder() error {
 
 		tglStr := "-"
 		if j.Tanggal != nil {
-			tglStr = j.Tanggal.Format("02 January 2006")
+			tglStr = formatTanggalID(*j.Tanggal)
 		}
 
 		title := "Pelayanan Posyandu dalam 3 Hari"

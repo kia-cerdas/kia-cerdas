@@ -230,10 +230,10 @@ class ImunisasiService {
   }
 
   // 4. POST REQUEST PERUBAHAN JADWAL
-  Future<void> requestPerubahanJadwal(int jadwalId, int jadwalLayananId, String alasan) async {
+  Future<void> requestPerubahanJadwal(int jadwalId, String tanggalBaru, String alasan) async {
     final uri = Uri.parse('${ApiConstants.baseUrl}/ibu/jadwal-imunisasi/$jadwalId/request-perubahan');
     final body = jsonEncode({
-      "jadwal_layanan_id": jadwalLayananId,
+      "tanggal_baru": tanggalBaru,
       "alasan": alasan,
     });
 
@@ -250,7 +250,7 @@ class ImunisasiService {
       final db = await AppDatabase.instance.database;
       await db.insert('request_perubahan_imunisasi', {
         'id_jadwal_imunisasi_anak': jadwalId,
-        'id_jadwal_layanan': jadwalLayananId,
+        'tanggal_baru': tanggalBaru,
         'alasan': alasan,
         'is_synced': 0, 
       });
