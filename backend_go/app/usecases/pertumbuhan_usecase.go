@@ -704,6 +704,45 @@ func (m *Main) GetRiwayatPertumbuhan(anakID uint) ([]models.CatatanPertumbuhanRe
 	return res, nil
 }
 
+type LilaStatusResponse struct {
+	ID             uint    `json:"id"`
+	AnakID         uint    `json:"anak_id"`
+	Bulan          int     `json:"bulan"`
+	Tanggal        string  `json:"tanggal"`
+	HasilLila      float64 `json:"hasil_lila"`
+	KategoriRisiko string  `json:"kategori_risiko"`
+}
+
+func (m *Main) GetLilaStatusFromPertumbuhan(anakID uint) ([]LilaStatusResponse, error) {
+	data, err := m.repository.GetLilaDataByAnakID(anakID)
+	if err != nil {
+		return nil, customerror.NewInternalServiceError("gagal mengambil data LILA")
+	}
+
+	var res []LilaStatusResponse
+	for _, val := range data {
+			status := ""
+			if val.HasilLila > 12.5 {
+				status = "Normal"
+			} else if val.HasilLila >= 11.5 && val.HasilLila <= 12.5 {
+				status = "Risiko Gizi Kurang/Wasting"
+			} else {
+				status = "Gizi Buruk Akut"
+			}
+
+			res = append(res, LilaStatusResponse{
+				ID:             uint(val.ID),
+				AnakID:         uint(val.AnakID),
+				Tanggal:        val.TglUkur.Format("2006-01-02"),
+				Bulan:          val.UsiaUkurBulan,
+				HasilLila:      val.HasilLila,
+				KategoriRisiko: status,
+			})
+	}
+
+	return res, nil
+}
+
 func (m *Main) GetDetailCatatanPertumbuhan(id uint) (*models.CatatanPertumbuhanResponse, error) {
 	data, err := m.repository.GetCatatanPertumbuhanByID(id)
 	if err != nil {

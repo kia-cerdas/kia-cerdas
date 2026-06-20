@@ -130,28 +130,55 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 8),
                       const Text(
-                        'Gunakan email/no hp dan password untuk mengakses fitur yang membutuhkan bearer token.',
+                        'Gunakan email dan password untuk mengakses fitur yang membutuhkan bearer token.',
                         textAlign: TextAlign.center,
                         style: TextStyle(color: Colors.black54),
                       ),
                       const SizedBox(height: 20),
-                      TextFormField(
-                        controller: _identifierController,
+                      Semantics(
+                        identifier: 'username_input',
+                        child: TextFormField(
+                          key: const Key('username_input'),
+                          controller: _identifierController,
                         decoration: const InputDecoration(
                           labelText: 'Email / No HP',
                           border: OutlineInputBorder(),
                           prefixIcon: Icon(Icons.person_outline),
                         ),
-                        validator: (value) {
+                        // validator: (value) {
+                        //   if (value == null || value.trim().isEmpty) {
+                        //     return 'Identifier wajib diisi';
+                        //   }
+                        //   return null;
+                        // },
+                                                validator: (value) {
                           if (value == null || value.trim().isEmpty) {
                             return 'Identifier wajib diisi';
                           }
+                          
+                          final v = value.trim();
+                          
+                          // Cek apakah ini No HP (dimulai angka)
+                          final isPhoneNumber = RegExp(r'^[0-9]').hasMatch(v);
+                          
+                          if (!isPhoneNumber) {
+                            // Jika bukan No HP, maka WAJIB format email valid
+                            final emailRegex = RegExp(r'^[\w\.-]+@[\w\.-]+\.\w+$');
+                            if (!emailRegex.hasMatch(v)) {
+                              return 'Pastikan format email benar (contoh: pengguna@gmail.com)';
+                            }
+                          }
+                          
                           return null;
                         },
                       ),
+                      ),
                       const SizedBox(height: 12),
-                      TextFormField(
-                        controller: _passwordController,
+                      Semantics(
+                        identifier: 'password_input',
+                        child: TextFormField(
+                          key: const Key('password_input'),
+                          controller: _passwordController,
                         obscureText: _obscure,
                         decoration: InputDecoration(
                           labelText: 'Password',
@@ -177,10 +204,14 @@ class _LoginScreenState extends State<LoginScreen> {
                           return null;
                         },
                       ),
+                      ),
                       const SizedBox(height: 16),
-                      SizedBox(
-                        height: 48,
-                        child: FilledButton(
+                      Semantics(
+                        identifier: 'login_button',
+                        child: SizedBox(
+                          height: 48,
+                          child: FilledButton(
+                          key: const Key('login_button'),
                           onPressed: _loading ? null : _submit,
                           child: _loading
                               ? const SizedBox(
@@ -191,6 +222,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 )
                               : const Text('Login'),
                         ),
+                      ),
                       ),
                     ],
                   ),

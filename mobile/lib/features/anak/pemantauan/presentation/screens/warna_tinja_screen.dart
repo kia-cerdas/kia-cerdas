@@ -352,82 +352,72 @@ class _WarnaTinjaScreenState extends State<WarnaTinjaScreen> {
                       style: TextStyle(fontSize: 13, height: 1.4),
                     ),
                     const SizedBox(height: 16),
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Table(
-                            border:
-                                TableBorder.all(color: const Color(0xFF9E9E9E)),
-                            columnWidths: const {
-                              0: FixedColumnWidth(96),
-                              1: FixedColumnWidth(88),
-                              2: FixedColumnWidth(88),
-                              3: FixedColumnWidth(88),
-                            },
-                            children: [
-                              TableRow(
-                                decoration: const BoxDecoration(
-                                    color: Color(0xFFEDE1A7)),
-                                children: [
-                                  _headerCell('Usia'),
-                                  _headerCell(_periodeLabels['2_minggu']!),
-                                  _headerCell(_periodeLabels['1_bulan']!),
-                                  _headerCell(_periodeLabels['2_4_bulan']!),
-                                ],
-                              ),
-                              TableRow(
-                                children: [
-                                  _rowTitle('Tanggal\n(DD/MM/YYYY)'),
-                                  _dateCell('2_minggu'),
-                                  _dateCell('1_bulan'),
-                                  _dateCell('2_4_bulan'),
-                                ],
-                              ),
-                              TableRow(
-                                children: [
-                                  _rowTitle('Nomor\nWarna Tinja'),
-                                  _nomorCell('2_minggu'),
-                                  _nomorCell('1_bulan'),
-                                  _nomorCell('2_4_bulan'),
-                                ],
-                              ),
-                            ],
-                          ),
-                        const SizedBox(width: 10),
-                        Column(
-                          children: List.generate(7, (i) {
-                            final nomor = i + 1;
-                            final shades = [
-                              const Color(0xFFF7F3D8),
-                              const Color(0xFFEDE5B8),
-                              const Color(0xFFE6D88D),
-                              const Color(0xFFEBD130),
-                              const Color(0xFFD9B126),
-                              const Color(0xFFC99A22),
-                              const Color(0xFFA59A2C),
-                            ];
-                            return Container(
-                              width: 46,
-                              height: 30,
-                              margin: const EdgeInsets.only(bottom: 6),
-                              decoration: BoxDecoration(
-                                color: shades[i],
-                                border:
-                                    Border.all(color: const Color(0xFF9E9E9E)),
-                              ),
-                              alignment: Alignment.center,
-                              child: Text(
-                                '$nomor',
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.w700),
-                              ),
-                            );
-                          }),
+                    Table(
+                      border: TableBorder.all(color: const Color(0xFF9E9E9E)),
+                      columnWidths: const {
+                        0: FlexColumnWidth(1.2),
+                        1: FlexColumnWidth(1.0),
+                        2: FlexColumnWidth(1.0),
+                        3: FlexColumnWidth(1.0),
+                      },
+                      children: [
+                        TableRow(
+                          decoration: const BoxDecoration(color: Color(0xFFEDE1A7)),
+                          children: [
+                            _headerCell('Usia'),
+                            _headerCell(_periodeLabels['2_minggu']!),
+                            _headerCell(_periodeLabels['1_bulan']!),
+                            _headerCell(_periodeLabels['2_4_bulan']!),
+                          ],
                         ),
-                        ],
-                      ),
+                        TableRow(
+                          children: [
+                            _rowTitle('Tanggal\n(DD/MM/YYYY)'),
+                            _dateCell('2_minggu'),
+                            _dateCell('1_bulan'),
+                            _dateCell('2_4_bulan'),
+                          ],
+                        ),
+                        TableRow(
+                          children: [
+                            _rowTitle('Nomor\nWarna Tinja'),
+                            _nomorCell('2_minggu'),
+                            _nomorCell('1_bulan'),
+                            _nomorCell('2_4_bulan'),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: List.generate(7, (i) {
+                        final nomor = i + 1;
+                        final shades = [
+                          const Color(0xFFF7F3D8),
+                          const Color(0xFFEDE5B8),
+                          const Color(0xFFE6D88D),
+                          const Color(0xFFEBD130),
+                          const Color(0xFFD9B126),
+                          const Color(0xFFC99A22),
+                          const Color(0xFFA59A2C),
+                        ];
+                        return Expanded(
+                          child: Container(
+                            height: 36,
+                            margin: EdgeInsets.only(right: i == 6 ? 0 : 6),
+                            decoration: BoxDecoration(
+                              color: shades[i],
+                              border: Border.all(color: const Color(0xFF9E9E9E)),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              '$nomor',
+                              style: const TextStyle(fontWeight: FontWeight.w700),
+                            ),
+                          ),
+                        );
+                      }),
                     ),
                     const SizedBox(height: 16),
                     const Text(
@@ -461,11 +451,11 @@ class _WarnaTinjaScreenState extends State<WarnaTinjaScreen> {
 
   Widget _headerCell(String text) {
     return Padding(
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
       child: Text(
         text,
         textAlign: TextAlign.center,
-        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 11),
       ),
     );
   }
@@ -474,10 +464,13 @@ class _WarnaTinjaScreenState extends State<WarnaTinjaScreen> {
     return SizedBox(
       height: 68,
       child: Center(
-        child: Text(
-          text,
-          textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 2),
+          child: Text(
+            text,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600),
+          ),
         ),
       ),
     );
@@ -496,7 +489,7 @@ class _WarnaTinjaScreenState extends State<WarnaTinjaScreen> {
                 : _fmtDate(_tanggalByPeriode[periodeKey]),
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 11,
+              fontSize: 10,
               color: isSubmitted
                   ? Colors.grey.shade700
                   : _tanggalByPeriode[periodeKey] == null
@@ -517,13 +510,13 @@ class _WarnaTinjaScreenState extends State<WarnaTinjaScreen> {
       child: Center(
         child: DropdownButton<int>(
           value: _nomorWarnaByPeriode[periodeKey],
-          hint: const Text('No.', style: TextStyle(fontSize: 11)),
+          hint: const Text('No.', style: TextStyle(fontSize: 10)),
           underline: const SizedBox.shrink(),
           icon: isSubmitted ? const SizedBox.shrink() : null,
           disabledHint: Text(
             _nomorWarnaByPeriode[periodeKey]?.toString() ?? 'No.',
             style: const TextStyle(
-                fontSize: 12,
+                fontSize: 11,
                 color: Colors.black87,
                 fontWeight: FontWeight.w600),
           ),
@@ -531,7 +524,7 @@ class _WarnaTinjaScreenState extends State<WarnaTinjaScreen> {
             7,
             (index) => DropdownMenuItem<int>(
               value: index + 1,
-              child: Text('${index + 1}', style: const TextStyle(fontSize: 12)),
+              child: Text('${index + 1}', style: const TextStyle(fontSize: 11)),
             ),
           ),
           onChanged: isSubmitted

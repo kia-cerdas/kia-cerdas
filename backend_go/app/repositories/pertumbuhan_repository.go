@@ -13,6 +13,7 @@ type PertumbuhanRepository interface {
 	Create(data *models.CatatanPertumbuhan) error
 	GetLastByAnakID(anakID uint) (*models.CatatanPertumbuhan, error)
 	GetLastTwoByAnakID(anakID uint) ([]models.CatatanPertumbuhan, error)
+	GetLilaDataByAnakID(anakID uint) ([]models.CatatanPertumbuhan, error)
 }
 
 func normalizeGender(gender string) string {
@@ -37,6 +38,18 @@ func (m *Main) GetRiwayatPertumbuhanByAnakID(anakID uint) ([]models.CatatanPertu
 	var result []models.CatatanPertumbuhan
 	if err := m.postgres.Where("anak_id = ?", anakID).Order("tgl_ukur ASC").Find(&result).Error; err != nil {
 		return nil, customerror.NewInternalServiceError("gagal mengambil riwayat pertumbuhan")
+	}
+	return result, nil
+}
+
+func (m *Main) GetLilaDataByAnakID(anakID uint) ([]models.CatatanPertumbuhan, error) {
+	var result []models.CatatanPertumbuhan
+	err := m.postgres.Select("id", "anak_id", "tgl_ukur", "usia_ukur_bulan", "hasil_lila").
+		Where("anak_id = ? AND hasil_lila > 0", anakID).
+		Order("tgl_ukur ASC").
+		Find(&result).Error
+	if err != nil {
+		return nil, customerror.NewInternalServiceError("gagal mengambil riwayat LILA")
 	}
 	return result, nil
 }
