@@ -12,39 +12,42 @@ import (
 	"gorm.io/gorm"
 )
 
+// =============================================
+// REQUEST STRUCTS
+// =============================================
+
 type AdminAnggotaKeluargaRequest struct {
-	NIK                string `json:"nik"`
-	NamaLengkap        string `json:"nama_lengkap"`
-	JenisKelamin       string `json:"jenis_kelamin"`
-	TanggalLahir       string `json:"tanggal_lahir"`
-	TempatLahir        string `json:"tempat_lahir"`
-	GolonganDarah      string `json:"golongan_darah"`
-	Agama              string `json:"agama"`
-	StatusPerkawinan   string `json:"status_perkawinan"`
-	Pekerjaan          string `json:"pekerjaan"`
-	PendidikanTerakhir string `json:"pendidikan_terakhir"`
-	BacaHuruf          string `json:"baca_huruf"`
-	KedudukanKeluarga  string `json:"kedudukan_keluarga"`
-	Dusun              string `json:"dusun"`
-	AsalPenduduk       string `json:"asal_penduduk"`
-	TujuanPindah       string `json:"tujuan_pindah"`
-	TempatMeninggal    string `json:"tempat_meninggal"`
-	Keterangan         string `json:"keterangan"`
-	Kecamatan          string `json:"kecamatan"`
-	DesaID             *int32 `json:"desa_id"`
-	IsNonKTP           bool   `json:"is_non_ktp"`
-	Telepon            string `json:"telepon"`
-	TanggalPenambahan  string `json:"tanggal_penambahan"`
-	TanggalPengurangan string `json:"tanggal_pengurangan"`
+	RW                  string `json:"rw"`
+	RT                  string `json:"rt"`
+	Dusun               string `json:"dusun"`
+	Alamat              string `json:"alamat"`
+	KodeKeluarga        string `json:"kode_keluarga"`
+	NamaKepalaKeluarga  string `json:"nama_kepala_keluarga"`
+	NIK                 string `json:"nik"`
+	NamaAnggotaKeluarga string `json:"nama_anggota_keluarga"`
+	JenisKelamin        string `json:"jenis_kelamin"`
+	Hubungan            string `json:"hubungan"`
+	TempatLahir         string `json:"tempat_lahir"`
+	TanggalLahir        string `json:"tanggal_lahir"`
+	Status              string `json:"status"`
+	Agama               string `json:"agama"`
+	GolonganDarah       string `json:"golongan_darah"`
+	Kewarganegaraan     string `json:"kewarganegaraan"`
+	EtnisSuku           string `json:"etnis_suku"`
+	Pendidikan          string `json:"pendidikan"`
+	Pekerjaan           string `json:"pekerjaan"`
+	Telepon             string `json:"telepon"`
+	DesaID              *int32 `json:"desa_id"`
+	PosyanduID          *int32 `json:"posyandu_id"`
+	IsNonKTP            bool   `json:"is_non_ktp"`
 }
 
-// AdminCreateKartuKeluargaRequest - Hanya membuat Kartu Keluarga + Anggota (Penduduk)
+// AdminCreateKartuKeluargaRequest - Membuat data penduduk (tanpa kartu keluarga)
 type AdminCreateKartuKeluargaRequest struct {
-	NoKK            string                        `json:"no_kk"`
-	TanggalTerbit   string                        `json:"tanggal_terbit"`
 	AnggotaKeluarga []AdminAnggotaKeluargaRequest `json:"anggota_keluarga"`
 }
 
+// Response structs
 type AdminListKartuKeluargaPagination struct {
 	Page       int `json:"page"`
 	Limit      int `json:"limit"`
@@ -53,9 +56,7 @@ type AdminListKartuKeluargaPagination struct {
 }
 
 type AdminListKartuKeluargaItem struct {
-	KartuKeluargaID int64       `json:"kartu_keluarga_id"`
-	NoKK            string      `json:"no_kk"`
-	TanggalTerbit   *string     `json:"tanggal_terbit"`
+	KodeKeluarga    string      `json:"kode_keluarga"`
 	KepalaKeluarga  interface{} `json:"kepala_keluarga"`
 	JumlahAnggota   int         `json:"jumlah_anggota"`
 	CreatedAt       time.Time   `json:"created_at"`
@@ -63,108 +64,105 @@ type AdminListKartuKeluargaItem struct {
 }
 
 type AdminKepalaKeluarga struct {
-	PendudukID  int32  `json:"penduduk_id"`
-	NIK         string `json:"nik"`
-	NamaLengkap string `json:"nama_lengkap"`
+	PendudukID          int32  `json:"penduduk_id"`
+	NIK                 string `json:"nik"`
+	NamaAnggotaKeluarga string `json:"nama_anggota_keluarga"`
 }
 
 type AdminDetailKartuKeluargaAnggota struct {
-	PendudukID         int32  `json:"penduduk_id"`
-	NIK                string `json:"nik"`
-	NamaLengkap        string `json:"nama_lengkap"`
-	JenisKelamin       string `json:"jenis_kelamin"`
-	TanggalLahir       string `json:"tanggal_lahir"`
-	TempatLahir        string `json:"tempat_lahir"`
-	GolonganDarah      string `json:"golongan_darah"`
-	Agama              string `json:"agama"`
-	StatusPerkawinan   string `json:"status_perkawinan"`
-	Pekerjaan          string `json:"pekerjaan"`
-	PendidikanTerakhir string `json:"pendidikan_terakhir"`
-	BacaHuruf          string `json:"baca_huruf"`
-	KedudukanKeluarga  string `json:"kedudukan_keluarga"`
-	Dusun              string `json:"dusun"`
-	AsalPenduduk       string `json:"asal_penduduk"`
-	TujuanPindah       string `json:"tujuan_pindah"`
-	TempatMeninggal    string `json:"tempat_meninggal"`
-	Keterangan         string `json:"keterangan"`
-	Kecamatan          string `json:"kecamatan"`
-	DesaID             *int32 `json:"desa_id"`
-	IsNonKTP           bool   `json:"is_non_ktp"`
-	Telepon            string `json:"telepon"`
-	TanggalPenambahan  string `json:"tanggal_penambahan"`
-	TanggalPengurangan string `json:"tanggal_pengurangan"`
+	PendudukID          int32  `json:"penduduk_id"`
+	RW                  string `json:"rw"`
+	RT                  string `json:"rt"`
+	Dusun               string `json:"dusun"`
+	Alamat              string `json:"alamat"`
+	KodeKeluarga        string `json:"kode_keluarga"`
+	NamaKepalaKeluarga  string `json:"nama_kepala_keluarga"`
+	NIK                 string `json:"nik"`
+	NamaAnggotaKeluarga string `json:"nama_anggota_keluarga"`
+	JenisKelamin        string `json:"jenis_kelamin"`
+	Hubungan            string `json:"hubungan"`
+	TempatLahir         string `json:"tempat_lahir"`
+	TanggalLahir        string `json:"tanggal_lahir"`
+	Status              string `json:"status"`
+	Agama               string `json:"agama"`
+	GolonganDarah       string `json:"golongan_darah"`
+	Kewarganegaraan     string `json:"kewarganegaraan"`
+	EtnisSuku           string `json:"etnis_suku"`
+	Pendidikan          string `json:"pendidikan"`
+	Pekerjaan           string `json:"pekerjaan"`
+	Telepon             string `json:"telepon"`
+	DesaID              *int32 `json:"desa_id"`
+	PosyanduID          *int32 `json:"posyandu_id"`
+	IsNonKTP            bool   `json:"is_non_ktp"`
 }
 
 type AdminDetailKartuKeluargaResponse struct {
-	KartuKeluargaID int64                             `json:"kartu_keluarga_id"`
-	NoKK            string                            `json:"no_kk"`
-	TanggalTerbit   *string                           `json:"tanggal_terbit"`
-	AnggotaKeluarga []AdminDetailKartuKeluargaAnggota `json:"anggota_keluarga"`
+	KodeKeluarga       string                             `json:"kode_keluarga"`
+	NamaKepalaKeluarga string                             `json:"nama_kepala_keluarga"`
+	AnggotaKeluarga    []AdminDetailKartuKeluargaAnggota `json:"anggota_keluarga"`
 }
 
 type AdminUpdateKartuKeluargaRequest struct {
-	NoKK          string `json:"no_kk"`
-	TanggalTerbit string `json:"tanggal_terbit"`
+	KodeKeluarga string `json:"kode_keluarga"`
 }
 
+// =============================================
+// USECASE
+// =============================================
+
 type AdminAkunKeluargaUsecase struct {
-	kkRepo           *repositories.KartuKeluargaRepository
 	kependudukanRepo *repositories.KependudukanRepository
 }
 
 func NewAdminAkunKeluargaUsecase(
-	kkRepo *repositories.KartuKeluargaRepository,
 	kependudukanRepo *repositories.KependudukanRepository,
 ) *AdminAkunKeluargaUsecase {
 	return &AdminAkunKeluargaUsecase{
-		kkRepo:           kkRepo,
 		kependudukanRepo: kependudukanRepo,
 	}
 }
 
-// CreateKartuKeluarga - Admin membuat Kartu Keluarga + Anggota (Penduduk) tanpa akun user
+// =============================================
+// CREATE - Membuat anggota keluarga
+// =============================================
 func (u *AdminAkunKeluargaUsecase) CreateKartuKeluarga(req *AdminCreateKartuKeluargaRequest) (map[string]interface{}, error) {
 	if req == nil {
 		return nil, customerror.NewBadRequestError("request tidak valid")
-	}
-
-	req.NoKK = strings.TrimSpace(req.NoKK)
-	for i := range req.AnggotaKeluarga {
-		req.AnggotaKeluarga[i].NIK = strings.TrimSpace(req.AnggotaKeluarga[i].NIK)
-		req.AnggotaKeluarga[i].NamaLengkap = strings.TrimSpace(req.AnggotaKeluarga[i].NamaLengkap)
-		req.AnggotaKeluarga[i].JenisKelamin = strings.TrimSpace(req.AnggotaKeluarga[i].JenisKelamin)
-		req.AnggotaKeluarga[i].TanggalLahir = strings.TrimSpace(req.AnggotaKeluarga[i].TanggalLahir)
-		req.AnggotaKeluarga[i].TempatLahir = strings.TrimSpace(req.AnggotaKeluarga[i].TempatLahir)
-		req.AnggotaKeluarga[i].GolonganDarah = strings.TrimSpace(req.AnggotaKeluarga[i].GolonganDarah)
-		req.AnggotaKeluarga[i].Agama = strings.TrimSpace(req.AnggotaKeluarga[i].Agama)
-		req.AnggotaKeluarga[i].StatusPerkawinan = strings.TrimSpace(req.AnggotaKeluarga[i].StatusPerkawinan)
-		req.AnggotaKeluarga[i].Pekerjaan = strings.TrimSpace(req.AnggotaKeluarga[i].Pekerjaan)
-		req.AnggotaKeluarga[i].PendidikanTerakhir = strings.TrimSpace(req.AnggotaKeluarga[i].PendidikanTerakhir)
-		req.AnggotaKeluarga[i].BacaHuruf = strings.TrimSpace(req.AnggotaKeluarga[i].BacaHuruf)
-		req.AnggotaKeluarga[i].KedudukanKeluarga = strings.TrimSpace(req.AnggotaKeluarga[i].KedudukanKeluarga)
-		req.AnggotaKeluarga[i].Dusun = strings.TrimSpace(req.AnggotaKeluarga[i].Dusun)
-		req.AnggotaKeluarga[i].AsalPenduduk = strings.TrimSpace(req.AnggotaKeluarga[i].AsalPenduduk)
-		req.AnggotaKeluarga[i].TujuanPindah = strings.TrimSpace(req.AnggotaKeluarga[i].TujuanPindah)
-		req.AnggotaKeluarga[i].TempatMeninggal = strings.TrimSpace(req.AnggotaKeluarga[i].TempatMeninggal)
-		req.AnggotaKeluarga[i].Keterangan = strings.TrimSpace(req.AnggotaKeluarga[i].Keterangan)
-	}
-
-	if req.NoKK == "" {
-		return nil, customerror.NewBadRequestError("no_kk wajib diisi")
 	}
 
 	if len(req.AnggotaKeluarga) == 0 {
 		return nil, customerror.NewBadRequestError("anggota_keluarga wajib diisi minimal 1 orang")
 	}
 
-	if _, err := u.kkRepo.FindByNoKK(req.NoKK); err == nil {
-		return nil, customerror.NewBadRequestError("nomor KK sudah terdaftar")
+	// Trim semua field
+	for i := range req.AnggotaKeluarga {
+		req.AnggotaKeluarga[i].RW = strings.TrimSpace(req.AnggotaKeluarga[i].RW)
+		req.AnggotaKeluarga[i].RT = strings.TrimSpace(req.AnggotaKeluarga[i].RT)
+		req.AnggotaKeluarga[i].Dusun = strings.TrimSpace(req.AnggotaKeluarga[i].Dusun)
+		req.AnggotaKeluarga[i].Alamat = strings.TrimSpace(req.AnggotaKeluarga[i].Alamat)
+		req.AnggotaKeluarga[i].KodeKeluarga = strings.TrimSpace(req.AnggotaKeluarga[i].KodeKeluarga)
+		req.AnggotaKeluarga[i].NamaKepalaKeluarga = strings.TrimSpace(req.AnggotaKeluarga[i].NamaKepalaKeluarga)
+		req.AnggotaKeluarga[i].NIK = strings.TrimSpace(req.AnggotaKeluarga[i].NIK)
+		req.AnggotaKeluarga[i].NamaAnggotaKeluarga = strings.TrimSpace(req.AnggotaKeluarga[i].NamaAnggotaKeluarga)
+		req.AnggotaKeluarga[i].JenisKelamin = strings.TrimSpace(req.AnggotaKeluarga[i].JenisKelamin)
+		req.AnggotaKeluarga[i].Hubungan = strings.TrimSpace(req.AnggotaKeluarga[i].Hubungan)
+		req.AnggotaKeluarga[i].TempatLahir = strings.TrimSpace(req.AnggotaKeluarga[i].TempatLahir)
+		req.AnggotaKeluarga[i].TanggalLahir = strings.TrimSpace(req.AnggotaKeluarga[i].TanggalLahir)
+		req.AnggotaKeluarga[i].Status = strings.TrimSpace(req.AnggotaKeluarga[i].Status)
+		req.AnggotaKeluarga[i].Agama = strings.TrimSpace(req.AnggotaKeluarga[i].Agama)
+		req.AnggotaKeluarga[i].GolonganDarah = strings.TrimSpace(req.AnggotaKeluarga[i].GolonganDarah)
+		req.AnggotaKeluarga[i].Kewarganegaraan = strings.TrimSpace(req.AnggotaKeluarga[i].Kewarganegaraan)
+		req.AnggotaKeluarga[i].EtnisSuku = strings.TrimSpace(req.AnggotaKeluarga[i].EtnisSuku)
+		req.AnggotaKeluarga[i].Pendidikan = strings.TrimSpace(req.AnggotaKeluarga[i].Pendidikan)
+		req.AnggotaKeluarga[i].Pekerjaan = strings.TrimSpace(req.AnggotaKeluarga[i].Pekerjaan)
+		req.AnggotaKeluarga[i].Telepon = strings.TrimSpace(req.AnggotaKeluarga[i].Telepon)
 	}
 
+	// Validasi NIK unik
 	nikSeen := map[string]struct{}{}
 	for _, anggota := range req.AnggotaKeluarga {
-		if anggota.NIK == "" || anggota.NamaLengkap == "" || anggota.TanggalLahir == "" {
-			return nil, customerror.NewBadRequestError("setiap anggota wajib mengisi nik, nama_lengkap, dan tanggal_lahir")
+		if anggota.NIK == "" || anggota.NamaAnggotaKeluarga == "" || anggota.TanggalLahir == "" {
+			return nil, customerror.NewBadRequestError("setiap anggota wajib mengisi nik, nama_anggota_keluarga, dan tanggal_lahir")
 		}
 
 		if _, exists := nikSeen[anggota.NIK]; exists {
@@ -178,77 +176,40 @@ func (u *AdminAkunKeluargaUsecase) CreateKartuKeluarga(req *AdminCreateKartuKelu
 		}
 	}
 
-	var tanggalTerbit *time.Time
-	if strings.TrimSpace(req.TanggalTerbit) != "" {
-		parsed, err := time.Parse("2006-01-02", req.TanggalTerbit)
-		if err != nil {
-			return nil, customerror.NewBadRequestError("format tanggal_terbit harus YYYY-MM-DD")
-		}
-		tanggalTerbit = &parsed
-	}
-
-	kk := &models.KartuKeluarga{
-		NoKK:          req.NoKK,
-		TanggalTerbit: tanggalTerbit,
-		CreatedAt:     time.Now(),
-		UpdatedAt:     time.Now(),
-	}
-	if err := u.kkRepo.Create(kk); err != nil {
-		return nil, err
-	}
-
 	createdPenduduk := make([]*models.Kependudukan, 0, len(req.AnggotaKeluarga))
 	for _, anggota := range req.AnggotaKeluarga {
 		tanggalLahir, err := time.Parse("2006-01-02", anggota.TanggalLahir)
 		if err != nil {
 			return nil, customerror.NewBadRequestError("format tanggal_lahir harus YYYY-MM-DD")
 		}
-		
-		var tglPenambahan *time.Time
-		if strings.TrimSpace(anggota.TanggalPenambahan) != "" {
-			parsed, err := time.Parse("2006-01-02", anggota.TanggalPenambahan)
-			if err == nil {
-				tglPenambahan = &parsed
-			}
-		}
-
-		var tglPengurangan *time.Time
-		if strings.TrimSpace(anggota.TanggalPengurangan) != "" {
-			parsed, err := time.Parse("2006-01-02", anggota.TanggalPengurangan)
-			if err == nil {
-				tglPengurangan = &parsed
-			}
-		}
 
 		nikPtr := &anggota.NIK
 		penduduk := &models.Kependudukan{
-			KartuKeluargaID:    &kk.ID,
-			NIK:                nikPtr,
-			Dusun:              anggota.Dusun,
-			NamaLengkap:        anggota.NamaLengkap,
-			GolonganDarah:      anggota.GolonganDarah,
-			JenisKelamin:       anggota.JenisKelamin,
-			TempatLahir:        anggota.TempatLahir,
-			TanggalLahir:       tanggalLahir,
-			Agama:              anggota.Agama,
-			StatusPerkawinan:   anggota.StatusPerkawinan,
-			Pekerjaan:          anggota.Pekerjaan,
-			PendidikanTerakhir: anggota.PendidikanTerakhir,
-			BacaHuruf:          anggota.BacaHuruf,
-			KedudukanKeluarga:  anggota.KedudukanKeluarga,
-			AsalPenduduk:       anggota.AsalPenduduk,
-			TujuanPindah:       anggota.TujuanPindah,
-			TempatMeninggal:    anggota.TempatMeninggal,
-			Keterangan:         anggota.Keterangan,
-			Kecamatan:          anggota.Kecamatan,
-			DesaID:             anggota.DesaID,
-			IsNonKTP:           anggota.IsNonKTP,
-			Telepon:            anggota.Telepon,
-			TanggalPenambahan:  tglPenambahan,
-			TanggalPengurangan: tglPengurangan,
-			CreatedAt:          time.Now(),
-			UpdatedAt:          time.Now(),
+			RW:                  anggota.RW,
+			RT:                  anggota.RT,
+			Dusun:               anggota.Dusun,
+			Alamat:              anggota.Alamat,
+			KodeKeluarga:        anggota.KodeKeluarga,
+			NamaKepalaKeluarga:  anggota.NamaKepalaKeluarga,
+			NIK:                 nikPtr,
+			NamaAnggotaKeluarga: anggota.NamaAnggotaKeluarga,
+			JenisKelamin:        anggota.JenisKelamin,
+			Hubungan:            anggota.Hubungan,
+			TempatLahir:         anggota.TempatLahir,
+			TanggalLahir:        tanggalLahir,
+			Status:              anggota.Status,
+			Agama:               anggota.Agama,
+			GolonganDarah:       anggota.GolonganDarah,
+			Kewarganegaraan:     anggota.Kewarganegaraan,
+			EtnisSuku:           anggota.EtnisSuku,
+			Pendidikan:          anggota.Pendidikan,
+			Pekerjaan:           anggota.Pekerjaan,
+			DesaID:              anggota.DesaID,
+			PosyanduID:          anggota.PosyanduID,
+			CreatedAt:           time.Now(),
+			UpdatedAt:           time.Now(),
 		}
+
 		if err := u.kependudukanRepo.Create(penduduk); err != nil {
 			return nil, err
 		}
@@ -263,24 +224,31 @@ func (u *AdminAkunKeluargaUsecase) CreateKartuKeluarga(req *AdminCreateKartuKelu
 			nik = *p.NIK
 		}
 		resAnggota = append(resAnggota, map[string]interface{}{
-			"penduduk_id":        p.IDKependudukan,
-			"nik":                nik,
-			"nama_lengkap":       p.NamaLengkap,
-			"jenis_kelamin":      p.JenisKelamin,
-			"tanggal_lahir":      p.TanggalLahir.Format("2006-01-02"),
-			"kedudukan_keluarga": p.KedudukanKeluarga,
+			"penduduk_id":          p.IDKependudukan,
+			"nik":                  nik,
+			"nama_anggota_keluarga": p.NamaAnggotaKeluarga,
+			"jenis_kelamin":        p.JenisKelamin,
+			"tanggal_lahir":        p.TanggalLahir.Format("2006-01-02"),
+			"hubungan":             p.Hubungan,
 		})
 	}
 
+	// Ambil kode_keluarga dari anggota pertama
+	kodeKeluarga := ""
+	if len(createdPenduduk) > 0 {
+		kodeKeluarga = createdPenduduk[0].KodeKeluarga
+	}
+
 	return map[string]interface{}{
-		"kartu_keluarga_id": kk.ID,
-		"no_kk":             req.NoKK,
-		"tanggal_terbit":    tanggalTerbit,
-		"total_anggota":     len(createdPenduduk),
-		"anggota_keluarga":  resAnggota,
+		"kode_keluarga":    kodeKeluarga,
+		"total_anggota":    len(createdPenduduk),
+		"anggota_keluarga": resAnggota,
 	}, nil
 }
 
+// =============================================
+// LIST - Mendapatkan semua keluarga
+// =============================================
 func (u *AdminAkunKeluargaUsecase) ListKartuKeluarga(search string, page int, limit int, sortBy string, sortDir string) (map[string]interface{}, error) {
 	if page <= 0 {
 		page = 1
@@ -292,29 +260,33 @@ func (u *AdminAkunKeluargaUsecase) ListKartuKeluarga(search string, page int, li
 		limit = 100
 	}
 
-	list, total, err := u.kkRepo.ListPaginated(search, page, limit, sortBy, sortDir)
+	// Ambil semua penduduk yang memiliki KodeKeluarga
+	penduduks, err := u.kependudukanRepo.FindAllWithKodeKeluarga()
 	if err != nil {
-		return nil, customerror.NewInternalServiceError("gagal mengambil data kartu keluarga")
+		return nil, customerror.NewInternalServiceError("gagal mengambil data keluarga")
 	}
 
-	items := make([]AdminListKartuKeluargaItem, 0, len(list))
-	for _, kk := range list {
-		anggota, err := u.kependudukanRepo.ListByKartuKeluargaID(kk.ID)
-		if err != nil {
-			return nil, customerror.NewInternalServiceError("gagal mengambil data anggota keluarga")
+	// Group by KodeKeluarga
+	keluargaMap := make(map[string][]models.Kependudukan)
+	for _, p := range penduduks {
+		if p.KodeKeluarga != "" {
+			keluargaMap[p.KodeKeluarga] = append(keluargaMap[p.KodeKeluarga], p)
 		}
+	}
 
+	items := make([]AdminListKartuKeluargaItem, 0, len(keluargaMap))
+	for kode, anggota := range keluargaMap {
 		var kepala interface{}
 		for _, a := range anggota {
-			if strings.EqualFold(strings.TrimSpace(a.KedudukanKeluarga), "Kepala Keluarga") {
+			if strings.EqualFold(strings.TrimSpace(a.Hubungan), "Kepala Keluarga") {
 				nik := ""
 				if a.NIK != nil {
 					nik = *a.NIK
 				}
 				kepala = AdminKepalaKeluarga{
-					PendudukID:  a.IDKependudukan,
-					NIK:         nik,
-					NamaLengkap: a.NamaLengkap,
+					PendudukID:          a.IDKependudukan,
+					NIK:                 nik,
+					NamaAnggotaKeluarga: a.NamaAnggotaKeluarga,
 				}
 				break
 			}
@@ -325,28 +297,33 @@ func (u *AdminAkunKeluargaUsecase) ListKartuKeluarga(search string, page int, li
 				nik = *anggota[0].NIK
 			}
 			kepala = AdminKepalaKeluarga{
-				PendudukID:  anggota[0].IDKependudukan,
-				NIK:         nik,
-				NamaLengkap: anggota[0].NamaLengkap,
+				PendudukID:          anggota[0].IDKependudukan,
+				NIK:                 nik,
+				NamaAnggotaKeluarga: anggota[0].NamaAnggotaKeluarga,
 			}
 		}
 
-		var tanggalTerbit *string
-		if kk.TanggalTerbit != nil {
-			formatted := kk.TanggalTerbit.Format("2006-01-02")
-			tanggalTerbit = &formatted
-		}
-
 		items = append(items, AdminListKartuKeluargaItem{
-			KartuKeluargaID: kk.ID,
-			NoKK:            kk.NoKK,
-			TanggalTerbit:   tanggalTerbit,
-			KepalaKeluarga:  kepala,
-			JumlahAnggota:   len(anggota),
-			CreatedAt:       kk.CreatedAt,
-			UpdatedAt:       kk.UpdatedAt,
+			KodeKeluarga:  kode,
+			KepalaKeluarga: kepala,
+			JumlahAnggota:  len(anggota),
+			CreatedAt:     anggota[0].CreatedAt,
+			UpdatedAt:     anggota[0].UpdatedAt,
 		})
 	}
+
+	total := len(items)
+
+	// Pagination manual
+	start := (page - 1) * limit
+	end := start + limit
+	if start > total {
+		start = total
+	}
+	if end > total {
+		end = total
+	}
+	paginatedItems := items[start:end]
 
 	totalPages := int(math.Ceil(float64(total) / float64(limit)))
 	if total == 0 {
@@ -354,28 +331,43 @@ func (u *AdminAkunKeluargaUsecase) ListKartuKeluarga(search string, page int, li
 	}
 
 	return map[string]interface{}{
-		"items": items,
+		"items": paginatedItems,
 		"pagination": AdminListKartuKeluargaPagination{
 			Page:       page,
 			Limit:      limit,
-			Total:      int(total),
+			Total:      total,
 			TotalPages: totalPages,
 		},
 	}, nil
 }
 
-func (u *AdminAkunKeluargaUsecase) DetailKartuKeluarga(kartuKeluargaID int64) (*AdminDetailKartuKeluargaResponse, error) {
-	kk, err := u.kkRepo.FindByID(kartuKeluargaID)
-	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return nil, customerror.NewNotFoundError("kartu keluarga tidak ditemukan")
-		}
-		return nil, customerror.NewInternalServiceError("gagal mengambil data kartu keluarga")
+// =============================================
+// DETAIL - Mendapatkan detail keluarga
+// =============================================
+func (u *AdminAkunKeluargaUsecase) DetailKartuKeluarga(kodeKeluarga string) (*AdminDetailKartuKeluargaResponse, error) {
+	if kodeKeluarga == "" {
+		return nil, customerror.NewBadRequestError("kode_keluarga wajib diisi")
 	}
 
-	anggota, err := u.kependudukanRepo.ListByKartuKeluargaID(kartuKeluargaID)
+	anggota, err := u.kependudukanRepo.FindByKodeKeluarga(kodeKeluarga)
 	if err != nil {
 		return nil, customerror.NewInternalServiceError("gagal mengambil data anggota keluarga")
+	}
+
+	if len(anggota) == 0 {
+		return nil, customerror.NewNotFoundError("keluarga tidak ditemukan")
+	}
+
+	// Cari kepala keluarga
+	var namaKepala string
+	for _, a := range anggota {
+		if strings.EqualFold(strings.TrimSpace(a.Hubungan), "Kepala Keluarga") {
+			namaKepala = a.NamaAnggotaKeluarga
+			break
+		}
+	}
+	if namaKepala == "" {
+		namaKepala = anggota[0].NamaAnggotaKeluarga
 	}
 
 	resAnggota := make([]AdminDetailKartuKeluargaAnggota, 0, len(anggota))
@@ -383,70 +375,62 @@ func (u *AdminAkunKeluargaUsecase) DetailKartuKeluarga(kartuKeluargaID int64) (*
 		resAnggota = append(resAnggota, mapPendudukToAnggota(a))
 	}
 
-	var tanggalTerbit *string
-	if kk.TanggalTerbit != nil {
-		formatted := kk.TanggalTerbit.Format("2006-01-02")
-		tanggalTerbit = &formatted
-	}
-
 	return &AdminDetailKartuKeluargaResponse{
-		KartuKeluargaID: kk.ID,
-		NoKK:            kk.NoKK,
-		TanggalTerbit:   tanggalTerbit,
-		AnggotaKeluarga: resAnggota,
+		KodeKeluarga:       kodeKeluarga,
+		NamaKepalaKeluarga: namaKepala,
+		AnggotaKeluarga:    resAnggota,
 	}, nil
 }
 
-func (u *AdminAkunKeluargaUsecase) UpdateKartuKeluarga(kartuKeluargaID int64, req *AdminUpdateKartuKeluargaRequest) (*AdminDetailKartuKeluargaResponse, error) {
+// =============================================
+// UPDATE KELUARGA - Update kode keluarga
+// =============================================
+func (u *AdminAkunKeluargaUsecase) UpdateKartuKeluarga(kodeKeluargaLama string, req *AdminUpdateKartuKeluargaRequest) (*AdminDetailKartuKeluargaResponse, error) {
 	if req == nil {
 		return nil, customerror.NewBadRequestError("request tidak valid")
 	}
 
-	req.NoKK = strings.TrimSpace(req.NoKK)
-
-	if req.NoKK == "" {
-		return nil, customerror.NewBadRequestError("no_kk wajib diisi")
+	req.KodeKeluarga = strings.TrimSpace(req.KodeKeluarga)
+	if req.KodeKeluarga == "" {
+		return nil, customerror.NewBadRequestError("kode_keluarga wajib diisi")
 	}
 
-	kk, err := u.kkRepo.FindByID(kartuKeluargaID)
+	// Cek apakah keluarga ada
+	anggota, err := u.kependudukanRepo.FindByKodeKeluarga(kodeKeluargaLama)
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return nil, customerror.NewNotFoundError("kartu keluarga tidak ditemukan")
+		return nil, customerror.NewInternalServiceError("gagal mengambil data anggota keluarga")
+	}
+	if len(anggota) == 0 {
+		return nil, customerror.NewNotFoundError("keluarga tidak ditemukan")
+	}
+
+	// Cek apakah kode baru sudah dipakai
+	existing, _ := u.kependudukanRepo.FindByKodeKeluarga(req.KodeKeluarga)
+	if len(existing) > 0 && kodeKeluargaLama != req.KodeKeluarga {
+		return nil, customerror.NewConflictError("kode_keluarga sudah dipakai")
+	}
+
+	// Update semua anggota dengan kode keluarga baru
+	for _, a := range anggota {
+		a.KodeKeluarga = req.KodeKeluarga
+		a.UpdatedAt = time.Now()
+		if err := u.kependudukanRepo.Update(&a); err != nil {
+			return nil, customerror.NewInternalServiceError("gagal memperbarui anggota keluarga")
 		}
-		return nil, customerror.NewInternalServiceError("gagal mengambil data kartu keluarga")
 	}
 
-	if _, err := u.kkRepo.FindByNoKKExceptID(req.NoKK, kartuKeluargaID); err == nil {
-		return nil, customerror.NewConflictError("no_kk sudah dipakai")
-	} else if err != gorm.ErrRecordNotFound {
-		return nil, customerror.NewInternalServiceError("gagal validasi no_kk")
-	}
-
-	var tanggalTerbit *time.Time
-	if strings.TrimSpace(req.TanggalTerbit) != "" {
-		parsed, err := time.Parse("2006-01-02", req.TanggalTerbit)
-		if err != nil {
-			return nil, customerror.NewBadRequestError("format tanggal_terbit harus YYYY-MM-DD")
-		}
-		tanggalTerbit = &parsed
-	}
-
-	kk.NoKK = req.NoKK
-	kk.TanggalTerbit = tanggalTerbit
-	kk.UpdatedAt = time.Now()
-	if err := u.kkRepo.Update(kk); err != nil {
-		return nil, customerror.NewInternalServiceError("gagal memperbarui kartu keluarga")
-	}
-
-	return u.DetailKartuKeluarga(kartuKeluargaID)
+	return u.DetailKartuKeluarga(req.KodeKeluarga)
 }
 
-func (u *AdminAkunKeluargaUsecase) UpdateAnggotaKeluarga(kartuKeluargaID int64, pendudukID int32, req *AdminAnggotaKeluargaRequest) (*AdminDetailKartuKeluargaAnggota, error) {
+// =============================================
+// UPDATE ANGGOTA KELUARGA
+// =============================================
+func (u *AdminAkunKeluargaUsecase) UpdateAnggotaKeluarga(pendudukID int32, req *AdminAnggotaKeluargaRequest) (*AdminDetailKartuKeluargaAnggota, error) {
 	if req == nil {
 		return nil, customerror.NewBadRequestError("request tidak valid")
 	}
 
-	anggota, err := u.kependudukanRepo.FindByIDAndKartuKeluargaID(pendudukID, kartuKeluargaID)
+	anggota, err := u.kependudukanRepo.FindByID(pendudukID)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, customerror.NewNotFoundError("anggota keluarga tidak ditemukan")
@@ -454,26 +438,12 @@ func (u *AdminAkunKeluargaUsecase) UpdateAnggotaKeluarga(kartuKeluargaID int64, 
 		return nil, customerror.NewInternalServiceError("gagal mengambil data anggota keluarga")
 	}
 
+	// Trim semua field
 	req.NIK = strings.TrimSpace(req.NIK)
-	req.NamaLengkap = strings.TrimSpace(req.NamaLengkap)
-	req.JenisKelamin = strings.TrimSpace(req.JenisKelamin)
-	req.TanggalLahir = strings.TrimSpace(req.TanggalLahir)
-	req.TempatLahir = strings.TrimSpace(req.TempatLahir)
-	req.GolonganDarah = strings.TrimSpace(req.GolonganDarah)
-	req.Agama = strings.TrimSpace(req.Agama)
-	req.StatusPerkawinan = strings.TrimSpace(req.StatusPerkawinan)
-	req.Pekerjaan = strings.TrimSpace(req.Pekerjaan)
-	req.PendidikanTerakhir = strings.TrimSpace(req.PendidikanTerakhir)
-	req.BacaHuruf = strings.TrimSpace(req.BacaHuruf)
-	req.KedudukanKeluarga = strings.TrimSpace(req.KedudukanKeluarga)
-	req.Dusun = strings.TrimSpace(req.Dusun)
-	req.AsalPenduduk = strings.TrimSpace(req.AsalPenduduk)
-	req.TujuanPindah = strings.TrimSpace(req.TujuanPindah)
-	req.TempatMeninggal = strings.TrimSpace(req.TempatMeninggal)
-	req.Keterangan = strings.TrimSpace(req.Keterangan)
+	req.NamaAnggotaKeluarga = strings.TrimSpace(req.NamaAnggotaKeluarga)
 
-	if req.NIK == "" || req.NamaLengkap == "" {
-		return nil, customerror.NewBadRequestError("nik dan nama_lengkap wajib diisi")
+	if req.NIK == "" || req.NamaAnggotaKeluarga == "" {
+		return nil, customerror.NewBadRequestError("nik dan nama_anggota_keluarga wajib diisi")
 	}
 
 	if _, err := u.kependudukanRepo.FindByNIKExceptID(req.NIK, pendudukID); err == nil {
@@ -482,6 +452,7 @@ func (u *AdminAkunKeluargaUsecase) UpdateAnggotaKeluarga(kartuKeluargaID int64, 
 		return nil, customerror.NewInternalServiceError("gagal validasi nik")
 	}
 
+	// Update tanggal lahir
 	if req.TanggalLahir != "" {
 		parsedTanggalLahir, err := time.Parse("2006-01-02", req.TanggalLahir)
 		if err != nil {
@@ -490,46 +461,28 @@ func (u *AdminAkunKeluargaUsecase) UpdateAnggotaKeluarga(kartuKeluargaID int64, 
 		anggota.TanggalLahir = parsedTanggalLahir
 	}
 
+	// Update semua field
 	nikPtr := &req.NIK
 	anggota.NIK = nikPtr
-	anggota.NamaLengkap = req.NamaLengkap
-	anggota.JenisKelamin = req.JenisKelamin
-	anggota.TempatLahir = req.TempatLahir
-	anggota.GolonganDarah = req.GolonganDarah
-	anggota.Agama = req.Agama
-	anggota.StatusPerkawinan = req.StatusPerkawinan
-	anggota.Pekerjaan = req.Pekerjaan
-	anggota.PendidikanTerakhir = req.PendidikanTerakhir
-	anggota.BacaHuruf = req.BacaHuruf
-	anggota.KedudukanKeluarga = req.KedudukanKeluarga
+	anggota.RW = req.RW
+	anggota.RT = req.RT
 	anggota.Dusun = req.Dusun
-	anggota.AsalPenduduk = req.AsalPenduduk
-	anggota.TujuanPindah = req.TujuanPindah
-	anggota.TempatMeninggal = req.TempatMeninggal
-	anggota.Keterangan = req.Keterangan
-	anggota.Kecamatan = req.Kecamatan
+	anggota.Alamat = req.Alamat
+	anggota.KodeKeluarga = req.KodeKeluarga
+	anggota.NamaKepalaKeluarga = req.NamaKepalaKeluarga
+	anggota.NamaAnggotaKeluarga = req.NamaAnggotaKeluarga
+	anggota.JenisKelamin = req.JenisKelamin
+	anggota.Hubungan = req.Hubungan
+	anggota.TempatLahir = req.TempatLahir
+	anggota.Status = req.Status
+	anggota.Agama = req.Agama
+	anggota.GolonganDarah = req.GolonganDarah
+	anggota.Kewarganegaraan = req.Kewarganegaraan
+	anggota.EtnisSuku = req.EtnisSuku
+	anggota.Pendidikan = req.Pendidikan
+	anggota.Pekerjaan = req.Pekerjaan
 	anggota.DesaID = req.DesaID
-	anggota.IsNonKTP = req.IsNonKTP
-	anggota.Telepon = req.Telepon
-
-	if strings.TrimSpace(req.TanggalPenambahan) != "" {
-		parsed, err := time.Parse("2006-01-02", req.TanggalPenambahan)
-		if err == nil {
-			anggota.TanggalPenambahan = &parsed
-		}
-	} else {
-		anggota.TanggalPenambahan = nil
-	}
-
-	if strings.TrimSpace(req.TanggalPengurangan) != "" {
-		parsed, err := time.Parse("2006-01-02", req.TanggalPengurangan)
-		if err == nil {
-			anggota.TanggalPengurangan = &parsed
-		}
-	} else {
-		anggota.TanggalPengurangan = nil
-	}
-
+	anggota.PosyanduID = req.PosyanduID
 	anggota.UpdatedAt = time.Now()
 
 	if err := u.kependudukanRepo.Update(anggota); err != nil {
@@ -540,23 +493,20 @@ func (u *AdminAkunKeluargaUsecase) UpdateAnggotaKeluarga(kartuKeluargaID int64, 
 	return &res, nil
 }
 
-func (u *AdminAkunKeluargaUsecase) AddAnggotaKeluarga(kartuKeluargaID int64, req *AdminAnggotaKeluargaRequest) (*AdminDetailKartuKeluargaAnggota, error) {
+// =============================================
+// ADD ANGGOTA KELUARGA
+// =============================================
+func (u *AdminAkunKeluargaUsecase) AddAnggotaKeluarga(req *AdminAnggotaKeluargaRequest) (*AdminDetailKartuKeluargaAnggota, error) {
 	if req == nil {
 		return nil, customerror.NewBadRequestError("request tidak valid")
 	}
 
-	if _, err := u.kkRepo.FindByID(kartuKeluargaID); err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return nil, customerror.NewNotFoundError("kartu keluarga tidak ditemukan")
-		}
-		return nil, customerror.NewInternalServiceError("gagal mengambil data kartu keluarga")
-	}
-
 	req.NIK = strings.TrimSpace(req.NIK)
-	req.NamaLengkap = strings.TrimSpace(req.NamaLengkap)
+	req.NamaAnggotaKeluarga = strings.TrimSpace(req.NamaAnggotaKeluarga)
 	req.TanggalLahir = strings.TrimSpace(req.TanggalLahir)
-	if req.NIK == "" || req.NamaLengkap == "" || req.TanggalLahir == "" {
-		return nil, customerror.NewBadRequestError("nik, nama_lengkap, dan tanggal_lahir wajib diisi")
+
+	if req.NIK == "" || req.NamaAnggotaKeluarga == "" || req.TanggalLahir == "" {
+		return nil, customerror.NewBadRequestError("nik, nama_anggota_keluarga, dan tanggal_lahir wajib diisi")
 	}
 
 	reqNIKPtr := &req.NIK
@@ -571,49 +521,31 @@ func (u *AdminAkunKeluargaUsecase) AddAnggotaKeluarga(kartuKeluargaID int64, req
 		return nil, customerror.NewBadRequestError("format tanggal_lahir harus YYYY-MM-DD")
 	}
 
-	var tglPenambahan *time.Time
-	if strings.TrimSpace(req.TanggalPenambahan) != "" {
-		parsed, err := time.Parse("2006-01-02", req.TanggalPenambahan)
-		if err == nil {
-			tglPenambahan = &parsed
-		}
-	}
-
-	var tglPengurangan *time.Time
-	if strings.TrimSpace(req.TanggalPengurangan) != "" {
-		parsed, err := time.Parse("2006-01-02", req.TanggalPengurangan)
-		if err == nil {
-			tglPengurangan = &parsed
-		}
-	}
-
 	anggota := &models.Kependudukan{
-		KartuKeluargaID:    &kartuKeluargaID,
-		NIK:                reqNIKPtr,
-		NamaLengkap:        req.NamaLengkap,
-		JenisKelamin:       strings.TrimSpace(req.JenisKelamin),
-		TanggalLahir:       tanggalLahir,
-		TempatLahir:        strings.TrimSpace(req.TempatLahir),
-		GolonganDarah:      strings.TrimSpace(req.GolonganDarah),
-		Agama:              strings.TrimSpace(req.Agama),
-		StatusPerkawinan:   strings.TrimSpace(req.StatusPerkawinan),
-		Pekerjaan:          strings.TrimSpace(req.Pekerjaan),
-		PendidikanTerakhir: strings.TrimSpace(req.PendidikanTerakhir),
-		BacaHuruf:          strings.TrimSpace(req.BacaHuruf),
-		KedudukanKeluarga:  strings.TrimSpace(req.KedudukanKeluarga),
-		Dusun:              strings.TrimSpace(req.Dusun),
-		AsalPenduduk:       strings.TrimSpace(req.AsalPenduduk),
-		TujuanPindah:       strings.TrimSpace(req.TujuanPindah),
-		TempatMeninggal:    strings.TrimSpace(req.TempatMeninggal),
-		Keterangan:         strings.TrimSpace(req.Keterangan),
-		Kecamatan:          strings.TrimSpace(req.Kecamatan),
-		DesaID:             req.DesaID,
-		IsNonKTP:           req.IsNonKTP,
-		Telepon:            req.Telepon,
-		TanggalPenambahan:  tglPenambahan,
-		TanggalPengurangan: tglPengurangan,
-		CreatedAt:          time.Now(),
-		UpdatedAt:          time.Now(),
+		RW:                  req.RW,
+		RT:                  req.RT,
+		Dusun:               req.Dusun,
+		Alamat:              req.Alamat,
+		KodeKeluarga:        req.KodeKeluarga,
+		NamaKepalaKeluarga:  req.NamaKepalaKeluarga,
+		NIK:                 reqNIKPtr,
+		NamaAnggotaKeluarga: req.NamaAnggotaKeluarga,
+		JenisKelamin:        req.JenisKelamin,
+		Hubungan:            req.Hubungan,
+		TempatLahir:         req.TempatLahir,
+		TanggalLahir:        tanggalLahir,
+		Status:              req.Status,
+		Agama:               req.Agama,
+		GolonganDarah:       req.GolonganDarah,
+		Kewarganegaraan:     req.Kewarganegaraan,
+		EtnisSuku:           req.EtnisSuku,
+		Pendidikan:          req.Pendidikan,
+		Pekerjaan:           req.Pekerjaan,
+		Telepon:             req.Telepon,
+		DesaID:              req.DesaID,
+		PosyanduID:          req.PosyanduID,
+		CreatedAt:           time.Now(),
+		UpdatedAt:           time.Now(),
 	}
 
 	if err := u.kependudukanRepo.Create(anggota); err != nil {
@@ -624,8 +556,11 @@ func (u *AdminAkunKeluargaUsecase) AddAnggotaKeluarga(kartuKeluargaID int64, req
 	return &res, nil
 }
 
-func (u *AdminAkunKeluargaUsecase) DeleteAnggotaKeluarga(kartuKeluargaID int64, pendudukID int32) error {
-	anggota, err := u.kependudukanRepo.FindByIDAndKartuKeluargaID(pendudukID, kartuKeluargaID)
+// =============================================
+// DELETE ANGGOTA KELUARGA
+// =============================================
+func (u *AdminAkunKeluargaUsecase) DeleteAnggotaKeluarga(pendudukID int32) error {
+	anggota, err := u.kependudukanRepo.FindByID(pendudukID)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return customerror.NewNotFoundError("anggota keluarga tidak ditemukan")
@@ -640,25 +575,35 @@ func (u *AdminAkunKeluargaUsecase) DeleteAnggotaKeluarga(kartuKeluargaID int64, 
 	return nil
 }
 
-func (u *AdminAkunKeluargaUsecase) DeleteKartuKeluarga(kartuKeluargaID int64) error {
-	if _, err := u.kkRepo.FindByID(kartuKeluargaID); err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return customerror.NewNotFoundError("kartu keluarga tidak ditemukan")
+// =============================================
+// DELETE KELUARGA (Soft Delete semua anggota)
+// =============================================
+func (u *AdminAkunKeluargaUsecase) DeleteKartuKeluarga(kodeKeluarga string) error {
+	if kodeKeluarga == "" {
+		return customerror.NewBadRequestError("kode_keluarga wajib diisi")
+	}
+
+	anggota, err := u.kependudukanRepo.FindByKodeKeluarga(kodeKeluarga)
+	if err != nil {
+		return customerror.NewInternalServiceError("gagal mengambil data anggota keluarga")
+	}
+	if len(anggota) == 0 {
+		return customerror.NewNotFoundError("keluarga tidak ditemukan")
+	}
+
+	// Soft delete semua anggota
+	for _, a := range anggota {
+		if err := u.kependudukanRepo.SoftDeleteByID(a.IDKependudukan); err != nil {
+			return customerror.NewInternalServiceError("gagal menghapus anggota keluarga")
 		}
-		return customerror.NewInternalServiceError("gagal mengambil data kartu keluarga")
-	}
-
-	if err := u.kependudukanRepo.SoftDeleteByKartuKeluargaID(kartuKeluargaID); err != nil {
-		return customerror.NewInternalServiceError("gagal menghapus anggota keluarga")
-	}
-
-	if err := u.kkRepo.SoftDeleteByID(kartuKeluargaID); err != nil {
-		return customerror.NewInternalServiceError("gagal menghapus kartu keluarga")
 	}
 
 	return nil
 }
 
+// =============================================
+// MAPPER
+// =============================================
 func mapPendudukToAnggota(a models.Kependudukan) AdminDetailKartuKeluargaAnggota {
 	nik := ""
 	if a.NIK != nil {
@@ -668,39 +613,30 @@ func mapPendudukToAnggota(a models.Kependudukan) AdminDetailKartuKeluargaAnggota
 	if !a.TanggalLahir.IsZero() {
 		tglLahir = a.TanggalLahir.Format("2006-01-02")
 	}
-	tglPenambahan := ""
-	if a.TanggalPenambahan != nil {
-		tglPenambahan = a.TanggalPenambahan.Format("2006-01-02")
-	}
-	tglPengurangan := ""
-	if a.TanggalPengurangan != nil {
-		tglPengurangan = a.TanggalPengurangan.Format("2006-01-02")
-	}
 
 	return AdminDetailKartuKeluargaAnggota{
-		PendudukID:         a.IDKependudukan,
-		NIK:                nik,
-		NamaLengkap:        a.NamaLengkap,
-		JenisKelamin:       a.JenisKelamin,
-		TanggalLahir:       tglLahir,
-		TempatLahir:        a.TempatLahir,
-		GolonganDarah:      a.GolonganDarah,
-		Agama:              a.Agama,
-		StatusPerkawinan:   a.StatusPerkawinan,
-		Pekerjaan:          a.Pekerjaan,
-		PendidikanTerakhir: a.PendidikanTerakhir,
-		BacaHuruf:          a.BacaHuruf,
-		KedudukanKeluarga:  a.KedudukanKeluarga,
-		Dusun:              a.Dusun,
-		AsalPenduduk:       a.AsalPenduduk,
-		TujuanPindah:       a.TujuanPindah,
-		TempatMeninggal:    a.TempatMeninggal,
-		Keterangan:         a.Keterangan,
-		Kecamatan:          a.Kecamatan,
-		DesaID:             a.DesaID,
-		IsNonKTP:           a.IsNonKTP,
-		Telepon:            a.Telepon,
-		TanggalPenambahan:  tglPenambahan,
-		TanggalPengurangan: tglPengurangan,
+		PendudukID:          a.IDKependudukan,
+		RW:                  a.RW,
+		RT:                  a.RT,
+		Dusun:               a.Dusun,
+		Alamat:              a.Alamat,
+		KodeKeluarga:        a.KodeKeluarga,
+		NamaKepalaKeluarga:  a.NamaKepalaKeluarga,
+		NIK:                 nik,
+		NamaAnggotaKeluarga: a.NamaAnggotaKeluarga,
+		JenisKelamin:        a.JenisKelamin,
+		Hubungan:            a.Hubungan,
+		TempatLahir:         a.TempatLahir,
+		TanggalLahir:        tglLahir,
+		Status:              a.Status,
+		Agama:               a.Agama,
+		GolonganDarah:       a.GolonganDarah,
+		Kewarganegaraan:     a.Kewarganegaraan,
+		EtnisSuku:           a.EtnisSuku,
+		Pendidikan:          a.Pendidikan,
+		Pekerjaan:           a.Pekerjaan,
+		DesaID:              a.DesaID,
+		PosyanduID:          a.PosyanduID,
+		
 	}
 }

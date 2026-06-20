@@ -1,4 +1,4 @@
-package routes
+﻿package routes
 
 import (
 	"fmt"
@@ -93,14 +93,17 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	superadmin.GET("/audit-trail/summary", controller.AuditTrail.Summary)
 
 	// Manajemen Kartu Keluarga
-	superadmin.POST("/kartu-keluarga", controller.AdminCreateKartuKeluarga)
-	superadmin.GET("/kartu-keluarga", controller.AdminListKartuKeluarga)
-	superadmin.GET("/kartu-keluarga/:kartu_keluarga_id", controller.AdminDetailKartuKeluarga)
-	superadmin.PUT("/kartu-keluarga/:kartu_keluarga_id", controller.AdminUpdateKartuKeluarga)
-	superadmin.PUT("/kartu-keluarga/:kartu_keluarga_id/anggota/:penduduk_id", controller.AdminUpdateAnggotaKeluarga)
-	superadmin.POST("/kartu-keluarga/:kartu_keluarga_id/anggota", controller.AdminAddAnggotaKeluarga)
-	superadmin.DELETE("/kartu-keluarga/:kartu_keluarga_id/anggota/:penduduk_id", controller.AdminDeleteAnggotaKeluarga)
-	superadmin.DELETE("/kartu-keluarga/:kartu_keluarga_id", controller.AdminDeleteKartuKeluarga)
+	// Superadmin routes untuk Kependudukan
+	superadmin.POST("/penduduk", controller.AdminCreateKependudukan)
+	superadmin.GET("/penduduk", controller.AdminListKependudukan)
+	superadmin.GET("/penduduk/:penduduk_id", controller.AdminDetailKependudukan)
+	superadmin.PUT("/penduduk/:penduduk_id", controller.AdminUpdateKependudukan)
+	superadmin.DELETE("/penduduk/:penduduk_id", controller.AdminDeleteKependudukan)
+
+	// Additional endpoints
+	superadmin.GET("/penduduk/keluarga/:kode_keluarga", controller.AdminGetAnggotaByKodeKeluarga)
+	superadmin.GET("/penduduk/keluarga/:kode_keluarga/kepala", controller.AdminGetKepalaKeluarga)
+	superadmin.GET("/penduduk/statistik", controller.AdminGetStatistikKependudukan)
 	superadmin.GET("/desa", controller.Desa.GetAll)
 	superadmin.GET("/desa/:id", controller.Desa.GetByID)
 	superadmin.POST("/desa", controller.Desa.Create)
@@ -518,12 +521,6 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	tenaga.PUT("/pemeriksaan-lab-jiwa/:id", controller.PemeriksaanLaboratoriumJiwa.Update)
 	tenaga.DELETE("/pemeriksaan-lab-jiwa/:id", controller.PemeriksaanLaboratoriumJiwa.Delete)
 
-	// ==================== CATATAN PELAYANAN TRIMESTER 1 ====================
-	tenaga.POST("/catatan-pelayanan-t1", controller.CatatanPelayananTrimester1.Create)
-	tenaga.GET("/catatan-pelayanan-t1/:id", controller.CatatanPelayananTrimester1.GetByID)
-	tenaga.GET("/catatan-pelayanan-t1", controller.CatatanPelayananTrimester1.GetByKehamilanID)
-	tenaga.PUT("/catatan-pelayanan-t1/:id", controller.CatatanPelayananTrimester1.Update)
-	tenaga.DELETE("/catatan-pelayanan-t1/:id", controller.CatatanPelayananTrimester1.Delete)
 
 	// ==================== CATATAN PELAYANAN TRIMESTER 2 ====================
 	tenaga.POST("/catatan-pelayanan-t2", controller.CatatanPelayananTrimester2.Create)
@@ -531,14 +528,6 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	tenaga.GET("/catatan-pelayanan-t2", controller.CatatanPelayananTrimester2.GetByKehamilanID)
 	tenaga.PUT("/catatan-pelayanan-t2/:id", controller.CatatanPelayananTrimester2.Update)
 	tenaga.DELETE("/catatan-pelayanan-t2/:id", controller.CatatanPelayananTrimester2.Delete)
-
-	// ==================== CATATAN PELAYANAN TRIMESTER 3 ====================
-	tenaga.POST("/catatan-pelayanan-t3", controller.CatatanPelayananTrimester3.Create)
-	tenaga.GET("/catatan-pelayanan-t3/:id", controller.CatatanPelayananTrimester3.GetByID)
-	tenaga.GET("/catatan-pelayanan-t3", controller.CatatanPelayananTrimester3.GetByKehamilanID)
-	tenaga.PUT("/catatan-pelayanan-t3/:id", controller.CatatanPelayananTrimester3.Update)
-	tenaga.DELETE("/catatan-pelayanan-t3/:id", controller.CatatanPelayananTrimester3.Delete)
-
 	// ==================== CATATAN PELAYANAN NIFAS ====================
 	tenaga.POST("/catatan-pelayanan-nifas", controller.CatatanPelayananNifas.Create)
 	tenaga.GET("/catatan-pelayanan-nifas/:id", controller.CatatanPelayananNifas.GetByID)
@@ -726,9 +715,9 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	ibu.GET("/pemeriksaan-kehamilan", controller.PemeriksaanKehamilan.GetByKehamilanID)
 	ibu.GET("/pemeriksaan-kehamilan/grafik-anc", controller.PemeriksaanKehamilan.GetGrafikANC)
 	//trimester
-	ibu.GET("/catatan-pelayanan-t1", controller.CatatanPelayananTrimester1.GetByKehamilanID)
+	// ibu.GET("/catatan-pelayanan-t1", controller.CatatanPelayananTrimester1.GetByKehamilanID)
 	ibu.GET("/catatan-pelayanan-t2", controller.CatatanPelayananTrimester2.GetByKehamilanID)
-	ibu.GET("/catatan-pelayanan-t3", controller.CatatanPelayananTrimester3.GetByKehamilanID)
+	// ibu.GET("/catatan-pelayanan-t3", controller.CatatanPelayananTrimester3.GetByKehamilanID)
 	ibu.GET("/pemeriksaan-dokter-t1-complete", controller.PemeriksaanDokterCombined.GetT1ByKehamilan)
 	ibu.GET("/skrining-preeklampsia", controller.SkriningPreeklampsia.GetByKehamilanID)
 	ibu.GET("/pemeriksaan-dokter-t3-complete", controller.PemeriksaanDokterCombined.GetT3ByKehamilan)
@@ -815,9 +804,9 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	ibuk.GET("/checklist-pemantauan-ibu-nifas/filled-days", controller.ChecklistPemantauanIbuNifas.GetFilledDays)
 
 	// Catatan Pelayanan Ibu
-	ibuk.GET("/catatan-pelayanan-t1", controller.CatatanPelayananTrimester1.GetByKehamilanID)
+	// ibuk.GET("/catatan-pelayanan-t1", controller.CatatanPelayananTrimester1.GetByKehamilanID)
 	ibuk.GET("/catatan-pelayanan-t2", controller.CatatanPelayananTrimester2.GetByKehamilanID)
-	ibuk.GET("/catatan-pelayanan-t3", controller.CatatanPelayananTrimester3.GetByKehamilanID)
+	// ibuk.GET("/catatan-pelayanan-t3", controller.CatatanPelayananTrimester3.GetByKehamilanID)
 	ibuk.GET("/rujukan", controller.Rujukan.GetByKehamilanID)
 
 	// Grafik Evaluasi Kehamilan
@@ -989,26 +978,6 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	tenaga.GET("/edukasi-mpasi/resep/:id", controller.EdukasiMPASI.GetResepByID)
 	tenaga.PUT("/edukasi-mpasi/resep/:id", controller.EdukasiMPASI.UpdateResep)
 	tenaga.DELETE("/edukasi-mpasi/resep/:id", controller.EdukasiMPASI.DeleteResep)
-
-	tenaga.GET("/pemeriksaan-anak", controller.PemeriksaanAnak.GetAll)
-	tenaga.POST("/pemeriksaan-anak", controller.PemeriksaanAnak.Create)
-	tenaga.GET("/pemeriksaan-anak/:id", controller.PemeriksaanAnak.GetByID)
-	tenaga.DELETE("/pemeriksaan-anak/:id", controller.PemeriksaanAnak.Delete)
-
-	tenaga.GET("/pemeriksaan-remaja", controller.PemeriksaanRemaja.GetAll)
-	tenaga.POST("/pemeriksaan-remaja", controller.PemeriksaanRemaja.Create)
-	tenaga.GET("/pemeriksaan-remaja/:id", controller.PemeriksaanRemaja.GetByID)
-	tenaga.DELETE("/pemeriksaan-remaja/:id", controller.PemeriksaanRemaja.Delete)
-
-	tenaga.GET("/pemeriksaan-dewasa", controller.PemeriksaanDewasa.GetAll)
-	tenaga.POST("/pemeriksaan-dewasa", controller.PemeriksaanDewasa.Create)
-	tenaga.GET("/pemeriksaan-dewasa/:id", controller.PemeriksaanDewasa.GetByID)
-	tenaga.DELETE("/pemeriksaan-dewasa/:id", controller.PemeriksaanDewasa.Delete)
-
-	tenaga.GET("/pemeriksaan-lansia", controller.PemeriksaanLansia.GetAll)
-	tenaga.POST("/pemeriksaan-lansia", controller.PemeriksaanLansia.Create)
-	tenaga.GET("/pemeriksaan-lansia/:id", controller.PemeriksaanLansia.GetByID)
-	tenaga.DELETE("/pemeriksaan-lansia/:id", controller.PemeriksaanLansia.Delete)
 
 	tenaga.GET("/dashboard/jumlah-usia", controller.Dashboard.GetJumlahPerKelompokUsia)
 	tenaga.GET("/dashboard/kesehatan-per-kelompok", controller.Dashboard.GetKesehatanPerKelompok)

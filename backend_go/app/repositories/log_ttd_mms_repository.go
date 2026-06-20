@@ -130,7 +130,7 @@ func (r *LogTTDMMSRepository) FindAllActiveKehamilanByDesaID(desaID int32) ([]mo
 		if k.Ibu.Kependudukan == nil {
 			k.Ibu.Kependudukan = &models.Kependudukan{}
 		}
-		k.Ibu.Kependudukan.NamaLengkap = row.NamaIbu
+		k.Ibu.Kependudukan.NamaAnggotaKeluarga = row.NamaIbu
 		list = append(list, k)
 	}
  

@@ -100,7 +100,7 @@ func mapAnakToResponse(data models.Anak) models.AnakResponse {
 	}
 
 	if data.Penduduk != nil {
-		res.Nama = data.Penduduk.NamaLengkap
+		res.Nama = data.Penduduk.NamaAnggotaKeluarga
 		res.TanggalLahir = data.Penduduk.TanggalLahir.Format("2006-01-02")
 		res.JenisKelamin = data.Penduduk.JenisKelamin
 		res.GolonganDarah = data.Penduduk.GolonganDarah

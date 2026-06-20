@@ -11,9 +11,9 @@ import (
 )
 
 type PencatatanUsecase interface {
-    GetPendudukByKategori(kategori string, desaID *int32, role string) ([]models.PendudukWithPemeriksaan, error)
+    GetPendudukByKategori(kategori string, PosyanduID *int32, role string) ([]models.PendudukWithPemeriksaan, error)
     ValidasiUmurKategori(pendudukID int32, kategori string) (bool, error)
-    GetRiwayatPemeriksaanByPendudukID(pendudukID int32, kategori string, desaID *int32, role string) (interface{}, error)
+    GetRiwayatPemeriksaanByPendudukID(pendudukID int32, kategori string, PosyanduID *int32, role string) (interface{}, error)
 }
 
 type pencatatanUsecase struct {
@@ -40,7 +40,7 @@ func hitungUmurPadaTanggal(tglLahir, tglReferensi time.Time) int {
     return years
 }
 
-func (u *pencatatanUsecase) GetPendudukByKategori(kategori string, desaID *int32, role string) ([]models.PendudukWithPemeriksaan, error) {
+func (u *pencatatanUsecase) GetPendudukByKategori(kategori string, PosyanduID *int32, role string) ([]models.PendudukWithPemeriksaan, error) {
     var minAge, maxAge int
     switch kategori {
     case "balita":
@@ -57,7 +57,7 @@ func (u *pencatatanUsecase) GetPendudukByKategori(kategori string, desaID *int32
         return nil, errors.New("kategori tidak valid")
     }
 
-    pendudukList, err := u.pendudukRepo.FindByAgeRange(minAge, maxAge, desaID, role)
+    pendudukList, err := u.pendudukRepo.FindByAgeRange(minAge, maxAge, PosyanduID, role)
     if err != nil {
         return nil, err
     }
@@ -113,7 +113,7 @@ func (u *pencatatanUsecase) GetPendudukByKategori(kategori string, desaID *int32
         wrapper := models.PendudukWithPemeriksaan{
             IDKependudukan:      p.IDKependudukan,
             NIK:                 p.NIK,
-            NamaLengkap:         p.NamaLengkap,
+            NamaLengkap:         p.NamaAnggotaKeluarga,
             JenisKelamin:        p.JenisKelamin,
             TanggalLahir:        p.TanggalLahir,
             TempatLahir:         p.TempatLahir,
@@ -160,14 +160,14 @@ func (u *pencatatanUsecase) ValidasiUmurKategori(pendudukID int32, kategori stri
         return false, nil
     }
 }
-func (u *pencatatanUsecase) GetRiwayatPemeriksaanByPendudukID(pendudukID int32, kategori string, desaID *int32, role string) (interface{}, error) {
+func (u *pencatatanUsecase) GetRiwayatPemeriksaanByPendudukID(pendudukID int32, kategori string, PosyanduID *int32, role string) (interface{}, error) {
     // Validasi desa: pastikan penduduk yang diakses berada di desa yang sesuai
     penduduk, err := u.pendudukRepo.FindByID(pendudukID)
     if err != nil {
         return nil, err
     }
-    if !middlewares.HasFullAccess(role) && desaID != nil {
-        if penduduk.DesaID == nil || *penduduk.DesaID != *desaID {
+    if !middlewares.HasFullAccess(role) && PosyanduID != nil {
+        if penduduk.PosyanduID == nil || *penduduk.PosyanduID != *PosyanduID {
             return nil, errors.New("akses ditolak: data bukan untuk desa Anda")
         }
     }

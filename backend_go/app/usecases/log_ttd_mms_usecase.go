@@ -180,7 +180,7 @@ func (u *logTTDMMSUsecase) GetRekapKader(userID int32) ([]repositories.RekapIbuT
 	for _, kehamilan := range kehamilanList {
 		namaIbu := ""
 		if kehamilan.Ibu != nil && kehamilan.Ibu.Kependudukan != nil {
-			namaIbu = kehamilan.Ibu.Kependudukan.NamaLengkap
+			namaIbu = kehamilan.Ibu.Kependudukan.NamaAnggotaKeluarga
 		}
  
 		selisihHari := int(now.Sub(kehamilan.HPHT).Hours() / 24)

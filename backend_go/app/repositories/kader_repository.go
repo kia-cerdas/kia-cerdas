@@ -40,13 +40,13 @@ func (r *KaderRepository) FindByID(id int32) (*models.Kader, error) {
 
 func (r *KaderRepository) FindByPendudukID(pendudukID int32) (*models.Kader, error) {
 	var data models.Kader
-	err := r.db.Where("id_penduduk = ? AND deleted_at IS NULL", pendudukID).First(&data).Error
+	err := r.db.Where("penduduk_id = ? AND deleted_at IS NULL", pendudukID).First(&data).Error
 	return &data, err
 }
 
 func (r *KaderRepository) FindAnyByPendudukID(pendudukID int32) (*models.Kader, error) {
 	var data models.Kader
-	err := r.db.Unscoped().Where("id_penduduk = ?", pendudukID).First(&data).Error
+	err := r.db.Unscoped().Where("penduduk_id = ?", pendudukID).First(&data).Error
 	return &data, err
 }
 

@@ -18,10 +18,10 @@ type PemeriksaanRepository interface {
     GetUserByID(ctx context.Context, id uint) (*models.User, error)
 	CountDistinctPendudukByKelompokAndIDs(kelompok string, pendudukIDs []int32) (int64, error)
 	GetLatestRiskCountByPendudukIDs(kelompok string, pendudukIDs []int32) (map[string]int, error)
-	GetPendudukByRisk(kelompok string, risiko string, desaID *int32, role string) ([]models.PendudukRiskResponse, error)
+	GetPendudukByRisk(kelompok string, risiko string, PosyanduID *int32, role string) ([]models.PendudukRiskResponse, error)
 	GetRiwayatByPendudukID(ctx context.Context, pendudukID uint) ([]models.Pemeriksaan, error)
 	GetLatestPemeriksaanByPenduduk(ctx context.Context, pendudukID uint, kelompok string) (*models.Pemeriksaan, error)
-     GetLatestByPendudukIDs(ctx context.Context, kelompok string, pendudukIDs []uint) (map[uint]*models.Pemeriksaan, error)
+    GetLatestByPendudukIDs(ctx context.Context, kelompok string, pendudukIDs []uint) (map[uint]*models.Pemeriksaan, error)
 }
 
 type pemeriksaanRepository struct {
@@ -136,7 +136,7 @@ func (r *pemeriksaanRepository) GetLatestRiskCountByPendudukIDs(kelompok string,
     return riskMap, nil
 }
 
-func (r *pemeriksaanRepository) GetPendudukByRisk(kategori string, risiko string, desaID *int32, role string) ([]models.PendudukRiskResponse, error) {
+func (r *pemeriksaanRepository) GetPendudukByRisk(kategori string, risiko string, PosyanduID *int32, role string) ([]models.PendudukRiskResponse, error) {
     // 🔧 PERBAIKAN: Gunakan raw query dengan DISTINCT ON terlebih dahulu, baru filter risiko
     var query string
     var args []interface{}
@@ -169,9 +169,9 @@ func (r *pemeriksaanRepository) GetPendudukByRisk(kategori string, risiko string
                 AND k.deleted_at IS NULL
         `
         args = []interface{}{kategori}
-        if !hasFullAccess && desaID != nil {
+        if !hasFullAccess && PosyanduID != nil {
             query += " AND k.desa_id = $2"
-            args = append(args, *desaID)
+            args = append(args, *PosyanduID)
         }
     } else {
         query = `
@@ -198,9 +198,9 @@ func (r *pemeriksaanRepository) GetPendudukByRisk(kategori string, risiko string
                 AND k.deleted_at IS NULL
         `
         args = []interface{}{kategori, risiko}
-        if !hasFullAccess && desaID != nil {
+        if !hasFullAccess && PosyanduID != nil {
             query += " AND k.desa_id = $3"
-            args = append(args, *desaID)
+            args = append(args, *PosyanduID)
         }
     }
     

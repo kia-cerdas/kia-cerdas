@@ -22,10 +22,10 @@ func NewRingkasanDesaController(usecase usecases.RingkasanDesaUsecase) *Ringkasa
 // GetRingkasanDesaKader mengembalikan ringkasan dinamis desa binaan kader yang sedang login
 // (jumlah ibu hamil per trimester, jumlah anak, dan jumlah kunjungan yang perlu ditindak lanjuti).
 func (c *RingkasanDesaController) GetRingkasanDesaKader(ctx echo.Context) error {
-	desaID := middlewares.GetDesaID(ctx)
+	posyanduID := middlewares.GetPosyanduID(ctx)
 	role := middlewares.GetRole(ctx)
 
-	data, err := c.usecase.GetRingkasanDesaKader(desaID, role)
+	data, err := c.usecase.GetRingkasanDesaKader(posyanduID, role)
 	if err != nil {
 		return helpers.Response(ctx, http.StatusInternalServerError, []string{err.Error()})
 	}
