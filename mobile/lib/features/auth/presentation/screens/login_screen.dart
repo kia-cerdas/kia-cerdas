@@ -135,8 +135,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: TextStyle(color: Colors.black54),
                       ),
                       const SizedBox(height: 20),
-                      TextFormField(
-                        controller: _identifierController,
+                      Semantics(
+                        identifier: 'username_input',
+                        child: TextFormField(
+                          key: const Key('username_input'),
+                          controller: _identifierController,
                         decoration: const InputDecoration(
                           labelText: 'Email / No HP',
                           border: OutlineInputBorder(),
@@ -169,9 +172,13 @@ class _LoginScreenState extends State<LoginScreen> {
                           return null;
                         },
                       ),
+                      ),
                       const SizedBox(height: 12),
-                      TextFormField(
-                        controller: _passwordController,
+                      Semantics(
+                        identifier: 'password_input',
+                        child: TextFormField(
+                          key: const Key('password_input'),
+                          controller: _passwordController,
                         obscureText: _obscure,
                         decoration: InputDecoration(
                           labelText: 'Password',
@@ -197,10 +204,14 @@ class _LoginScreenState extends State<LoginScreen> {
                           return null;
                         },
                       ),
+                      ),
                       const SizedBox(height: 16),
-                      SizedBox(
-                        height: 48,
-                        child: FilledButton(
+                      Semantics(
+                        identifier: 'login_button',
+                        child: SizedBox(
+                          height: 48,
+                          child: FilledButton(
+                          key: const Key('login_button'),
                           onPressed: _loading ? null : _submit,
                           child: _loading
                               ? const SizedBox(
@@ -211,6 +222,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 )
                               : const Text('Login'),
                         ),
+                      ),
                       ),
                     ],
                   ),
