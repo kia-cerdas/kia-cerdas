@@ -36,14 +36,13 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 font-['Outfit',_sans-serif]">
-      <div className="bg-white p-8 rounded-2xl shadow-xl border border-slate-100 w-full max-w-md">
-        <div className="flex flex-col items-center mb-6">
-          <h2 className="text-3xl font-bold text-blue-700 mb-2 text-center">Generasi Sehat</h2>
-          <p className="text-slate-500 text-sm text-center">
-            Sistem Informasi Kesehatan Ibu dan Anak
-          </p>
-        </div>
+    <div className="min-h-screen flex items-center justify-center px-4 bg-gray-100">
+      <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
+        <h2 className="text-3xl font-bold mb-2 text-center" style={{ color: "#185FA5" }}>Generasi Sehat</h2>
+        <p className="text-gray-600 text-sm text-center mb-1">
+          Sistem Informasi Kesehatan Ibu dan Anak
+        </p>
+        
 
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
@@ -61,7 +60,7 @@ const Login = () => {
               id="identifier"
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
-              className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all duration-200 placeholder:text-slate-400"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#185FA5]"
               placeholder="Masukkan username atau email"
               required
             />
@@ -76,7 +75,7 @@ const Login = () => {
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all duration-200 placeholder:text-slate-400"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#185FA5]"
               placeholder="Masukkan password"
               required
             />
@@ -85,7 +84,7 @@ const Login = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition shadow-lg shadow-blue-100 hover:shadow-xl active:scale-[0.98] disabled:bg-slate-300 disabled:shadow-none duration-150"
+            className="w-full bg-[#185FA5] text-white font-bold py-2 rounded-lg hover:bg-[#134E87] transition disabled:bg-gray-400"
           >
             {loading ? "Sedang Login..." : "Login"}
           </button>

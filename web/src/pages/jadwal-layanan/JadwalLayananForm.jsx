@@ -596,26 +596,27 @@ export default function JadwalLayananForm() {
 
   return (
     <MainLayout>
-      <div className="space-y-5 max-w-3xl">
+      <div className="space-y-4 sm:space-y-5 max-w-3xl">
         {/* Back + header */}
         <section className="bg-white rounded-2xl border border-slate-200 shadow-sm">
-          <div className="px-6 py-5 flex items-center gap-4">
+          <div className="px-4 sm:px-6 py-4 sm:py-5 flex items-center gap-3 sm:gap-4">
             <button
               type="button"
               onClick={() => navigate("/jadwal-layanan")}
-              className="p-2 rounded-xl hover:bg-slate-100 text-slate-500 hover:text-slate-700 transition-colors"
+              className="p-1.5 sm:p-2 rounded-xl hover:bg-slate-100 text-slate-500 hover:text-slate-700 transition-colors flex-shrink-0"
             >
               <ArrowLeft size={18} />
             </button>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#185FA5]/10 flex items-center justify-center">
-                <Calendar size={20} className="text-[#185FA5]" />
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#185FA5]/10 flex items-center justify-center flex-shrink-0">
+                <Calendar size={18} className="text-[#185FA5] sm:hidden" />
+                <Calendar size={20} className="text-[#185FA5] hidden sm:block" />
               </div>
-              <div>
-                <h1 className="text-xl font-bold text-slate-800 leading-tight">
+              <div className="min-w-0">
+                <h1 className="text-base sm:text-xl font-bold text-slate-800 leading-tight truncate">
                   {isEdit ? "Edit Jadwal Layanan" : "Tambah Jadwal Layanan"}
                 </h1>
-                <p className="text-sm text-slate-400 mt-0.5">
+                <p className="text-xs sm:text-sm text-slate-400 mt-0.5 truncate">
                   {isEdit
                     ? "Perbarui informasi jadwal imunisasi."
                     : "Buat sesi imunisasi baru untuk posyandu."}
@@ -633,7 +634,7 @@ export default function JadwalLayananForm() {
               <p className="text-sm text-slate-400 font-medium">Memuat data...</p>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-5 sm:space-y-6">
               {/* Nama Layanan */}
               <FormField label="Nama Layanan" icon={Stethoscope}>
                 <input
@@ -691,13 +692,13 @@ export default function JadwalLayananForm() {
                 </FormField>
 
                 <FormField label="Waktu Pelayanan" icon={Clock} hint="Pilih rentang waktu: mulai dan selesai (HH:MM)">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5 sm:gap-2">
                     <input
                       type="time"
                       name="waktu_mulai"
                       value={form.waktu_mulai}
                       onChange={handleWaktuMulaiChange}
-                      className={`${inputClass} max-w-[140px]`}
+                      className={`${inputClass} max-w-[120px] sm:max-w-[140px]`}
                       required
                     />
                     <span className="text-sm text-slate-400">—</span>
@@ -706,7 +707,7 @@ export default function JadwalLayananForm() {
                       name="waktu_selesai"
                       value={form.waktu_selesai}
                       onChange={handleWaktuSelesaiChange}
-                      className={`${inputClass} max-w-[140px]`}
+                      className={`${inputClass} max-w-[120px] sm:max-w-[140px]`}
                     />
                   </div>
                 </FormField>
@@ -756,11 +757,11 @@ export default function JadwalLayananForm() {
               )}
 
               {/* Action buttons */}
-              <div className="flex items-center gap-3 pt-2 border-t border-slate-100">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 pt-2 border-t border-slate-100">
                 <button
                   type="submit"
                   disabled={saving}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-[#185FA5] hover:bg-[#0e4a84] disabled:bg-[#185FA5]/60 text-white text-sm font-semibold rounded-xl transition-colors"
+                  className="flex items-center justify-center gap-2 px-5 py-2.5 bg-[#185FA5] hover:bg-[#0e4a84] disabled:bg-[#185FA5]/60 text-white text-sm font-semibold rounded-xl transition-colors w-full sm:w-auto"
                 >
                   {saving ? (
                     <>
@@ -778,7 +779,7 @@ export default function JadwalLayananForm() {
                   type="button"
                   onClick={() => navigate("/jadwal-layanan")}
                   disabled={saving}
-                  className="px-5 py-2.5 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors disabled:opacity-50"
+                  className="px-5 py-2.5 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors disabled:opacity-50 w-full sm:w-auto text-center"
                 >
                   Batal
                 </button>

@@ -31,6 +31,7 @@ import {
   History,
   Home,
   Building2,
+  X,
 } from "lucide-react";
 import logo from "./LOGO.png";
 
@@ -41,7 +42,7 @@ const baseItemClass = (isActive) =>
     : "text-slate-500 hover:bg-gray-50 hover:text-slate-700"
   }`;
 
-const Sidebar = () => {
+const Sidebar = ({ isOpen, onClose }) => {
   const user = getCurrentUser();
   const isSuperadmin = isSuperadminUser(user);
   const isAdmin = isAdminUser(user);
@@ -313,33 +314,64 @@ const Sidebar = () => {
   };
 
   return (
-    <aside className="w-64 h-screen bg-white border-r border-gray-100 flex flex-col p-4">
-      {/* Header Logo */}
-      <div className="flex flex-col gap-1 mb-6">
-        <div className="p-2 rounded-xl bg-white border border-slate-100 shadow-sm flex items-center justify-center h-14">
-          <img src={logo} alt="Generasi Sehat Logo" className="h-10 w-auto object-contain" />
+    <>
+      {/* Overlay untuk mobile */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-[55] md:hidden"
+          onClick={onClose}
+        />
+      )}
+
+      {/* Sidebar - bisa ditutup di semua ukuran layar */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-[60] w-64 h-screen bg-white border-r border-gray-100 flex flex-col transform transition-transform duration-300 ease-in-out ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        {/* Tombol Close - Simple & User Friendly */}
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 z-[70] flex items-center justify-center w-8 h-8 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 active:bg-slate-200 transition-all"
+          aria-label="Close Menu"
+          title="Tutup Menu"
+        >
+          <X size={18} strokeWidth={2} />
+        </button>
+
+        {/* Header dengan Logo */}
+        <div className="flex items-center gap-2.5 p-4 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-white">
+          <div className="p-1.5 rounded-lg text-white shadow-lg shadow-blue-100 flex-shrink-0">
+            <img src={logo} alt="Logo" className="w-6 h-6 object-contain" />
+          </div>
+          <div className="min-w-0 flex-1 pr-12">
+            <h1 className="text-base font-bold text-slate-800 leading-tight">Generasi Sehat</h1>
+            <p className="text-[11px] text-slate-400">
+              Beranda {isDokter || isBidanPuskesmas ? "Puskesmas" : isBidan ? "Bidan" : "Admin"}
+            </p>
+          </div>
         </div>
-        <p className="text-[11px] text-slate-400 text-center mt-1">
-          Beranda {isDokter || isBidanPuskesmas ? "Puskesmas" : isBidan ? "Bidan" : "Admin"}
-        </p>
-      </div>
 
-      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-3 ml-1">
-        Menu utama
-      </p>
+        {/* Menu Label */}
+        <div className="px-4 pt-4">
+          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-3 ml-1">
+            Menu utama
+          </p>
+        </div>
 
-      {/* Navigasi */}
-      <nav className="flex-1 space-y-0.5 overflow-y-auto pr-2 custom-scrollbar">
-        {menuItems.map((item) =>
-          item.isDropdown ? renderDropdown(item) : renderNavLink(item)
-        )}
+        {/* Navigasi */}
+        <nav className="flex-1 space-y-0.5 overflow-y-auto px-4 pr-2 custom-scrollbar">
+          {menuItems.map((item) =>
+            item.isDropdown ? renderDropdown(item) : renderNavLink(item)
+          )}
 
-        {/* Menu admin dihapus */}
+          {/* Menu admin dihapus */}
 
-        {/* Menu Pengaturan untuk semua role */}
-        {/* {renderNavLink(settingsMenu)} */}
-      </nav>
-    </aside>
+          {/* Menu Pengaturan untuk semua role */}
+          {/* {renderNavLink(settingsMenu)} */}
+        </nav>
+      </aside>
+    </>
   );
 };
 
