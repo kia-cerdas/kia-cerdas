@@ -53,7 +53,7 @@ class _KiaAppState extends State<KiaApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Aplikasi KIA Cerdas',
+      title: 'Aplikasi Generasi Sehat',
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
       theme: AppTheme.lightTheme,

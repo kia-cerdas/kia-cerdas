@@ -213,13 +213,16 @@ class JadwalLayananModel {
     required this.tanggal,
   });
 
-  factory JadwalLayananModel.fromJson(
-    Map<String, dynamic> json,
-  ) {
+  factory JadwalLayananModel.fromJson(Map<String, dynamic> json) {
     return JadwalLayananModel(
-      id: json['id'] is int ? json['id'] : (int.tryParse(json['id']?.toString() ?? '') ?? 0),
-      layanan: json['layanan'] ?? '',
-      tanggal: DateTime.parse(json['tanggal'].toString()),
+      id: json['id'] is int 
+          ? json['id'] 
+          : (int.tryParse(json['id']?.toString() ?? '') ?? 0),
+      layanan: json['layanan']?.toString() ?? '', 
+      // Menggunakan tryParse agar aman jika ada ketidakcocokan format waktu/zona
+      tanggal: json['tanggal'] != null 
+          ? (DateTime.tryParse(json['tanggal'].toString()) ?? DateTime.now())
+          : DateTime.now(),
     );
   }
 }

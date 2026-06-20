@@ -467,7 +467,7 @@ class EdukasiSearchFilterLokal extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         SizedBox(
-          height: 44,
+          height: 40,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: categories.length,
@@ -475,37 +475,29 @@ class EdukasiSearchFilterLokal extends StatelessWidget {
               final category = categories[index];
               final isSelected = selectedCategory == category;
               return Padding(
-                padding: const EdgeInsets.only(right: 10),
-                child: Material(
-                  color: isSelected ? AppColors.primary : AppColors.white,
-                  borderRadius: BorderRadius.circular(30),
-                  child: InkWell(
-                    onTap: () => onCategorySelected(category),
-                    borderRadius: BorderRadius.circular(30),
-                    splashColor: AppColors.primary.withOpacity(0.15),
-                    highlightColor: AppColors.primary.withOpacity(0.08),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 10,
-                      ),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(30),
-                        border: Border.all(
-                          color:
-                              isSelected ? AppColors.primary : AppColors.border,
-                        ),
-                      ),
-                      child: Text(
-                        category,
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: isSelected
-                              ? AppColors.white
-                              : AppColors.textPrimary,
-                        ),
+                padding: const EdgeInsets.only(right: 8),
+                child: GestureDetector(
+                  onTap: () => onCategorySelected(category),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? AppColors.primary.withOpacity(0.18)
+                          : AppColors.primary.withOpacity(0.07),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      category,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: isSelected
+                            ? FontWeight.w700
+                            : FontWeight.w500,
+                        color: AppColors.primary,
                       ),
                     ),
                   ),

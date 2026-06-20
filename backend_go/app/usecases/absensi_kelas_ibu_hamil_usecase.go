@@ -98,6 +98,16 @@ func (u *absensiKelasIbuHamilUsecase) SaveMine(
 		}
 	}
 
+	// Untuk atur duplikasi tanggal di absensi kelas ibu hamil
+	if req.Tanggal != nil {
+		reqDateStr := req.Tanggal.Format("2006-01-02")
+		for _, a := range existingList {
+			if a.Tanggal != nil && a.Tanggal.Format("2006-01-02") == reqDateStr {
+				return nil, errors.New("absensi untuk tanggal ini sudah pernah dicatat")
+			}
+		}
+	}
+
 	// Nomor pertemuan dihitung otomatis dari jumlah data yang sudah ada.
 	// Tidak ada lagi batas maksimal 9.
 	data := &models.AbsensiKelasIbuHamil{

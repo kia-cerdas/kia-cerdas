@@ -7,7 +7,7 @@
 
 //   @override
 //   Widget build(BuildContext context) {
-//     final name = AuthSession.userName ?? 'Bunda';
+//     final name = AuthSession.userName ?? 'Ibu';
 
 //     return Container(
 //       padding: const EdgeInsets.only(
@@ -139,7 +139,7 @@
 
 //   @override
 //   Widget build(BuildContext context) {
-//     final name = AuthSession.userName ?? 'Bunda';
+//     final name = AuthSession.userName ?? 'Ibu';
 
 //     return Container(
 //       padding: const EdgeInsets.only(
@@ -378,7 +378,7 @@
 
 //   @override
 //   Widget build(BuildContext context) {
-//     final name = AuthSession.userName ?? 'Bunda';
+//     final name = AuthSession.userName ?? 'Ibu';
 
 //     // Total badge: imunisasi + TTD (max 1 dari TTD karena cukup tanda seru)
 //     final totalAlert = overdueCount + (hasTTDAlert ? 1 : 0);
@@ -696,7 +696,7 @@ class DashboardHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final name = AuthSession.userName ?? 'Bunda';
+    final name = AuthSession.userName ?? 'Ibu';
 
     final totalAlert =
         overdueCount + (hasKontrolAlert ? 1 : 0) + (hasTTDAlert ? 1 : 0);
@@ -709,11 +709,7 @@ class DashboardHeader extends StatelessWidget {
         bottom: 32,
       ),
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFF185FA5), Color(0xFF2A79C5)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: Color.fromARGB(255, 44, 133, 206),
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(30),
           bottomRight: Radius.circular(30),
@@ -736,15 +732,9 @@ class DashboardHeader extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 8),
-              const Row(
-                children: [
-                  Icon(Icons.favorite, color: Colors.white70, size: 14),
-                  SizedBox(width: 4),
-                  Text(
-                    "Semangat jalani hari ini, Bunda!",
-                    style: TextStyle(color: Colors.white, fontSize: 12),
-                  ),
-                ],
+              const Text(
+                "Semangat jalani hari ini, Ibu!",
+                style: TextStyle(color: Colors.white, fontSize: 12),
               ),
             ],
           ),

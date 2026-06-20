@@ -56,8 +56,8 @@ class EdukasiAsiDetailScreen extends StatelessWidget {
                     children: [
                       _badge(
                         'ASI Eksklusif',
-                        bg: const Color(0xFF1F5EA8),
-                        fg: Colors.white,
+                        bg: const Color(0xFFE8F1FD),
+                        fg: const Color(0xFF1F5EA8),
                       ),
                       _badge(
                         'Menyusui',

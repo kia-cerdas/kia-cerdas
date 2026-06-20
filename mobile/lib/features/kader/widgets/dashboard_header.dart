@@ -7,7 +7,7 @@ class DashboardHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final name = AuthSession.userName ?? 'Bunda';
+    final name = AuthSession.userName ?? 'Ibu';
 
     return Container(
       padding: const EdgeInsets.only(

@@ -290,37 +290,62 @@ class ImunisasiService {
   }
 
   // 6. GET UPCOMING JADWAL LAYANAN
-  Future<List<JadwalLayananModel>> getJadwalLayananUpcoming() async {
-    final uri = Uri.parse('${ApiConstants.baseUrl}/ibu/jadwal-layanan?upcoming=true');
-    final db = await AppDatabase.instance.database;
+Future<List<JadwalLayananModel>> getJadwalLayananUpcoming() async {
+  final uri =
+      Uri.parse('${ApiConstants.baseUrl}/ibu/jadwal-layanan?upcoming=true');
 
-    try {
-      final response = await _client.get(uri, headers: _headers).timeout(const Duration(seconds: 4));
+  try {
+    debugPrint("URL = $uri");
 
-      if (response.statusCode == 404) return [];
+    final response = await _client
+        .get(uri, headers: _headers)
+        .timeout(const Duration(seconds: 10));
 
-      final data = jsonDecode(response.body);
-      if (data is List) {
-        final batch = db.batch();
-        for (var e in data) {
-          final localRow = Map<String, dynamic>.from(e);
-          localRow['is_synced'] = 1;
-          batch.insert('jadwal_layanan', localRow, conflictAlgorithm: ConflictAlgorithm.replace);
-        }
-        await batch.commit(noResult: true);
+    debugPrint("STATUS CODE = ${response.statusCode}");
+    debugPrint("BODY = ${response.body}");
 
-        return data.map((e) => JadwalLayananModel.fromJson(Map<String, dynamic>.from(e))).toList();
-      }
-    } on SocketException {
-      debugPrint("📡 ImunisasiService: Offline sewaktu mengambil jadwal layanan upcoming.");
-    } catch (e) {
-      debugPrint('Error getJadwalLayananUpcoming: $e');
+    if (response.statusCode == 404) {
+      return [];
     }
 
-    final List<Map<String, dynamic>> localData = await db.query('jadwal_layanan');
-    return localData.map((e) => JadwalLayananModel.fromJson(e)).toList();
-  }
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw Exception(
+        'Gagal mengambil jadwal layanan (${response.statusCode})',
+      );
+    }
 
+    final data = jsonDecode(response.body);
+
+    debugPrint("TYPE DATA = ${data.runtimeType}");
+
+    if (data is List) {
+      debugPrint("JUMLAH DATA = ${data.length}");
+
+      final result = data
+          .map(
+            (e) => JadwalLayananModel.fromJson(
+              Map<String, dynamic>.from(e),
+            ),
+          )
+          .toList();
+
+      for (final item in result) {
+        debugPrint(
+          "ID=${item.id} | ${item.layanan} | ${item.tanggal}",
+        );
+      }
+
+      return result;
+    }
+
+    debugPrint("Response bukan List");
+    return [];
+  } catch (e, s) {
+    debugPrint("Error getJadwalLayananUpcoming: $e");
+    debugPrint("$s");
+    return [];
+  }
+}
   void dispose() {
     _client.close();
   }

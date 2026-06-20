@@ -19,18 +19,19 @@ class DashboardQuickMenu extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: crossAxisCount,
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
+        mainAxisSpacing: 10,
+        crossAxisSpacing: 10,
         childAspectRatio: childAspectRatio,
       ),
       itemCount: items.length,
       itemBuilder: (context, i) {
         final item = items[i];
+        final color = item['color'] as Color;
         return InkWell(
           borderRadius: BorderRadius.circular(14),
           onTap: item['onTap'] as VoidCallback? ?? () {},
           child: Container(
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(14),
@@ -44,20 +45,27 @@ class DashboardQuickMenu extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  item['icon'] as IconData,
-                  color: item['color'] as Color,
-                  // size: 22,
-                  size: 25,
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    item['icon'] as IconData,
+                    color: color,
+                    size: 22,
+                  ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 8),
                 Text(
                   item['label'] as String,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
-                    // fontSize: 9,
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
+                    height: 1.3,
                   ),
                 ),
               ],

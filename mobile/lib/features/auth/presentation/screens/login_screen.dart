@@ -21,6 +21,10 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _loading = false;
   bool _obscure = true;
 
+  // Warna utama aplikasi
+  static const _primary = Color(0xFF185FA5); // AppColors.primary KIA
+  static const _bgColor = Color(0xFFF1F5F9); // AppColors.scaffold KIA
+
   @override
   void dispose() {
     _identifierController.dispose();
@@ -32,25 +36,17 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() {
-      _loading = true;
-    });
+    setState(() => _loading = true);
 
     try {
       String? deviceFcmToken;
-      // try {
-      //   deviceFcmToken = await FirebaseMessaging.instance.getToken();
-      //   debugPrint("Berhasil mendapatkan FCM Token: $deviceFcmToken");
-      // } catch (e) {
-      //   debugPrint("Gagal mendapatkan FCM Token: $e");
-      // }
       try {
         deviceFcmToken = await FirebaseMessaging.instance
             .getToken()
             .timeout(const Duration(seconds: 5));
-        debugPrint("Berhasil mendapatkan FCM Token: $deviceFcmToken");
+        debugPrint('Berhasil mendapatkan FCM Token: $deviceFcmToken');
       } catch (e) {
-        debugPrint("Gagal mendapatkan FCM Token (skip): $e");
+        debugPrint('Gagal mendapatkan FCM Token (skip): $e');
       }
 
       await _service.login(
@@ -60,12 +56,11 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (!mounted) return;
-// AMBIL ROLE DARI SESSION YANG BARU DISIMPAN
+
       final role = AuthSession.role?.toLowerCase();
       Widget destination;
       if (role == 'kader') {
-        destination =
-            const DashboardKaderScreen();
+        destination = const DashboardKaderScreen();
       } else {
         destination = const DashboardScreen();
       }
@@ -75,147 +70,281 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
+      // Tampilkan error sebagai dialog — lebih mudah dibaca ibu hamil
+      // dibanding snackbar yang cepat hilang
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: const Row(
+            children: [
+              Icon(Icons.error_outline, color: Color(0xFFEF4444), size: 22),
+              SizedBox(width: 8),
+              Text(
+                'Gagal Masuk',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+              ),
+            ],
+          ),
+          content: Text(
+            // Buang prefix "Exception: " yang muncul dari throw Exception(...)
+            e.toString().replaceFirst('Exception: ', ''),
+            style: const TextStyle(fontSize: 14, height: 1.5),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              style: TextButton.styleFrom(foregroundColor: _primary),
+              child: const Text(
+                'Coba Lagi',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
+        ),
       );
     } finally {
-      if (mounted) {
-        setState(() {
-          _loading = false;
-        });
-      }
+      if (mounted) setState(() => _loading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF1565C0), Color(0xFF42A5F5)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.15),
-                      blurRadius: 24,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
+      backgroundColor: _bgColor,
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // ── Logo ──
+                Image.asset(
+                  'assets/images/logo.png',
+                  height: 200,
+                  errorBuilder: (_, __, ___) => const SizedBox(height: 90),
                 ),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const Text(
-                        'Masuk Akun KIA',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Gunakan email dan password untuk mengakses fitur yang membutuhkan bearer token.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.black54),
-                      ),
-                      const SizedBox(height: 20),
-                      TextFormField(
-                        controller: _identifierController,
-                        decoration: const InputDecoration(
-                          labelText: 'Email / No HP',
-                          border: OutlineInputBorder(),
-                          prefixIcon: Icon(Icons.person_outline),
-                        ),
-                        // validator: (value) {
-                        //   if (value == null || value.trim().isEmpty) {
-                        //     return 'Identifier wajib diisi';
-                        //   }
-                        //   return null;
-                        // },
-                                                validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'Identifier wajib diisi';
-                          }
-                          
-                          final v = value.trim();
-                          
-                          // Cek apakah ini No HP (dimulai angka)
-                          final isPhoneNumber = RegExp(r'^[0-9]').hasMatch(v);
-                          
-                          if (!isPhoneNumber) {
-                            // Jika bukan No HP, maka WAJIB format email valid
-                            final emailRegex = RegExp(r'^[\w\.-]+@[\w\.-]+\.\w+$');
-                            if (!emailRegex.hasMatch(v)) {
-                              return 'Pastikan format email benar (contoh: pengguna@gmail.com)';
-                            }
-                          }
-                          
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        controller: _passwordController,
-                        obscureText: _obscure,
-                        decoration: InputDecoration(
-                          labelText: 'Password',
-                          border: const OutlineInputBorder(),
-                          prefixIcon: const Icon(Icons.lock_outline),
-                          suffixIcon: IconButton(
-                            onPressed: () {
-                              setState(() {
-                                _obscure = !_obscure;
-                              });
-                            },
-                            icon: Icon(
-                              _obscure
-                                  ? Icons.visibility_off
-                                  : Icons.visibility,
-                            ),
-                          ),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Password wajib diisi';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        height: 48,
-                        child: FilledButton(
-                          onPressed: _loading ? null : _submit,
-                          child: _loading
-                              ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child:
-                                      CircularProgressIndicator(strokeWidth: 2),
-                                )
-                              : const Text('Login'),
-                        ),
+                const SizedBox(height: 24),
+
+                // ── Card login ──
+                Container(
+                  width: double.infinity,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 28, vertical: 32),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.07),
+                        blurRadius: 20,
+                        offset: const Offset(0, 6),
                       ),
                     ],
                   ),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // Judul
+                        // const Text(
+                        //   'Generasi Sehat',
+                        //   textAlign: TextAlign.center,
+                        //   style: TextStyle(
+                        //     fontSize: 26,
+                        //     fontWeight: FontWeight.w800,
+                        //     color: _primary,
+                        //     letterSpacing: -0.5,
+                        //   ),
+                        // ),
+                        // const SizedBox(height: 4),
+                        // const Text(
+                        //   'Sistem Informasi Kesehatan Ibu dan Anak',
+                        //   textAlign: TextAlign.center,
+                        //   style: TextStyle(
+                        //     fontSize: 13,
+                        //     color: Color(0xFF6B7280),
+                        //   ),
+                        // ),
+                        // const SizedBox(height: 28), 
+
+                        // Label Email
+                        const Text(
+                          'Email',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF374151),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        TextFormField(
+                          controller: _identifierController,
+                          keyboardType: TextInputType.emailAddress,
+                          style: const TextStyle(fontSize: 14),
+                          decoration: InputDecoration(
+                            hintText: 'Masukkan email',
+                            hintStyle:
+                                const TextStyle(color: Color(0xFF9CA3AF)),
+                            prefixIcon: const Icon(Icons.person_outline,
+                                color: Color(0xFF9CA3AF), size: 20),
+                            filled: true,
+                            fillColor: const Color(0xFFF9FAFB),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 14),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide:
+                                  const BorderSide(color: Color(0xFFE5E7EB)),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide:
+                                  const BorderSide(color: Color(0xFFE5E7EB)),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide:
+                                  const BorderSide(color: _primary, width: 1.5),
+                            ),
+                            errorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: const BorderSide(
+                                  color: Color(0xFFEF4444), width: 1.5),
+                            ),
+                            focusedErrorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: const BorderSide(
+                                  color: Color(0xFFEF4444), width: 1.5),
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Email wajib diisi';
+                            }
+                            final v = value.trim();
+                            final isPhone = RegExp(r'^[0-9]').hasMatch(v);
+                            if (!isPhone) {
+                              final emailRegex =
+                                  RegExp(r'^[\w\.-]+@[\w\.-]+\.\w+$');
+                              if (!emailRegex.hasMatch(v)) {
+                                return 'Pastikan format email benar\n(contoh: nama@gmail.com)';
+                              }
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Label Password
+                        const Text(
+                          'Password',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF374151),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        TextFormField(
+                          controller: _passwordController,
+                          obscureText: _obscure,
+                          style: const TextStyle(fontSize: 14),
+                          decoration: InputDecoration(
+                            hintText: 'Masukkan password',
+                            hintStyle:
+                                const TextStyle(color: Color(0xFF9CA3AF)),
+                            prefixIcon: const Icon(Icons.lock_outline,
+                                color: Color(0xFF9CA3AF), size: 20),
+                            suffixIcon: IconButton(
+                              onPressed: () =>
+                                  setState(() => _obscure = !_obscure),
+                              icon: Icon(
+                                _obscure
+                                    ? Icons.visibility_off_outlined
+                                    : Icons.visibility_outlined,
+                                color: const Color(0xFF9CA3AF),
+                                size: 20,
+                              ),
+                            ),
+                            filled: true,
+                            fillColor: const Color(0xFFF9FAFB),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 14),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide:
+                                  const BorderSide(color: Color(0xFFE5E7EB)),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide:
+                                  const BorderSide(color: Color(0xFFE5E7EB)),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide:
+                                  const BorderSide(color: _primary, width: 1.5),
+                            ),
+                            errorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: const BorderSide(
+                                  color: Color(0xFFEF4444), width: 1.5),
+                            ),
+                            focusedErrorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: const BorderSide(
+                                  color: Color(0xFFEF4444), width: 1.5),
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Password wajib diisi';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 24),
+
+                        // Tombol Login
+                        SizedBox(
+                          height: 50,
+                          child: ElevatedButton(
+                            onPressed: _loading ? null : _submit,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: _primary,
+                              foregroundColor: Colors.white,
+                              disabledBackgroundColor: const Color(0xFFD1D5DB),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              elevation: 0,
+                              textStyle: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            child: _loading
+                                ? const SizedBox(
+                                    width: 22,
+                                    height: 22,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2.5,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Text('Masuk'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
         ),

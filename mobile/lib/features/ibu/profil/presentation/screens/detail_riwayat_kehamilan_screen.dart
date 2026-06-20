@@ -272,9 +272,9 @@ class _DetailRiwayatKehamilanScreenState
         children: [
           _infoRow('Status Obstetri', 'G$g P$p A$a'),
           _infoRow(
-              'BB Awal', bb > 0 ? '${bb.toStringAsFixed(1)} kg' : '-'),
-          _infoRow('TB', tb > 0 ? '${tb.toStringAsFixed(1)} cm' : '-'),
-          _infoRow('IMT Awal', imt > 0 ? imt.toStringAsFixed(1) : '-'),
+              'Berat Badan Awal', bb > 0 ? '${bb.toStringAsFixed(1)} kg' : '-'),
+          _infoRow('Tinggi Badan', tb > 0 ? '${tb.toStringAsFixed(1)} cm' : '-'),
+          _infoRow('Indeks Masa Tubuh Awal', imt > 0 ? imt.toStringAsFixed(1) : '-'),
           _infoRow(
             'Jarak Kehamilan',
             jarak > 0 ? '$jarak bulan' : '-',
