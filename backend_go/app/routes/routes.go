@@ -99,6 +99,7 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	superadmin.GET("/penduduk/:penduduk_id", controller.AdminDetailKependudukan)
 	superadmin.PUT("/penduduk/:penduduk_id", controller.AdminUpdateKependudukan)
 	superadmin.DELETE("/penduduk/:penduduk_id", controller.AdminDeleteKependudukan)
+	superadmin.GET("/penduduk/all", controller.AdminListAllKependudukan)
 
 	// Additional endpoints
 	superadmin.GET("/penduduk/keluarga/:kode_keluarga", controller.AdminGetAnggotaByKodeKeluarga)

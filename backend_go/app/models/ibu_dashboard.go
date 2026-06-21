@@ -4,7 +4,7 @@ import "time"
 
 type IbuDashboardDTO struct {
 	IDIbu       int32  `json:"id_ibu"`
-	NamaLengkap string `json:"nama_lengkap"`
+	NamaAnggotaKeluarga string `json:"nama_anggota_keluarga"`
 	Dusun       string `json:"dusun"`
 
 	StatusKehamilan *string `json:"status_kehamilan"`

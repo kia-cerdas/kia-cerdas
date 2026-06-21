@@ -347,7 +347,7 @@ export default function Dashboard() {
         return normalized === selectedRiskFilter;
       })
       .map((item) => ({
-        nama: item.nama_lengkap,
+        nama: item.nama_anggota_keluarga,
         detail: `Dusun ${item.dusun}, usia kehamilan ${item.usia_kehamilan} minggu`,
         kehamilan_id: item.kehamilan_id,
         ibu_id: item.id_ibu,
@@ -362,7 +362,7 @@ export default function Dashboard() {
     const list = allIbuData
       .filter((item) => item.kehamilan_id && item.kehamilan_id !== 0 && item.dusun === dusunName)
       .map((item) => ({
-        nama: item.nama_lengkap,
+        nama: item.nama_anggota_keluarga,
         detail: `Usia kehamilan ${item.usia_kehamilan} minggu, risiko ${normalizeRisk(item.status_risiko)}`,
         kehamilan_id: item.kehamilan_id,
         ibu_id: item.id_ibu,
@@ -914,7 +914,7 @@ export default function Dashboard() {
                         >
                           <div>
                             <div style={{ fontWeight: 600 }}>
-                              {p.nama_lengkap}
+                              {p.nama_anggota_keluarga}
                               {p.nik && (
                                 <span style={{ fontSize: 11, fontWeight: "normal", color: "#6c757d", marginLeft: 6 }}>
                                   ({p.nik})

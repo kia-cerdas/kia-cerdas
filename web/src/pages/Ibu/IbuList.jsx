@@ -106,7 +106,7 @@
 
       if (debouncedSearch) {
         data = data.filter(ibu =>
-          ibu.nama_lengkap?.toLowerCase().includes(debouncedSearch.toLowerCase())
+          ibu.nama_anggota_keluarga?.toLowerCase().includes(debouncedSearch.toLowerCase())
         );
       }
       if (filterRisiko) {
@@ -349,7 +349,7 @@
                     
                     return (
                       <tr key={`${ibu.id_ibu}-${ibu.kehamilan_id}`} className="border-t hover:bg-gray-50 transition">
-                        <td className="p-2 font-medium text-sm">{ibu.nama_lengkap}</td>
+                        <td className="p-2 font-medium text-sm">{ibu.nama_anggota_keluarga}</td>
                         <td className="p-2 text-center text-sm">
                           <span className={`px-2 py-1 text-xs rounded-full inline-block ${statusBadge(ibu.status_kehamilan)}`}>
                             {displayStatus}

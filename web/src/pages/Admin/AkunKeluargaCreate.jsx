@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import MainLayout from "../../components/Layout/MainLayout";
 import { 
-  getPendudukWithFilters, 
+  getAllPenduduk, 
   getPendudukById,
   createKependudukan, 
   updateKependudukan, 
@@ -499,7 +499,7 @@ const AdminPendudukList = () => {
         ...params 
       });
       
-      const result = await getPendudukWithFilters({
+      const result = await getAllPenduduk({
         page: pagination.page,
         limit: pagination.limit,
         search: search || undefined,
@@ -507,7 +507,7 @@ const AdminPendudukList = () => {
         ...params,
       });
       
-      console.log("✅ [fetchData] Result:", result);
+      console.log(" [fetchData] Result:", result);
       
       // Handle response array langsung
       if (Array.isArray(result)) {
@@ -536,7 +536,7 @@ const AdminPendudukList = () => {
         });
       }
     } catch (error) {
-      console.error("❌ [fetchData] Error:", error);
+      console.error(" [fetchData] Error:", error);
       setMessage({ type: "error", text: error?.message || "Gagal memuat data" });
     } finally {
       setLoading(false);
@@ -554,7 +554,7 @@ const AdminPendudukList = () => {
         ]);
         setDesasList(desas || []);
         setPosyanduList(posyandus || []);
-        console.log("✅ [fetchMaster] Desa:", desas?.length, "Posyandu:", posyandus?.length);
+        console.log(" [fetchMaster] Desa:", desas?.length, "Posyandu:", posyandus?.length);
       } catch (err) {
         console.error("❌ [fetchMaster] Error:", err);
         setMessage({ type: "error", text: "Gagal memuat data master" });
@@ -593,7 +593,7 @@ const AdminPendudukList = () => {
   };
 
   const clearFilters = () => {
-    console.log("🔄 [clearFilters] Resetting filters");
+    console.log(" [clearFilters] Resetting filters");
     setFilters({
       rw: "",
       rt: "",
@@ -610,7 +610,7 @@ const AdminPendudukList = () => {
 
   // Handle CRUD
   const handleCreate = () => {
-    console.log("➕ [handleCreate] Opening create modal");
+    console.log(" [handleCreate] Opening create modal");
     setEditingData(null);
     setShowModal(true);
   };
@@ -623,16 +623,16 @@ const AdminPendudukList = () => {
     try {
       // Ambil data lengkap dari API
       const fullData = await getPendudukById(id);
-      console.log("✅ [handleEdit] Full data from API:", fullData);
+      console.log(" [handleEdit] Full data from API:", fullData);
       
       // Set data lengkap ke editingData
       setEditingData(fullData);
       setShowModal(true);
     } catch (error) {
-      console.error("❌ [handleEdit] Error fetching full data:", error);
+      console.error(" [handleEdit] Error fetching full data:", error);
       
       // Fallback: gunakan data dari tabel jika gagal fetch
-      console.warn("⚠️ [handleEdit] Using table data as fallback");
+      console.warn(" [handleEdit] Using table data as fallback");
       setEditingData(data);
       setShowModal(true);
       setMessage({ type: "error", text: "Gagal memuat data lengkap, menggunakan data yang tersedia" });
@@ -644,7 +644,7 @@ const AdminPendudukList = () => {
     if (!window.confirm(`Yakin ingin menghapus data "${name}"?`)) return;
     
     try {
-      console.log("🗑️ [handleDelete] Deleting ID:", id);
+      console.log(" [handleDelete] Deleting ID:", id);
       await deleteKependudukan(id);
       setMessage({ type: "success", text: "Data berhasil dihapus" });
       fetchData();
@@ -657,7 +657,7 @@ const AdminPendudukList = () => {
   };
 
   const handleSubmit = async (formData) => {
-    console.log("📝 [handleSubmit] Form data:", formData);
+    console.log(" [handleSubmit] Form data:", formData);
     setSubmitting(true);
     setMessage({ type: "", text: "" });
     
@@ -668,9 +668,9 @@ const AdminPendudukList = () => {
         try {
           const date = new Date(formData.tanggal_lahir);
           tanggalLahir = date.toISOString();
-          console.log("📅 [handleSubmit] Formatted date:", tanggalLahir);
+          console.log(" [handleSubmit] Formatted date:", tanggalLahir);
         } catch (error) {
-          console.warn("⚠️ [handleSubmit] Date format error:", error);
+          console.warn(" [handleSubmit] Date format error:", error);
           tanggalLahir = formData.tanggal_lahir;
         }
       }
@@ -700,15 +700,15 @@ const AdminPendudukList = () => {
         posyandu_id: formData.posyandu_id ? parseInt(formData.posyandu_id, 10) : null,
       };
 
-      console.log("📦 [handleSubmit] Final payload:", JSON.stringify(payload, null, 2));
+      console.log(" [handleSubmit] Final payload:", JSON.stringify(payload, null, 2));
 
       if (editingData) {
         const id = editingData.id || editingData.IDKependudukan;
-        console.log(`✏️ [handleSubmit] Updating ID: ${id}`);
+        console.log(` [handleSubmit] Updating ID: ${id}`);
         await updateKependudukan(id, payload);
         setMessage({ type: "success", text: "Data berhasil diupdate" });
       } else {
-        console.log("➕ [handleSubmit] Creating new data");
+        console.log("[handleSubmit] Creating new data");
         await createKependudukan(payload);
         setMessage({ type: "success", text: "Data berhasil ditambahkan" });
       }
@@ -718,8 +718,8 @@ const AdminPendudukList = () => {
       fetchData();
       setTimeout(() => setMessage({ type: "", text: "" }), 3000);
     } catch (error) {
-      console.error("❌ [handleSubmit] Error caught!");
-      console.error("❌ [handleSubmit] Error response:", error.response?.data);
+      console.error(" [handleSubmit] Error caught!");
+      console.error(" [handleSubmit] Error response:", error.response?.data);
       
       let errorText = "Gagal menyimpan data";
       if (error.response?.data?.message) {
@@ -732,13 +732,13 @@ const AdminPendudukList = () => {
       setMessage({ type: "error", text: errorText });
     } finally {
       setSubmitting(false);
-      console.log("🏁 [handleSubmit] Finished");
+      console.log(" [handleSubmit] Finished");
     }
   };
 
   const handlePageChange = (newPage) => {
     if (newPage < 1 || newPage > pagination.total_pages) return;
-    console.log("📄 [handlePageChange] Page:", newPage);
+    console.log(" [handlePageChange] Page:", newPage);
     setPagination(prev => ({ ...prev, page: newPage }));
   };
 

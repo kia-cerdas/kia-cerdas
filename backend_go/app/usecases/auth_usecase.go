@@ -303,43 +303,68 @@ func (m *Main) Login(req *models.LoginRequest) (*models.LoginResponse, error) {
 	var posyanduNama string
 	var phoneNumber string
 
-	if user.PendudukID != nil {
-		// Ambil phone number dari penduduk
-		penduduk, err := m.repository.Kependudukan.FindByID(int32(*user.PendudukID))
-		if err == nil && penduduk != nil {
-			phoneNumber = penduduk.Telepon
-		}
+	 if user.PendudukID != nil {
+        pendudukID := int32(*user.PendudukID)
+        
+        // Ambil phone number dari penduduk
+        penduduk, err := m.repository.Kependudukan.FindByID(pendudukID)
+        if err == nil && penduduk != nil {
+            phoneNumber = penduduk.Telepon
+        }
 
-		// AMBIL POSYANDU_ID SESUAI ROLE
-		if canonicalRoleName == "Bidan" {
-			bidan, bErr := m.repository.Bidan.FindByPendudukID(int32(*user.PendudukID))
-			if bErr != nil {
-				return nil, customerror.NewBadRequestError("data bidan tidak ditemukan")
-			}
-			if strings.ToLower(strings.TrimSpace(bidan.Status)) != "aktif" {
-				return nil, customerror.NewBadRequestError("akun bidan nonaktif")
-			}
-			if bidan.PosyanduID != nil {
-				posyanduID = bidan.PosyanduID
-			}
-		} else if canonicalRoleName == "Kader" {
-			kader, kErr := m.repository.Kader.FindByPendudukID(int32(*user.PendudukID))
-			if kErr == nil && kader.PosyanduID != nil {
-				posID := int32(*kader.PosyanduID)
-				posyanduID = &posID
-			} else {
-				// Fallback ke tabel penduduk jika kader belum punya posyandu_id atau data kader tidak ditemukan
-				if penduduk != nil && penduduk.PosyanduID != nil {
-					posyanduID = penduduk.PosyanduID
-				}
-			}
-		} else {
-			// Untuk peran lain (seperti Ibu), ambil dari tabel penduduk
-			if penduduk != nil && penduduk.PosyanduID != nil {
-				posyanduID = penduduk.PosyanduID
-			}
-		}
-	}
+        switch canonicalRoleName {
+        case "Bidan":
+            //  Cari bidan
+            bidan, bErr := m.repository.Bidan.FindByPendudukID(pendudukID)
+            if bErr != nil {
+                return nil, customerror.NewBadRequestError("data bidan tidak ditemukan")
+            }
+            if bidan == nil {
+                return nil, customerror.NewBadRequestError("data bidan tidak ditemukan")
+            }
+            if strings.ToLower(strings.TrimSpace(bidan.Status)) != "aktif" {
+                return nil, customerror.NewBadRequestError("akun bidan nonaktif")
+            }
+            
+            //  AMBIL POSYANDU_ID DARI BIDAN
+            if bidan.PosyanduID != nil {
+                posyanduID = bidan.PosyanduID
+                // Ambil nama posyandu
+                if bidan.Posyandu != nil {
+                    posyanduNama = bidan.Posyandu.Nama
+                }
+            } else {
+                //  Logging jika posyandu_id di bidan NULL
+                fmt.Printf("⚠️ Bidan dengan penduduk_id %d tidak memiliki posyandu_id\n", pendudukID)
+            }
+
+        case "Kader":
+            //  Cari kader
+            kader, kErr := m.repository.Kader.FindByPendudukID(pendudukID)
+            if kErr != nil {
+                return nil, customerror.NewBadRequestError("data kader tidak ditemukan")
+            }
+            if kader == nil {
+                return nil, customerror.NewBadRequestError("data kader tidak ditemukan")
+            }
+            if strings.ToLower(strings.TrimSpace(kader.Status)) != "aktif" {
+                return nil, customerror.NewBadRequestError("akun kader nonaktif")
+            }
+            
+            //  AMBIL POSYANDU_ID DARI KADER
+            if kader.PosyanduID != nil {
+                // Konversi jika tipe data berbeda
+                id := int32(*kader.PosyanduID)
+                posyanduID = &id
+                if kader.Posyandu != nil {
+                    posyanduNama = kader.Posyandu.Nama
+                }
+            } else {
+                fmt.Printf("⚠️ Kader dengan penduduk_id %d tidak memiliki posyandu_id\n", pendudukID)
+            }
+        }
+    }
+
 
 	destination, ok := roleRedirect(canonicalRoleName)
 	if !ok {

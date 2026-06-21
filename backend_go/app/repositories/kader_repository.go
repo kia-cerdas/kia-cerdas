@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"errors"
 	"monitoring-service/app/models"
 	"time"
 
@@ -37,12 +38,27 @@ func (r *KaderRepository) FindByID(id int32) (*models.Kader, error) {
 	err := r.db.Where("id = ? AND deleted_at IS NULL", id).First(&data).Error
 	return &data, err
 }
-
 func (r *KaderRepository) FindByPendudukID(pendudukID int32) (*models.Kader, error) {
-	var data models.Kader
-	err := r.db.Where("penduduk_id = ? AND deleted_at IS NULL", pendudukID).First(&data).Error
-	return &data, err
+    var data models.Kader
+    err := r.db.
+        Where("penduduk_id = ? AND deleted_at IS NULL", pendudukID).
+        Preload("Penduduk").   //  Preload penduduk
+        Preload("Posyandu").   //  Preload posyandu
+        First(&data).Error
+    if err != nil {
+        if errors.Is(err, gorm.ErrRecordNotFound) {
+            return nil, nil //  Kembalikan nil jika tidak ditemukan
+        }
+        return nil, err
+    }
+    return &data, nil
 }
+
+// func (r *KaderRepository) FindByPendudukID(pendudukID int32) (*models.Kader, error) {
+// 	var data models.Kader
+// 	err := r.db.Where("penduduk_id = ? AND deleted_at IS NULL", pendudukID).First(&data).Error
+// 	return &data, err
+// }
 
 func (r *KaderRepository) FindAnyByPendudukID(pendudukID int32) (*models.Kader, error) {
 	var data models.Kader

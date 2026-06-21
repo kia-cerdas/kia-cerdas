@@ -75,7 +75,7 @@ func (c *IbuController) Create(ctx echo.Context) error {
 		// ... kirim error bad request
 	}
 
-	// ⭐ PERUBAHAN: tangkap hasil kembalian
+	//  PERUBAHAN: tangkap hasil kembalian
 	createdIbu, err := c.usecase.Create(ibu)
 	if err != nil {
 		fmt.Println("Error creating ibu:", err.Error())
@@ -85,7 +85,7 @@ func (c *IbuController) Create(ctx echo.Context) error {
 		})
 	}
 
-	// ⭐ KEMBALIKAN data ibu yang sesungguhnya (bisa data lama atau baru)
+	//  KEMBALIKAN data ibu yang sesungguhnya (bisa data lama atau baru)
 	return ctx.JSON(http.StatusCreated, models.Response{
 		StatusCode: http.StatusCreated,
 		Message:    "Berhasil membuat data ibu",
@@ -274,7 +274,7 @@ func (c *IbuController) GetByPendudukID(ctx echo.Context) error {
 
 	ibu, err := c.usecase.GetByPendudukID(int32(pendudukID))
 	if err != nil {
-		// ✅ Jika record not found, return 200 dengan data nil (bukan 500)
+		//  Jika record not found, return 200 dengan data nil (bukan 500)
 		return ctx.JSON(http.StatusOK, models.Response{
 			StatusCode: http.StatusOK,
 			Message:    "Penduduk belum terdaftar sebagai ibu",
