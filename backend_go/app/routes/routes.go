@@ -60,8 +60,11 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 
 	// ==================== EDUKASI IBU ====================
 	e.GET("/edukasi-imd", controller.EdukasiIMD.GetAll)
+	e.GET("/edukasi-imd/:id", controller.EdukasiIMD.GetByID)
 	e.GET("/edukasi-kesehatan-mental", controller.EdukasiKesehatanMental.GetAll)
+	e.GET("/edukasi-kesehatan-mental/:id", controller.EdukasiKesehatanMental.GetByID)
 	e.GET("/edukasi-menyusui-asi", controller.EdukasiMenyusuiASI.GetAll)
+	e.GET("/edukasi-menyusui-asi/:id", controller.EdukasiMenyusuiASI.GetByID)
 	e.GET("/edukasi-informasi-umum", controller.EdukasiInformasiUmum.GetAll)
 	e.GET("/edukasi-informasi-umum/:id", controller.EdukasiInformasiUmum.GetByID)
 	e.GET("/edukasi-pola-asuh", controller.EdukasiPolaAsuh.GetAll)
@@ -70,8 +73,21 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	e.GET("/edukasi-perawatan-anak/:id", controller.EdukasiPerawatanAnak.GetByID)
 	// e.GET("/edukasi-nifas", controller.EdukasiNifas.GetAll)
 	e.GET("/edukasi-setelah-melahirkan", controller.EdukasiSetelahMelahirkan.GetAll) // Untuk edukasi ibu bagian Edukasi Nifas
+	e.GET("/edukasi-setelah-melahirkan/:id", controller.EdukasiSetelahMelahirkan.GetByID)
 	e.GET("/edukasi-tanda-melahirkan", controller.EdukasiTandaMelahirkan.GetAll)
+	e.GET("/edukasi-tanda-melahirkan/:id", controller.EdukasiTandaMelahirkan.GetByID)
 	e.GET("/edukasi-trimester", controller.EdukasiTrimester.GetAll)
+	e.GET("/edukasi-trimester/:id", controller.EdukasiTrimester.GetByID)
+
+	// Public MPASI routes
+	e.GET("/edukasi-mpasi", controller.EdukasiMPASI.GetMateriAll)
+	e.GET("/edukasi-mpasi/:id", controller.EdukasiMPASI.GetMateriByID)
+	e.GET("/edukasi-mpasi-aturan-porsi", controller.EdukasiAturanPorsiMPASI.GetAll)
+	e.GET("/edukasi-mpasi-aturan-porsi/:id", controller.EdukasiAturanPorsiMPASI.GetByID)
+	e.GET("/edukasi-mpasi-jadwal-harian", controller.EdukasiJadwalHarianMPASI.GetAll)
+	e.GET("/edukasi-mpasi-jadwal-harian/:id", controller.EdukasiJadwalHarianMPASI.GetByID)
+	e.GET("/edukasi-mpasi-resep", controller.EdukasiResepMPASI.GetAll)
+	e.GET("/edukasi-mpasi-resep/:id", controller.EdukasiResepMPASI.GetByID)
 	// e.GET("/edukasi-trimester/:trimester", controller.EdukasiTrimester.GetByTrimester)
 	// e.GET("/edukasi-trimester/:trimester/:kategori", controller.EdukasiTrimester.GetByKategori)
 	// ==================== MODUL ADMIN  ====================

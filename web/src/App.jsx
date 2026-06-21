@@ -14,6 +14,11 @@ import AdminAkunKeluargaCreate from "./pages/Admin/AkunKeluargaCreate";
 import AkunKeluargaManagement from "./pages/Admin/AkunKeluargaManagement";
 import { getPostLoginRoute, isAuthenticated } from "./services/auth";
 
+// ─── Public Pages (tanpa login) ───────────────────────────────────────────────
+import LandingPage from "./pages/public/LandingPage";
+import PublicEdukasiList from "./pages/public/PublicEdukasiList";
+import PublicEdukasiDetail from "./pages/public/PublicEdukasiDetail";
+
 // Data Ibu
 import IbuList from "./pages/Ibu/IbuList";
 import IbuDetail from "./pages/Ibu/IbuDetail";
@@ -161,7 +166,12 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* PUBLIC */}
+        {/* ── PUBLIC (tanpa login) ── */}
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/edukasi-publik/:category" element={<PublicEdukasiList />} />
+        <Route path="/edukasi-publik/:category/:id" element={<PublicEdukasiDetail />} />
+
+        {/* Login */}
         <Route path="/login" element={<Login />} />
 
         {/* PROTECTED */}
@@ -376,7 +386,6 @@ function App() {
 
         {/* ── DEFAULT ── */}
         <Route path="/dashboard" element={<RootRoute />} />
-        <Route path="/" element={<RootRoute />} />
         <Route path="*" element={<RootRoute />} />
         <Route path="/data-penduduk/:id" element={<DetailPenduduk />} />
         <Route path="/pencatatan-kesehatan" element={<PencatatanKesehatan />} />

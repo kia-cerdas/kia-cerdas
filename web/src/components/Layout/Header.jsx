@@ -127,7 +127,7 @@ const headerByPath = (pathname) => {
   }
 
   return {
-    title: "KIA Cerdas",
+    title: "Generasi Sehat",
     subtitle: "Sistem layanan kesehatan ibu dan anak untuk wilayah desa.",
     variant: "default",
   };

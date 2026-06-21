@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import MainLayout from "../../components/Layout/MainLayout";
 import AlertNotification from "../../components/AlertNotification";
+import Swal from "sweetalert2";
 import { Search, Plus, Pencil, Trash2, X, Check } from "lucide-react";
 import {
   getRentangUsia,
@@ -16,7 +17,6 @@ export default function KelolaPemantauan() {
   const [query, setQuery] = useState("");
   const [dataPertanyaan, setDataPertanyaan] = useState({});
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [formText, setFormText] = useState("");
   const [formMode, setFormMode] = useState("add");
@@ -149,44 +149,38 @@ export default function KelolaPemantauan() {
     })();
   };
 
-  const openDeleteModal = (item) => {
-    setSelectedItem(item);
-    setIsDeleteModalOpen(true);
+  const openDeleteModal = async (item) => {
+    const result = await Swal.fire({
+      title: "Hapus Indikator Pemantauan?",
+      text: `"${item.deskripsi || ""}" akan dihapus permanen dan tidak dapat dikembalikan.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#EF4444",
+      cancelButtonColor: "#6B7280",
+      confirmButtonText: "Ya, Hapus",
+      cancelButtonText: "Batal",
+    });
+    if (!result.isConfirmed) return;
+
+    try {
+      await deleteIndicator(item.id);
+      setNotification({
+        type: "success",
+        message: "Data indikator pemantauan anak berhasil dihapus dari sistem.",
+      });
+      await fetchData(activeRentangId, query);
+    } catch (error) {
+      const errMsg = error?.response?.data?.message || error.message || "Unknown error";
+      setNotification({
+        type: "error",
+        message: "Permintaan gagal diproses. Silakan coba lagi nanti.",
+        code: errMsg,
+      });
+    }
   };
 
-  const closeDeleteModal = () => {
-    setSelectedItem(null);
-    setIsDeleteModalOpen(false);
-  };
-
-  const handleDelete = () => {
-    if (!selectedItem || isSubmitting) return;
-
-    (async () => {
-      setIsSubmitting(true);
-      setErrorMsg("");
-      setNotice("");
-
-      try {
-        await deleteIndicator(selectedItem.id);
-        setNotification({
-          type: "success",
-          message: "Data indikator pemantauan anak berhasil dihapus dari sistem!"
-        });
-        closeDeleteModal();
-        await fetchData(activeRentangId, query);
-      } catch (error) {
-        const errMsg = error?.response?.data?.message || error.message || "Unknown error";
-        setNotification({
-          type: "error",
-          message: "Permintaan gagal diproses. Silakan coba lagi nanti atau hubungi bantuan.",
-          code: errMsg
-        });
-      } finally {
-        setIsSubmitting(false);
-      }
-    })();
-  };
+  const closeDeleteModal = () => {};
+  const handleDelete = () => {};
 
   return (
     <MainLayout>
@@ -197,31 +191,28 @@ export default function KelolaPemantauan() {
       />
       <div className="max-w-6xl mx-auto space-y-6">
 
-        {/* Header: Search Bar */}
-        <div className="flex justify-center">
-          <div className="relative w-full max-w-2xl">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-            <input
-              type="text"
-              placeholder={`Cari indikator...`}
-              className="w-full pl-12 pr-4 py-3 bg-white border border-slate-100 rounded-full text-sm shadow-sm focus:ring-2 focus:ring-blue-100 outline-none transition-all"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-            />
-          </div>
-        </div>
-
-        {/* Info & Action Button */}
-        <div className="flex items-center justify-between px-2">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-800">Kelola Lembar Pemantauan Anak</h1>
-            <p className="text-sm text-slate-500 mt-1">Mengatur bank soal indikator kesehatan anak per kategori umur.</p>
+        <div className="flex justify-between items-start gap-4 flex-col md:flex-row">
+          <div className="flex items-center gap-4 w-full">
+            <div className="relative w-full md:w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+              <input
+                type="text"
+                placeholder="Cari indikator..."
+                className="w-full pl-9 pr-4 py-2.5 bg-white border border-[#e2e8f0] rounded-xl text-sm focus:outline-none focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] transition-all"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+              />
+            </div>
+            <div className="flex-1">
+              <h1 className="text-xl font-bold text-slate-800">Kelola Lembar Pemantauan Anak</h1>
+              <p className="text-sm text-slate-500">Mengatur indikator kesehatan anak per kategori umur.</p>
+            </div>
           </div>
           <button
             onClick={openAddModal}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg text-sm font-medium flex items-center gap-2 transition-all"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-[#185FA5] hover:bg-[#185FA5]/90 text-white text-sm font-semibold rounded-xl transition-all active:scale-95 shadow-sm flex-shrink-0"
           >
-            <Plus size={18} /> Tambah Kondisi
+            <Plus size={16} /> Tambah Indikator
           </button>
         </div>
 
@@ -255,10 +246,10 @@ export default function KelolaPemantauan() {
 
         {/* Table Content */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-          <div className={`grid grid-cols-12 bg-slate-50/50 px-8 py-4 border-b border-slate-100 font-bold text-[11px] text-slate-400 uppercase tracking-widest ${filteredData.length === 0 ? 'hidden' : ''}`}>
-            <div className="col-span-1">No</div>
-            <div className="col-span-9">Indikator Kondisi Kesehatan</div>
-            <div className="col-span-2 text-right">Aksi Admin</div>
+          <div className={`grid grid-cols-12 bg-slate-100 px-8 py-3.5 border-b border-slate-200 ${filteredData.length === 0 ? 'hidden' : ''}`}>
+            <div className="col-span-1 text-xs font-semibold text-slate-600">No</div>
+            <div className="col-span-8 text-xs font-semibold text-slate-600">Indikator Kondisi Kesehatan</div>
+            <div className="col-span-3 text-xs font-semibold text-slate-600 text-right">Aksi Admin</div>
           </div>
 
           <div className="divide-y divide-slate-100">
@@ -268,29 +259,29 @@ export default function KelolaPemantauan() {
               </div>
             ) : filteredData.length > 0 ? (
               filteredData.map((item, index) => (
-                <div key={item.id} className="grid grid-cols-12 items-center px-8 py-6 hover:bg-slate-50/30 transition-all group">
-                  <div className="col-span-1 text-sm font-mono text-slate-300">
+                <div key={item.id} className="grid grid-cols-12 items-center px-8 py-5 hover:bg-slate-50/50 transition-colors">
+                  <div className="col-span-1 text-sm text-slate-400">
                     {String(index + 1).padStart(2, '0')}
                   </div>
-                  <div className="col-span-9 pr-10 text-sm text-slate-700 font-medium leading-relaxed">
+                  <div className="col-span-8 pr-10 text-sm text-slate-700 leading-relaxed">
                     {item.deskripsi}
                   </div>
-                  <div className="col-span-2 flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="col-span-3 flex justify-end gap-2">
                     <button
                       onClick={() => openEditModal(item)}
-                      onMouseDown={() => setClickedBtn({ id: item.id, type: 'edit' })}
-                      onMouseUp={() => setClickedBtn({ id: null, type: null })}
-                      className={`p-2 rounded-lg ${clickedBtn.id === item.id && clickedBtn.type === 'edit' ? "bg-blue-600 text-white" : "text-blue-500 bg-blue-50 hover:bg-blue-100"}`}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-yellow-50 hover:bg-yellow-100 text-yellow-700 border border-yellow-200 rounded-xl text-[13px] font-semibold transition-colors"
+                      title="Edit Data"
                     >
-                      <Pencil size={18} />
+                      <Pencil size={14} />
+                      Edit
                     </button>
                     <button
                       onClick={() => openDeleteModal(item)}
-                      onMouseDown={() => setClickedBtn({ id: item.id, type: 'delete' })}
-                      onMouseUp={() => setClickedBtn({ id: null, type: null })}
-                      className={`p-2 rounded-lg ${clickedBtn.id === item.id && clickedBtn.type === 'delete' ? "bg-red-600 text-white" : "text-red-500 bg-red-50 hover:bg-red-100"}`}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl text-[13px] font-semibold transition-colors"
+                      title="Hapus Data"
                     >
-                      <Trash2 size={18} />
+                      <Trash2 size={14} />
+                      Hapus
                     </button>
                   </div>
                 </div>
@@ -304,81 +295,50 @@ export default function KelolaPemantauan() {
         </div>
 
         {isModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-blue-900/40 p-4">
-            <div className="w-full max-w-2xl bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
-              <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-                <h2 className="text-lg font-bold text-slate-800">
-                  {formMode === "add" ? "Tambah Indikator" : "Edit Indikator"}
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={closeModal} />
+            <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 animate-[fadeInScale_0.2s_ease-out]">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-base font-semibold text-slate-800">
+                  {formMode === "add" ? "Tambah Indikator" : "Ubah Indikator"}
                 </h2>
-                <button onClick={closeModal} className="p-2 rounded-lg text-slate-500 hover:bg-slate-100">
+                <button
+                  onClick={closeModal}
+                  className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                >
                   <X size={18} />
                 </button>
               </div>
 
-              <div className="p-6 space-y-4">
-                <p className="text-sm text-slate-500">
-                  Kategori aktif: <span className="font-semibold text-slate-700">{rentangList.find(r => String(r.id) === activeRentangId)?.nama_rentang}</span>
-                </p>
-                <textarea
-                  rows={5}
-                  value={formText}
-                  onChange={(e) => setFormText(e.target.value)}
-                  placeholder="Tulis indikator kondisi kesehatan..."
-                  className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-100"
-                />
-              </div>
-
-              <div className="px-6 py-4 border-t border-slate-100 flex justify-end gap-2">
+              <p className="text-sm text-slate-500 mb-3">
+                Kategori aktif: <span className="font-semibold text-slate-700">{rentangList.find(r => String(r.id) === activeRentangId)?.nama_rentang}</span>
+              </p>
+              <textarea
+                rows={4}
+                value={formText}
+                onChange={(e) => setFormText(e.target.value)}
+                placeholder="Tulis indikator kondisi kesehatan..."
+                className="w-full bg-[#F7FAFB] border border-[#e2e8f0] rounded-xl px-4 py-3 text-sm text-slate-700 outline-none focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] mb-4 resize-none"
+              />
+              <div className="flex justify-end gap-2">
                 <button
                   onClick={closeModal}
-                  className="px-4 py-2 text-sm rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50"
+                  className="px-4 py-2.5 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors"
                 >
                   Batal
                 </button>
                 <button
                   onClick={handleSave}
                   disabled={isSubmitting}
-                  className="px-4 py-2 text-sm rounded-lg bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#185FA5] hover:bg-[#185FA5]/90 text-white text-sm font-semibold rounded-xl transition-all active:scale-95 disabled:opacity-50 shadow-sm"
                 >
-                  <Check size={16} /> {isSubmitting ? "Menyimpan..." : "Simpan"}
+                  <Check size={15} /> {isSubmitting ? "Menyimpan..." : "Simpan"}
                 </button>
               </div>
             </div>
           </div>
         )}
 
-        {isDeleteModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-blue-900/40 p-4">
-            <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-100">
-              <div className="p-6 space-y-4">
-                <h2 className="text-lg font-bold text-slate-800">Hapus Indikator</h2>
-                <p className="text-sm text-slate-500 leading-relaxed">
-                  Kamu yakin ingin menghapus indikator ini? Aksi ini tidak bisa dibatalkan.
-                </p>
-                {selectedItem ? (
-                  <div className="text-sm bg-slate-50 rounded-lg p-3 text-slate-700 border border-slate-100">
-                    {selectedItem.deskripsi}
-                  </div>
-                ) : null}
-              </div>
-              <div className="px-6 py-4 border-t border-slate-100 flex justify-end gap-2">
-                <button
-                  onClick={closeDeleteModal}
-                  className="px-4 py-2 text-sm rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50"
-                >
-                  Batal
-                </button>
-                <button
-                  onClick={handleDelete}
-                  disabled={isSubmitting}
-                  className="px-4 py-2 text-sm rounded-lg bg-red-600 hover:bg-red-700 text-white"
-                >
-                  {isSubmitting ? "Menghapus..." : "Hapus"}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </MainLayout>
   );
