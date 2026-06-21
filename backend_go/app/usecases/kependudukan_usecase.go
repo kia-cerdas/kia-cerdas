@@ -19,7 +19,7 @@ type KependudukanUsecase interface {
 	GetAllActive() ([]models.Kependudukan, error)
 	GetAllActiveByDesaID(desaID int32) ([]models.Kependudukan, error)
 	GetAllActiveByPosyanduID(posyanduID int32) ([]models.Kependudukan, error)
-	GetPendudukList(desaID *int32, role string, jenisKelamin string) ([]models.Kependudukan, error)
+	GetPendudukList(posyanduID *int32, role string, jenisKelamin string) ([]models.Kependudukan, error)
 	FindAllWithFilters(search string, page int, limit int, filters map[string]interface{}) ([]models.Kependudukan, int, error)
 }
 type kependudukanUsecase struct {
@@ -94,13 +94,13 @@ func (u *kependudukanUsecase) GetAllActiveByPosyanduID(posyanduID int32) ([]mode
     return u.repo.GetAllActiveByPosyanduID(posyanduID)
 }
 
-func (u *kependudukanUsecase) GetPendudukList(desaID *int32, role string, jenisKelamin string) ([]models.Kependudukan, error) {
+func (u *kependudukanUsecase) GetPendudukList(posyanduID *int32, role string, jenisKelamin string) ([]models.Kependudukan, error) {
 	// Validasi jenis kelamin
 	if jenisKelamin != "" && jenisKelamin != "perempuan" && jenisKelamin != "laki" {
 		return nil, errors.New("jenis_kelamin harus 'perempuan', 'laki', atau kosong")
 	}
 	
-	return u.repo.GetPendudukList(desaID, role, jenisKelamin)
+	return u.repo.GetPendudukList(posyanduID, role, jenisKelamin)
 }
 // usecases/kependudukan_usecase.go
 

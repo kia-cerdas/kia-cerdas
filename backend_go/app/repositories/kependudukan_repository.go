@@ -32,11 +32,11 @@ type KependudukanRepositoryInterface interface {
 	FindByAgeRange(minAge, maxAge int, posyanduID *int32, role string) ([]models.Kependudukan, error)
 	GetAllActiveByDesaID(desaID int32) ([]models.Kependudukan, error)
 	GetAllActiveByPosyanduID(posyanduID int32) ([]models.Kependudukan, error)
-	GetPendudukByDesaAndJenisKelamin(desaID *int32, role string, jenisKelamin string) ([]models.Kependudukan, error)
+	GetPendudukByDesaAndJenisKelamin(posyanduID *int32, role string, jenisKelamin string) ([]models.Kependudukan, error)
 	FindAllWithFilters(search string, page int, limit int, filters map[string]interface{}) ([]models.Kependudukan, int, error)
 	FindByKodeKeluarga(kodeKeluarga string) ([]models.Kependudukan, error)
 	FindAllWithKodeKeluarga() ([]models.Kependudukan, error)
-	GetPendudukList(desaID *int32, role string, jenisKelamin string) ([]models.Kependudukan, error)
+	GetPendudukList(posyanduID *int32, role string, jenisKelamin string) ([]models.Kependudukan, error)
 }
 
 // Implementasi privat
@@ -471,13 +471,13 @@ func (r *KependudukanRepository) FindByAgeRange(minAge, maxAge int, posyanduID *
 // GET PENDUDUK BY DESA AND JENIS KELAMIN
 // ============================================
 
-func (r *KependudukanRepository) GetPendudukByDesaAndJenisKelamin(desaID *int32, role string, jenisKelamin string) ([]models.Kependudukan, error) {
+func (r *KependudukanRepository) GetPendudukByDesaAndJenisKelamin(posyanduID *int32, role string, jenisKelamin string) ([]models.Kependudukan, error) {
 	var penduduk []models.Kependudukan
 
 	query := r.db.Where("deleted_at IS NULL")
 
-	if !middlewares.HasFullAccess(role) && desaID != nil {
-		query = query.Where("desa_id = ?", *desaID)
+	if !middlewares.HasFullAccess(role) && posyanduID != nil {
+		query = query.Where("posyandu_id = ?", *posyanduID)
 	}
 
 	if jenisKelamin != "" {
@@ -500,13 +500,13 @@ func (r *KependudukanRepository) GetPendudukByDesaAndJenisKelamin(desaID *int32,
 // GET PENDUDUK LIST (untuk usecase)
 // ============================================
 
-func (r *KependudukanRepository) GetPendudukList(desaID *int32, role string, jenisKelamin string) ([]models.Kependudukan, error) {
+func (r *KependudukanRepository) GetPendudukList(posyanduID *int32, role string, jenisKelamin string) ([]models.Kependudukan, error) {
 	var penduduk []models.Kependudukan
 
 	query := r.db.Where("deleted_at IS NULL")
 
-	if !middlewares.HasFullAccess(role) && desaID != nil {
-		query = query.Where("desa_id = ?", *desaID)
+	if !middlewares.HasFullAccess(role) && posyanduID != nil {
+		query = query.Where("posyandu_id = ?", *posyanduID)
 	}
 
 	if jenisKelamin != "" {

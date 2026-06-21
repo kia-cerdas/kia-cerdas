@@ -109,15 +109,24 @@ func (r *PemantauanIbuHamilRepository) ValidateKehamilanOwner(userID int32, keha
 
 // ─── BAGIAN KADER ────────────────────────────────────────────────────────────
 
-func (r *PemantauanIbuHamilRepository) FindAllWithKehamilan() ([]models.PemantauanIbuHamil, error) {
+
+
+func (r *PemantauanIbuHamilRepository) FindAllWithKehamilan(posyanduID *int32) ([]models.PemantauanIbuHamil, error) {
 	var list []models.PemantauanIbuHamil
-	err := r.db.
+	query := r.db.
 		Preload("Kehamilan").
 		Preload("Kehamilan.Ibu").
 		Preload("Kehamilan.Ibu.Kependudukan").
-		Where("deleted_at IS NULL").
-		Order("created_at DESC").
-		Find(&list).Error
+		Joins("JOIN kehamilan ON kehamilan.id = pemantauan_ibu_hamil.kehamilan_id").
+		Joins("JOIN ibu ON ibu.id = kehamilan.ibu_id").
+		Joins("JOIN penduduk ON penduduk.id = ibu.penduduk_id").
+		Where("pemantauan_ibu_hamil.deleted_at IS NULL")
+
+	if posyanduID != nil {
+		query = query.Where("penduduk.posyandu_id = ?", *posyanduID)
+	}
+
+	err := query.Order("pemantauan_ibu_hamil.created_at DESC").Find(&list).Error
 	return list, err
 }
 

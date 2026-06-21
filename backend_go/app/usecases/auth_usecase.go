@@ -310,7 +310,7 @@ func (m *Main) Login(req *models.LoginRequest) (*models.LoginResponse, error) {
 			phoneNumber = penduduk.Telepon
 		}
 
-		// HANYA UNTUK BIDAN
+		// AMBIL POSYANDU_ID SESUAI ROLE
 		if canonicalRoleName == "Bidan" {
 			bidan, bErr := m.repository.Bidan.FindByPendudukID(int32(*user.PendudukID))
 			if bErr != nil {
@@ -319,10 +319,24 @@ func (m *Main) Login(req *models.LoginRequest) (*models.LoginResponse, error) {
 			if strings.ToLower(strings.TrimSpace(bidan.Status)) != "aktif" {
 				return nil, customerror.NewBadRequestError("akun bidan nonaktif")
 			}
-			
-			//  AMBIL POSYANDU_ID DARI BIDAN
 			if bidan.PosyanduID != nil {
 				posyanduID = bidan.PosyanduID
+			}
+		} else if canonicalRoleName == "Kader" {
+			kader, kErr := m.repository.Kader.FindByPendudukID(int32(*user.PendudukID))
+			if kErr == nil && kader.PosyanduID != nil {
+				posID := int32(*kader.PosyanduID)
+				posyanduID = &posID
+			} else {
+				// Fallback ke tabel penduduk jika kader belum punya posyandu_id atau data kader tidak ditemukan
+				if penduduk != nil && penduduk.PosyanduID != nil {
+					posyanduID = penduduk.PosyanduID
+				}
+			}
+		} else {
+			// Untuk peran lain (seperti Ibu), ambil dari tabel penduduk
+			if penduduk != nil && penduduk.PosyanduID != nil {
+				posyanduID = penduduk.PosyanduID
 			}
 		}
 	}
