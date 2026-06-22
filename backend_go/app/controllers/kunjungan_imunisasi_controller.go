@@ -315,6 +315,21 @@ func (m *Main) CreateKunjunganImunisasi(
 		)
 	}
 
+	claims := c.Get("auth_claims").(*models.AuthClaims)
+
+	kaderID, err := m.usecases.GetKaderIDByUserID(claims.UserID)
+	if err != nil || kaderID == 0 {
+		return helpers.Response(
+			c,
+			http.StatusForbidden,
+			[]string{
+				"akun tidak terdaftar sebagai kader aktif",
+			},
+		)
+	}
+
+	req.KaderID = kaderID
+
 	kunjunganID, err :=
 		m.usecases.
 			CreateKunjunganImunisasi(&req)

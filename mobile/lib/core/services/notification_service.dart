@@ -8,7 +8,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:ta_pa2_pa3_project/features/ibu/imunisasi/presentation/screens/imunisasi_screen.dart';
 import 'package:ta_pa2_pa3_project/features/ibu/imunisasi/presentation/screens/ubah_jadwal.dart';
+import 'package:ta_pa2_pa3_project/features/kader/screens/daftar_kunjungan.dart' show KunjunganScreen;
 import '../../firebase_options.dart';
+import '../routes/navigator_key.dart' as nav;
 
 const _androidChannel = AndroidNotificationChannel(
   'generasi_sehat_channel',
@@ -33,8 +35,6 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
 class NotificationService {
   NotificationService._();
-
-  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
   static final FlutterLocalNotificationsPlugin _localNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
@@ -182,14 +182,13 @@ class NotificationService {
       final jadwalId = int.tryParse(data['jadwal_id']?.toString() ?? '');
 
       if (actionId == _actionUbahJadwal && jadwalId != null) {
-        navigatorKey.currentState?.push(
+        nav.navigatorKey.currentState?.push(
           MaterialPageRoute(
             builder: (_) => UbahJadwalScreen(jadwalId: jadwalId),
           ),
         );
       } else if (anakId != null) {
-        // tombol "Lihat" atau tap body notifikasi
-        navigatorKey.currentState?.push(
+        nav.navigatorKey.currentState?.push(
           MaterialPageRoute(
             builder: (_) => ImunisasiScreen(
               anakId: anakId,
@@ -198,6 +197,14 @@ class NotificationService {
           ),
         );
       }
+    }
+
+    if (type == 'kunjungan_imunisasi_reminder') {
+      nav.navigatorKey.currentState?.push(
+        MaterialPageRoute(
+          builder: (_) => const KunjunganScreen(),
+        ),
+      );
     }
   }
 
