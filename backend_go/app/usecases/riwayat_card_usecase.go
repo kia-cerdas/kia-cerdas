@@ -41,7 +41,7 @@ func (u *riwayatCardUsecase) GetRiwayatCard(ctx context.Context, pendudukID int3
     dataDiri := models.DataDiriResponse{
         ID:           penduduk.IDKependudukan,
         NIK:          getStringValue(penduduk.NIK),
-        NamaLengkap:  penduduk.NamaLengkap,
+        NamaLengkap:  penduduk.NamaAnggotaKeluarga,
         Dusun:        penduduk.Dusun,
         TanggalLahir: penduduk.TanggalLahir,
         Usia:         usia,

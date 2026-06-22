@@ -431,7 +431,7 @@ func (u *pemeriksaanUsecase) GetDetailPemeriksaan(ctx context.Context, id uint) 
 		return &models.DetailPemeriksaanResponse{
 			ID:                 id,
 			PendudukID:         uint(pendudukID),
-			NamaPenduduk:       kependudukan.NamaLengkap,
+			NamaPenduduk:       kependudukan.NamaAnggotaKeluarga,
 			Kelompok:           "balita",
 			TanggalPemeriksaan: latestDate,
 			VersiForm:          "Pemeriksaan Balita Terintegrasi",
@@ -448,7 +448,7 @@ func (u *pemeriksaanUsecase) GetDetailPemeriksaan(ctx context.Context, id uint) 
 	penduduk, _ := u.periksaRepo.GetPendudukByID(ctx, p.PendudukID)
 	var namaPenduduk string
 	if penduduk != nil {
-		namaPenduduk = penduduk.NamaLengkap
+		namaPenduduk = penduduk.NamaAnggotaKeluarga
 	}
 
 	versi, _ := u.formRepo.GetFormVersionByID(ctx, p.FormVersiID)

@@ -170,26 +170,26 @@ function TabButton({ tab, active, count, onClick }) {
   return (
     <button
       onClick={onClick}
-      className={`flex flex-col items-start px-4 py-3 rounded-2xl border transition-all text-left ${
+      className={`flex flex-col items-start px-3 py-2 sm:px-4 sm:py-3 rounded-2xl border transition-all text-left flex-1 sm:flex-initial ${
         active
           ? "border-[#185FA5] bg-[#E6F1FB]"
           : "border-slate-200 bg-white hover:bg-slate-50"
       }`}
     >
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5 sm:gap-2">
         <Icon
-          size={16}
-          className={active ? "text-[#185FA5]" : "text-slate-400"}
+          size={14}
+          className={`flex-shrink-0 sm:w-4 sm:h-4 ${active ? "text-[#185FA5]" : "text-slate-400"}`}
         />
         <span
-          className={`text-sm font-semibold ${
+          className={`text-xs sm:text-sm font-semibold ${
             active ? "text-[#0C447C]" : "text-slate-700"
           }`}
         >
           {label}
         </span>
         <span
-          className={`inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-xs font-semibold ${
+          className={`inline-flex items-center justify-center min-w-[18px] h-[18px] sm:min-w-[20px] sm:h-5 px-1 sm:px-1.5 rounded-full text-[10px] sm:text-xs font-semibold ${
             active
               ? "bg-[#185FA5] text-[#E6F1FB]"
               : "bg-slate-100 text-slate-500"
@@ -198,7 +198,7 @@ function TabButton({ tab, active, count, onClick }) {
           {count}
         </span>
       </div>
-      <span className="text-xs text-slate-400 mt-1 pl-6">{sub}</span>
+      <span className="text-[10px] sm:text-xs text-slate-400 mt-0.5 sm:mt-1 pl-[22px] sm:pl-6">{sub}</span>
     </button>
   );
 }
@@ -251,25 +251,25 @@ function ScheduleRow({ r, onEdit, onDelete, deleting }) {
   const dosisVaksins = r.dosis_vaksins || [];
 
   return (
-    <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-50 last:border-0 hover:bg-slate-50/60 transition-colors">
+    <div className="flex items-start sm:items-center gap-2 sm:gap-3 px-3 sm:px-5 py-3 sm:py-4 border-b border-slate-50 last:border-0 hover:bg-slate-50/60 transition-colors">
       {/* Date box */}
-      <div className="min-w-[60px] text-center bg-slate-50 rounded-xl py-2 px-1 border border-slate-100 shrink-0">
-        <p className="text-[10px] text-slate-400 capitalize">{day}</p>
-        <p className="text-xl font-bold text-slate-800 leading-tight">{num}</p>
-        <p className="text-[10px] text-slate-400 capitalize">{mon}</p>
+      <div className="min-w-[48px] sm:min-w-[60px] text-center bg-slate-50 rounded-xl py-1.5 sm:py-2 px-1 border border-slate-100 shrink-0">
+        <p className="text-[9px] sm:text-[10px] text-slate-400 capitalize">{day}</p>
+        <p className="text-base sm:text-xl font-bold text-slate-800 leading-tight">{num}</p>
+        <p className="text-[9px] sm:text-[10px] text-slate-400 capitalize">{mon}</p>
       </div>
 
       {/* Info */}
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
           <span
-            className={`text-xs font-semibold px-2 py-0.5 rounded-lg ${color.bg} ${color.text}`}
+            className={`text-[10px] sm:text-xs font-semibold px-1.5 sm:px-2 py-0.5 rounded-lg ${color.bg} ${color.text}`}
           >
             {r.layanan || "-"}
           </span>
           {done ? (
             <span
-              className={`text-xs font-semibold px-2 py-0.5 rounded-full ${getStatusBadgeClass(
+              className={`text-[10px] sm:text-xs font-semibold px-1.5 sm:px-2 py-0.5 rounded-full ${getStatusBadgeClass(
                 "done"
               )}`}
             >
@@ -277,7 +277,7 @@ function ScheduleRow({ r, onEdit, onDelete, deleting }) {
             </span>
           ) : today ? (
             <span
-              className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full ${getStatusBadgeClass(
+              className={`inline-flex items-center gap-1 text-[10px] sm:text-xs font-semibold px-1.5 sm:px-2 py-0.5 rounded-full ${getStatusBadgeClass(
                 "today"
               )}`}
             >
@@ -286,7 +286,7 @@ function ScheduleRow({ r, onEdit, onDelete, deleting }) {
             </span>
           ) : upcoming ? (
             <span
-              className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full ${getStatusBadgeClass(
+              className={`inline-flex items-center gap-1 text-[10px] sm:text-xs font-semibold px-1.5 sm:px-2 py-0.5 rounded-full ${getStatusBadgeClass(
                 "upcoming"
               )}`}
             >
@@ -294,7 +294,7 @@ function ScheduleRow({ r, onEdit, onDelete, deleting }) {
               Mendatang
             </span>
           ) : (
-            <span className="text-xs text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
+            <span className="text-[10px] sm:text-xs text-slate-600 bg-slate-100 px-1.5 sm:px-2 py-0.5 rounded-full border border-slate-200">
               Selesai
             </span>
           )}
@@ -302,12 +302,12 @@ function ScheduleRow({ r, onEdit, onDelete, deleting }) {
 
         {/* Dosis Vaksin chips */}
         {dosisVaksins.length > 0 && (
-          <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-            <Syringe size={11} className="text-slate-400" />
+          <div className="flex items-center gap-1 sm:gap-1.5 mt-1 sm:mt-1.5 flex-wrap">
+            <Syringe size={10} className="text-slate-400 flex-shrink-0" />
             {dosisVaksins.map(d => (
               <span
                 key={d.id}
-                className="text-xs px-1.5 py-0.5 bg-[#185FA5]/5 text-[#185FA5] rounded-full"
+                className="text-[10px] sm:text-xs px-1 sm:px-1.5 py-0.5 bg-[#185FA5]/5 text-[#185FA5] rounded-full max-w-[130px] sm:max-w-none truncate"
               >
                 {d.Vaksin?.nama} - {d.nama_dosis}
               </span>
@@ -315,31 +315,31 @@ function ScheduleRow({ r, onEdit, onDelete, deleting }) {
           </div>
         )}
         
-        <div className="flex items-center gap-3 mt-1.5 text-xs text-slate-400 flex-wrap">
-          <span className="flex items-center gap-1">
-            <Clock size={11} />
+        <div className="flex items-center gap-2 sm:gap-3 mt-1 sm:mt-1.5 text-[10px] sm:text-xs text-slate-400 flex-wrap">
+          <span className="flex items-center gap-0.5 sm:gap-1">
+            <Clock size={10} className="flex-shrink-0" />
             {waktuMulai || "-"}
             {waktuSelesai ? ` - ${waktuSelesai}` : ""}
           </span>
           {(r.posyandu?.nama || r.posyandu_id) && (
-            <span className="flex items-center gap-1">
-              <MapPin size={11} />
-              {r.posyandu?.nama || `Posyandu #${r.posyandu_id}`}
+            <span className="flex items-center gap-0.5 sm:gap-1 max-w-[100px] sm:max-w-none">
+              <MapPin size={10} className="flex-shrink-0" />
+              <span className="truncate">{r.posyandu?.nama || `Posyandu #${r.posyandu_id}`}</span>
             </span>
           )}
         </div>
         {r.keterangan && (
-          <p className="text-xs text-slate-400 mt-1 line-clamp-1 italic">
+          <p className="text-[10px] sm:text-xs text-slate-400 mt-1 line-clamp-1 italic">
             {r.keterangan}
           </p>
         )}
       </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-1 shrink-0">
+      <div className="flex flex-col sm:flex-row items-center gap-0.5 sm:gap-1 shrink-0">
         <button
           onClick={() => onEdit(r.id)}
-          className="p-2 text-slate-400 hover:text-[#185FA5] hover:bg-[#185FA5]/10 rounded-lg transition-colors"
+          className="p-1.5 sm:p-2 text-slate-400 hover:text-[#185FA5] hover:bg-[#185FA5]/10 rounded-lg transition-colors"
           title="Edit jadwal"
         >
           <Pencil size={14} />
@@ -347,7 +347,7 @@ function ScheduleRow({ r, onEdit, onDelete, deleting }) {
         <button
           onClick={() => onDelete(r.id)}
           disabled={deleting === r.id}
-          className="p-2 text-slate-400 hover:text-[#A32D2D] hover:bg-[#A32D2D]/10 rounded-lg transition-colors disabled:opacity-40"
+          className="p-1.5 sm:p-2 text-slate-400 hover:text-[#A32D2D] hover:bg-[#A32D2D]/10 rounded-lg transition-colors disabled:opacity-40"
           title="Hapus jadwal"
         >
           {deleting === r.id ? (
@@ -497,30 +497,29 @@ export default function JadwalLayananPage() {
 
   return (
     <MainLayout>
-      <div className="space-y-5">
+      <div className="space-y-4 sm:space-y-5">
         {/* Header */}
         <section className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-          <div className="flex items-center justify-between px-6 py-5">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#185FA5]/10 flex items-center justify-center">
-                <CalendarDays size={20} className="text-[#185FA5]" />
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 sm:px-6 py-4 sm:py-5 gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#185FA5]/10 flex items-center justify-center flex-shrink-0">
+                <CalendarDays size={18} className="text-[#185FA5] sm:hidden" />
+                <CalendarDays size={20} className="text-[#185FA5] hidden sm:block" />
               </div>
-              <div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="text-xl font-bold text-slate-800 leading-tight">
-                    Jadwal Layanan Imunisasi
-                  </h1>
-                </div>
-                <p className="text-sm text-slate-400 mt-0.5">
+              <div className="min-w-0">
+                <h1 className="text-base sm:text-xl font-bold text-slate-800 leading-tight truncate">
+                  Jadwal Layanan Imunisasi
+                </h1>
+                <p className="text-xs sm:text-sm text-slate-400 mt-0.5 truncate">
                   Kelola sesi posyandu — Dashboard Bidan
                 </p>
               </div>
             </div>
             <button
               onClick={() => navigate("/jadwal-layanan/form")}
-              className="flex items-center gap-2 px-4 py-2.5 bg-[#185FA5] hover:bg-[#0e4a84] text-white text-sm font-semibold rounded-xl transition-colors"
+              className="flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 bg-[#185FA5] hover:bg-[#0e4a84] text-white text-xs sm:text-sm font-semibold rounded-xl transition-colors w-full sm:w-auto justify-center"
             >
-              <Plus size={16} />
+              <Plus size={14} />
               Tambah Jadwal
             </button>
           </div>
@@ -528,24 +527,24 @@ export default function JadwalLayananPage() {
           {/* Stats bar */}
           {!loading && allRows.length > 0 && (
             <div className="grid grid-cols-3 divide-x divide-slate-100 border-t border-slate-100">
-              <div className="px-6 py-3 text-center">
-                <p className="text-2xl font-bold text-slate-800">{allRows.length}</p>
-                <p className="text-xs text-slate-400 mt-0.5">Total jadwal</p>
+              <div className="px-3 sm:px-6 py-2 sm:py-3 text-center">
+                <p className="text-lg sm:text-2xl font-bold text-slate-800">{allRows.length}</p>
+                <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5">Total jadwal</p>
               </div>
-              <div className="px-6 py-3 text-center">
-                <p className="text-2xl font-bold text-[#185FA5]">{tabCounts.today}</p>
-                <p className="text-xs text-slate-400 mt-0.5">Jadwal hari ini</p>
+              <div className="px-3 sm:px-6 py-2 sm:py-3 text-center">
+                <p className="text-lg sm:text-2xl font-bold text-[#185FA5]">{tabCounts.today}</p>
+                <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5">Jadwal hari ini</p>
               </div>
-              <div className="px-6 py-3 text-center">
-                <p className="text-2xl font-bold text-slate-500">{tabCounts.upcoming}</p>
-                <p className="text-xs text-slate-400 mt-0.5">Akan datang</p>
+              <div className="px-3 sm:px-6 py-2 sm:py-3 text-center">
+                <p className="text-lg sm:text-2xl font-bold text-slate-500">{tabCounts.upcoming}</p>
+                <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5">Akan datang</p>
               </div>
             </div>
           )}
         </section>
 
         {/* Tabs */}
-        <div className="flex gap-3 flex-wrap">
+        <div className="flex gap-2 sm:gap-3">
           {TABS.map((tab) => (
             <TabButton
               key={tab.key}
@@ -562,11 +561,11 @@ export default function JadwalLayananPage() {
           {loading || tabLoading ? (
             <LoadingState />
           ) : error ? (
-            <div className="flex flex-col items-center justify-center py-14 gap-3">
+            <div className="flex flex-col items-center justify-center py-14 gap-3 px-4">
               <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center">
                 <AlertCircle size={20} className="text-[#A32D2D]" />
               </div>
-              <p className="text-sm text-[#A32D2D] font-medium">{error}</p>
+              <p className="text-sm text-[#A32D2D] font-medium text-center">{error}</p>
               <button
                 onClick={loadData}
                 className="flex items-center gap-2 px-4 py-2 text-sm text-[#185FA5] border border-[#185FA5]/30 rounded-lg hover:bg-[#185FA5]/5"
@@ -593,8 +592,8 @@ export default function JadwalLayananPage() {
                   />
                 ))}
               </div>
-              <div className="px-5 py-3 border-t border-slate-100 bg-slate-50/50">
-                <p className="text-xs text-slate-400">
+              <div className="px-4 sm:px-5 py-3 border-t border-slate-100 bg-slate-50/50">
+                <p className="text-[10px] sm:text-xs text-slate-400">
                   Menampilkan {filteredRows.length} jadwal • {currentTab.label}
                 </p>
               </div>

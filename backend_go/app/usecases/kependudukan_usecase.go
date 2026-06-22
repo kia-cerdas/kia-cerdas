@@ -17,8 +17,11 @@ type KependudukanUsecase interface {
 	Delete(id int32) error
 	GetRekapPerDusun(kecamatan, desa string) ([]repositories.RekapDusun, error)
 	GetAllActive() ([]models.Kependudukan, error)
-	GetAllActiveByDesaID(desaID int32) ([]models.Kependudukan, error)
-	GetPendudukList(desaID *int32, role string, jenisKelamin string) ([]models.Kependudukan, error)
+	GetAllActiveByDesaID(posyanduID int32) ([]models.Kependudukan, error)
+	GetAllActiveByPosyanduID(posyanduID int32) ([]models.Kependudukan, error)
+	GetPendudukList(posyanduID *int32, role string, jenisKelamin string) ([]models.Kependudukan, error)
+	FindAllWithFilters(search string, page int, limit int, filters map[string]interface{}) ([]models.Kependudukan, int, error)
+	FindAll() ([]models.Kependudukan, error)
 }
 type kependudukanUsecase struct {
 	repo *repositories.KependudukanRepository
@@ -83,17 +86,28 @@ func (u *kependudukanUsecase) GetRekapPerDusun(kecamatan, desa string) ([]reposi
 func (u *kependudukanUsecase) GetAllActive() ([]models.Kependudukan, error) {
     return u.repo.GetAllActive()
 }
-func (u *kependudukanUsecase) GetAllActiveByDesaID(desaID int32) ([]models.Kependudukan, error) {
-    return u.repo.GetAllActiveByDesaID(desaID)  // Ganti u.kependudukanRepo menjadi u.repo
+func (u *kependudukanUsecase) GetAllActiveByDesaID(posyanduID int32) ([]models.Kependudukan, error) {
+    return u.repo.GetAllActiveByDesaID(posyanduID)  // Ganti u.kependudukanRepo menjadi u.repo
 }
 // usecases/kependudukan_usecase.go
 
-// GetPendudukList mengambil daftar penduduk dengan filter desa dan jenis kelamin
-func (u *kependudukanUsecase) GetPendudukList(desaID *int32, role string, jenisKelamin string) ([]models.Kependudukan, error) {
-    // Validasi jenis kelamin
-    if jenisKelamin != "" && jenisKelamin != "perempuan" && jenisKelamin != "laki" {
-        return nil, errors.New("jenis_kelamin harus 'perempuan', 'laki', atau kosong")
-    }
-    
-    return u.repo.GetPendudukList(desaID, role, jenisKelamin)
+func (u *kependudukanUsecase) GetAllActiveByPosyanduID(posyanduID int32) ([]models.Kependudukan, error) {
+    return u.repo.GetAllActiveByPosyanduID(posyanduID)
+}
+
+func (u *kependudukanUsecase) GetPendudukList(posyanduID *int32, role string, jenisKelamin string) ([]models.Kependudukan, error) {
+	// Validasi jenis kelamin
+	if jenisKelamin != "" && jenisKelamin != "perempuan" && jenisKelamin != "laki" {
+		return nil, errors.New("jenis_kelamin harus 'perempuan', 'laki', atau kosong")
+	}
+	
+	return u.repo.GetPendudukList(posyanduID, role, jenisKelamin)
+}
+// usecases/kependudukan_usecase.go
+
+func (u *kependudukanUsecase) FindAllWithFilters(search string, page int, limit int, filters map[string]interface{}) ([]models.Kependudukan, int, error) {
+    return u.repo.FindAllWithFilters(search, page, limit, filters)
+}
+func (u *kependudukanUsecase) FindAll() ([]models.Kependudukan, error) {
+    return u.repo.FindAll()
 }

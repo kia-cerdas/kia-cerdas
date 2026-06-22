@@ -46,9 +46,7 @@ type Main struct {
 	PemeriksaanDokterTrimester3   PemeriksaanDokterTrimester3Usecase
 	PemeriksaanLaboratoriumJiwa   PemeriksaanLaboratoriumJiwaUsecase
 	PemeriksaanLanjutanTrimester3 PemeriksaanLanjutanTrimester3Usecase
-	CatatanPelayananTrimester1    CatatanPelayananTrimester1Usecase
 	CatatanPelayananTrimester2    CatatanPelayananTrimester2Usecase
-	CatatanPelayananTrimester3    CatatanPelayananTrimester3Usecase
 	CatatanPelayananNifas         CatatanPelayananNifasUsecase
 	CatatanPelayananKehamilan     CatatanPelayananKehamilanUsecase
 	// GrafikEvaluasiKehamilan       GrafikEvaluasiKehamilanUsecase
@@ -68,6 +66,7 @@ type Main struct {
 	AdminTenagaKesehatan *AdminTenagaKesehatanUsecase
 	SuperadminUser       *SuperadminUserUsecase
 	Desa                 DesaUsecase
+	Wilayah              WilayahUsecase
 	KeteranganLahir      KeteranganLahirUsecase
 	Bbl                  BblUsecase
 	JenisPelayanan       JenisPelayananUsecase
@@ -133,10 +132,6 @@ type Main struct {
 	LaporanDewasa     LaporanDewasaUsecase
 	LaporanLansia     LaporanLansiaUsecase
 	PrediksiStunting  PrediksiStuntingUsecase
-	PemeriksaanAnak   PemeriksaanAnakUsecase
-	PemeriksaanRemaja PemeriksaanRemajaUsecase
-	PemeriksaanDewasa PemeriksaanDewasaUsecase
-	PemeriksaanLansia PemeriksaanLansiaUsecase
 	PendudukRisk      PendudukRiskUsecase
 	RiwayatCard       RiwayatCardUsecase
 	Pencatatan        PencatatanUsecase
@@ -239,9 +234,7 @@ func Init(opts Options) *Main {
 	)
 	m.PemeriksaanLaboratoriumJiwa = NewPemeriksaanLaboratoriumJiwaUsecase(opts.Repository.PemeriksaanLaboratoriumJiwa)
 	m.PemeriksaanLanjutanTrimester3 = NewPemeriksaanLanjutanTrimester3Usecase(opts.Repository.PemeriksaanLanjutanTrimester3)
-	m.CatatanPelayananTrimester1 = NewCatatanPelayananTrimester1Usecase(opts.Repository.CatatanPelayananTrimester1)
 	m.CatatanPelayananTrimester2 = NewCatatanPelayananTrimester2Usecase(opts.Repository.CatatanPelayananTrimester2)
-	m.CatatanPelayananTrimester3 = NewCatatanPelayananTrimester3Usecase(opts.Repository.CatatanPelayananTrimester3)
 	m.CatatanPelayananNifas = NewCatatanPelayananNifasUsecase(opts.Repository.CatatanPelayananNifas)
 	m.CatatanPelayananKehamilan = NewCatatanPelayananKehamilanUsecase(opts.Repository.CatatanPelayananKehamilan)
 	m.GrafikEvaluasiKehamilan = NewGrafikEvaluasiKehamilanUsecase(opts.Repository.GrafikEvaluasiKehamilan, opts.Repository.Kehamilan)
@@ -271,7 +264,6 @@ func Init(opts Options) *Main {
 	// 	opts.Repository.Ibu,
 	// )
 	m.AdminAkunKeluarga = NewAdminAkunKeluargaUsecase(
-		opts.Repository.KartuKeluarga,
 		opts.Repository.Kependudukan,
 	)
 	m.AdminTenagaKesehatan = NewAdminTenagaKesehatanUsecase(
@@ -282,7 +274,8 @@ func Init(opts Options) *Main {
 		opts.Repository.Role,
 	)
 	m.SuperadminUser = NewSuperadminUserUsecase(opts.Repository)
-	m.Desa = NewDesaUsecase(opts.Repository.Desa)
+	m.Desa = NewDesaUsecase(opts.Repository.Desa, opts.Repository.Wilayah)
+	m.Wilayah = NewWilayahUsecase(opts.Repository.Wilayah)
 	m.KeteranganLahir = NewKeteranganLahirUsecase(opts.Repository.KeteranganLahir)
 	m.JenisPelayanan = NewJenisPelayananUsecase(opts.Repository.JenisPelayanan)
 	m.KeluhanAnak = NewKeluhanAnakUseCase(opts.Repository.KeluhanAnak)
@@ -335,10 +328,6 @@ func Init(opts Options) *Main {
 	// Vaksin & Dosis Vaksin usecase
 	m.Vaksin = NewVaksinUsecase(opts.Repository.Vaksin)
 	m.DosisVaksin = NewDosisVaksinUsecase(opts.Repository.DosisVaksin)
-	m.PemeriksaanAnak = NewPemeriksaanAnakUsecase(opts.Repository.PemeriksaanAnak)
-	m.PemeriksaanRemaja = NewPemeriksaanRemajaUsecase(opts.Repository.PemeriksaanRemaja)
-	m.PemeriksaanDewasa = NewPemeriksaanDewasaUsecase(opts.Repository.PemeriksaanDewasa)
-	m.PemeriksaanLansia = NewPemeriksaanLansiaUsecase(opts.Repository.PemeriksaanLansia)
 	m.PendudukRisk = NewPendudukRiskUsecase(opts.Repository.Pemeriksaan, m.Anak)
 	m.RiwayatCard = NewRiwayatCardUsecase(
 		opts.Repository.Kependudukan,

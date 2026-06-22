@@ -48,3 +48,4 @@ void initBackgroundSyncListener(SyncProvider syncProvider, String tokenJwt) {
     }
   });
 }
+

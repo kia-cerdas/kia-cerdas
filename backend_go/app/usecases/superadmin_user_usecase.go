@@ -23,6 +23,7 @@ type SuperadminCreateBidanUserRequest struct {
 	DesaID      *int32 `json:"desa_id,omitempty"`
 	NoSTR       string `json:"no_str"`
 	NoSIPB      string `json:"no_sipb"`
+	PosyanduID	 *int32 `json:"posyandu_id,omitempty"`
 }
 
 type SuperadminCreateAdminDesaUserRequest struct {
@@ -254,7 +255,7 @@ func (u *SuperadminUserUsecase) CreateBidanUser(req *SuperadminCreateBidanUserRe
 	pendudukID64 := int64(req.PendudukID)
 	err = u.repo.DB().Transaction(func(tx *gorm.DB) error {
 		createdUser = models.User{
-			Name:       strings.TrimSpace(req.Name),
+			Username:   strings.TrimSpace(req.Name),
 			Email:      email,
 			IsActive:   true,
 			Password:   hashedPassword,
@@ -272,6 +273,7 @@ func (u *SuperadminUserUsecase) CreateBidanUser(req *SuperadminCreateBidanUserRe
 			NoSTR:      strings.TrimSpace(req.NoSTR),
 			NoSIPB:     strings.TrimSpace(req.NoSIPB),
 			Status:     "aktif",
+			PosyanduID: req.PosyanduID,
 		}
 		if err := tx.Create(&createdBidan).Error; err != nil {
 			return err
@@ -359,7 +361,7 @@ func (u *SuperadminUserUsecase) CreateAdminDesaUser(req *SuperadminCreateAdminDe
 	var user *models.User
 	err = u.repo.DB().Transaction(func(tx *gorm.DB) error {
 		user = &models.User{
-			Name:       strings.TrimSpace(req.Name),
+			Username:   strings.TrimSpace(req.Name),
 			Email:      email,
 			IsActive:   true,
 			Password:   hashedPassword,
@@ -464,7 +466,7 @@ func (u *SuperadminUserUsecase) CreateKaderUser(req *SuperadminCreateKaderUserRe
 	var createdKader models.Kader
 	err = u.repo.DB().Transaction(func(tx *gorm.DB) error {
 		createdUser = models.User{
-			Name:       strings.TrimSpace(req.Name),
+			Username:   strings.TrimSpace(req.Name),
 			Email:      email,
 			IsActive:   true,
 			Password:   hashedPassword,
@@ -585,7 +587,7 @@ func (u *SuperadminUserUsecase) CreateUser(req *SuperadminCreateUserRequest) (*m
 	var user *models.User
 	err = u.repo.DB().Transaction(func(tx *gorm.DB) error {
 		user = &models.User{
-			Name:       strings.TrimSpace(req.Name),
+			Username:   strings.TrimSpace(req.Name),
 			Email:      email,
 			IsActive:   true,
 			Password:   hashedPassword,
@@ -700,7 +702,7 @@ func (u *SuperadminUserUsecase) DeactivateUser(id int32) (*models.User, error) {
 			}
 		case "Kader":
 			if user.PendudukID != nil {
-				if err := tx.Model(&models.Kader{}).Where("id_penduduk = ? AND deleted_at IS NULL", *user.PendudukID).Updates(map[string]interface{}{
+				if err := tx.Model(&models.Kader{}).Where("penduduk_id  = ? AND deleted_at IS NULL", *user.PendudukID).Updates(map[string]interface{}{
 					"status":     "nonaktif",
 					"updated_at": gorm.Expr("NOW()"),
 				}).Error; err != nil {
@@ -746,7 +748,7 @@ func (u *SuperadminUserUsecase) ActivateUser(id int32) (*models.User, error) {
 			}
 		case "Kader":
 			if user.PendudukID != nil {
-				if err := tx.Model(&models.Kader{}).Where("id_penduduk = ? AND deleted_at IS NULL", *user.PendudukID).Updates(map[string]interface{}{
+				if err := tx.Model(&models.Kader{}).Where("penduduk_id = ? AND deleted_at IS NULL", *user.PendudukID).Updates(map[string]interface{}{
 					"status":     "aktif",
 					"updated_at": gorm.Expr("NOW()"),
 				}).Error; err != nil {
@@ -880,7 +882,7 @@ func (u *SuperadminUserUsecase) CreateIbuUser(req *SuperadminCreateUserRequest) 
 	// Simpan ke database dengan transaction
 	err = u.repo.DB().Transaction(func(tx *gorm.DB) error {
 		user = &models.User{
-			Name:       strings.TrimSpace(req.Name),
+			Username:   strings.TrimSpace(req.Name),
 			Email:      email,
 			IsActive:   true,
 			Password:   hashedPassword,

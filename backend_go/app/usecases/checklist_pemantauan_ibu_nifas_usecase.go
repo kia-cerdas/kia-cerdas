@@ -99,8 +99,8 @@ func (u *ChecklistPemantauanIbuNifasUsecase) GetFilledDaysWithStatusByUserID(use
 
 // BAGIAN KADER
 // GetAll mengambil semua checklist pemantauan ibu nifas untuk ditampilkan ke kader.
-func (u *ChecklistPemantauanIbuNifasUsecase) GetAll() ([]models.ChecklistPemantauanIbuNifas, error) {
-	return u.repo.FindAllWithKehamilan()
+func (u *ChecklistPemantauanIbuNifasUsecase) GetAll(posyanduID *int32) ([]models.ChecklistPemantauanIbuNifas, error) {
+	return u.repo.FindAllWithKehamilan(posyanduID)
 }
  
 // Verify digunakan kader untuk menandai bahwa data sudah ditinjau.

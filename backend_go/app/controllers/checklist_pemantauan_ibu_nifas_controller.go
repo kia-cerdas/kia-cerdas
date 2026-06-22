@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"monitoring-service/app/middlewares"
 	"monitoring-service/app/models"
 	"monitoring-service/app/usecases"
 
@@ -179,7 +180,9 @@ func (ctrl *ChecklistPemantauanIbuNifasController) SaveMine(c echo.Context) erro
 
 // GetAll mengambil semua data checklist pemantauan ibu nifas untuk ditampilkan ke kader.
 func (ctrl *ChecklistPemantauanIbuNifasController) GetAll(c echo.Context) error {
-	data, err := ctrl.usecase.GetAll()
+	posyanduID := middlewares.GetPosyanduID(c)
+
+	data, err := ctrl.usecase.GetAll(posyanduID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
 			"message": "Gagal mengambil data checklist pemantauan ibu nifas",

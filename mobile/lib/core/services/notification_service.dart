@@ -1,12 +1,24 @@
 import 'dart:convert';
-import 'dart:io' show Platform;
+
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:ta_pa2_pa3_project/features/ibu/imunisasi/presentation/screens/imunisasi_screen.dart';
+import 'package:ta_pa2_pa3_project/features/ibu/imunisasi/presentation/screens/ubah_jadwal.dart';
 import '../../firebase_options.dart';
+
+const _androidChannel = AndroidNotificationChannel(
+  'kia_app_channel',
+  'KIA App Notifications',
+  description: 'Notifikasi pengingat imunisasi dan layanan KIA',
+  importance: Importance.max,
+);
+
+const _actionLihat = 'lihat';
+const _actionUbahJadwal = 'ubah_jadwal';
 
 // Background message handler must be a top-level function
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -16,9 +28,6 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     );
   } catch (_) {}
 
-  // You can perform background handling here (e.g., log, save to DB)
-  // Note: showing local notifications from background works but may
-  // require additional platform setup.
   return;
 }
 
@@ -37,20 +46,38 @@ class NotificationService {
       return;
     }
 
-    // Request permissions and initialize local notifications
-    if (Platform.isIOS) {
-      await FirebaseMessaging.instance.requestPermission(
-        alert: true,
-        badge: true,
-        sound: true,
-      );
-    }
+    // Request permissions — Android 13+ also needs explicit permission
+    await FirebaseMessaging.instance.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+
+    await _localNotificationsPlugin
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(_androidChannel);
 
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    const DarwinInitializationSettings initializationSettingsIOS =
-        DarwinInitializationSettings();
+    final DarwinInitializationSettings initializationSettingsIOS =
+        DarwinInitializationSettings(
+      notificationCategories: [
+        DarwinNotificationCategory(
+          'imunisasi_reminder',
+          actions: [
+            DarwinNotificationAction.plain(
+              _actionLihat,
+              'Lihat',
+            ),
+            DarwinNotificationAction.plain(
+              _actionUbahJadwal,
+              'Ubah Jadwal',
+            ),
+          ],
+        ),
+      ],
+    );
 
     final InitializationSettings initializationSettings = InitializationSettings(
       android: initializationSettingsAndroid,
@@ -59,8 +86,10 @@ class NotificationService {
 
     await _localNotificationsPlugin.initialize(
       initializationSettings,
-      onDidReceiveNotificationResponse: (NotificationResponse notificationResponse) async {
-        _handleNotificationTap(notificationResponse.payload ?? '');
+      onDidReceiveNotificationResponse: (NotificationResponse response) async {
+        final payload = response.payload ?? '';
+        final actionId = response.actionId;
+        _handleAction(payload, actionId);
       },
     );
 
@@ -75,68 +104,102 @@ class NotificationService {
     // When app opened from notification (terminated)
     FirebaseMessaging.instance.getInitialMessage().then((message) {
       if (message != null) {
-        _handleRemoteMessageNavigation(message);
+        _handleRemoteMessageNavigation(message, null);
       }
     });
 
     // When user taps a notification (app in background)
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      _handleRemoteMessageNavigation(message);
+      _handleRemoteMessageNavigation(message, null);
     });
   }
 
   static Future<void> _showLocalNotificationFromRemote(RemoteMessage message) async {
     final notification = message.notification;
-    final android = message.notification?.android;
-
     final title = notification?.title ?? '';
     final body = notification?.body ?? '';
+    final data = message.data;
+    final isImunisasiReminder = data['type'] == 'reminder_imunisasi';
 
-    const AndroidNotificationDetails androidPlatformChannelSpecifics =
-        AndroidNotificationDetails(
-      'kia_app_channel',
-      'KIA App Notifications',
-      channelDescription: 'Notifications for KIA app',
-      importance: Importance.max,
+    final AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+      _androidChannel.id,
+      _androidChannel.name,
+      channelDescription: _androidChannel.description,
       priority: Priority.high,
       playSound: true,
+      actions: isImunisasiReminder
+          ? const [
+              AndroidNotificationAction(
+                _actionLihat,
+                'Lihat',
+                showsUserInterface: true,
+              ),
+              AndroidNotificationAction(
+                _actionUbahJadwal,
+                'Ubah Jadwal',
+                showsUserInterface: true,
+              ),
+            ]
+          : null,
     );
 
-    const DarwinNotificationDetails iOSPlatformChannelSpecifics = DarwinNotificationDetails();
-
-    const NotificationDetails platformChannelSpecifics = NotificationDetails(
-      android: androidPlatformChannelSpecifics,
-      iOS: iOSPlatformChannelSpecifics,
+    final NotificationDetails platformDetails = NotificationDetails(
+      android: androidDetails,
+      iOS: const DarwinNotificationDetails(
+        categoryIdentifier: 'imunisasi_reminder',
+      ),
     );
 
     await _localNotificationsPlugin.show(
       message.hashCode & 0x7FFFFFFF,
       title,
       body,
-      platformChannelSpecifics,
-      payload: message.data.isNotEmpty ? jsonEncode(message.data) : null,
+      platformDetails,
+      payload: data.isNotEmpty ? jsonEncode(data) : null,
     );
   }
 
-  static void _handleRemoteMessageNavigation(RemoteMessage message) {
+  static void _handleRemoteMessageNavigation(RemoteMessage message, String? actionId) {
     final payload = message.data.isNotEmpty ? jsonEncode(message.data) : null;
     if (payload != null) {
-      _handleNotificationTap(payload);
+      _handleAction(payload, actionId);
     }
   }
 
-  static void _handleNotificationTap(String payload) {
-    // Example: payload might contain a route or id. Implement parsing as needed.
-    // For now, we'll just try to open the home screen.
-    navigatorKey.currentState?.pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => _buildDefaultHome()),
-      (route) => false,
-    );
-  }
+  static void _handleAction(String payload, String? actionId) {
+    if (payload.isEmpty) return;
 
-  static Widget _buildDefaultHome() {
-    // This avoids import cycles; the actual app will show its own home based on AuthSession.
-    return const SizedBox.shrink();
+    Map<String, dynamic> data = {};
+    try {
+      data = jsonDecode(payload) as Map<String, dynamic>;
+    } catch (_) {
+      return;
+    }
+
+    final type = data['type'] as String? ?? '';
+
+    if (type == 'reminder_imunisasi') {
+      final anakId = int.tryParse(data['anak_id']?.toString() ?? '');
+      final jadwalId = int.tryParse(data['jadwal_id']?.toString() ?? '');
+
+      if (actionId == _actionUbahJadwal && jadwalId != null) {
+        navigatorKey.currentState?.push(
+          MaterialPageRoute(
+            builder: (_) => UbahJadwalScreen(jadwalId: jadwalId),
+          ),
+        );
+      } else if (anakId != null) {
+        // tombol "Lihat" atau tap body notifikasi
+        navigatorKey.currentState?.push(
+          MaterialPageRoute(
+            builder: (_) => ImunisasiScreen(
+              anakId: anakId,
+              namaAnak: '',
+            ),
+          ),
+        );
+      }
+    }
   }
 
   /// Helper to get FCM token (optional)

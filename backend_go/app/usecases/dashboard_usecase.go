@@ -10,16 +10,16 @@ import (
 )
 
 type DashboardUsecase interface {
-	GetJumlahPerKelompokUsia(desaID *int32, role string) (*models.JumlahKelompokUsia, error)
-	GetKesehatanPerKelompok(desaID *int32, role string) (models.KesehatanKelompokResponse, error)
-	GetCakupanPemeriksaan(desaID *int32, role string) ([]models.CakupanPemeriksaan, error)
+	GetJumlahPerKelompokUsia(posyanduID *int32, role string) (*models.JumlahKelompokUsia, error)
+	GetKesehatanPerKelompok(posyanduID *int32, role string) (models.KesehatanKelompokResponse, error)
+	GetCakupanPemeriksaan(posyanduID *int32, role string) ([]models.CakupanPemeriksaan, error)
 }
 
 type dashboardUsecase struct {
 	kependudukanUsecase KependudukanUsecase
 	pemeriksaanUsecase  PemeriksaanUsecase
 	anakUseCase         *AnakUseCase
-}
+}	
 
 // KONSTANTA BATAS USIA YANG KONSISTEN UNTUK SEMUA FUNGSI
 const (
@@ -78,28 +78,33 @@ func isRemaja(umur int) bool {
 }
 
 // getFilteredPenduduk mengembalikan daftar penduduk aktif dengan filter desa jika diperlukan
-func (u *dashboardUsecase) getFilteredPenduduk(desaID *int32, role string) ([]models.Kependudukan, error) {
+func (u *dashboardUsecase) getFilteredPenduduk(posyanduID *int32, role string) ([]models.Kependudukan, error) {
 	if middlewares.HasFullAccess(role) {
 		return u.kependudukanUsecase.GetAllActive()
 	}
-	if desaID != nil {
-		return u.kependudukanUsecase.GetAllActiveByDesaID(*desaID)
+	if posyanduID  != nil {
+		return u.kependudukanUsecase.GetAllActiveByPosyanduID(*posyanduID )
 	}
 	return []models.Kependudukan{}, nil
 }
 
 // getFilteredAnak mengembalikan daftar anak dengan filter desa jika diperlukan
-func (u *dashboardUsecase) getFilteredAnak(desaID *int32, role string) ([]models.AnakResponse, error) {
-	var targetDesaID *int32
-	if !middlewares.HasFullAccess(role) {
-		targetDesaID = desaID
+func (u *dashboardUsecase) getFilteredAnak(posyanduID  *int32, role string) ([]models.AnakResponse, error) {
+	// var targetPosyanduID  *int32
+	// Jika role punya akses penuh (Super Admin), bisa lihat semua
+	if middlewares.HasFullAccess(role) {
+		return u.anakUseCase.ListAnakByPosyandu(nil, 0)
 	}
-	return u.anakUseCase.ListAnakByDesa(targetDesaID, 0)
+	//  BIDAN / KADER: Filter berdasarkan posyandu_id
+	if posyanduID != nil {
+		return u.anakUseCase.ListAnakByPosyandu(posyanduID, 0)
+	}
+	return []models.AnakResponse{}, nil
 }
 
 // ==================== GET JUMLAH PER KELOMPOK USIA ====================
-func (u *dashboardUsecase) GetJumlahPerKelompokUsia(desaID *int32, role string) (*models.JumlahKelompokUsia, error) {
-	penduduks, err := u.getFilteredPenduduk(desaID, role)
+func (u *dashboardUsecase) GetJumlahPerKelompokUsia(posyanduID *int32, role string) (*models.JumlahKelompokUsia, error) {
+	penduduks, err := u.getFilteredPenduduk(posyanduID, role)
 	if err != nil {
 		return nil, err
 	}
@@ -130,7 +135,7 @@ func (u *dashboardUsecase) GetJumlahPerKelompokUsia(desaID *int32, role string) 
 	}
 
 	// Proses anak dari tabel anak (usia 0-9 tahun)
-	anaks, err := u.getFilteredAnak(desaID, role)
+	anaks, err := u.getFilteredAnak(posyanduID, role)
 	if err != nil {
 		return nil, err
 	}
@@ -156,8 +161,8 @@ func (u *dashboardUsecase) GetJumlahPerKelompokUsia(desaID *int32, role string) 
 }
 
 // ==================== GET KESEHATAN PER KELOMPOK ====================
-func (u *dashboardUsecase) GetKesehatanPerKelompok(desaID *int32, role string) (models.KesehatanKelompokResponse, error) {
-	penduduks, err := u.getFilteredPenduduk(desaID, role)
+func (u *dashboardUsecase) GetKesehatanPerKelompok(posyanduID *int32, role string) (models.KesehatanKelompokResponse, error) {
+	penduduks, err := u.getFilteredPenduduk(posyanduID, role)
 	if err != nil {
 		return nil, err
 	}
@@ -197,7 +202,7 @@ func (u *dashboardUsecase) GetKesehatanPerKelompok(desaID *int32, role string) (
 	}
 
 	// PROSES ANAK DARI TABEL ANAK (usia 0-9 tahun)
-	anaks, err := u.getFilteredAnak(desaID, role)
+	anaks, err := u.getFilteredAnak(posyanduID, role)
 	if err != nil {
 		return nil, err
 	}
@@ -296,9 +301,9 @@ func (u *dashboardUsecase) GetKesehatanPerKelompok(desaID *int32, role string) (
 }
 
 // ==================== GET CAKUPAN PEMERIKSAAN ====================
-func (u *dashboardUsecase) GetCakupanPemeriksaan(desaID *int32, role string) ([]models.CakupanPemeriksaan, error) {
+func (u *dashboardUsecase) GetCakupanPemeriksaan(posyanduID *int32, role string) ([]models.CakupanPemeriksaan, error) {
 	log.Println(">>> GetCakupanPemeriksaan called")
-	penduduks, err := u.getFilteredPenduduk(desaID, role)
+	penduduks, err := u.getFilteredPenduduk(posyanduID, role)
 	if err != nil {
 		return nil, err
 	}
@@ -338,7 +343,7 @@ func (u *dashboardUsecase) GetCakupanPemeriksaan(desaID *int32, role string) ([]
 	}
 
 	// PROSES ANAK DARI TABEL ANAK (usia 0-9 tahun)
-	anaks, err := u.getFilteredAnak(desaID, role)
+	anaks, err := u.getFilteredAnak(posyanduID, role)
 	if err != nil {
 		return nil, err
 	}

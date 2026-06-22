@@ -89,3 +89,16 @@ export const deleteEdukasi = async (resourcePath, id) => {
   const res = await api.delete(`${basePath(resourcePath)}/${id}`);
   return unwrap(res);
 };
+
+export const listPublicEdukasi = async (resourcePath, params = {}) => {
+  const queryString = new URLSearchParams(params).toString();
+  const url = queryString ? `/${resourcePath}?${queryString}` : `/${resourcePath}`;
+  const res = await api.get(url);
+  return unwrap(res) || [];
+};
+
+export const getPublicEdukasiById = async (resourcePath, id) => {
+  const res = await api.get(`/${resourcePath}/${id}`);
+  return unwrap(res);
+};
+

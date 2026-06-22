@@ -7,7 +7,7 @@ import (
 )
 
 type RingkasanDesaUsecase interface {
-	GetRingkasanDesaKader(desaID *int32, role string) (*models.RingkasanDesaResponse, error)
+	GetRingkasanDesaKader(posyanduID *int32, role string) (*models.RingkasanDesaResponse, error)
 }
 
 type ringkasanDesaUsecase struct {
@@ -41,12 +41,12 @@ func emptyVerifikasiItems() []models.RingkasanVerifikasiItem {
 // jumlah kunjungan yang perlu ditindak lanjuti, dan status verifikasi tiap menu) yang relevan
 // untuk kader yang login. Kader hanya melihat data desanya sendiri (desaID dari JWT, hasil dari
 // penduduk.desa_id miliknya); role dengan akses penuh (dokter/admin/superadmin) melihat seluruh desa.
-func (u *ringkasanDesaUsecase) GetRingkasanDesaKader(desaID *int32, role string) (*models.RingkasanDesaResponse, error) {
-	result := &models.RingkasanDesaResponse{DesaID: desaID, Verifikasi: emptyVerifikasiItems()}
+func (u *ringkasanDesaUsecase) GetRingkasanDesaKader(posyanduID *int32, role string) (*models.RingkasanDesaResponse, error) {
+	result := &models.RingkasanDesaResponse{DesaID: posyanduID, Verifikasi: emptyVerifikasiItems()}
 
 	var filterDesaID *int32
 	if !middlewares.HasFullAccess(role) {
-		filterDesaID = desaID
+		filterDesaID = posyanduID
 		if filterDesaID == nil {
 			// Kader belum terhubung dengan desa manapun, tidak ada data yang bisa ditampilkan.
 			return result, nil

@@ -21,7 +21,7 @@ type ChecklistPemantauanIbuNifasRepository interface {
 	Create(data *models.ChecklistPemantauanIbuNifas) error
 	Update(data *models.ChecklistPemantauanIbuNifas) error
 	// Kader
-	FindAllWithKehamilan() ([]models.ChecklistPemantauanIbuNifas, error)
+	FindAllWithKehamilan(posyanduID *int32) ([]models.ChecklistPemantauanIbuNifas, error)
 	FindByID(id int32) (*models.ChecklistPemantauanIbuNifas, error)
 	UpdateVerifikasi(data *models.ChecklistPemantauanIbuNifas) error
 }
@@ -110,17 +110,26 @@ func (r *checklistPemantauanIbuNifasRepository) Update(data *models.ChecklistPem
 
 // BAGIAN KADER 
 
+
+
 // FindAllWithKehamilan mengambil semua checklist nifas beserta info ibu,
 // digunakan oleh kader untuk melihat dan memverifikasi.
-func (r *checklistPemantauanIbuNifasRepository) FindAllWithKehamilan() ([]models.ChecklistPemantauanIbuNifas, error) {
+func (r *checklistPemantauanIbuNifasRepository) FindAllWithKehamilan(posyanduID *int32) ([]models.ChecklistPemantauanIbuNifas, error) {
 	var list []models.ChecklistPemantauanIbuNifas
-	err := r.db.
+	query := r.db.
 		Preload("Kehamilan").
 		Preload("Kehamilan.Ibu").
 		Preload("Kehamilan.Ibu.Kependudukan").
-		Where("deleted_at IS NULL").
-		Order("created_at DESC").
-		Find(&list).Error
+		Joins("JOIN kehamilan ON kehamilan.id = checklist_pemantauan_ibu_nifas.kehamilan_id").
+		Joins("JOIN ibu ON ibu.id = kehamilan.ibu_id").
+		Joins("JOIN penduduk ON penduduk.id = ibu.penduduk_id").
+		Where("checklist_pemantauan_ibu_nifas.deleted_at IS NULL")
+
+	if posyanduID != nil {
+		query = query.Where("penduduk.posyandu_id = ?", *posyanduID)
+	}
+
+	err := query.Order("checklist_pemantauan_ibu_nifas.created_at DESC").Find(&list).Error
 	return list, err
 }
  

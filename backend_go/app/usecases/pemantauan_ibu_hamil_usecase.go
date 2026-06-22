@@ -12,7 +12,7 @@ type PemantauanIbuHamilUsecase interface {
 	GetMine(userID int32) ([]models.PemantauanIbuHamil, error)
 	SaveMine(userID int32, req models.PemantauanIbuHamil) (*models.PemantauanIbuHamil, error)
 	// Kader
-	GetAll() ([]models.PemantauanIbuHamil, error)
+	GetAll(posyanduID *int32) ([]models.PemantauanIbuHamil, error)
 	Verify(id int32, namaKader string, tanggalVerifikasi *time.Time) error
 	// Untuk profil pemantauan ibu
 	GetByKehamilanID(userID int32, kehamilanID int32) ([]models.PemantauanIbuHamil, error)
@@ -126,8 +126,8 @@ func (u *pemantauanIbuHamilUsecase) GetByKehamilanID(userID int32, kehamilanID i
 
 // ─── BAGIAN KADER ────────────────────────────────────────────────────────────
 
-func (u *pemantauanIbuHamilUsecase) GetAll() ([]models.PemantauanIbuHamil, error) {
-	return u.repo.FindAllWithKehamilan()
+func (u *pemantauanIbuHamilUsecase) GetAll(posyanduID *int32) ([]models.PemantauanIbuHamil, error) {
+	return u.repo.FindAllWithKehamilan(posyanduID)
 }
 
 func (u *pemantauanIbuHamilUsecase) Verify(id int32, namaKader string, tanggalVerifikasi *time.Time) error {

@@ -15,9 +15,14 @@ export default function AlertNotification({ notification, onClose, onRetry }) {
   };
 
   // If there's an API/DB error code, show it as the main description, otherwise use message
-  const displayMessage = (!isSuccess && notification.code) 
+  const rawMessage = (!isSuccess && notification.code) 
     ? notification.code 
     : notification.message;
+
+  // Capitalize first letter of the message
+  const displayMessage = rawMessage
+    ? rawMessage.charAt(0).toUpperCase() + rawMessage.slice(1)
+    : "";
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 backdrop-blur-[1px] p-4 animate-swal-backdrop">

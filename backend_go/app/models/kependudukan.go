@@ -3,35 +3,34 @@ package models
 import "time"
 
 type Kependudukan struct {
-	IDKependudukan     int32      `gorm:"primaryKey;column:id;autoIncrement" json:"id"`
-	KartuKeluargaID    *int64     `gorm:"column:kartu_keluarga_id" json:"kartu_keluarga_id,omitempty"`
-	NIK                *string    `gorm:"column:nik;type:varchar(30);uniqueIndex" json:"nik,omitempty"`
-	NamaLengkap        string     `gorm:"column:nama_lengkap;type:text;not null" json:"nama_lengkap"`
-	JenisKelamin       string     `gorm:"column:jenis_kelamin;type:text" json:"jenis_kelamin"`
-	TanggalLahir       time.Time  `gorm:"column:tanggal_lahir" json:"tanggal_lahir"`
-	TempatLahir        string     `gorm:"column:tempat_lahir;type:text" json:"tempat_lahir"`
-	GolonganDarah      string     `gorm:"column:golongan_darah;type:text" json:"golongan_darah"`
-	Agama              string     `gorm:"column:agama;type:text" json:"agama"`
-	StatusPerkawinan   string     `gorm:"column:status_perkawinan;type:text" json:"status_perkawinan"`
-	PendidikanTerakhir string     `gorm:"column:pendidikan_terakhir;type:text" json:"pendidikan_terakhir"`
-	Pekerjaan          string     `gorm:"column:pekerjaan;type:text" json:"pekerjaan"`
-	BacaHuruf          string     `gorm:"column:baca_huruf;type:text" json:"baca_huruf"`
-	KedudukanKeluarga  string     `gorm:"column:kedudukan_keluarga;type:text" json:"kedudukan_keluarga"`
-	Telepon            string     `gorm:"column:telepon;type:varchar(20)" json:"telepon,omitempty"`
-	Dusun              string     `gorm:"column:dusun;type:text" json:"dusun"`
-	Kecamatan          string     `gorm:"column:kecamatan;type:text" json:"kecamatan"`
-	DesaID             *int32     `gorm:"column:desa_id" json:"desa_id,omitempty"`
-	Desa               *Desa      `gorm:"foreignKey:DesaID;references:ID" json:"desa,omitempty"`
-	TanggalPenambahan  *time.Time `gorm:"column:tanggal_penambahan" json:"tanggal_penambahan,omitempty"`
-	AsalPenduduk       string     `gorm:"column:asal_penduduk;type:text" json:"asal_penduduk"`
-	TanggalPengurangan *time.Time `gorm:"column:tanggal_pengurangan" json:"tanggal_pengurangan,omitempty"`
-	TujuanPindah       string     `gorm:"column:tujuan_pindah;type:text" json:"tujuan_pindah"`
-	TempatMeninggal    string     `gorm:"column:tempat_meninggal;type:text" json:"tempat_meninggal"`
-	Keterangan         string     `gorm:"column:keterangan;type:text" json:"keterangan"`
-	IsNonKTP           bool       `gorm:"column:is_non_ktp;default:false" json:"is_non_ktp"`
-	CreatedAt          time.Time  `gorm:"column:created_at" json:"created_at"`
-	UpdatedAt          time.Time  `gorm:"column:updated_at" json:"updated_at"`
-	DeletedAt          *time.Time `gorm:"column:deleted_at" json:"deleted_at,omitempty"`
+	IDKependudukan      int32      `gorm:"primaryKey;column:id;autoIncrement" json:"id"`
+	RW                  string     `gorm:"column:rw;type:varchar(10)" json:"rw"`
+	RT                  string     `gorm:"column:rt;type:varchar(10)" json:"rt"`
+	Dusun               string     `gorm:"column:dusun;type:varchar(100)" json:"dusun"`
+	Alamat              string     `gorm:"column:alamat;type:text" json:"alamat"`
+	KodeKeluarga        string     `gorm:"column:kode_keluarga;type:varchar(50);index:idx_kode_keluarga" json:"kode_keluarga"`
+	NamaKepalaKeluarga  string     `gorm:"column:nama_kepala_keluarga;type:varchar(255)" json:"nama_kepala_keluarga"`
+	NIK                 *string    `gorm:"column:nik;type:varchar(30);uniqueIndex" json:"nik,omitempty"`
+	NamaAnggotaKeluarga string     `gorm:"column:nama_anggota_keluarga;type:varchar(255)" json:"nama_anggota_keluarga"`
+	JenisKelamin        string     `gorm:"column:jenis_kelamin;type:text" json:"jenis_kelamin"`
+	Hubungan            string     `gorm:"column:hubungan;type:varchar(50);index:idx_hubungan" json:"hubungan"`
+	TempatLahir         string     `gorm:"column:tempat_lahir;type:text" json:"tempat_lahir"`
+	TanggalLahir        time.Time  `gorm:"column:tanggal_lahir" json:"tanggal_lahir"`
+	Status              string     `gorm:"column:status;type:varchar(50)" json:"status"`
+	Agama               string     `gorm:"column:agama;type:text" json:"agama"`
+	GolonganDarah       string     `gorm:"column:golongan_darah;type:text" json:"golongan_darah"`
+	Kewarganegaraan     string     `gorm:"column:kewarganegaraan;type:varchar(20);default:'WNI'" json:"kewarganegaraan"`
+	EtnisSuku           string     `gorm:"column:etnis_suku;type:varchar(100)" json:"etnis_suku"`
+	Pendidikan          string     `gorm:"column:pendidikan;type:varchar(100)" json:"pendidikan"`
+	Pekerjaan           string     `gorm:"column:pekerjaan;type:varchar(100)" json:"pekerjaan"`
+	Telepon             string     `gorm:"column:telepon;type:varchar(20)" json:"telepon,omitempty"`
+	DesaID              *int32     `gorm:"column:desa_id" json:"desa_id,omitempty"`
+	PosyanduID          *int32     `gorm:"column:posyandu_id;index" json:"posyandu_id,omitempty"`
+	Desa                *Desa      `gorm:"foreignKey:DesaID;references:ID" json:"desa,omitempty"`
+	Posyandu            *Posyandu  `gorm:"foreignKey:PosyanduID;references:ID" json:"posyandu,omitempty"`
+	CreatedAt           time.Time  `gorm:"column:created_at" json:"created_at"`
+	UpdatedAt           time.Time  `gorm:"column:updated_at" json:"updated_at"`
+	DeletedAt           *time.Time `gorm:"column:deleted_at" json:"deleted_at,omitempty"`
 }
 
 func (Kependudukan) TableName() string { return "penduduk" }

@@ -11,8 +11,8 @@ type LogTTDMMSUsecase interface {
 	GetMine(userID int32) ([]models.LogTTDMMS, error)
 	SaveMine(userID int32, bulanKe int32, hariKe int32, sudahDiminum bool) (*models.LogTTDMMS, error)
 	// Untuk kader 
-	GetRekapKader(userID int32) ([]repositories.RekapIbuTTDMMS, error)
-	GetDetailLogKader(kaderUserID int32, kehamilanID int32) ([]models.LogTTDMMS, error) 
+	GetRekapKader(posyanduID *int32) ([]repositories.RekapIbuTTDMMS, error)
+	GetDetailLogKader(posyanduID *int32, kehamilanID int32) ([]models.LogTTDMMS, error) 
 }
 
 type logTTDMMSUsecase struct {
@@ -133,23 +133,13 @@ func (u *logTTDMMSUsecase) SaveMine(
 const hariPerBulan = 30
  
 // GetRekapKader mengembalikan rekap kepatuhan TTD/MMS semua ibu hamil
-// yang berada di desa yang sama dengan kader yang sedang login.
-func (u *logTTDMMSUsecase) GetRekapKader(userID int32) ([]repositories.RekapIbuTTDMMS, error) {
-	if userID == 0 {
-		return nil, errors.New("user_id tidak valid")
+// yang berada di posyandu yang sama dengan kader.
+func (u *logTTDMMSUsecase) GetRekapKader(posyanduID *int32) ([]repositories.RekapIbuTTDMMS, error) {
+	if posyanduID == nil {
+		return nil, errors.New("posyandu_id tidak valid")
 	}
  
-	kader, err := u.repo.FindKaderByUserID(userID)
-	if err != nil {
-		return nil, errors.New("data kader tidak ditemukan")
-	}
- 
-	if kader.Penduduk.DesaID == nil {
-		return nil, errors.New("kader tidak memiliki data desa")
-	}
-	desaID := *kader.Penduduk.DesaID
- 
-	kehamilanList, err := u.repo.FindAllActiveKehamilanByDesaID(desaID)
+	kehamilanList, err := u.repo.FindAllActiveKehamilanByPosyanduID(*posyanduID)
 	if err != nil {
 		return nil, errors.New("gagal mengambil data kehamilan")
 	}
@@ -180,7 +170,7 @@ func (u *logTTDMMSUsecase) GetRekapKader(userID int32) ([]repositories.RekapIbuT
 	for _, kehamilan := range kehamilanList {
 		namaIbu := ""
 		if kehamilan.Ibu != nil && kehamilan.Ibu.Kependudukan != nil {
-			namaIbu = kehamilan.Ibu.Kependudukan.NamaLengkap
+			namaIbu = kehamilan.Ibu.Kependudukan.NamaAnggotaKeluarga
 		}
  
 		selisihHari := int(now.Sub(kehamilan.HPHT).Hours() / 24)
@@ -229,26 +219,17 @@ func (u *logTTDMMSUsecase) GetRekapKader(userID int32) ([]repositories.RekapIbuT
 }
  
 // GetDetailLogKader mengembalikan seluruh log harian TTD/MMS milik satu ibu
-// berdasarkan kehamilan_id. Kader hanya boleh melihat ibu di desanya sendiri.
-func (u *logTTDMMSUsecase) GetDetailLogKader(kaderUserID int32, kehamilanID int32) ([]models.LogTTDMMS, error) {
-	if kaderUserID == 0 {
-		return nil, errors.New("user_id tidak valid")
+// berdasarkan kehamilan_id. Kader hanya boleh melihat ibu di posyandunya sendiri.
+func (u *logTTDMMSUsecase) GetDetailLogKader(posyanduID *int32, kehamilanID int32) ([]models.LogTTDMMS, error) {
+	if posyanduID == nil {
+		return nil, errors.New("posyandu_id tidak valid")
 	}
 	if kehamilanID == 0 {
 		return nil, errors.New("kehamilan_id tidak valid")
 	}
  
-	// Verifikasi kader valid dan ambil desa_id
-	kader, err := u.repo.FindKaderByUserID(kaderUserID)
-	if err != nil {
-		return nil, errors.New("data kader tidak ditemukan")
-	}
-	if kader.Penduduk.DesaID == nil {
-		return nil, errors.New("kader tidak memiliki data desa")
-	}
- 
-	// Verifikasi kehamilan ini memang ada di desa kader (keamanan)
-	belongs, err := u.repo.IsKehamilanInDesa(kehamilanID, *kader.Penduduk.DesaID)
+	// Verifikasi kehamilan ini memang ada di posyandu kader (keamanan)
+	belongs, err := u.repo.IsKehamilanInPosyandu(kehamilanID, *posyanduID)
 	if err != nil || !belongs {
 		return nil, errors.New("data tidak ditemukan atau tidak dalam wilayah kader")
 	}

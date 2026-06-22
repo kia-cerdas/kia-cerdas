@@ -10,7 +10,7 @@ export default function SetelahMelahirkanFormPage() {
       listPath="/edukasi-digital/setelah-melahirkan"
       fields={[
         { key: "judul", label: "Judul", type: "text" },
-        { key: "gambar_url", label: "URL gambar (opsional)", type: "text" },
+        { key: "gambar_url", label: "Gambar (opsional)", type: "image" },
         { key: "isi", label: "Isi konten", type: "textarea", rows: 6 },
       ]}
     />

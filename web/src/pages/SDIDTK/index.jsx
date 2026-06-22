@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, X, Save, UserCheck, ClipboardCheck, Loader2, ArrowLeft } from 'lucide-react';
+import { Plus, Save, Loader2, ArrowLeft } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
 import MainLayout from "../../components/Layout/MainLayout";
 import AlertNotification from "../../components/AlertNotification";
@@ -177,155 +177,205 @@ const FormSDIDTK = () => {
       <AlertNotification
         notification={notification}
         onClose={() => setNotification(null)}
-        onRetry={notification?.type === "error" ? () => {
-          setNotification(null);
-          setIsModalOpen(true);
-        } : null}
+        onRetry={notification?.type === "error" ? () => setNotification(null) : null}
       />
-      <div className="p-6 bg-gray-50 min-h-screen font-sans">
-        {/* NAVIGASI KEMBALI */}
-        <button
-          onClick={() => navigate(`/data-anak/dashboard/${idAnak}`)}
-          className="flex items-center gap-2 px-6 py-2 border border-blue-600 text-blue-600 hover:bg-blue-50 rounded-full font-medium text-sm transition-all group w-fit mb-4 mt-2"
-        >
-          <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Kembali
-        </button>
+      <div className="p-4 md:p-8 bg-[#f8fafc] min-h-screen font-['Noto_Sans',_sans-serif]">
+        <div className="max-w-7xl mx-auto space-y-6">
 
-        {/* HEADER */}
-        <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-4">
-          <div>
-            <h1 className="text-3xl font-black text-gray-900 uppercase tracking-tighter italic">Pemantauan Pertumbuhan & Perkembangan </h1>
+          {/* Header */}
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+              <button
+                onClick={() => navigate(`/data-anak/dashboard/${idAnak}`)}
+                className="inline-flex items-center gap-2 px-4 py-2 mb-3 bg-[#185FA5] hover:bg-[#185FA5]/90 text-white text-sm font-semibold rounded-xl transition-all active:scale-95 shadow-sm"
+              >
+                <ArrowLeft size={16} /> Kembali
+              </button>
+              <h1 className="text-2xl font-bold text-slate-800">Pemantauan Tumbuh Kembang (SDIDTK)</h1>
+              {anakData && (
+                <p className="text-sm text-slate-500 mt-0.5">
+                  Anak: <span className="font-semibold text-slate-700">{anakData.nama}</span>
+                  {" "}· Usia saat ini: <span className="font-semibold text-slate-700">{calculateAgeInMonths(anakData.tanggal_lahir)} bulan</span>
+                </p>
+              )}
+            </div>
+            {!isModalOpen && (
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-[#185FA5] hover:bg-[#185FA5]/90 text-white text-sm font-semibold rounded-xl transition-all active:scale-95 shadow-sm"
+              >
+                <Plus size={16} /> Input Pemeriksaan
+              </button>
+            )}
           </div>
-          <button onClick={() => setIsModalOpen(true)} className="bg-blue-600 text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-3 hover:bg-blue-700 transition-all shadow-2xl">
-            <Plus size={20} /> Input Pemeriksaan
-          </button>
-        </div>
 
-        {/* TABEL SESUAI GET DATA */}
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-center text-[9px] border-collapse">
-              <thead className="bg-blue-700 text-white uppercase font-black tracking-widest">
-                <tr>
-                  <th className="p-4 border-r border-gray-800" rowSpan="2">Bulan</th>
-                  <th className="p-2 border-b border-gray-800" colSpan="5">Pertumbuhan</th>
-                  <th className="p-2 border-b border-gray-800" colSpan="3">Perkembangan</th>
-                  <th className="p-2 border-b border-gray-800" colSpan="3">Emosional</th>
-                  <th className="p-4 border-l border-blue-800" rowSpan="2">PKAT</th>
-                  <th className="p-4 border-l border-blue-800" rowSpan="2">Tindakan</th>
-                  <th className="p-4 border-l border-blue-800" rowSpan="2">Kunjungan Ulang</th>
-                </tr>
-                <tr className="bg-blue-600 text-blue-100">
-                  {['BB/U', 'BB/TB', 'TB/U', 'LK/U', 'LiLA', 'KPSP', 'TDD', 'TDL', 'KMPE', 'M-CHAT', 'ACTRS'].map(h => (
-                    <th key={h} className="p-2 border-r border-blue-500 font-medium">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 italic">
-                {isLoading ? (
-                  <tr><td colSpan="14" className="p-10"><Loader2 className="animate-spin mx-auto" /></td></tr>
-                ) : dataList.map((row) => (
-                  <tr key={row.id} className="hover:bg-blue-50/30 transition-colors">
-                    <td className="p-4 font-black text-gray-900 border-r">{row.bulan_ke}</td>
-                    <td className="p-2 border-r">{row.bb_u}</td><td className="p-2 border-r">{row.bb_tb}</td>
-                    <td className="p-2 border-r">{decodeTBU(row.tb_u)}</td><td className="p-2 border-r">{row.lk_u}</td>
-                    <td className="p-2 border-r">{row.lila}</td><td className="p-2 border-r">{row.kpsp}</td>
-                    <td className="p-2 border-r">{row.tdd}</td><td className="p-2 border-r">{row.tdl}</td>
-                    <td className="p-2 border-r">{row.kmpe}</td><td className="p-2 border-r">{row.m_chat_revised}</td>
-                    <td className="p-2 border-r">{row.actrs}</td>
-                    <td className="p-2 border-l font-bold text-blue-700 uppercase">{row.hasil_pkat}</td>
-                    <td className="p-2 border-l text-[8px] text-gray-500 text-left px-3">{row.tindakan}</td>
-                    <td className="p-2 border-l text-[8px] text-gray-500 text-left px-3">{row.kunjungan_ulang}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* MODAL INPUT */}
-        {isModalOpen && (
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-[40px] w-full max-w-5xl shadow-2xl overflow-hidden animate-in zoom-in duration-300">
-              {/* Header */}
-              <div className="bg-blue-600 p-6 flex justify-between items-center text-white font-black uppercase">
-                <div className="flex items-center gap-4">
-                  <ClipboardCheck />
-                  <div>
-                    <span>Input Laporan SDIDTK</span>
-                    {anakData && (
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white/20 text-white text-[10px] font-black rounded-full border border-white/30 normal-case tracking-normal">
-                          Usia Anak Saat Ini: <strong>{calculateAgeInMonths(anakData.tanggal_lahir)} Bulan</strong>
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <button onClick={() => setIsModalOpen(false)}><X /></button>
+          {/* Form Input — inline */}
+          {isModalOpen && (
+            <div className="bg-white rounded-2xl border border-[#e2e8f0] p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-5">
+                <h2 className="text-[18px] font-semibold text-slate-800">Input Pemeriksaan SDIDTK</h2>
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="text-sm font-semibold text-slate-500 hover:text-slate-700 px-3 py-1.5 border border-[#e2e8f0] rounded-lg hover:bg-slate-50 transition-colors"
+                >
+                  Batal
+                </button>
               </div>
 
-              <form onSubmit={handleSubmit} className="p-10">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-
-                  {/* Kolom Kiri: Hanya Informasi Utama */}
-                  <div className="space-y-6">
-                    <InputField
-                      label={anakData ? `Bulan Ke- (Usia Sekarang: ${calculateAgeInMonths(anakData.tanggal_lahir)} Bulan)` : "Bulan Ke-"}
-                      type="number"
-                      min="1"
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Info dasar */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-600 mb-1.5">
+                      Bulan Ke-
+                      {anakData && <span className="font-normal text-slate-400 ml-1">(Usia sekarang: {calculateAgeInMonths(anakData.tanggal_lahir)} bulan)</span>}
+                    </label>
+                    <input
+                      type="number" min="1" required
+                      className="w-full bg-[#F7FAFB] border border-[#e2e8f0] rounded-xl px-4 py-2.5 text-sm text-slate-700 focus:outline-none focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5]"
                       value={formData.bulan_ke}
-                      onChange={e => {
-                        const val = e.target.value;
-                        if (val === "" || Number(val) > 0) {
-                          setFormData({ ...formData, bulan_ke: val });
-                        }
-                      }}
-                      required
+                      onChange={e => { const v = e.target.value; if (v === "" || Number(v) > 0) setFormData({ ...formData, bulan_ke: v }); }}
                     />
-                    <InputField
-                      label="Tanggal Periksa"
-                      type="date"
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-600 mb-1.5">Tanggal Periksa</label>
+                    <input
+                      type="date" required
+                      max={new Date().toISOString().split('T')[0]}
+                      className="w-full bg-[#F7FAFB] border border-[#e2e8f0] rounded-xl px-4 py-2.5 text-sm text-slate-700 focus:outline-none focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5]"
                       value={formData.tanggal}
                       onChange={e => setFormData({ ...formData, tanggal: e.target.value })}
-                      max={new Date().toISOString().split('T')[0]}
-                      required
                     />
-                    <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100">
-                      <p className="text-xs font-bold text-blue-800 uppercase mb-1">Info Sistem</p>
-                      <p className="text-[10px] text-blue-600 leading-relaxed">
-                        Kunjungan ulang dan saran medis akan dikalkulasi otomatis oleh AI sesuai hasil pemeriksaan.
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Kolom Kanan: Indikator Medis */}
-                  <div className="md:col-span-3 grid grid-cols-3 gap-x-6 gap-y-5 bg-gray-50 p-8 rounded-[32px] border">
-                    <SelectField label="BB/U" value={formData.bb_u} options={optBBU} onChange={v => setFormData({ ...formData, bb_u: v })} />
-                    <SelectField label="BB/TB" value={formData.bb_tb} options={optBBTB} onChange={v => setFormData({ ...formData, bb_tb: v })} />
-                    <SelectField label="TB/U" value={formData.tb_u} options={optTBU} onChange={v => setFormData({ ...formData, tb_u: v })} />
-                    <SelectField label="LK/U" value={formData.lk_u} options={optLKU} onChange={v => setFormData({ ...formData, lk_u: v })} />
-                    <SelectField label="LiLA" value={formData.lila} options={optLila} onChange={v => setFormData({ ...formData, lila: v })} />
-                    <SelectField label="KPSP" value={formData.kpsp} options={optKPSP} onChange={v => setFormData({ ...formData, kpsp: v })} />
-                    <SelectField label="Daya Dengar" value={formData.tdd} options={optNormalRujuk} onChange={v => setFormData({ ...formData, tdd: v })} />
-                    <SelectField label="Daya Lihat" value={formData.tdl} options={optNormalRujuk} onChange={v => setFormData({ ...formData, tdl: v })} />
-                    <SelectField label="KMPE" value={formData.kmpe} options={optNormalRujuk} onChange={v => setFormData({ ...formData, kmpe: v })} />
-                    <SelectField label="M-CHAT-R" value={formData.m_chat_revised} options={optNormalRujuk} onChange={v => setFormData({ ...formData, m_chat_revised: v })} />
-                    <SelectField label="ACTRS" value={formData.actrs} options={optNormalRujuk} onChange={v => setFormData({ ...formData, actrs: v })} />
                   </div>
                 </div>
 
-                <button
-                  disabled={isLoading}
-                  type="submit"
-                  className="w-full mt-10 bg-blue-700 text-white py-5 rounded-3xl font-black shadow-xl hover:bg-blue-800 transition-all uppercase flex items-center justify-center gap-3"
-                >
-                  {isLoading ? <Loader2 className="animate-spin" /> : <><Save size={20} /> Simpan</>}
-                </button>
+                {/* Indikator pertumbuhan */}
+                <div>
+                  <p className="text-sm font-semibold text-slate-700 mb-3">Indikator Pertumbuhan</p>
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                    {[
+                      { label: "BB/U", key: "bb_u", opts: optBBU },
+                      { label: "BB/TB", key: "bb_tb", opts: optBBTB },
+                      { label: "TB/U", key: "tb_u", opts: optTBU },
+                      { label: "LK/U", key: "lk_u", opts: optLKU },
+                      { label: "LILA", key: "lila", opts: optLila },
+                    ].map(({ label, key, opts }) => (
+                      <div key={key}>
+                        <label className="block text-xs font-semibold text-slate-500 mb-1">{label}</label>
+                        <select
+                          className="w-full bg-[#F7FAFB] border border-[#e2e8f0] rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5]"
+                          value={formData[key]}
+                          onChange={e => setFormData({ ...formData, [key]: e.target.value })}
+                        >
+                          {opts.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                        </select>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Indikator perkembangan */}
+                <div>
+                  <p className="text-sm font-semibold text-slate-700 mb-3">Indikator Perkembangan & Emosional</p>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                    {[
+                      { label: "KPSP", key: "kpsp", opts: optKPSP },
+                      { label: "Daya Dengar (TDD)", key: "tdd", opts: optNormalRujuk },
+                      { label: "Daya Lihat (TDL)", key: "tdl", opts: optNormalRujuk },
+                      { label: "KMPE", key: "kmpe", opts: optNormalRujuk },
+                      { label: "M-CHAT-R", key: "m_chat_revised", opts: optNormalRujuk },
+                      { label: "ACTRS", key: "actrs", opts: optNormalRujuk },
+                    ].map(({ label, key, opts }) => (
+                      <div key={key}>
+                        <label className="block text-xs font-semibold text-slate-500 mb-1">{label}</label>
+                        <select
+                          className="w-full bg-[#F7FAFB] border border-[#e2e8f0] rounded-xl px-3 py-2 text-sm text-slate-700 focus:outline-none focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5]"
+                          value={formData[key]}
+                          onChange={e => setFormData({ ...formData, [key]: e.target.value })}
+                        >
+                          {opts.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                        </select>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <p className="text-xs text-slate-400">Tindakan dan kunjungan ulang akan dikalkulasi otomatis oleh sistem sesuai hasil pemeriksaan.</p>
+
+                <div className="flex justify-end pt-2">
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#185FA5] hover:bg-[#185FA5]/90 text-white text-sm font-semibold rounded-xl transition-all active:scale-95 disabled:opacity-50 shadow-sm"
+                  >
+                    {isLoading ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
+                    Simpan Data
+                  </button>
+                </div>
               </form>
             </div>
+          )}
+
+          {/* Tabel Riwayat */}
+          <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm overflow-hidden">
+            <div className="px-6 py-4 border-b border-[#e2e8f0]">
+              <h3 className="text-base font-semibold text-slate-800">Riwayat Pemeriksaan SDIDTK</h3>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-center text-xs border-collapse min-w-[900px]">
+                <thead>
+                  <tr className="bg-slate-100 border-b border-slate-200">
+                    <th className="px-4 py-3.5 text-xs font-semibold text-slate-600 text-left">Bulan</th>
+                    <th className="px-3 py-3.5 text-xs font-semibold text-slate-600">BB/U</th>
+                    <th className="px-3 py-3.5 text-xs font-semibold text-slate-600">BB/TB</th>
+                    <th className="px-3 py-3.5 text-xs font-semibold text-slate-600">TB/U</th>
+                    <th className="px-3 py-3.5 text-xs font-semibold text-slate-600">LK/U</th>
+                    <th className="px-3 py-3.5 text-xs font-semibold text-slate-600">LILA</th>
+                    <th className="px-3 py-3.5 text-xs font-semibold text-slate-600">KPSP</th>
+                    <th className="px-3 py-3.5 text-xs font-semibold text-slate-600">TDD</th>
+                    <th className="px-3 py-3.5 text-xs font-semibold text-slate-600">TDL</th>
+                    <th className="px-3 py-3.5 text-xs font-semibold text-slate-600">KMPE</th>
+                    <th className="px-3 py-3.5 text-xs font-semibold text-slate-600">M-CHAT</th>
+                    <th className="px-3 py-3.5 text-xs font-semibold text-slate-600">ACTRS</th>
+                    <th className="px-3 py-3.5 text-xs font-semibold text-slate-600">PKAT</th>
+                    <th className="px-4 py-3.5 text-xs font-semibold text-slate-600 text-left">Tindakan</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#e2e8f0]">
+                  {isLoading ? (
+                    <tr><td colSpan="14" className="py-12">
+                      <div className="flex flex-col items-center gap-3">
+                        <Loader2 className="animate-spin text-[#185FA5]" size={28} />
+                        <span className="text-sm text-slate-500">Memuat data...</span>
+                      </div>
+                    </td></tr>
+                  ) : dataList.length === 0 ? (
+                    <tr><td colSpan="14" className="py-12 text-slate-400 text-sm italic">Belum ada data pemeriksaan.</td></tr>
+                  ) : dataList.map((row) => (
+                    <tr key={row.id} className="hover:bg-[#F7FAFB] transition-colors">
+                      <td className="px-4 py-3 font-semibold text-slate-800 text-left">{row.bulan_ke}</td>
+                      <td className="px-3 py-3 text-slate-600">{row.bb_u}</td>
+                      <td className="px-3 py-3 text-slate-600">{row.bb_tb}</td>
+                      <td className="px-3 py-3 text-slate-600">{decodeTBU(row.tb_u)}</td>
+                      <td className="px-3 py-3 text-slate-600">{row.lk_u}</td>
+                      <td className="px-3 py-3 text-slate-600">{row.lila}</td>
+                      <td className="px-3 py-3 text-slate-600">{row.kpsp}</td>
+                      <td className="px-3 py-3 text-slate-600">{row.tdd}</td>
+                      <td className="px-3 py-3 text-slate-600">{row.tdl}</td>
+                      <td className="px-3 py-3 text-slate-600">{row.kmpe}</td>
+                      <td className="px-3 py-3 text-slate-600">{row.m_chat_revised}</td>
+                      <td className="px-3 py-3 text-slate-600">{row.actrs}</td>
+                      <td className="px-3 py-3 font-semibold text-[#185FA5]">{row.hasil_pkat}</td>
+                      <td className="px-4 py-3 text-left text-slate-500 max-w-[180px] truncate">{row.tindakan}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        )}
+
+        </div>
       </div>
     </MainLayout>
   );
@@ -336,21 +386,5 @@ const decodeTBU = (val) => {
   const map = { N: "Normal", TN: "Tidak Normal", SP: "Tidak Normal", P: "Tidak Normal", Ti: "Normal" };
   return map[val] ?? val ?? "-";
 };
-
-const InputField = ({ label, ...props }) => (
-  <div className="flex flex-col gap-1.5">
-    <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{label}</label>
-    <input {...props} className="border-b-2 border-gray-100 py-2 text-sm outline-none focus:border-blue-600 bg-transparent font-bold" />
-  </div>
-);
-
-const SelectField = ({ label, value, options, onChange }) => (
-  <div className="flex flex-col gap-1.5">
-    <label className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{label}</label>
-    <select value={value} onChange={e => onChange(e.target.value)} className="border-b-2 border-gray-100 py-2 text-sm outline-none bg-transparent focus:border-blue-600 font-bold text-gray-700 cursor-pointer">
-      {options.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-    </select>
-  </div>
-);
 
 export default FormSDIDTK;

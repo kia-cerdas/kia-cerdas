@@ -36,9 +36,7 @@ type Main struct {
 	PemeriksaanDokterTrimester3   *PemeriksaanDokterTrimester3Controller
 	PemeriksaanLaboratoriumJiwa   *PemeriksaanLaboratoriumJiwaController
 	PemeriksaanLanjutanTrimester3 *PemeriksaanLanjutanTrimester3Controller
-	CatatanPelayananTrimester1    *CatatanPelayananTrimester1Controller
 	CatatanPelayananTrimester2    *CatatanPelayananTrimester2Controller
-	CatatanPelayananTrimester3    *CatatanPelayananTrimester3Controller
 	CatatanPelayananNifas         *CatatanPelayananNifasController
 	CatatanPelayananKehamilan     *CatatanPelayananKehamilanController
 	GrafikPeningkatanBB           *GrafikPeningkatanBBController
@@ -54,6 +52,7 @@ type Main struct {
 	RiwayatKehamilanLalu          *RiwayatKehamilanLaluController
 	KeteranganLahir               *KeteranganLahirController
 	Desa                          *DesaController
+	Wilayah                       *WilayahController
 	Kependudukan                  *KependudukanController
 	JenisPelayanan                *JenisPelayananController
 	KategoriUmur                  *KategoriUmurController
@@ -105,10 +104,6 @@ type Main struct {
 	LaporanRemaja            *LaporanRemajaController
 	LaporanDewasa            *LaporanDewasaController
 	LaporanLansia            *LaporanLansiaController
-	PemeriksaanAnak          *PemeriksaanAnakController
-	PemeriksaanRemaja        *PemeriksaanRemajaController
-	PemeriksaanDewasa        *PemeriksaanDewasaController
-	PemeriksaanLansia        *PemeriksaanLansiaController
 	Dashboard                *DashboardController
 	PuskesmasDashboard       *PuskesmasDashboardController
 	PendudukRisk             *PendudukRiskController
@@ -168,9 +163,7 @@ func Init(opts Options) *Main {
 	m.PemeriksaanDokterTrimester3 = NewPemeriksaanDokterTrimester3Controller(opts.UseCases.PemeriksaanDokterTrimester3)
 	m.PemeriksaanLaboratoriumJiwa = NewPemeriksaanLaboratoriumJiwaController(opts.UseCases.PemeriksaanLaboratoriumJiwa)
 	m.PemeriksaanLanjutanTrimester3 = NewPemeriksaanLanjutanTrimester3Controller(opts.UseCases.PemeriksaanLanjutanTrimester3)
-	m.CatatanPelayananTrimester1 = NewCatatanPelayananTrimester1Controller(opts.UseCases.CatatanPelayananTrimester1)
 	m.CatatanPelayananTrimester2 = NewCatatanPelayananTrimester2Controller(opts.UseCases.CatatanPelayananTrimester2)
-	m.CatatanPelayananTrimester3 = NewCatatanPelayananTrimester3Controller(opts.UseCases.CatatanPelayananTrimester3)
 	m.CatatanPelayananNifas = NewCatatanPelayananNifasController(opts.UseCases.CatatanPelayananNifas)
 	m.CatatanPelayananKehamilan = NewCatatanPelayananKehamilanController(opts.UseCases.CatatanPelayananKehamilan)
 	m.GrafikEvaluasiKehamilan = NewGrafikEvaluasiKehamilanController(opts.UseCases.GrafikEvaluasiKehamilan)
@@ -193,6 +186,7 @@ func Init(opts Options) *Main {
 	m.RiwayatKehamilanLalu = NewRiwayatKehamilanLaluController(opts.UseCases.RiwayatKehamilanLalu)
 	m.KeteranganLahir = NewKeteranganLahirController(opts.UseCases.KeteranganLahir)
 	m.Desa = NewDesaController(opts.UseCases.Desa)
+	m.Wilayah = NewWilayahController(opts.UseCases.Wilayah)
 	m.Kependudukan = NewKependudukanController(opts.UseCases.Kependudukan)
 	m.JenisPelayanan = NewJenisPelayananController(opts.UseCases.JenisPelayanan)
 	m.KategoriUmur = NewKategoriUmurController(opts.UseCases.KategoriUmur)
@@ -238,10 +232,6 @@ func Init(opts Options) *Main {
 	m.DosisVaksin = NewDosisVaksinController(opts.UseCases.DosisVaksin, opts.UseCases.Vaksin)
 	m.Puskesmas = &PuskesmasController{Main: m}
 	m.Posyandu = &PosyanduController{Main: m}
-	m.PemeriksaanAnak = NewPemeriksaanAnakController(opts.UseCases.PemeriksaanAnak, opts.UseCases.Kependudukan)
-	m.PemeriksaanRemaja = NewPemeriksaanRemajaController(opts.UseCases.PemeriksaanRemaja, opts.UseCases.Kependudukan)
-	m.PemeriksaanDewasa = NewPemeriksaanDewasaController(opts.UseCases.PemeriksaanDewasa, opts.UseCases.Kependudukan)
-	m.PemeriksaanLansia = NewPemeriksaanLansiaController(opts.UseCases.PemeriksaanLansia, opts.UseCases.Kependudukan)
 
 	dashboardUsecase := usecases.NewDashboardUsecase(
 		opts.UseCases.Kependudukan,

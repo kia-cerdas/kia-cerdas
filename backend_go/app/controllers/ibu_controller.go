@@ -75,7 +75,7 @@ func (c *IbuController) Create(ctx echo.Context) error {
 		// ... kirim error bad request
 	}
 
-	// ⭐ PERUBAHAN: tangkap hasil kembalian
+	//  PERUBAHAN: tangkap hasil kembalian
 	createdIbu, err := c.usecase.Create(ibu)
 	if err != nil {
 		fmt.Println("Error creating ibu:", err.Error())
@@ -85,7 +85,7 @@ func (c *IbuController) Create(ctx echo.Context) error {
 		})
 	}
 
-	// ⭐ KEMBALIKAN data ibu yang sesungguhnya (bisa data lama atau baru)
+	//  KEMBALIKAN data ibu yang sesungguhnya (bisa data lama atau baru)
 	return ctx.JSON(http.StatusCreated, models.Response{
 		StatusCode: http.StatusCreated,
 		Message:    "Berhasil membuat data ibu",
@@ -243,10 +243,10 @@ func (c *IbuController) Delete(ctx echo.Context) error {
 }
 func (c *IbuController) GetDashboard(ctx echo.Context) error {
 	// Ambil desa_id dan role dari context (sudah diset middleware)
-	desaID := middlewares.GetDesaID(ctx)
+	posyanduID := middlewares.GetPosyanduID(ctx)
 	role := middlewares.GetRole(ctx)
 
-	list, err := c.usecase.GetDashboard(desaID, role)
+	list, err := c.usecase.GetDashboard(posyanduID, role)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, models.Response{
 			StatusCode: 500,
@@ -274,7 +274,7 @@ func (c *IbuController) GetByPendudukID(ctx echo.Context) error {
 
 	ibu, err := c.usecase.GetByPendudukID(int32(pendudukID))
 	if err != nil {
-		// ✅ Jika record not found, return 200 dengan data nil (bukan 500)
+		//  Jika record not found, return 200 dengan data nil (bukan 500)
 		return ctx.JSON(http.StatusOK, models.Response{
 			StatusCode: http.StatusOK,
 			Message:    "Penduduk belum terdaftar sebagai ibu",

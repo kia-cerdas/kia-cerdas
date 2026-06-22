@@ -28,12 +28,12 @@ func NewLaporanDewasaController(usecase usecases.LaporanDewasaUsecase) *LaporanD
 // @Failure      500  {object}  models.Response
 // @Router       /tenaga-kesehatan/laporan/dewasa/preview [get]
 func (c *LaporanDewasaController) Preview(ctx echo.Context) error {
-	desaID := middlewares.GetDesaID(ctx)
+	posyanduID := middlewares.GetPosyanduID(ctx)
 	role := middlewares.GetRole(ctx)
 	startDate := ctx.QueryParam("start_date")
 	endDate := ctx.QueryParam("end_date")
 
-	data, err := c.usecase.GetLaporanDewasa(startDate, endDate, desaID, role)
+	data, err := c.usecase.GetLaporanDewasa(startDate, endDate, posyanduID, role)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
 			"message": err.Error(),
@@ -57,12 +57,12 @@ func (c *LaporanDewasaController) Preview(ctx echo.Context) error {
 // @Failure      500  {object}  models.Response
 // @Router       /tenaga-kesehatan/laporan/dewasa/export/excel [get]
 func (c *LaporanDewasaController) ExportExcel(ctx echo.Context) error {
-	desaID := middlewares.GetDesaID(ctx)
+	posyanduID := middlewares.GetPosyanduID(ctx)
 	role := middlewares.GetRole(ctx)
 	startDate := ctx.QueryParam("start_date")
 	endDate := ctx.QueryParam("end_date")
 
-	f, err := c.usecase.ExportExcelLaporanDewasa(startDate, endDate, desaID, role)
+	f, err := c.usecase.ExportExcelLaporanDewasa(startDate, endDate, posyanduID, role)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
 			"message": err.Error(),

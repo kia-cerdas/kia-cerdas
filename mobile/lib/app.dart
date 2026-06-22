@@ -10,6 +10,8 @@ import 'features/kader/presentation/dashboard_screen.dart';
 import 'core/routes/navigator_key.dart';
 import 'db/sync_provider.dart';
 import 'main.dart'; // Memastikan initBackgroundSyncListener terbaca
+import 'package:flutter_localizations/flutter_localizations.dart';
+
 
 class KiaApp extends StatefulWidget {
   const KiaApp({super.key});
@@ -52,13 +54,27 @@ class _KiaAppState extends State<KiaApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Aplikasi KIA Cerdas',
-      debugShowCheckedModeBanner: false,
-      navigatorKey: navigatorKey,
-      theme: AppTheme.lightTheme,
-      home: _buildHome(),
-    );
+return MaterialApp(
+  title: 'Aplikasi Generasi Sehat',
+  debugShowCheckedModeBanner: false,
+  navigatorKey: navigatorKey,
+  theme: AppTheme.lightTheme,
+
+  locale: const Locale('id', 'ID'),
+
+  supportedLocales: const [
+    Locale('id', 'ID'),
+    Locale('en', 'US'),
+  ],
+
+  localizationsDelegates: const [
+    GlobalMaterialLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+  ],
+
+  home: _buildHome(),
+);
   }
 
   Widget _buildHome() {

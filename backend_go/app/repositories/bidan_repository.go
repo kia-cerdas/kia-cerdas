@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"errors"
 	"monitoring-service/app/models"
 	"time"
 
@@ -41,8 +42,17 @@ func (r *BidanRepository) FindByID(id int32) (*models.Bidan, error) {
 
 func (r *BidanRepository) FindByPendudukID(pendudukID int32) (*models.Bidan, error) {
 	var data models.Bidan
-	err := r.db.Where("penduduk_id = ? AND deleted_at IS NULL", pendudukID).First(&data).Error
-	return &data, err
+	err := r.db.Where("penduduk_id = ? AND deleted_at IS NULL", pendudukID).
+	  Preload("Penduduk").   
+        Preload("Posyandu").  
+	First(&data).Error
+    if err != nil {
+        if errors.Is(err, gorm.ErrRecordNotFound) {
+            return nil, nil // 
+        }
+        return nil, err
+    }
+    return &data, nil
 }
 
 func (r *BidanRepository) FindAnyByPendudukID(pendudukID int32) (*models.Bidan, error) {

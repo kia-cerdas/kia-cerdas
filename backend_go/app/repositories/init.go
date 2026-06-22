@@ -33,6 +33,7 @@ type Main struct {
 	User                          *UserRepository
 	Role                          *RoleRepository
 	Desa                          *DesaRepository
+	Wilayah                       *WilayahRepository
 	KartuKeluarga                 *KartuKeluargaRepository
 	Kependudukan                  *KependudukanRepository
 	Bidan                         *BidanRepository
@@ -44,13 +45,11 @@ type Main struct {
 	RiwayatKehamilanLalu          *RiwayatKehamilanLaluRepository
 	PemeriksaanDokterTrimester1   *PemeriksaanDokterTrimester1Repository
 	PemeriksaanLaboratoriumJiwa   *PemeriksaanLaboratoriumJiwaRepository
-	CatatanPelayananTrimester1    *CatatanPelayananTrimester1Repository
 	SkriningPreeklampsia          *SkriningPreeklampsiaRepository
 	SkriningDMGestasional         *SkriningDMGestasionalRepository
 	CatatanPelayananTrimester2    *CatatanPelayananTrimester2Repository
 	PemeriksaanDokterTrimester3   *PemeriksaanDokterTrimester3Repository
 	PemeriksaanLanjutanTrimester3 *PemeriksaanLanjutanTrimester3Repository
-	CatatanPelayananTrimester3    *CatatanPelayananTrimester3Repository
 	GrafikEvaluasiKehamilan       *GrafikEvaluasiKehamilanRepository
 	GrafikPeningkatanBB           *GrafikPeningkatanBBRepository
 	PenjelasanHasilGrafik         *PenjelasanHasilGrafikRepository
@@ -120,10 +119,6 @@ type Main struct {
 	LaporanDewasa            LaporanDewasaRepository
 	LaporanLansia            LaporanLansiaRepository
 	PrediksiStunting         PrediksiStuntingRepository
-	PemeriksaanAnak          PemeriksaanAnakRepository
-	PemeriksaanRemaja        PemeriksaanRemajaRepository
-	PemeriksaanDewasa        PemeriksaanDewasaRepository
-	PemeriksaanLansia        PemeriksaanLansiaRepository
 	Form                     FormRepository
 	Pemeriksaan              PemeriksaanRepository
 	PencatatanImunisasi      *PencatatanImunisasiRepository
@@ -157,6 +152,7 @@ func Init(opts Options) *Main {
 	m.ChecklistPemantauanIbuNifas = NewChecklistPemantauanIbuNifasRepository(opts.Postgres)
 	m.Role = NewRoleRepository(opts.Postgres)
 	m.Desa = NewDesaRepository(opts.Postgres)
+	m.Wilayah = NewWilayahRepository(opts.Postgres)
 	m.KartuKeluarga = NewKartuKeluargaRepository(opts.Postgres)
 	m.Kependudukan = NewKependudukanRepository(opts.Postgres)
 	m.Bidan = NewBidanRepository(opts.Postgres)
@@ -167,13 +163,11 @@ func Init(opts Options) *Main {
 	m.RiwayatKehamilanLalu = NewRiwayatKehamilanLaluRepository(opts.Postgres)
 	m.PemeriksaanDokterTrimester1 = NewPemeriksaanDokterTrimester1Repository(opts.Postgres)
 	m.PemeriksaanLaboratoriumJiwa = NewPemeriksaanLaboratoriumJiwaRepository(opts.Postgres)
-	m.CatatanPelayananTrimester1 = NewCatatanPelayananTrimester1Repository(opts.Postgres)
 	m.SkriningPreeklampsia = NewSkriningPreeklampsiaRepository(opts.Postgres)
 	m.SkriningDMGestasional = NewSkriningDMGestasionalRepository(opts.Postgres)
 	m.CatatanPelayananTrimester2 = NewCatatanPelayananTrimester2Repository(opts.Postgres)
 	m.PemeriksaanDokterTrimester3 = NewPemeriksaanDokterTrimester3Repository(opts.Postgres)
 	m.PemeriksaanLanjutanTrimester3 = NewPemeriksaanLanjutanTrimester3Repository(opts.Postgres)
-	m.CatatanPelayananTrimester3 = NewCatatanPelayananTrimester3Repository(opts.Postgres)
 	m.GrafikEvaluasiKehamilan = NewGrafikEvaluasiKehamilanRepository(opts.Postgres)
 	m.GrafikPeningkatanBB = NewGrafikPeningkatanBBRepository(opts.Postgres)
 	m.PenjelasanHasilGrafik = NewPenjelasanHasilGrafikRepository(opts.Postgres)
@@ -244,10 +238,6 @@ func Init(opts Options) *Main {
 	m.LaporanDewasa = NewLaporanDewasaRepository(opts.Postgres)
 	m.LaporanLansia = NewLaporanLansiaRepository(opts.Postgres)
 	m.PrediksiStunting = NewPrediksiStuntingRepository(opts.Postgres)
-	m.PemeriksaanAnak = NewPemeriksaanAnakRepository(opts.Postgres)
-	m.PemeriksaanRemaja = NewPemeriksaanRemajaRepository(opts.Postgres)
-	m.PemeriksaanDewasa = NewPemeriksaanDewasaRepository(opts.Postgres)
-	m.PemeriksaanLansia = NewPemeriksaanLansiaRepository(opts.Postgres)
 	m.Form = NewFormRepository(opts.Postgres) // Inisialisasi FormRepository dengan database yang sesuai
 	m.Pemeriksaan = NewPemeriksaanRepository(opts.Postgres)
 	m.PencatatanImunisasi = NewPencatatanImunisasiRepository(opts.Postgres)
