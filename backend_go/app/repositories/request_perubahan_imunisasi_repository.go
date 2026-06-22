@@ -43,7 +43,7 @@ func (m *Main) GetJadwalByID(
 	return &result, nil
 }
 
-func (m *Main) GetAllRequestPerubahanJadwal() (
+func (m *Main) GetAllRequestPerubahanJadwal(posyanduID int32) (
 	[]RequestPerubahanJadwalJoin,
 	error,
 ) {
@@ -58,8 +58,9 @@ func (m *Main) GetAllRequestPerubahanJadwal() (
 			request_perubahan_imunisasi.tanggal_sebelum,
 			request_perubahan_imunisasi.tanggal_baru,
 			dosis_vaksin.nama_dosis,
-			penduduk.nama_lengkap,
-			request_perubahan_imunisasi.alasan
+			penduduk.nama_anggota_keluarga as nama_lengkap,
+			request_perubahan_imunisasi.alasan,
+			request_perubahan_imunisasi.id_jadwal_imunisasi as jadwal_id
 		`).
 		Joins(`
 			INNER JOIN jadwal_imunisasi_anak
@@ -81,6 +82,7 @@ func (m *Main) GetAllRequestPerubahanJadwal() (
 			INNER JOIN penduduk
 			ON anak.penduduk_id = penduduk.id
 		`).
+		Where("penduduk.posyandu_id = ?", posyanduID).
 		Order("request_perubahan_imunisasi.created_at DESC").
 		Scan(&result).
 		Error

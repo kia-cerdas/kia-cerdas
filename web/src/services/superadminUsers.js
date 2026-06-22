@@ -45,6 +45,11 @@ export const resetSuperadminUserPassword = async (userId, payload) => {
   return unwrapData(response);
 };
 
+export const updateSuperadminUser = async (userId, payload) => {
+  const response = await api.patch(`/superadmin/users/${userId}`, payload);
+  return unwrapData(response);
+};
+
 export const updateSuperadminUserRole = async (userId, payload) => {
   const response = await api.patch(`/superadmin/users/${userId}/role`, payload);
   return unwrapData(response);

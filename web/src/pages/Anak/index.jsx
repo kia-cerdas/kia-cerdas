@@ -142,7 +142,7 @@ export default function AnakListNakes() {
               iconBgInactive="bg-blue-50"
               iconColorActive="text-white"
               iconColorInactive="text-blue-600"
-              labelColorActive="text-indigo-100"
+              labelColorActive="text-blue-100"
               onClick={() => handleQuickFilterChange("all")}
             />
             {/* Normal */}
@@ -200,7 +200,7 @@ export default function AnakListNakes() {
               <input
                 type="text"
                 placeholder="Cari nama balita atau nama ibu..."
-                className="pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl w-full focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-sm"
+                className="pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl w-full focus:ring-2 focus:ring-[#185FA5] outline-none transition-all text-sm"
                 onChange={handleSearchChange}
               />
             </div>
@@ -247,7 +247,7 @@ export default function AnakListNakes() {
                 </tr>
               ) : (
                 currentItems.map((child) => (
-                  <tr key={child.id} className="hover:bg-indigo-50/20 transition-colors group">
+                  <tr key={child.id} className="hover:bg-blue-50/20 transition-colors group">
                     <td className="px-6 py-4 text-sm font-semibold text-gray-800">{child.nama}</td>
                     <td className="px-6 py-4 text-sm text-gray-600">{child.jenis_kelamin || "-"}</td>
                     <td className="px-6 py-4">
@@ -300,7 +300,7 @@ export default function AnakListNakes() {
                     key={i}
                     onClick={() => setCurrentPage(i + 1)}
                     className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${currentPage === i + 1
-                      ? "bg-indigo-600 text-white shadow-md shadow-indigo-100"
+                      ? "bg-[#185FA5] text-white shadow-md shadow-blue-100"
                       : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
                       }`}
                   >

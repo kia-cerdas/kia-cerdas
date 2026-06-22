@@ -1,4 +1,4 @@
-﻿package routes
+package routes
 
 import (
 	"fmt"
@@ -37,6 +37,7 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 		return c.JSON(200, res)
 	})
 	e.GET("/debug-antropometri", controller.DebugAntropometri)
+	e.GET("/debug-anaks-full", controller.DebugAnaksFull)
 
 	// Auth routes
 	auth := e.Group("/auth")
@@ -150,6 +151,7 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	superadmin.POST("/users/admin-desa", controller.CreateAdminDesaUser)
 	superadmin.POST("/users/kader", controller.CreateKaderUser)
 	superadmin.PATCH("/users/:id/reset-password", controller.ResetPassword)
+	superadmin.PATCH("/users/:id", controller.UpdateUser)
 	superadmin.PATCH("/users/:id/role", controller.UpdateUserRole)
 	superadmin.PATCH("/users/:id/nonaktif", controller.DeactivateUser)
 	superadmin.PATCH("/users/:id/aktif", controller.ActivateUser)
@@ -161,6 +163,11 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	superadmin.POST("/puskesmas", controller.Puskesmas.Create)
 	superadmin.PUT("/puskesmas/:id", controller.Puskesmas.Update)
 	superadmin.DELETE("/puskesmas/:id", controller.Puskesmas.Delete)
+
+	// Fix Database Sequences (TEMPORARY - untuk maintenance)
+	superadmin.POST("/fix-sequence/puskesmas", controller.FixSequence.FixPuskesmasSequence)
+	superadmin.POST("/fix-sequence/posyandu", controller.FixSequence.FixPosyanduSequence)
+	superadmin.POST("/fix-sequence/all", controller.FixSequence.FixAllSequences)
 
 	// Kelola Posyandu
 	superadmin.GET("/posyandu-manage", controller.Posyandu.GetAll)
@@ -554,7 +561,6 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	tenaga.PUT("/pemeriksaan-lab-jiwa/:id", controller.PemeriksaanLaboratoriumJiwa.Update)
 	tenaga.DELETE("/pemeriksaan-lab-jiwa/:id", controller.PemeriksaanLaboratoriumJiwa.Delete)
 
-
 	// ==================== CATATAN PELAYANAN TRIMESTER 2 ====================
 	tenaga.POST("/catatan-pelayanan-t2", controller.CatatanPelayananTrimester2.Create)
 	tenaga.GET("/catatan-pelayanan-t2/:id", controller.CatatanPelayananTrimester2.GetByID)
@@ -720,9 +726,9 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	tenaga.GET("/laporan/ibu/preview", controller.LaporanIbu.Preview)
 	tenaga.GET("/laporan/ibu/export/excel", controller.LaporanIbu.ExportExcel)
 
-	// untuk laporan anak
-	tenaga.GET("/laporan/anak/preview", controller.LaporanAnak.Preview)
-	tenaga.GET("/laporan/anak/export/excel", controller.LaporanAnak.ExportExcel)
+	// untuk laporan balita
+	tenaga.GET("/laporan/balita/preview", controller.LaporanBalita.Preview)
+	tenaga.GET("/laporan/balita/export/excel", controller.LaporanBalita.ExportExcel)
 
 	// untuk laporan remaja
 	tenaga.GET("/laporan/remaja/preview", controller.LaporanRemaja.Preview)
@@ -735,6 +741,10 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	// untuk laporan lansia
 	tenaga.GET("/laporan/lansia/preview", controller.LaporanLansia.Preview)
 	tenaga.GET("/laporan/lansia/export/excel", controller.LaporanLansia.ExportExcel)
+
+	// untuk laporan anak usiaa 5-9 tahun
+	tenaga.GET("/laporan/anak/preview", controller.LaporanAnak.Preview)
+	tenaga.GET("/laporan/anak/export/excel", controller.LaporanAnak.ExportExcel)
 
 	//==== IBU ====
 	ibu := e.Group("/ibu")
@@ -863,6 +873,8 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 
 	// Profile
 	ibuk.GET("/profil", controller.ProfilIbu.GetProfilSaya)
+	// Profil keluarga
+	ibuk.GET("/profil/keluarga", controller.ProfilIbu.GetProfilKeluarga)
 	ibuk.GET("/neonatus/anak/:anak_id", controller.Neonatus.GetByAnakIDForIbu)
 	ibuk.GET("/neonatus/:id", controller.Neonatus.GetByIDForIbu)
 	// Riwayat Kehamilan Ibu

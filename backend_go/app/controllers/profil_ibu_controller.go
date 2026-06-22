@@ -47,3 +47,33 @@ func (c *ProfilIbuController) GetProfilSaya(ctx echo.Context) error {
 		Data:       data,
 	})
 }
+
+
+
+
+
+
+// Profil Keluarga
+
+func (c *ProfilIbuController) GetProfilKeluarga(ctx echo.Context) error {
+    claims, ok := ctx.Get("auth_claims").(*models.AuthClaims)
+    if !ok || claims == nil {
+        return ctx.JSON(http.StatusUnauthorized, models.Response{
+            StatusCode: http.StatusUnauthorized,
+            Message:    "Unauthorized",
+        })
+    }
+
+    data, err := c.usecase.GetProfilKeluarga(claims.UserID)
+    if err != nil {
+        return ctx.JSON(http.StatusNotFound, models.Response{
+            StatusCode: http.StatusNotFound,
+            Message:    err.Error(),
+        })
+    }
+
+    return ctx.JSON(http.StatusOK, models.Response{
+        StatusCode: http.StatusOK,
+        Data:       data,
+    })
+}

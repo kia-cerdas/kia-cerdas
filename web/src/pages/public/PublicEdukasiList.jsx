@@ -407,7 +407,7 @@ function ResepCard({ item, category, id }) {
           <img
             src={imgUrl}
             alt={item.judul}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
             onError={(e) => { e.target.style.display = "none"; }}
           />
         ) : (
@@ -477,7 +477,7 @@ function ArticleCard({ item, category, resourcePath, catConfig }) {
           <img
             src={imgUrl}
             alt={title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
             onError={(e) => { e.target.style.display = "none"; }}
           />
         ) : (

@@ -1,21 +1,18 @@
-// src/pages/Ibu/RujukanDashboard.jsx
+  // src/pages/Ibu/RujukanDashboard.jsx
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import MainLayout from "../../components/Layout/MainLayout";
 import { getIbuList } from "../../services/ibu";
 import { getKehamilanByIbuId } from "../../services/kehamilan";
 import { getRujukanByKehamilanId } from "../../services/rujukanService";
-import { FileText, ArrowRight, User, AlertCircle, Search, Calendar, Clock, Filter, ChevronDown, Baby } from "lucide-react";
+import { FileText, ArrowRight, User, Search, Calendar, Baby } from "lucide-react";
 
 export default function RujukanDashboard() {
   const [ibuList, setIbuList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [sourceFilter, setSourceFilter] = useState("all");
   const [sortBy, setSortBy] = useState("terbaru");
-  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
-  const [showSourceDropdown, setShowSourceDropdown] = useState(false);
+  const [activeFilter, setActiveFilter] = useState(null); // { type: 'status'|'source', value: string } | null
 
   useEffect(() => {
     const fetchData = async () => {
@@ -86,11 +83,11 @@ export default function RujukanDashboard() {
   const getSourceLabel = (source) => {
     const sourceMap = {
       'preeklampsia': 'Skrining Preeklampsia',
-      'anc': 'ANC Rutin',
+      'anc': 'Perawatan Kehamilan',
       'dm_gestasional': 'DM Gestasional',
       'other': 'Lainnya'
     };
-    return sourceMap[source] || source || 'ANC Rutin';
+    return sourceMap[source] || source || 'Perawatan Kehamilan';
   };
 
   const getSourceColor = (source) => {
@@ -103,18 +100,39 @@ export default function RujukanDashboard() {
     return colorMap[source] || colorMap['anc'];
   };
 
+  const handleCardClick = (type, value) => {
+    setActiveFilter(prev => {
+      if (prev && prev.type === type && prev.value === value) {
+        return null; // toggle off
+      }
+      return { type, value };
+    });
+  };
+
+  const isFilterActive = (type, value) => {
+    return activeFilter && activeFilter.type === type && activeFilter.value === value;
+  };
+
   // Filter and sort
   const filteredList = ibuList
     .filter(ibu => {
       const matchesSearch =
-        ibu.kependudukan?.nama_lengkap.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        ibu.kependudukan?.nik.includes(searchTerm);
+        (ibu.kependudukan?.nama_lengkap || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        ibu.kependudukan?.nik?.includes(searchTerm);
 
       const referralStatus = getReferralStatus(ibu.rujukan).status;
-      const matchesStatus = statusFilter === "all" || referralStatus === statusFilter;
-
       const source = ibu.rujukan?.source || 'anc';
-      const matchesSource = sourceFilter === "all" || source === sourceFilter;
+
+      let matchesStatus = true;
+      let matchesSource = true;
+
+      if (activeFilter) {
+        if (activeFilter.type === 'status') {
+          matchesStatus = referralStatus === activeFilter.value;
+        } else if (activeFilter.type === 'source') {
+          matchesSource = source === activeFilter.value;
+        }
+      }
 
       return matchesSearch && matchesStatus && matchesSource;
     })
@@ -134,6 +152,17 @@ export default function RujukanDashboard() {
     return new Date(date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
   };
 
+  const formatNIK = (nik) => {
+    if (!nik) return "-";
+    const cleaned = String(nik).replace(/\D/g, "");
+    const chunkSize = 4;
+    const chunks = [];
+    for (let i = 0; i < cleaned.length; i += chunkSize) {
+      chunks.push(cleaned.slice(i, i + chunkSize));
+    }
+    return chunks.join("-");
+  };
+
   if (loading) return <MainLayout><div className="p-6 text-center">Memuat data...</div></MainLayout>;
 
   return (
@@ -141,10 +170,10 @@ export default function RujukanDashboard() {
       <div className="p-6 max-w-7xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Daftar Rujukan Ibu</h1>
-          <p className="text-gray-500 font-medium">Menerima dan mengelola daftar ibu yang memerlukan rujukan ke FKRTL.</p>
+          <p className="text-gray-500 font-medium">Menerima dan mengelola daftar ibu yang memerlukan rujukan ke Fasilitas Kesehatan Rujukan Tingkat Lanjutan.</p>
         </div>
 
-        {/* Search and Filter Bar */}
+        {/* Search Bar */}
         <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6">
           <div className="flex flex-col lg:flex-row gap-4">
             {/* Search */}
@@ -159,102 +188,11 @@ export default function RujukanDashboard() {
               />
             </div>
 
-            {/* Source Filter */}
-            <div className="relative">
-              <button
-                onClick={() => setShowSourceDropdown(!showSourceDropdown)}
-                className="flex items-center gap-2 px-4 py-2.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                <Filter size={18} className="text-gray-500" />
-                <span className="text-sm font-medium text-gray-700">
-                  {sourceFilter === "all" ? "Semua Sumber" :
-                   sourceFilter === "preeklampsia" ? "Skrining Preeklampsia" :
-                   sourceFilter === "anc" ? "ANC Rutin" :
-                   sourceFilter === "dm_gestasional" ? "DM Gestasional" : "Lainnya"}
-                </span>
-                <ChevronDown size={16} className="text-gray-400" />
-              </button>
-
-              {showSourceDropdown && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 z-10">
-                  <button
-                    onClick={() => { setSourceFilter("all"); setShowSourceDropdown(false); }}
-                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 first:rounded-t-lg"
-                  >
-                    Semua Sumber
-                  </button>
-                  <button
-                    onClick={() => { setSourceFilter("preeklampsia"); setShowSourceDropdown(false); }}
-                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
-                  >
-                    Skrining Preeklampsia
-                  </button>
-                  <button
-                    onClick={() => { setSourceFilter("anc"); setShowSourceDropdown(false); }}
-                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
-                  >
-                    ANC Rutin
-                  </button>
-                  <button
-                    onClick={() => { setSourceFilter("dm_gestasional"); setShowSourceDropdown(false); }}
-                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 last:rounded-b-lg"
-                  >
-                    DM Gestasional
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Status Filter */}
-            <div className="relative">
-              <button
-                onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-                className="flex items-center gap-2 px-4 py-2.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                <Clock size={18} className="text-gray-500" />
-                <span className="text-sm font-medium text-gray-700">
-                  {statusFilter === "all" ? "Semua Status" :
-                   statusFilter === "pending" ? "Menunggu Respon" :
-                   statusFilter === "responded" ? "Sudah Direspon" : "Selesai"}
-                </span>
-                <ChevronDown size={16} className="text-gray-400" />
-              </button>
-
-              {showFilterDropdown && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 z-10">
-                  <button
-                    onClick={() => { setStatusFilter("all"); setShowFilterDropdown(false); }}
-                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 first:rounded-t-lg"
-                  >
-                    Semua Status
-                  </button>
-                  <button
-                    onClick={() => { setStatusFilter("pending"); setShowFilterDropdown(false); }}
-                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
-                  >
-                    Menunggu Respon
-                  </button>
-                  <button
-                    onClick={() => { setStatusFilter("responded"); setShowFilterDropdown(false); }}
-                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50"
-                  >
-                    Sudah Direspon
-                  </button>
-                  <button
-                    onClick={() => { setStatusFilter("completed"); setShowFilterDropdown(false); }}
-                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 last:rounded-b-lg"
-                  >
-                    Selesai
-                  </button>
-                </div>
-              )}
-            </div>
-
             {/* Sort */}
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-sm"
+              className="px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-xs font-medium"
             >
               <option value="terbaru">Terbaru</option>
               <option value="terlama">Terlama</option>
@@ -263,32 +201,89 @@ export default function RujukanDashboard() {
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
-          <div className="bg-white p-4 rounded-xl border border-gray-100">
-            <p className="text-2xl font-bold text-gray-900">{ibuList.length}</p>
-            <p className="text-xs text-gray-500 font-medium">Total Rujukan</p>
-          </div>
-          <div className="bg-purple-50 p-4 rounded-xl border border-purple-100">
-            <p className="text-2xl font-bold text-purple-700">{ibuList.filter(i => (i.rujukan?.source || 'anc') === 'preeklampsia').length}</p>
-            <p className="text-xs text-purple-600 font-medium">Preeklampsia</p>
-          </div>
-          <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
-            <p className="text-2xl font-bold text-blue-700">{ibuList.filter(i => (i.rujukan?.source || 'anc') === 'anc').length}</p>
-            <p className="text-xs text-blue-600 font-medium">ANC Rutin</p>
-          </div>
-          <div className="bg-yellow-50 p-4 rounded-xl border border-yellow-100">
-            <p className="text-2xl font-bold text-yellow-700">{ibuList.filter(i => getReferralStatus(i.rujukan).status === 'pending').length}</p>
-            <p className="text-xs text-yellow-600 font-medium">Menunggu Respon</p>
-          </div>
-          <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
-            <p className="text-2xl font-bold text-indigo-700">{ibuList.filter(i => getReferralStatus(i.rujukan).status === 'responded').length}</p>
-            <p className="text-xs text-indigo-600 font-medium">Sudah Direspon</p>
-          </div>
-          <div className="bg-green-50 p-4 rounded-xl border border-green-100">
-            <p className="text-2xl font-bold text-green-700">{ibuList.filter(i => getReferralStatus(i.rujukan).status === 'completed').length}</p>
-            <p className="text-xs text-green-600 font-medium">Selesai</p>
-          </div>
+        {/* Filter Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+          <button
+            onClick={() => handleCardClick('all', 'all')}
+            className={`p-4 rounded-xl border-2 transition-all duration-200 text-left ${
+              !activeFilter
+                ? 'bg-indigo-50 border-indigo-200 shadow-md'
+                : 'bg-white border-gray-100 hover:border-indigo-200 hover:shadow-sm'
+            }`}
+          >
+            <p className={`text-2xl font-bold ${!activeFilter ? 'text-indigo-700' : 'text-gray-900'}`}>{ibuList.length}</p>
+            <p className={`text-xs font-medium ${!activeFilter ? 'text-indigo-600' : 'text-gray-500'}`}>Total Rujukan</p>
+          </button>
+
+          <button
+            onClick={() => handleCardClick('source', 'preeklampsia')}
+            className={`p-4 rounded-xl border-2 transition-all duration-200 text-left ${
+              isFilterActive('source', 'preeklampsia')
+                ? 'bg-purple-50 border-purple-200 shadow-md'
+                : 'bg-white border-gray-100 hover:border-purple-200 hover:shadow-sm'
+            }`}
+          >
+            <p className={`text-2xl font-bold ${isFilterActive('source', 'preeklampsia') ? 'text-purple-700' : 'text-purple-700'}`}>
+              {ibuList.filter(i => (i.rujukan?.source || 'anc') === 'preeklampsia').length}
+            </p>
+            <p className={`text-xs font-medium ${isFilterActive('source', 'preeklampsia') ? 'text-purple-600' : 'text-purple-600'}`}>Preeklampsia</p>
+          </button>
+
+          <button
+            onClick={() => handleCardClick('source', 'anc')}
+            className={`p-4 rounded-xl border-2 transition-all duration-200 text-left ${
+              isFilterActive('source', 'anc')
+                ? 'bg-blue-50 border-blue-200 shadow-md'
+                : 'bg-white border-gray-100 hover:border-blue-200 hover:shadow-sm'
+            }`}
+          >
+            <p className={`text-2xl font-bold ${isFilterActive('source', 'anc') ? 'text-blue-700' : 'text-blue-700'}`}>
+              {ibuList.filter(i => (i.rujukan?.source || 'anc') === 'anc').length}
+            </p>
+            <p className={`text-xs font-medium ${isFilterActive('source', 'anc') ? 'text-blue-600' : 'text-blue-600'}`}>Perawatan Kehamilan</p>
+          </button>
+
+          <button
+            onClick={() => handleCardClick('status', 'pending')}
+            className={`p-4 rounded-xl border-2 transition-all duration-200 text-left ${
+              isFilterActive('status', 'pending')
+                ? 'bg-yellow-50 border-yellow-200 shadow-md'
+                : 'bg-white border-gray-100 hover:border-yellow-200 hover:shadow-sm'
+            }`}
+          >
+            <p className={`text-2xl font-bold ${isFilterActive('status', 'pending') ? 'text-yellow-700' : 'text-yellow-700'}`}>
+              {ibuList.filter(i => getReferralStatus(i.rujukan).status === 'pending').length}
+            </p>
+            <p className={`text-xs font-medium ${isFilterActive('status', 'pending') ? 'text-yellow-600' : 'text-yellow-600'}`}>Menunggu Respon</p>
+          </button>
+
+          <button
+            onClick={() => handleCardClick('status', 'responded')}
+            className={`p-4 rounded-xl border-2 transition-all duration-200 text-left ${
+              isFilterActive('status', 'responded')
+                ? 'bg-indigo-50 border-indigo-200 shadow-md'
+                : 'bg-white border-gray-100 hover:border-indigo-200 hover:shadow-sm'
+            }`}
+          >
+            <p className={`text-2xl font-bold ${isFilterActive('status', 'responded') ? 'text-indigo-700' : 'text-indigo-700'}`}>
+              {ibuList.filter(i => getReferralStatus(i.rujukan).status === 'responded').length}
+            </p>
+            <p className={`text-xs font-medium ${isFilterActive('status', 'responded') ? 'text-indigo-600' : 'text-indigo-600'}`}>Sudah Direspon</p>
+          </button>
+
+          <button
+            onClick={() => handleCardClick('status', 'completed')}
+            className={`p-4 rounded-xl border-2 transition-all duration-200 text-left ${
+              isFilterActive('status', 'completed')
+                ? 'bg-green-50 border-green-200 shadow-md'
+                : 'bg-white border-gray-100 hover:border-green-200 hover:shadow-sm'
+            }`}
+          >
+            <p className={`text-2xl font-bold ${isFilterActive('status', 'completed') ? 'text-green-700' : 'text-green-700'}`}>
+              {ibuList.filter(i => getReferralStatus(i.rujukan).status === 'completed').length}
+            </p>
+            <p className={`text-xs font-medium ${isFilterActive('status', 'completed') ? 'text-green-600' : 'text-green-600'}`}>Selesai</p>
+          </button>
         </div>
 
         {/* Cards Grid */}
@@ -325,7 +320,7 @@ export default function RujukanDashboard() {
                     <h3 className="text-lg font-bold text-gray-900 group-hover:text-indigo-600 transition-colors line-clamp-1">
                       {ibu.kependudukan?.nama_lengkap || "Tanpa Nama"}
                     </h3>
-                    <p className="text-sm text-gray-400 font-medium tracking-wide">NIK: {ibu.kependudukan?.nik || "-"}</p>
+                    <p className="text-sm text-gray-400 font-medium tracking-wide">NIK: {formatNIK(ibu.kependudukan?.nik)}</p>
                   </div>
 
                   {/* Info Grid */}
@@ -346,20 +341,13 @@ export default function RujukanDashboard() {
                     </div>
                   </div>
 
-                  {/* Status Badge */}
-                  <div className="flex items-center gap-2 text-amber-600 bg-amber-50 px-3 py-2 rounded-lg mb-4">
-                    <AlertCircle size={16} />
-                    <span className="text-xs font-bold uppercase tracking-tight">Perlu Perhatian</span>
-                  </div>
-                  
                   {/* Action Button */}
                   <Link
                     to={`/data-ibu/${ibu.id_ibu}/rujukan?kehamilan_id=${ibu.kehamilan?.id}&source=${source}`}
                     className="w-full flex items-center justify-center gap-2 bg-gray-50 text-gray-700 font-bold py-3 rounded-xl hover:bg-indigo-600 hover:text-white transition-all duration-300"
                   >
-                    <FileText size={18} />
+                  <FileText size={18} />
                     Lihat Detail Rujukan
-                    <ArrowRight size={16} />
                   </Link>
                 </div>
               </div>

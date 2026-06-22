@@ -292,6 +292,65 @@ func generateRiskSummaryFromTypes(riskTypes []models.RiskTypeDetail) string {
 	return summary
 }
 
+func calculateManualRiskStatus(p *models.PemeriksaanKehamilan) string {
+	riskFactors := 0
+	highRiskFactors := 0
+
+	// Anemia berat = high risk
+	if p.TesLabHb != nil && *p.TesLabHb < 8.0 {
+		highRiskFactors++
+	} else if p.TesLabHb != nil && *p.TesLabHb < 11.0 {
+		riskFactors++
+	}
+
+	// Hipertensi = high risk
+	if p.Sistole >= 140 || p.Diastole >= 90 {
+		highRiskFactors++
+	} else if p.Sistole >= 120 || p.Diastole >= 80 {
+		riskFactors++
+	}
+
+	// KEK
+	if p.LingkarLenganAtas != nil && *p.LingkarLenganAtas < 23.5 {
+		riskFactors++
+	}
+
+	// Tripel eliminasi reaktif = high risk
+	if p.TripelEliminasi != "" {
+		lower := strings.ToLower(p.TripelEliminasi)
+		if (strings.Contains(lower, "hiv") && strings.Contains(lower, "reaktif")) ||
+			(strings.Contains(lower, "sifilis") && strings.Contains(lower, "reaktif")) ||
+			(strings.Contains(lower, "hepatitis b") && strings.Contains(lower, "reaktif")) ||
+			(strings.Contains(lower, "hbsag") && strings.Contains(lower, "reaktif")) {
+			highRiskFactors++
+		}
+	}
+
+	// Riwayat penyakit berat
+	if p.SkriningDokter != "" && !strings.EqualFold(p.SkriningDokter, "normal") && !strings.EqualFold(p.SkriningDokter, "tidak ada") {
+		lower := strings.ToLower(p.SkriningDokter)
+		if strings.Contains(lower, "hipertensi") ||
+			strings.Contains(lower, "jantung") ||
+			strings.Contains(lower, "diabetes") {
+			highRiskFactors++
+		} else {
+			riskFactors++
+		}
+	}
+
+	// Tentukan status risiko
+	if highRiskFactors > 0 {
+		return "Tinggi"
+	}
+	if riskFactors >= 2 {
+		return "Tinggi"
+	}
+	if riskFactors == 1 {
+		return "Sedang"
+	}
+	return "Normal"
+}
+
 func generateProblemAndRecommendation(p *models.PemeriksaanKehamilan) string {
 	var parts []string
 

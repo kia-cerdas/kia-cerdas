@@ -128,6 +128,7 @@ type Main struct {
 	// EdukasiTandaBahayaTrimester EdukasiTandaBahayaTrimesterUsecase
 	LaporanIbu        LaporanIbuUsecase
 	LaporanAnak       LaporanAnakUsecase
+	LaporanBalita     LaporanBalitaUsecase 
 	LaporanRemaja     LaporanRemajaUsecase
 	LaporanDewasa     LaporanDewasaUsecase
 	LaporanLansia     LaporanLansiaUsecase
@@ -311,6 +312,7 @@ func Init(opts Options) *Main {
 	m.EdukasiResepMPASI = NewResepMPASIUsecase(opts.Repository.EdukasiResepMPASI)
 	m.EdukasiMPASI = NewEdukasiMPASIUsecase(opts.Repository.EdukasiMPASI)
 	m.LaporanIbu = NewLaporanIbuUsecase(opts.Repository.LaporanIbu)
+	m.LaporanBalita = NewLaporanBalitaUsecase(opts.Repository.LaporanBalita)
 	m.LaporanAnak = NewLaporanAnakUsecase(opts.Repository.LaporanAnak)
 	m.LaporanRemaja = NewLaporanRemajaUsecase(opts.Repository.LaporanRemaja)
 	m.LaporanDewasa = NewLaporanDewasaUsecase(opts.Repository.LaporanDewasa)
@@ -384,6 +386,8 @@ func Init(opts Options) *Main {
 		opts.Repository.EvaluasiKesehatanIbu,
 		opts.Repository.RiwayatKehamilanLalu,
 		opts.Repository.Desa,
+		// Profil keluargaa
+		opts.Repository.Kependudukan,
 	)
 	// Riwayat Kehamilan Ibu 
 	m.DetailKehamilanIbu = NewDetailKehamilanIbuUsecase(

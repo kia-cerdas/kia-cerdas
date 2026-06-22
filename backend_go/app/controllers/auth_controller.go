@@ -631,7 +631,7 @@ func (m *Main) DebugAntropometri(c echo.Context) error {
 	}
 	var children []ChildInfo
 	err = m.db.Raw(`
-		select a.id as anak_id, a.penduduk_id as pend_id, p.desa_id, p.nama_lengkap as name
+		select a.id as anak_id, a.penduduk_id as pend_id, p.desa_id, p.nama_anggota_keluarga as name
 		from anak a
 		left join penduduk p on p.id = a.penduduk_id
 	`).Scan(&children).Error
@@ -685,4 +685,45 @@ func (m *Main) AdminListAllKependudukan(c echo.Context) error {
 
     // Response tanpa pagination
     return helpers.StandardResponse(c, http.StatusOK, []string{constants.SUCCESS_RESPONSE_MESSAGE}, penduduks, nil)
+}
+
+func (m *Main) DebugAnaksFull(c echo.Context) error {
+	type DebugAnak struct {
+		AnakID              int32  `json:"anak_id"`
+		PendID              int32  `json:"pend_id"`
+		Name                string `json:"name"`
+		TanggalLahir        string `json:"tanggal_lahir"`
+		ChildPosyanduID     *int32 `json:"child_posyandu_id"`
+		ChildDesaID         *int32 `json:"child_desa_id"`
+		MotherName          string `json:"mother_name"`
+		MotherPosyanduID    *int32 `json:"mother_posyandu_id"`
+		MotherDesaID        *int32 `json:"mother_desa_id"`
+	}
+
+	var results []DebugAnak
+	err := m.db.Raw(`
+		SELECT 
+			a.id AS anak_id,
+			p.id AS pend_id,
+			p.nama_anggota_keluarga AS name,
+			p.tanggal_lahir::text AS tanggal_lahir,
+			p.posyandu_id AS child_posyandu_id,
+			p.desa_id AS child_desa_id,
+			pi.nama_anggota_keluarga AS mother_name,
+			pi.posyandu_id AS mother_posyandu_id,
+			pi.desa_id AS mother_desa_id
+		FROM anak a
+		LEFT JOIN penduduk p ON p.id = a.penduduk_id
+		LEFT JOIN ibu i ON i.id = a.ibu_id
+		LEFT JOIN penduduk pi ON pi.id = i.penduduk_id
+	`).Scan(&results).Error
+
+	if err != nil {
+		return c.JSON(500, map[string]interface{}{"error": err.Error()})
+	}
+
+	return c.JSON(200, map[string]interface{}{
+		"total":   len(results),
+		"results": results,
+	})
 }

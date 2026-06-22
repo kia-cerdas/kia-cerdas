@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:ta_pa2_pa3_project/core/network/app_http_client.dart';
@@ -54,11 +55,41 @@ class InformasiUmumApiService {
         (value.containsKey('judul') || value.containsKey('konten'));
   }
 
-  Future<List<InformasiUmumModel>> listInformasiUmum() async {
+  // Future<List<InformasiUmumModel>> listInformasiUmum() async {
+  //   final uri = Uri.parse(
+  //     '${ApiConstants.baseUrl}${ApiConstants.edukasiInformasiUmum}',
+  //   );
+  //   final response = await _client.get(uri);
+
+  //   if (response.statusCode < 200 || response.statusCode >= 300) {
+  //     throw Exception(_extractErrorMessage(response.body, response.statusCode));
+  //   }
+
+  //   final dynamic decoded = jsonDecode(response.body);
+  //   final dynamic rawData = decoded is Map<String, dynamic>
+  //       ? decoded['data'] ?? decoded
+  //       : decoded;
+
+  //   final items = _extractListItems(rawData);
+  //   if (items.isNotEmpty) {
+  //     return items
+  //         .map(InformasiUmumModel.fromJson)
+  //         .where((item) => item.isActive)
+  //         .toList();
+  //   }
+
+  //   return const [];
+  // }
+
+    Future<List<InformasiUmumModel>> listInformasiUmum() async {
     final uri = Uri.parse(
       '${ApiConstants.baseUrl}${ApiConstants.edukasiInformasiUmum}',
     );
     final response = await _client.get(uri);
+
+    // TAMBAHKAN INI UNTUK MELIHAT APA YANG DIKIRIM BACKEND
+    debugPrint('[DEBUG INFO UMUM] Status Code: ${response.statusCode}');
+    debugPrint('[DEBUG INFO UMUM] Body: ${response.body}');
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw Exception(_extractErrorMessage(response.body, response.statusCode));

@@ -18,7 +18,7 @@ import {
   Filler,
 } from "chart.js";
 
-import { Plus, AlertTriangle, Activity, Scale, Heart, Droplets, FileText, ChevronDown, ChevronUp, ArrowLeft } from "lucide-react";
+import { Plus, AlertTriangle, Activity, Scale, Heart, Droplets, FileText, ChevronDown, ChevronUp, ArrowLeft, TrendingUp, Eye, CheckCircle, AlertCircle } from "lucide-react";
 import Swal from "sweetalert2";
 
 ChartJS.register(
@@ -72,6 +72,18 @@ const getBatasBB = (minggu, kategoriIMT) => {
     min: t1Min + ((minggu - 12) * rateMin),
     max: t1Max + ((minggu - 12) * rateMax),
   };
+};
+
+// ─────────────────────────────────────────────
+// Helper: Normalize status risiko untuk tampilan
+// ─────────────────────────────────────────────
+const normalizeDisplayStatus = (status) => {
+  if (!status) return "NORMAL";
+  const s = status.toUpperCase();
+  if (s === "TINGGI" || s === "PERLU RUJUKAN") return "PERLU RUJUKAN";
+  if (s === "SEDANG" || s === "PERLU TINDAKAN") return "PERLU TINDAKAN";
+  if (s === "RENDAH" || s === "NORMAL") return "NORMAL";
+  return status;
 };
 
 // ─────────────────────────────────────────────
@@ -243,7 +255,7 @@ export default function PemeriksaanKehamilanList() {
 
   const risk = useMemo(() => {
     if (!hasExaminations) return null;
-    
+
     // Gunakan ML API results jika available
     if (latestExam?.overall_label) {
       return {
@@ -256,12 +268,12 @@ export default function PemeriksaanKehamilanList() {
         is_ml_prediction: true,
       };
     }
-    
+
     // Gunakan data backend lama jika sudah terisi
     if (riskFromBackend?.status_risiko && riskFromBackend.status_risiko !== "") {
       return riskFromBackend;
     }
-    
+
     // Fallback: hitung di frontend
     return riskFromFrontend;
   }, [hasExaminations, riskFromBackend, riskFromFrontend, latestExam]);
@@ -361,6 +373,10 @@ export default function PemeriksaanKehamilanList() {
 
   const showWarning = hasExaminations && risk && risk.status_risiko !== "NORMAL";
 
+  // Determine icon based on status
+  const displayStatus = hasExaminations && risk ? normalizeDisplayStatus(risk.status_risiko) : "NORMAL";
+  const StatusIcon = displayStatus === "NORMAL" ? CheckCircle : displayStatus === "PERLU TINDAKAN" ? AlertCircle : AlertTriangle;
+
   // ── Render states ──
   if (loading) return <MainLayout><div className="p-10 text-center">Memuat data medis...</div></MainLayout>;
   if (error)   return <MainLayout><div className="p-10 text-center text-red-600">{error}</div></MainLayout>;
@@ -381,7 +397,7 @@ export default function PemeriksaanKehamilanList() {
                 <ArrowLeft size={16} />
                 <span>Kembali</span>
               </Link>
-              <h1 className="text-3xl font-extrabold text-gray-900">Pemantauan ANC</h1>
+              <h1 className="text-3xl font-extrabold text-gray-900">Pemantauan Antenetal Care</h1>
             </div>
             <p className="text-gray-500 italic mt-1">Berdasarkan Standar Buku KIA & Prediksi Machine Learning</p>
 
@@ -430,7 +446,7 @@ export default function PemeriksaanKehamilanList() {
         {/* ── Banner status risiko ── */}
         {hasExaminations && risk && (
           <div className={`border-l-4 p-5 rounded-r-2xl shadow-sm flex gap-4 ${getRiskStyles(risk.status_risiko)}`}>
-            <AlertTriangle className="flex-shrink-0" size={28} />
+            <StatusIcon className="flex-shrink-0" size={28} />
             <div className="flex-1">
               <h3 className="font-bold text-lg uppercase tracking-wide">
                 Status: {normalizeDisplayStatus(risk.status_risiko)}
@@ -447,8 +463,8 @@ export default function PemeriksaanKehamilanList() {
                         .filter(riskType => riskType.detected)
                         .sort((a, b) => b.probability - a.probability)
                         .map((riskType, idx) => (
-                        <div 
-                          key={idx} 
+                        <div
+                          key={idx}
                           className="bg-white rounded-lg border border-red-200 shadow-sm"
                         >
                           <button

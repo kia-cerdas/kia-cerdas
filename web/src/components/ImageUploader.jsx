@@ -131,7 +131,7 @@ export default function ImageUploader({
             <img
               src={value}
               alt="Preview"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain"
               onError={(e) => {
                 e.target.style.display = "none";
               }}

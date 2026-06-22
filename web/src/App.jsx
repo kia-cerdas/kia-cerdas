@@ -49,6 +49,7 @@ import DetailAnak from "./pages/Anak/detail";
 import Monitoring from "./pages/Monitoring";
 import Laporan from "./pages/Laporan";
 import LaporanIbuPreview from "./pages/previewlaporanibu";
+import LaporanBalitaPreview from "./pages/previewlaporanbalita";
 import LaporanAnakPreview from "./pages/previewlaporananak";
 import LaporanRemajaPreview from "./pages/previewlaporanremaja";
 import LaporanDewasaPreview from "./pages/previewlaporandewasa";
@@ -246,6 +247,7 @@ function App() {
           <Route path="/monitoring" element={<Monitoring />} />
           <Route path="/laporan" element={<Laporan />} />
           <Route path="/laporan/ibu/preview" element={<LaporanIbuPreview />} />
+          <Route path="/laporan/balita/preview" element={<LaporanBalitaPreview />} />
           <Route path="/laporan/anak/preview" element={<LaporanAnakPreview />} />
           <Route path="/laporan/remaja/preview" element={<LaporanRemajaPreview />} />
           <Route path="/laporan/dewasa/preview" element={<LaporanDewasaPreview />} />
@@ -354,33 +356,33 @@ function App() {
         <Route path="/edukasi-digital/mpasi-resep/form/:id" element={<MpasiResepFormPage />} />
 
         {/* ── PUSKESMAS (Bidan Puskesmas & Dokter) ── */}
-        <Route 
-          path="/dashboard/puskesmas" 
+        <Route
+          path="/dashboard/puskesmas"
           element={
             <ProtectedRoute allowedRoles={["bidan_puskesmas", "dokter"]}>
               <DashboardPuskesmas />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/puskesmas/kelola-vaksin" 
+        <Route
+          path="/puskesmas/kelola-vaksin"
           element={
             <ProtectedRoute allowedRoles={["bidan_puskesmas", "dokter"]}>
               <RoleAccessGuard allowedRoles={["bidan_puskesmas"]} featureName="Kelola Vaksin">
                 <KelolaVaksin />
               </RoleAccessGuard>
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/puskesmas/dashboard-dokter" 
+        <Route
+          path="/puskesmas/dashboard-dokter"
           element={
             <ProtectedRoute allowedRoles={["bidan_puskesmas", "dokter"]}>
               <RoleAccessGuard allowedRoles={["dokter"]} featureName="Dashboard Dokter">
-                <Dashboard/>
+                <Dashboard />
               </RoleAccessGuard>
             </ProtectedRoute>
-          } 
+          }
         />
 
         {/* ── DEFAULT ── */}

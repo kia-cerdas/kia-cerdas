@@ -1,7 +1,7 @@
 // src/components/Layout/Header.jsx
 import { useState, useRef, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { LogOut, ChevronDown, User, Menu, X, Mail, Shield, Edit2, Save, Eye, EyeOff } from "lucide-react";
+import { LogOut, ChevronDown, User, PanelLeftOpen, PanelLeftClose, Mail, Shield, Edit2, Save, Eye, EyeOff, X } from "lucide-react";
 import { getCurrentUser, logout } from "../../services/auth";
 import api from "../../services/api";
 import Swal from "sweetalert2";
@@ -144,10 +144,18 @@ const headerByPath = (pathname) => {
     };
   }
 
-  if (pathname.startsWith("/dashboard/admin/jadwal-layanan")) {
+  if (pathname.startsWith("/jadwal-layanan/form")) {
     return {
-      title: "Jadwal Layanan",
-      subtitle: "Kelola daftar posyandu sebagai referensi jadwal layanan kesehatan.",
+      title: pathname.includes("/form/") ? "Edit Jadwal Layanan Posyandu" : "Tambah Jadwal Layanan Posyandu",
+      subtitle: "1. Isi nama layanan (Contoh: Pelayanan Imunisasi Rutin).\n2. Pilih dosis vaksin yang akan diberikan pada jadwal ini.\n3. Pilih posyandu, tanggal pelayanan, dan rentang waktu mulai-selesai.\n4. Tambahkan keterangan opsional jika diperlukan.\n5. Klik 'Simpan Jadwal' untuk menyimpan data.",
+      variant: "hero",
+    };
+  }
+
+  if (pathname.startsWith("/jadwal-layanan")) {
+    return {
+      title: "Jadwal Layanan Posyandu",
+      subtitle: "1. Gunakan tab 'Hari Ini', 'Akan Datang', atau 'Sudah Selesai' untuk melihat jadwal berdasarkan status.\n2. Klik 'Tambah Jadwal' untuk membuat sesi imunisasi baru.\n3. Gunakan ikon pensil untuk mengubah atau ikon tong sampah untuk menghapus jadwal.\n4. Card berwarna biru untuk jadwal hari ini, kuning untuk mendatang, dan hijau untuk selesai.",
       variant: "hero",
     };
   }
@@ -192,241 +200,180 @@ const InfoRow = ({ icon: Icon, label, value }) => (
   </div>
 );
 
-// Ambil pesan error dari response backend (bisa string atau array)
 const extractErrMsg = (err, fallback) => {
   const d = err?.response?.data;
   if (!d) return fallback;
   if (d.messages && Array.isArray(d.messages) && d.messages.length) return d.messages[0];
   if (d.message) return Array.isArray(d.message) ? d.message[0] : d.message;
+  if (d.error) return d.error;
   return fallback;
 };
 
-const ProfilModal = ({ onClose }) => {
-  const localUser = getCurrentUser();
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState("info");
-
-  const [editMode, setEditMode] = useState(false);
-  const [editName, setEditName] = useState("");
-  const [saving, setSaving] = useState(false);
-
-  const [oldPassword, setOldPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+function ProfilModal({ onClose }) {
+  const user = getCurrentUser();
+  const [tab, setTab] = useState("profil");
+  const [editForm, setEditForm] = useState({ name: user?.name || "", email: user?.email || "" });
+  const [pwdForm, setPwdForm] = useState({ oldPassword: "", newPassword: "", confirmPassword: "" });
   const [showOld, setShowOld] = useState(false);
   const [showNew, setShowNew] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
-  const [savingPassword, setSavingPassword] = useState(false);
+  const [showConf, setShowConf] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    api.get("/auth/me")
-      .then((res) => {
-        const raw = res.data?.data || res.data;
-        const merged = {
-          user_id: raw?.user_id,
-          name: raw?.name || localUser?.name || "",
-          email: raw?.email || localUser?.email || "",
-          role: raw?.role || localUser?.role || "",
-        };
-        setProfile(merged);
-        setEditName(merged.name);
-      })
-      .catch(() => {
-        const fb = {
-          name: localUser?.name || "",
-          email: localUser?.email || "",
-          role: localUser?.role || "",
-        };
-        setProfile(fb);
-        setEditName(fb.name);
-      })
-      .finally(() => setLoading(false));
-  }, []);
-
-  const handleSave = async () => {
-    if (!editName.trim()) {
-      Swal.fire({ icon: "warning", title: "Nama tidak boleh kosong", confirmButtonColor: "#3b82f6" });
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    if (!editForm.name.trim()) {
+      Swal.fire({ icon: "warning", title: "Nama wajib diisi", confirmButtonColor: "#185FA5" });
       return;
     }
-    setSaving(true);
     try {
-      const res = await api.put("/auth/me", { name: editName.trim() });
-      const updated = res.data?.data || {};
-      const newName = updated.name || editName.trim();
-
-      setProfile(p => ({ ...p, name: newName }));
-      const stored = JSON.parse(localStorage.getItem("user") || "{}");
-      localStorage.setItem("user", JSON.stringify({ ...stored, name: newName }));
-
-      setEditMode(false);
-      Swal.fire({ icon: "success", title: "Profil berhasil diperbarui", timer: 1500, showConfirmButton: false });
+      setSaving(true);
+      await api.put("/auth/profile", { name: editForm.name.trim(), email: editForm.email.trim() });
+      const updated = { ...user, name: editForm.name.trim(), email: editForm.email.trim() };
+      localStorage.setItem("user", JSON.stringify(updated));
+      Swal.fire({ icon: "success", title: "Profil Berhasil Diperbarui", timer: 1800, showConfirmButton: false });
+      onClose();
+      window.location.reload();
     } catch (err) {
-      Swal.fire({ icon: "error", title: "Gagal Menyimpan", text: extractErrMsg(err, "Gagal menyimpan perubahan profil."), confirmButtonColor: "#3b82f6" });
+      Swal.fire({ icon: "error", title: "Gagal Memperbarui Profil", text: extractErrMsg(err, "Gagal mengubah profil"), confirmButtonColor: "#185FA5" });
     } finally {
       setSaving(false);
     }
   };
 
-  const handleChangePassword = async () => {
-    if (!oldPassword || !newPassword || !confirmPassword) {
-      Swal.fire({ icon: "warning", title: "Semua field wajib diisi", confirmButtonColor: "#3b82f6" });
+  const handlePwdSubmit = async (e) => {
+    e.preventDefault();
+    if (!pwdForm.oldPassword || !pwdForm.newPassword || !pwdForm.confirmPassword) {
+      Swal.fire({ icon: "warning", title: "Semua field wajib diisi", confirmButtonColor: "#185FA5" });
       return;
     }
-    if (newPassword !== confirmPassword) {
-      Swal.fire({ icon: "warning", title: "Password Baru Tidak Cocok", text: "Pastikan konfirmasi password sama dengan password baru.", confirmButtonColor: "#3b82f6" });
+    if (pwdForm.newPassword.length < 8) {
+      Swal.fire({ icon: "warning", title: "Password baru minimal 8 karakter", confirmButtonColor: "#185FA5" });
       return;
     }
-    if (newPassword.length < 6) {
-      Swal.fire({ icon: "warning", title: "Password Terlalu Pendek", text: "Password baru minimal 6 karakter.", confirmButtonColor: "#3b82f6" });
+    if (pwdForm.newPassword !== pwdForm.confirmPassword) {
+      Swal.fire({ icon: "warning", title: "Konfirmasi password tidak cocok", confirmButtonColor: "#185FA5" });
       return;
     }
-    setSavingPassword(true);
     try {
-      await api.put("/auth/me/password", { old_password: oldPassword, new_password: newPassword });
-      setOldPassword(""); setNewPassword(""); setConfirmPassword("");
-      Swal.fire({ icon: "success", title: "Password Berhasil Diubah", text: "Gunakan password baru Anda untuk login berikutnya.", timer: 2000, showConfirmButton: false });
+      setSaving(true);
+      await api.put("/auth/change-password", { old_password: pwdForm.oldPassword, new_password: pwdForm.newPassword });
+      Swal.fire({ icon: "success", title: "Password Berhasil Diubah", text: "Silakan login kembali dengan password baru.", timer: 2000, showConfirmButton: false });
+      onClose();
+      setTimeout(() => { logout(); window.location.href = "/login"; }, 2100);
     } catch (err) {
-      Swal.fire({ icon: "error", title: "Gagal Mengubah Password", text: extractErrMsg(err, "Terjadi kesalahan. Pastikan password lama benar."), confirmButtonColor: "#3b82f6" });
+      Swal.fire({ icon: "error", title: "Gagal Mengubah Password", text: extractErrMsg(err, "Gagal mengubah password"), confirmButtonColor: "#185FA5" });
     } finally {
-      setSavingPassword(false);
+      setSaving(false);
     }
   };
 
-  const data = profile || { name: localUser?.name || "", email: localUser?.email || "", role: localUser?.role || "" };
-
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center p-4" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
-      <div
-        className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header modal */}
-        <div className="bg-gradient-to-r from-blue-600 to-cyan-500 px-5 pt-5 pb-10">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-bold text-white">Profil Saya</h2>
-            <button onClick={onClose} className="w-7 h-7 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors">
-              <X size={14} className="text-white" />
-            </button>
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/60 px-4 py-6 overflow-y-auto">
+      <div className="w-full max-w-2xl rounded-3xl bg-white shadow-2xl overflow-hidden my-auto">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+          <div>
+            <h2 className="text-lg font-bold text-slate-800">Profil Saya</h2>
+            <p className="text-xs text-slate-500 mt-0.5">Kelola informasi akun Anda</p>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="w-14 h-14 rounded-full bg-white/20 border-2 border-white/40 flex items-center justify-center flex-shrink-0">
-              <User size={26} className="text-white" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-white font-bold text-sm leading-tight truncate">{data.name || "Pengguna"}</p>
-              <p className="text-cyan-100 text-xs mt-0.5">{data.email || "-"}</p>
-              <span className="inline-block mt-1 px-2 py-0.5 rounded-full bg-white/20 text-white text-[10px] font-medium">
-                {formatRole(data.role)}
-              </span>
-            </div>
-          </div>
+          <button onClick={onClose} className="p-2 rounded-lg hover:bg-slate-100 text-slate-500">
+            <X size={18} />
+          </button>
         </div>
 
-        {/* Tab */}
-        <div className="flex border-b border-slate-100 -mt-5 mx-4 bg-white rounded-xl shadow-sm overflow-hidden">
-          <button
-            onClick={() => setTab("info")}
-            className={`flex-1 py-2.5 text-xs font-semibold transition-colors ${tab === "info" ? "text-blue-600 bg-blue-50" : "text-slate-500 hover:bg-slate-50"}`}
-          >
-            Informasi
+        <div className="flex border-b border-slate-100">
+          <button onClick={() => setTab("profil")} className={`flex-1 py-3 text-sm font-medium transition-colors ${tab === "profil" ? "border-b-2 border-blue-600 text-blue-600" : "text-slate-500 hover:text-slate-700"}`}>
+            Profil
           </button>
-          <button
-            onClick={() => setTab("password")}
-            className={`flex-1 py-2.5 text-xs font-semibold transition-colors ${tab === "password" ? "text-blue-600 bg-blue-50" : "text-slate-500 hover:bg-slate-50"}`}
-          >
+          <button onClick={() => setTab("password")} className={`flex-1 py-3 text-sm font-medium transition-colors ${tab === "password" ? "border-b-2 border-blue-600 text-blue-600" : "text-slate-500 hover:text-slate-700"}`}>
             Ubah Password
           </button>
         </div>
 
-        {/* Body */}
-        <div className="px-5 py-4 max-h-[340px] overflow-y-auto">
-          {loading ? (
-            <div className="flex justify-center py-8">
-              <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-            </div>
-          ) : tab === "info" ? (
-            <>
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-xs font-semibold text-slate-500">Detail Akun</p>
-                {!editMode ? (
-                  <button onClick={() => setEditMode(true)} className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700">
-                    <Edit2 size={11} /> Edit
-                  </button>
-                ) : (
-                  <div className="flex gap-2">
-                    <button onClick={() => { setEditMode(false); setEditName(data.name || ""); }} className="text-xs text-slate-400 hover:text-slate-600">
-                      Batal
-                    </button>
-                    <button onClick={handleSave} disabled={saving} className="text-xs text-green-600 hover:text-green-700 disabled:opacity-50 flex items-center gap-1">
-                      <Save size={11} /> {saving ? "..." : "Simpan"}
-                    </button>
+        <div className="p-6">
+          {tab === "profil" && (
+            <div>
+              <div className="mb-5">
+                <div className="flex items-center gap-4 mb-5 pb-5 border-b border-slate-100">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-2xl font-bold shadow-lg">
+                    {user?.name?.charAt(0)?.toUpperCase() || "U"}
                   </div>
-                )}
+                  <div>
+                    <p className="text-xl font-bold text-slate-800">{user?.name || "Pengguna"}</p>
+                    <p className="text-sm text-slate-500 mt-0.5">{formatRole(user?.role)}</p>
+                  </div>
+                </div>
+                <div className="space-y-0.5">
+                  <InfoRow icon={Mail} label="Email" value={user?.email} />
+                  <InfoRow icon={Shield} label="Role" value={formatRole(user?.role)} />
+                </div>
               </div>
-
-              {!editMode ? (
-                <>
-                  <InfoRow icon={User} label="Nama Lengkap" value={data.name} />
-                  <InfoRow icon={Mail} label="Email" value={data.email} />
-                  <InfoRow icon={Shield} label="Role" value={formatRole(data.role)} />
-                </>
-              ) : (
-                <div className="space-y-3">
-                  <div>
-                    <label className="text-[11px] text-slate-500 mb-1 block">Nama Lengkap</label>
-                    <input
-                      type="text"
-                      value={editName}
-                      onChange={(e) => setEditName(e.target.value)}
-                      className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[11px] text-slate-500 mb-1 block">Email (tidak dapat diubah)</label>
-                    <input type="email" value={data.email || ""} disabled className="w-full border border-slate-100 rounded-lg px-3 py-2 text-sm bg-slate-50 text-slate-400 cursor-not-allowed" />
-                  </div>
+              <form onSubmit={handleEditSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Nama Lengkap</label>
+                  <input type="text" value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Masukkan nama lengkap" required />
                 </div>
-              )}
-            </>
-          ) : (
-            <div className="space-y-3">
-              {[
-                { label: "Password Lama", value: oldPassword, setter: setOldPassword, show: showOld, toggle: () => setShowOld(!showOld) },
-                { label: "Password Baru", value: newPassword, setter: setNewPassword, show: showNew, toggle: () => setShowNew(!showNew) },
-                { label: "Konfirmasi Password Baru", value: confirmPassword, setter: setConfirmPassword, show: showConfirm, toggle: () => setShowConfirm(!showConfirm) },
-              ].map(({ label, value, setter, show, toggle }) => (
-                <div key={label}>
-                  <label className="text-[11px] text-slate-500 mb-1 block">{label}</label>
-                  <div className="relative">
-                    <input
-                      type={show ? "text" : "password"}
-                      value={value}
-                      onChange={(e) => setter(e.target.value)}
-                      className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm pr-9 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                      placeholder="••••••"
-                    />
-                    <button type="button" onClick={toggle} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
-                      {show ? <EyeOff size={14} /> : <Eye size={14} />}
-                    </button>
-                  </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Email</label>
+                  <input type="email" value={editForm.email} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Masukkan email" required />
                 </div>
-              ))}
-              <button
-                onClick={handleChangePassword}
-                disabled={savingPassword}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2.5 rounded-xl transition-colors disabled:opacity-50 mt-1"
-              >
-                {savingPassword ? "Menyimpan..." : "Simpan Password"}
-              </button>
+                <div className="flex items-center justify-end gap-3 pt-2">
+                  <button type="button" onClick={onClose} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50">
+                    Batal
+                  </button>
+                  <button type="submit" disabled={saving} className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60">
+                    {saving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
+                    {saving ? "Menyimpan..." : "Simpan Perubahan"}
+                  </button>
+                </div>
+              </form>
             </div>
+          )}
+
+          {tab === "password" && (
+            <form onSubmit={handlePwdSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Password Lama</label>
+                <div className="relative">
+                  <input type={showOld ? "text" : "password"} value={pwdForm.oldPassword} onChange={(e) => setPwdForm({ ...pwdForm, oldPassword: e.target.value })} className="w-full rounded-xl border border-slate-200 px-4 py-2.5 pr-11 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Masukkan password lama" required />
+                  <button type="button" onClick={() => setShowOld(!showOld)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                    {showOld ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Password Baru</label>
+                <div className="relative">
+                  <input type={showNew ? "text" : "password"} value={pwdForm.newPassword} onChange={(e) => setPwdForm({ ...pwdForm, newPassword: e.target.value })} className="w-full rounded-xl border border-slate-200 px-4 py-2.5 pr-11 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Minimal 8 karakter" required />
+                  <button type="button" onClick={() => setShowNew(!showNew)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                    {showNew ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Konfirmasi Password Baru</label>
+                <div className="relative">
+                  <input type={showConf ? "text" : "password"} value={pwdForm.confirmPassword} onChange={(e) => setPwdForm({ ...pwdForm, confirmPassword: e.target.value })} className="w-full rounded-xl border border-slate-200 px-4 py-2.5 pr-11 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ulangi password baru" required />
+                  <button type="button" onClick={() => setShowConf(!showConf)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                    {showConf ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+              </div>
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <button type="button" onClick={onClose} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50">
+                  Batal
+                </button>
+                <button type="submit" disabled={saving} className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60">
+                  {saving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
+                  {saving ? "Mengubah..." : "Ubah Password"}
+                </button>
+              </div>
+            </form>
           )}
         </div>
       </div>
     </div>
   );
-};
+}
 
 const Header = ({ onToggleSidebar, isSidebarOpen }) => {
   const user = getCurrentUser();
@@ -437,8 +384,8 @@ const Header = ({ onToggleSidebar, isSidebarOpen }) => {
   const dropdownRef = useRef(null);
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setIsDropdownOpen(false);
       }
     };
@@ -453,88 +400,112 @@ const Header = ({ onToggleSidebar, isSidebarOpen }) => {
 
   return (
     <>
-      <header className="px-6 py-4 border-b border-gray-100 bg-white relative z-50">
-        <div className="bg-gradient-to-r from-[#185FA5] to-[#185FA5] text-white rounded-2xl p-4 md:p-5 shadow-lg flex flex-col md:flex-row md:items-start justify-between gap-3">
+      {/* ── Floating toggle saat sidebar TERTUTUP ── */}
+      {!isSidebarOpen && (
+        <button
+          onClick={onToggleSidebar}
+          className="fixed left-0 top-1/2 -translate-y-1/2 z-[9999]
+                     w-9 h-9 bg-blue-600 hover:bg-blue-700
+                     flex items-center justify-center
+                     rounded-r-xl shadow-lg transition-colors"
+          aria-label="Buka sidebar"
+          title="Buka sidebar"
+        >
+          <PanelLeftOpen size={18} className="text-white" />
+        </button>
+      )}
+
+      {/* ── Header bar ── */}
+      <header className="px-4 py-3 border-b border-gray-100 bg-white relative z-50">
+        <div className="bg-[#185FA5] text-white rounded-2xl px-4 py-3 flex items-center gap-3">
+
+          {/* Tombol toggle sidebar (hanya muncul saat sidebar TERBUKA) */}
+          {isSidebarOpen && (
+            <button
+              onClick={onToggleSidebar}
+              className="w-9 h-9 rounded-xl bg-white/15 hover:bg-white/25
+                         border border-white/20 flex items-center justify-center
+                         flex-shrink-0 transition-colors"
+              aria-label="Tutup sidebar"
+              title="Tutup sidebar"
+            >
+              <PanelLeftClose size={18} className="text-white" />
+            </button>
+          )}
+
           {/* Judul halaman */}
-          <div className="min-w-0">
-            <h1 className="text-xl md:text-2xl font-bold leading-tight">{pageHeader.title}</h1>
-            <p className="text-cyan-100 mt-1.5 text-xs md:text-sm leading-relaxed whitespace-pre-line">{pageHeader.subtitle}</p>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-lg font-semibold leading-tight truncate">
+              {pageHeader.title}
+            </h1>
+            <p className="text-white/70 text-xs mt-0.5 leading-relaxed whitespace-pre-line">
+              {pageHeader.subtitle}
+            </p>
             {pageHeader.note && (
-              <p className="text-cyan-100 mt-1.5 text-[11px] md:text-xs leading-relaxed">{pageHeader.note}</p>
+              <p className="text-white/60 text-[11px] mt-0.5 leading-relaxed">
+                {pageHeader.note}
+              </p>
             )}
           </div>
 
-          {/* Dropdown user + tombol toggle sidebar */}
+          {/* Dropdown user */}
           <div className="relative flex-shrink-0" ref={dropdownRef}>
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className={`flex items-center gap-2.5 p-1.5 pr-2.5 rounded-2xl transition-all duration-200 border ${
-                isDropdownOpen ? "bg-white/20 border-white/30" : "border-white/20 hover:bg-white/15"
-              }`}
+              className={`flex items-center gap-2 py-1.5 pl-1.5 pr-3 rounded-full
+                          border transition-colors
+                          ${isDropdownOpen
+                  ? "bg-white/20 border-white/30"
+                  : "border-white/20 hover:bg-white/15"}`}
             >
-              <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-sm">
-                {user?.name?.charAt(0) || "B"}
+              <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center
+                              text-white font-semibold text-sm flex-shrink-0">
+                {user?.name?.charAt(0)?.toUpperCase() || "U"}
               </div>
               <div className="text-left hidden sm:block">
-                <p className="text-[11px] font-bold text-white leading-none">{user?.name || "Bidan Desa"}</p>
-                <p className="text-[10px] text-cyan-100 mt-0.5">{formatRole(user?.role)}</p>
+                <p className="text-[11px] font-semibold text-white leading-none">
+                  {user?.name || "Pengguna"}
+                </p>
+                <p className="text-[10px] text-white/65 mt-0.5">
+                  {formatRole(user?.role)}
+                </p>
               </div>
               <ChevronDown
-                size={14}
-                className={`text-cyan-100 transition-transform duration-200 ${isDropdownOpen ? "rotate-180" : ""}`}
+                size={13}
+                className={`text-white/70 transition-transform duration-200
+                            ${isDropdownOpen ? "rotate-180" : ""}`}
               />
             </button>
 
             {isDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-52 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 animate-in fade-in zoom-in duration-200 origin-top-right z-50">
-                <div className="px-4 py-2 border-b border-slate-50 mb-1">
-                  <p className="text-xs text-slate-400">Masuk sebagai</p>
-                  <p className="text-sm font-semibold text-slate-800 truncate">{user?.email || "admin@kia.com"}</p>
+              <div className="absolute right-0 mt-2 w-52 bg-white rounded-2xl
+                              shadow-xl border border-slate-100 py-2 z-50
+                              animate-in fade-in zoom-in duration-150 origin-top-right">
+                <div className="px-4 py-2 border-b border-slate-100 mb-1">
+                  <p className="text-[11px] text-slate-400">Masuk sebagai</p>
+                  <p className="text-sm font-semibold text-slate-800 truncate">
+                    {user?.email || "-"}
+                  </p>
                 </div>
-
                 <button
-                  onClick={() => {
-                    setIsDropdownOpen(false);
-                    setShowProfil(true);
-                  }}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
+                  onClick={() => { setIsDropdownOpen(false); setShowProfil(true); }}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm
+                             text-slate-600 hover:bg-slate-50 transition-colors"
                 >
-                  <User size={18} className="text-slate-400" />
-                  <span>Profil Saya</span>
+                  <User size={16} className="text-slate-400" />
+                  Profil Saya
                 </button>
-
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition-colors"
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm
+                             text-red-500 hover:bg-red-50 transition-colors"
                 >
-                  <LogOut size={18} />
+                  <LogOut size={16} />
                   <span className="font-medium">Keluar</span>
                 </button>
               </div>
             )}
-
-            {/* Tombol buka sidebar (hanya untuk mobile) */}
-            <button
-              onClick={onToggleSidebar}
-              className="ml-2 flex items-center justify-center w-9 h-9 rounded-lg hover:bg-white/10 transition-colors md:hidden"
-              aria-label="Open Menu"
-              title="Buka Menu"
-            >
-              <Menu size={20} className="text-white" />
-            </button>
           </div>
-
-          {/* Tombol tutup sidebar (muncul saat sidebar terbuka, mobile) */}
-          {isSidebarOpen && (
-            <button
-              onClick={onToggleSidebar}
-              className="flex items-center justify-center w-9 h-9 rounded-lg hover:bg-white/10 transition-colors md:hidden self-end"
-              aria-label="Close Menu"
-              title="Tutup Menu"
-            >
-              <X size={20} className="text-white" />
-            </button>
-          )}
         </div>
       </header>
 

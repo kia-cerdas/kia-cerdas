@@ -124,8 +124,8 @@ export default function SkriningDashboard() {
                 </h2>
                 <p className={`text-xs md:text-sm ${isRisikoBermasalah ? 'text-red-700' : 'text-emerald-700'}`}>
                   {isRisikoBermasalah 
-                    ? "Risiko tinggi - Rujukan ke FKRTL sangat disarankan" 
-                    : "Risiko terpantau - Lanjutkan ANC rutin"}
+                    ? "Risiko tinggi - Rujukan ke Fasilitas Kesehatan Rujukan Tingkat Lanjutan sangat disarankan" 
+                    : "Risiko terpantau - Lanjutkan Antenatal Care rutin"}
                 </p>
               </div>
             </div>

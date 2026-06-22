@@ -520,7 +520,7 @@ export default function SkriningPreeklampsia() {
           {isRujukan && canEdit && (
             <button
               onClick={handleRujukClick}
-              className="bg-red-600 hover:bg-red-700 text-white rounded-full px-5 py-2.5 flex items-center gap-2 text-base font-semibold shadow-md hover:shadow-lg animate-pulse"
+              className="bg-red-600 hover:bg-red-700 text-white rounded-full px-5 py-2.5 flex items-center gap-2 text-base font-semibold shadow-md hover:shadow-lg"
             >
               <AlertTriangle size={18} /> Rujuk Segera
             </button>

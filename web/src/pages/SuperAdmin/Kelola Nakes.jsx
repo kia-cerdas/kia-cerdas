@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Swal from "sweetalert2";
 import MainLayout from "../../components/Layout/MainLayout";
+import Pagination from "../../components/Pagination/Pagination";
 import { listPendudukForDropdown } from "../../services/superadminPenduduk";
 import {
   activateSuperadminUser,
@@ -10,13 +11,13 @@ import {
   deactivateSuperadminUser,
   listSuperadminPosyandu,
   listSuperadminUsers,
-  resetSuperadminUserPassword,
   superadminUserErrorMessage,
+  updateSuperadminUser,
 } from "../../services/superadminUsers";
 import { listDesa } from "../../services/desa";
 import { formatNik, formatKodeKeluarga } from "../../utils/format";
 import {
-  KeyRound,
+  Edit,
   Loader2,
   MapPin,
   Power,
@@ -42,8 +43,12 @@ const emptyAssignForm = {
   posyandu_id: "",
 };
 
-const emptyResetForm = {
+const emptyEditForm = {
+  name: "",
+  email: "",
   password: "",
+  no_str: "",
+  no_sipb: "",
 };
 
 const ASSIGN_ROLE_OPTIONS = [
@@ -74,14 +79,18 @@ const UserManagement = () => {
   const [assignTarget, setAssignTarget] = useState(null);
   const [assignForm, setAssignForm] = useState(emptyAssignForm);
 
-  // Reset password modal
-  const [resetUser, setResetUser] = useState(null);
-  const [resetForm, setResetForm] = useState(emptyResetForm);
-  const [showResetModal, setShowResetModal] = useState(false);
+  // Edit user modal
+  const [editUser, setEditUser] = useState(null);
+  const [editForm, setEditForm] = useState(emptyEditForm);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   // Status action modal
   const [statusActionUser, setStatusActionUser] = useState(null);
   const [statusActionType, setStatusActionType] = useState("");
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
 
 
   // --- Data loading ---
@@ -168,6 +177,18 @@ const UserManagement = () => {
       return name.includes(keyword) || nik.includes(keyword) || kk.includes(keyword) || hubungan.includes(keyword);
     });
   }, [pendudukList, search]);
+
+  // Paginated data
+  const paginatedPenduduk = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredPenduduk.slice(startIndex, endIndex);
+  }, [filteredPenduduk, currentPage, itemsPerPage]);
+
+  // Reset to page 1 when search or filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, selectedDesa]);
 
   const stats = useMemo(() => {
     const total = pendudukList.length;
@@ -269,29 +290,54 @@ const UserManagement = () => {
     }
   };
 
-  // --- Reset password ---
-  const openResetModal = (user) => {
-    setResetUser(user);
-    setResetForm(emptyResetForm);
-    setShowResetModal(true);
+  // --- Edit user ---
+  const openEditModal = (user) => {
+    setEditUser(user);
+    setEditForm({
+      ...emptyEditForm,
+      name: user.name || "",
+      email: user.email || "",
+      password: "",
+      no_str: user.no_str || "",
+      no_sipb: user.no_sipb || "",
+    });
+    setShowEditModal(true);
   };
 
-  const submitResetPassword = async (event) => {
+  const submitEditUser = async (event) => {
     event.preventDefault();
-    if (!resetUser) return;
-    if (!resetForm.password.trim() || resetForm.password.trim().length < 8) {
-      Swal.fire({ icon: "warning", title: "Password Terlalu Pendek", text: "Password baru minimal 8 karakter.", confirmButtonColor: "#4f46e5" });
+    if (!editUser) return;
+    if (!editForm.name.trim()) {
+      Swal.fire({ icon: "warning", title: "Nama wajib diisi", confirmButtonColor: "#4f46e5" });
+      return;
+    }
+    if (!editForm.email.trim()) {
+      Swal.fire({ icon: "warning", title: "Email wajib diisi", confirmButtonColor: "#4f46e5" });
+      return;
+    }
+    if (editForm.password && editForm.password.trim().length < 8) {
+      Swal.fire({ icon: "warning", title: "Password Terlalu Pendek", text: "Password minimal 8 karakter.", confirmButtonColor: "#4f46e5" });
       return;
     }
     try {
       setSubmitting(true);
-      await resetSuperadminUserPassword(resetUser.id, { password: resetForm.password.trim() });
-      setShowResetModal(false);
-      setResetUser(null);
-      setResetForm(emptyResetForm);
-      Swal.fire({ icon: "success", title: "Password Berhasil Direset", timer: 1800, showConfirmButton: false });
+      const payload = {
+        name: editForm.name.trim(),
+        email: editForm.email.trim(),
+      };
+      if (editForm.password.trim()) {
+        payload.password = editForm.password.trim();
+      }
+      if (editForm.no_str.trim()) payload.no_str = editForm.no_str.trim();
+      if (editForm.no_sipb.trim()) payload.no_sipb = editForm.no_sipb.trim();
+      await updateSuperadminUser(editUser.id, payload);
+      setShowEditModal(false);
+      setEditUser(null);
+      setEditForm(emptyEditForm);
+      Swal.fire({ icon: "success", title: "Data Berhasil Diperbarui", timer: 1800, showConfirmButton: false });
+      await Promise.all([loadUsers(), loadPenduduk()]);
     } catch (error) {
-      Swal.fire({ icon: "error", title: "Gagal Reset Password", text: superadminUserErrorMessage(error, "Gagal reset password"), confirmButtonColor: "#4f46e5" });
+      Swal.fire({ icon: "error", title: "Gagal Memperbarui Data", text: superadminUserErrorMessage(error, "Gagal memperbarui data user"), confirmButtonColor: "#4f46e5" });
     } finally {
       setSubmitting(false);
     }
@@ -381,6 +427,14 @@ const UserManagement = () => {
                   className="w-full rounded-2xl border border-slate-200 py-2.5 pl-10 pr-4"
                 />
               </div>
+              <button
+                type="button"
+                onClick={handleSearch}
+                className="inline-flex items-center gap-2 rounded-2xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors"
+              >
+                <Search size={16} />
+                Cari
+              </button>
               <select
                 value={selectedDesa}
                 onChange={(e) => setSelectedDesa(e.target.value)}
@@ -402,7 +456,7 @@ const UserManagement = () => {
               <table className="w-full min-w-[1100px]">
                 <thead className="bg-slate-50 text-left text-sm text-slate-600">
                   <tr>
-                    <th className="px-4 py-3 font-semibold">NIK</th>
+                    <th className="px-4 py-3 font-semibold">Email</th>
                     <th className="px-4 py-3 font-semibold">Nama</th>
                     <th className="px-4 py-3 font-semibold">Jenis Kelamin</th>
                     <th className="px-4 py-3 font-semibold">Desa</th>
@@ -420,12 +474,12 @@ const UserManagement = () => {
                       <td colSpan={6} className="px-4 py-10 text-center text-slate-500">Tidak ada data penduduk</td>
                     </tr>
                   ) : (
-                    filteredPenduduk.map((p) => {
+                    paginatedPenduduk.map((p) => {
                       const assignedUser = userByPendudukId.get(String(p.id));
                       const isSuperadmin = assignedUser && (assignedUser.role || "").toLowerCase() === "superadmin";
                       return (
                         <tr key={p.id} className="border-t border-slate-100 align-middle hover:bg-slate-50/70">
-                          <td className="px-4 py-3 text-sm font-mono text-slate-700">{formatNik(p.nik)}</td>
+                          <td className="px-4 py-3 text-sm text-slate-700">{assignedUser?.email || p.email || "-"}</td>
                           <td className="px-4 py-3">
                             <div className="font-semibold text-slate-900 text-sm">{p.nama_anggota_keluarga || p.nama_lengkap || "-"}</div>
                             <div className="text-xs text-slate-400 mt-0.5 font-mono">{formatKodeKeluarga(p.kode_keluarga)}</div>
@@ -453,12 +507,12 @@ const UserManagement = () => {
                               <div className="flex items-center justify-center gap-2 flex-nowrap">
                                 <button
                                   type="button"
-                                  onClick={() => openResetModal(assignedUser)}
-                                  title="Reset Password"
+                                  onClick={() => openEditModal(assignedUser)}
+                                  title="Edit"
                                   className="inline-flex items-center gap-1.5 rounded-lg bg-amber-50 border border-amber-200 px-2.5 py-1.5 text-xs font-semibold text-amber-700 hover:bg-amber-100 whitespace-nowrap transition-colors"
                                 >
-                                  <KeyRound size={13} />
-                                  Reset Password
+                                  <Edit size={13} />
+                                  Edit
                                 </button>
                                 <button
                                   type="button"
@@ -496,11 +550,16 @@ const UserManagement = () => {
               </table>
             </div>
 
-            {/* Result count */}
-            {filteredPenduduk.length > 0 && (
-              <div className="text-sm text-slate-500">
-                Menampilkan {filteredPenduduk.length} dari {pendudukList.length} penduduk
-              </div>
+            {/* Pagination */}
+            {!loadingPenduduk && filteredPenduduk.length > 0 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={Math.ceil(filteredPenduduk.length / itemsPerPage)}
+                totalItems={filteredPenduduk.length}
+                itemsPerPage={itemsPerPage}
+                onPageChange={(page) => setCurrentPage(page)}
+                loading={loadingPenduduk}
+              />
             )}
           </div>
         </section>
@@ -698,34 +757,121 @@ const UserManagement = () => {
         </div>
       )}
 
-      {/* Reset Password Modal */}
-      {showResetModal && resetUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 px-4">
-          <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl">
-            <div className="flex items-start justify-between gap-4">
+      {/* Edit User Modal */}
+      {showEditModal && editUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 px-4 py-6 overflow-y-auto">
+          <div className="w-full max-w-xl rounded-2xl bg-white shadow-2xl overflow-hidden my-auto">
+
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
               <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">Reset Password</p>
-                <h3 className="mt-1 text-2xl font-bold text-slate-900">{resetUser.name}</h3>
-                <p className="mt-1 text-sm text-slate-500">Masukkan password baru untuk akun ini.</p>
+                <h2 className="text-lg font-bold text-slate-800">Edit Akun</h2>
+                <p className="text-xs text-slate-500 mt-0.5">Ubah data akun pengguna</p>
               </div>
-              <button type="button" onClick={() => setShowResetModal(false)} className="rounded-full bg-slate-100 p-2 text-slate-500 hover:bg-slate-200">
+              <button type="button" onClick={() => setShowEditModal(false)} className="p-2 rounded-lg hover:bg-slate-100 text-slate-500">
                 <X size={18} />
               </button>
             </div>
 
-            <form onSubmit={submitResetPassword} className="mt-5 space-y-4">
+            <form onSubmit={submitEditUser} className="p-6 space-y-5">
+
+              {/* Data Akun */}
               <div>
-                <label className="text-sm text-slate-600">Password Baru</label>
-                <input type="password" value={resetForm.password} onChange={(e) => setResetForm({ password: e.target.value })} className="mt-1 w-full rounded-2xl border border-slate-200 px-4 py-3" placeholder="Minimal 8 karakter" />
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Data Akun</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+
+                  {/* Nama */}
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                      Nama Lengkap <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={editForm.name}
+                      onChange={(e) => setEditForm((prev) => ({ ...prev, name: e.target.value }))}
+                      placeholder="Nama yang ditampilkan di akun"
+                      className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      required
+                    />
+                  </div>
+
+                  {/* Email */}
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                      Email <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="email"
+                      value={editForm.email}
+                      onChange={(e) => setEditForm((prev) => ({ ...prev, email: e.target.value }))}
+                      placeholder="contoh@email.com"
+                      className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      required
+                    />
+                  </div>
+
+                  {/* Password */}
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                      Password Baru
+                    </label>
+                    <input
+                      type="password"
+                      value={editForm.password}
+                      onChange={(e) => setEditForm((prev) => ({ ...prev, password: e.target.value }))}
+                      placeholder="Kosongkan jika tidak ingin mengubah password"
+                      className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                    <p className="text-xs text-slate-400 mt-1">Kosongkan jika tidak ingin mengubah password</p>
+                  </div>
+                </div>
               </div>
 
-              <div className="flex items-center justify-end gap-3">
-                <button type="button" onClick={() => setShowResetModal(false)} className="rounded-2xl bg-slate-100 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-200">
+              {/* Bidan-specific fields */}
+              {(editUser.role || "").toLowerCase() === "bidan" && (
+                <div>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Data Bidan</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">No. STR</label>
+                      <input
+                        type="text"
+                        value={editForm.no_str}
+                        onChange={(e) => setEditForm((prev) => ({ ...prev, no_str: e.target.value }))}
+                        placeholder="Nomor Surat Tanda Registrasi"
+                        className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">No. SIPB</label>
+                      <input
+                        type="text"
+                        value={editForm.no_sipb}
+                        onChange={(e) => setEditForm((prev) => ({ ...prev, no_sipb: e.target.value }))}
+                        placeholder="Nomor Surat Izin Praktik Bidan"
+                        className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex items-center justify-end gap-3 pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowEditModal(false)}
+                  className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
+                >
                   Batal
                 </button>
-                <button type="submit" disabled={submitting} className="inline-flex items-center gap-2 rounded-2xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60">
-                  {submitting ? <Loader2 size={16} className="animate-spin" /> : <KeyRound size={16} />}
-                  Simpan Password
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60 transition-colors"
+                >
+                  {submitting ? <Loader2 size={15} className="animate-spin" /> : <Edit size={15} />}
+                  {submitting ? "Menyimpan..." : "Simpan Perubahan"}
                 </button>
               </div>
             </form>

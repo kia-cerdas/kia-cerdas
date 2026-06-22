@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import Swal from "sweetalert2";
 import MainLayout from "../../components/Layout/MainLayout";
 import RequestPerubahanImunisasiTable from "./table";
 import {
@@ -47,33 +48,79 @@ export default function RequestPerubahanImunisasiPage() {
     }, []);
 
     const handleApprove = async (id) => {
+        const confirm = await Swal.fire({
+            title: "Terima Permintaan?",
+            text: "Jadwal imunisasi akan diubah sesuai tanggal baru yang diajukan.",
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonColor: "#16a34a",
+            cancelButtonColor: "#6b7280",
+            confirmButtonText: "Ya, Terima",
+            cancelButtonText: "Batal",
+        });
+
+        if (!confirm.isConfirmed) return;
+
         try {
-            const res = await approveRequestPerubahanImunisasi(id);
-            console.log(res);
+            await approveRequestPerubahanImunisasi(id);
+
+            Swal.fire({
+                title: "Berhasil!",
+                text: "Permintaan perubahan jadwal telah diterima.",
+                icon: "success",
+                confirmButtonColor: "#16a34a",
+            });
 
             await fetchRequests();
         } catch (error) {
             console.error("APPROVE ERROR:", error);
 
-            console.error("RESPONSE:", error?.response);
-            console.error("DATA:", error?.response?.data);
-
-            alert(
-                error?.response?.data?.message ||
-                JSON.stringify(error?.response?.data) ||
-                error.message
-            );
+            Swal.fire({
+                title: "Gagal!",
+                text:
+                    error?.response?.data?.message ||
+                    JSON.stringify(error?.response?.data) ||
+                    error.message,
+                icon: "error",
+                confirmButtonColor: "#dc2626",
+            });
         }
     };
 
     const handleReject = async (id) => {
+        const confirm = await Swal.fire({
+            title: "Tolak Permintaan?",
+            text: "Permintaan perubahan jadwal ini akan ditolak.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#dc2626",
+            cancelButtonColor: "#6b7280",
+            confirmButtonText: "Ya, Tolak",
+            cancelButtonText: "Batal",
+        });
+
+        if (!confirm.isConfirmed) return;
+
         try {
             await rejectRequestPerubahanImunisasi(id);
+
+            Swal.fire({
+                title: "Ditolak",
+                text: "Permintaan perubahan jadwal telah ditolak.",
+                icon: "success",
+                confirmButtonColor: "#16a34a",
+            });
 
             await fetchRequests();
         } catch (error) {
             console.error(error);
-            alert("Gagal menolak permintaan");
+
+            Swal.fire({
+                title: "Gagal!",
+                text: "Gagal menolak permintaan.",
+                icon: "error",
+                confirmButtonColor: "#dc2626",
+            });
         }
     };
 

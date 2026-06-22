@@ -6,7 +6,7 @@ const fields = [
   { key: "bulan_max", label: "Bulan Maksimal", type: "number", required: true },
   { key: "judul", label: "Judul Resep", type: "text", required: true },
   { key: "tipe", label: "Tipe Resep", type: "text", required: true },
-  { key: "gambar_url", label: "Gambar (opsional)", type: "image" },
+  { key: "gambar_url", label: "Gambar", type: "image" },
   { key: "waktu_persiapan", label: "Waktu Persiapan (menit)", type: "number", required: true },
   { key: "kalori", label: "Kalori", type: "number", required: true },
   { key: "porsi", label: "Porsi", type: "text", required: true },

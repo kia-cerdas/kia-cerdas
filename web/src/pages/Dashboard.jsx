@@ -621,7 +621,7 @@ export default function Dashboard() {
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               <div style={{ background: "rgba(255,255,255,0.2)", borderRadius: 12, padding: 8 }}>{icons.calendar}</div>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 500, opacity: 0.9 }}>Jadwal Layanan Imunisasi Hari Ini</div>
+                <div style={{ fontSize: 14, fontWeight: 500, opacity: 0.9 }}>Jadwal Layanan Posyandu Hari Ini</div>
                 <div style={{ fontSize: 28, fontWeight: "bold" }}>{todayScheduleCount} sesi</div>
                 <div style={{ fontSize: 11, opacity: 0.7 }}>Klik tombol untuk kelola jadwal</div>
               </div>

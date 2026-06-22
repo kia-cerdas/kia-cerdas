@@ -486,6 +486,205 @@ export default function EdukasiDigitalCrudPage({
     }
   };
 
+  // Helper untuk memisahkan field ke kolom utama vs kolom samping (sidebar)
+  const groupedFields = useMemo(() => {
+    const list = fields && Array.isArray(fields) ? fields : [
+      { key: "judul", label: "Judul", type: "text" },
+      { key: "gambar_url", label: "Gambar", type: "image" },
+      { key: "deskripsi", label: "Deskripsi", type: "textarea", rows: 2 },
+      { key: "isi_konten", label: "Isi konten", type: "textarea", rows: 4 },
+      { key: "hal_penting", label: "Hal penting", type: "textarea", rows: 2 },
+    ];
+    
+    const sidebar = [];
+    const metadata = [];
+    const main = [];
+    
+    list.filter(f => f.key !== 'materi_inti').forEach((f) => {
+      if (f.type === "image" || f.type === "checkbox" || f.key === "gambar_url" || f.key === "is_active" || f.key === "thumbnail_url") {
+        sidebar.push(f);
+      } else {
+        const largeTextKeys = [
+          "judul", "deskripsi", "konten", "isi", "isi_konten", 
+          "ringkasan", "yang_perlu_diingat", "tips", "manfaat", 
+          "bahan_bahan", "cara_membuat", "hal_penting"
+        ];
+        if (largeTextKeys.includes(f.key) || f.type === "textarea" || f.type === "array") {
+          main.push(f);
+        } else {
+          metadata.push(f);
+        }
+      }
+    });
+    
+    return { sidebar, metadata, main };
+  }, [fields, form]);
+
+  const renderField = (f) => {
+    const value = form[f.key] ?? "";
+
+    if (f.key === "gambar_url" || f.type === "image" || f.key === "thumbnail_url") {
+      return (
+        <ImageUploader
+          key={f.key}
+          value={value}
+          onChange={(url) => setForm((prev) => ({ ...prev, [f.key]: url }))}
+          fieldName={f.key}
+          label={f.label || "Gambar"}
+          disabled={saving}
+        />
+      );
+    }
+
+    if (f.type === "checkbox") {
+      return (
+        <label key={f.key} className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 hover:bg-slate-50 transition-colors cursor-pointer w-full shadow-sm">
+          <input
+            name={f.key}
+            type="checkbox"
+            checked={Boolean(value)}
+            onChange={handleChange}
+            className="h-4 w-4 rounded border-slate-300 text-[#185FA5] focus:ring-[#185FA5]"
+          />
+          <span className="text-[14px] font-semibold text-slate-700">{f.label}</span>
+        </label>
+      );
+    }
+
+    if (f.type === "select") {
+      return (
+        <div key={f.key} className="space-y-1">
+          <label className="text-[13px] font-bold text-slate-500 ml-1">{f.label}</label>
+          <select
+            name={f.key}
+            value={value}
+            onChange={handleChange}
+            className="w-full border border-slate-200 bg-white rounded-xl px-4 py-3 text-[14px] focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] outline-none transition-all shadow-sm cursor-pointer"
+          >
+            <option value="">{f.placeholder || `Pilih ${f.label.toLowerCase()}`}</option>
+            {(f.options || []).map((option) => {
+              const optValue = typeof option === 'string' ? option : option.value;
+              const optLabel = typeof option === 'string' ? option : (option.label || optValue);
+              return (
+                <option key={String(optValue)} value={optValue}>
+                  {optLabel}
+                </option>
+              );
+            })}
+          </select>
+        </div>
+      );
+    }
+
+    if (f.type === "array") {
+      return (
+        <div key={f.key} className="space-y-1">
+          <label className="text-[14px] font-semibold text-slate-700 ml-1">{f.label}</label>
+          <textarea
+            name={f.key}
+            value={value}
+            onChange={handleChange}
+            placeholder={f.placeholder || `Masukkan ${f.label.toLowerCase()} (satu item per baris)`}
+            rows={f.rows || 4}
+            className="w-full border border-slate-200 bg-white rounded-xl px-4 py-3 text-[14px] focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] outline-none transition-all shadow-sm"
+          />
+          <p className="text-[12px] text-slate-500 ml-1">Setiap baris akan menjadi satu item dalam daftar.</p>
+        </div>
+      );
+    }
+
+    if (f.type === "textarea") {
+      return (
+        <div key={f.key} className="space-y-1">
+          <label className="text-[14px] font-semibold text-slate-700 ml-1">{f.label}</label>
+          <textarea
+            name={f.key}
+            value={value}
+            onChange={handleChange}
+            placeholder={`Masukkan ${f.label.toLowerCase()}`}
+            rows={f.rows || 3}
+            className="w-full border border-slate-200 bg-white rounded-xl px-4 py-3 text-[14px] focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] outline-none transition-all shadow-sm"
+          />
+        </div>
+      );
+    }
+
+    return (
+      <div key={f.key} className="space-y-1">
+        <label className="text-[14px] font-semibold text-slate-700 ml-1">{f.label}</label>
+        <input
+          name={f.key}
+          value={value}
+          onChange={handleChange}
+          placeholder={`Masukkan ${f.label.toLowerCase()}`}
+          className="w-full border border-slate-200 bg-white rounded-xl px-4 py-3 text-[14px] focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] outline-none transition-all shadow-sm"
+        />
+      </div>
+    );
+  };
+
+  const renderMateriInti = () => {
+    return (
+      <div className="pt-4 border-t border-[#e2e8f0]">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-[16px] font-bold text-slate-800">Materi Inti</h3>
+            <p className="text-[12px] text-slate-500 mt-1">Tambahkan satu atau lebih blok materi inti.</p>
+          </div>
+          <button
+            type="button"
+            onClick={handleAddMateriInti}
+            className="flex items-center gap-1.5 px-4 py-2 bg-[#185FA5]/10 text-[#185FA5] rounded-lg text-[14px] font-semibold hover:bg-[#185FA5]/20 transition-colors"
+          >
+            <Plus size={16} /> Tambah Materi
+          </button>
+        </div>
+
+        <div className="space-y-4">
+          {materiIntiList.map((item, index) => (
+            <div key={index} className="bg-[#F7FAFB] p-5 rounded-2xl border border-[#e2e8f0] relative group/item">
+              <button
+                type="button"
+                onClick={() => handleRemoveMateriInti(index)}
+                className="absolute top-4 right-4 p-1.5 text-slate-400 hover:text-[#A32D2D] hover:bg-[#A32D2D]/10 rounded-lg transition-colors opacity-0 group-hover/item:opacity-100"
+              >
+                <Trash2 size={16} />
+              </button>
+              <div className="space-y-4 pr-8">
+                <div className="space-y-1">
+                  <label className="text-[14px] font-semibold text-slate-700 ml-1">Judul Materi {index + 1}</label>
+                  <input
+                    value={item.judul}
+                    onChange={(e) => handleChangeMateriInti(index, "judul", e.target.value)}
+                    placeholder="Contoh: Pengertian ASI Eksklusif"
+                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-[14px] focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] outline-none transition-all shadow-sm"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[14px] font-semibold text-slate-700 ml-1">Isi Materi</label>
+                  <textarea
+                    value={item.isi}
+                    onChange={(e) => handleChangeMateriInti(index, "isi", e.target.value)}
+                    placeholder="Tulis penjelasan detail di sini..."
+                    rows={3}
+                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-[14px] focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] outline-none transition-all shadow-sm"
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {materiIntiList.length === 0 && (
+            <div className="text-center py-8 border-2 border-dashed border-[#e2e8f0] rounded-2xl bg-[#F7FAFB]">
+              <BookOpen size={28} className="mx-auto text-slate-300 mb-3" />
+              <p className="text-[14px] font-medium text-slate-500">Belum ada materi inti yang ditambahkan</p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   // Helper untuk format tanggal
   const formatDate = (dateString) => {
     if (!dateString) return "-";
@@ -762,203 +961,90 @@ export default function EdukasiDigitalCrudPage({
                 <RefreshCw size={36} className="animate-spin text-[#185FA5]" />
                 <p className="text-[14px] text-slate-500 font-medium">Memuat data formulir...</p>
               </div>
-            ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {(fields && Array.isArray(fields) ? fields : [
-                { key: "judul", label: "Judul", type: "text" },
-                { key: "gambar_url", label: "Gambar (opsional)", type: "image" },
-                { key: "deskripsi", label: "Deskripsi", type: "textarea", rows: 2 },
-                { key: "isi_konten", label: "Isi konten", type: "textarea", rows: 4 },
-                { key: "materi_inti", label: "Materi inti", type: "textarea", rows: 2 },
-                { key: "hal_penting", label: "Hal penting", type: "textarea", rows: 2 },
-              ]).filter(f => f.key !== 'materi_inti').map((f) => {
-                const value = form[f.key] ?? "";
+            ) : (            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                {/* Left/Main Column (lg:col-span-8) */}
+                <div className="lg:col-span-8 space-y-6">
+                  {/* Metadata Fields Section */}
+                  {groupedFields.metadata.length > 0 && (
+                    <div className="bg-slate-50/50 p-5 rounded-2xl border border-slate-100">
+                      <h3 className="text-[15px] font-bold text-slate-700 mb-4 flex items-center gap-2">
+                        <span className="w-1.5 h-4 bg-[#185FA5] rounded-full"></span>
+                        Informasi Pendukung
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {groupedFields.metadata.map((f) => renderField(f))}
+                      </div>
+                    </div>
+                  )}
 
-                // Image upload field - use ImageUploader component
-                if (f.key === "gambar_url" || f.type === "image") {
-                  return (
-                    <ImageUploader
-                      key={f.key}
-                      value={value}
-                      onChange={(url) => setForm((prev) => ({ ...prev, [f.key]: url }))}
-                      fieldName={f.key}
-                      label={f.label || "Gambar (opsional)"}
+                  {/* Main Text Content */}
+                  {groupedFields.main.length > 0 && (
+                    <div className="space-y-5">
+                      {groupedFields.main.map((f) => renderField(f))}
+                    </div>
+                  )}
+
+                  {/* Special Section: Materi Inti (Dynamic List) */}
+                  {(fields === null || fields.some(f => f.key === 'materi_inti')) && renderMateriInti()}
+
+                  {error ? <p className="text-[14px] text-[#A32D2D] bg-[#A32D2D]/10 p-3 rounded-lg">{error}</p> : null}
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-3 pt-4">
+                    <button
+                      type="submit"
                       disabled={saving}
-                    />
-                  );
-                }
-
-                if (f.type === "checkbox") {
-                  return (
-                    <label key={f.key} className="flex items-center gap-3 rounded-xl border border-slate-200 bg-[#F7FAFB] px-4 py-3">
-                      <input
-                        name={f.key}
-                        type="checkbox"
-                        checked={Boolean(value)}
-                        onChange={handleChange}
-                        className="h-4 w-4 rounded border-slate-300 text-[#185FA5] focus:ring-[#185FA5]"
-                      />
-                      <span className="text-[14px] font-semibold text-slate-700">{f.label}</span>
-                    </label>
-                  );
-                }
-
-                if (f.type === "select") {
-                  return (
-                    <div key={f.key} className="space-y-1">
-                      <label className="text-[14px] font-semibold text-slate-700 ml-1">{f.label}</label>
-                      <select
-                        name={f.key}
-                        value={value}
-                        onChange={handleChange}
-                        className="w-full border border-slate-200 bg-[#F7FAFB] rounded-xl px-4 py-3 text-[14px] focus:bg-white focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] outline-none transition-all"
-                      >
-                        <option value="">{f.placeholder || `Pilih ${f.label.toLowerCase()}`}</option>
-                        {(f.options || []).map((option) => {
-                          const optValue = typeof option === 'string' ? option : option.value;
-                          const optLabel = typeof option === 'string' ? option : (option.label || optValue);
-                          return (
-                            <option key={String(optValue)} value={optValue}>
-                              {optLabel}
-                            </option>
-                          );
-                        })}
-                      </select>
-                    </div>
-                  );
-                }
-
-                if (f.type === "array") {
-                  return (
-                    <div key={f.key} className="space-y-1">
-                      <label className="text-[14px] font-semibold text-slate-700 ml-1">{f.label}</label>
-                      <textarea
-                        name={f.key}
-                        value={value}
-                        onChange={handleChange}
-                        placeholder={f.placeholder || `Masukkan ${f.label.toLowerCase()} (satu item per baris)`}
-                        rows={f.rows || 4}
-                        className="w-full border border-slate-200 bg-[#F7FAFB] rounded-xl px-4 py-3 text-[14px] focus:bg-white focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] outline-none transition-all"
-                      />
-                      <p className="text-[12px] text-slate-500 ml-1">Setiap baris akan menjadi satu item dalam daftar.</p>
-                    </div>
-                  );
-                }
-
-                if (f.type === "textarea") {
-                  return (
-                    <div key={f.key} className="space-y-1">
-                      <label className="text-[14px] font-semibold text-slate-700 ml-1">{f.label}</label>
-                      <textarea
-                        name={f.key}
-                        value={value}
-                        onChange={handleChange}
-                        placeholder={`Masukkan ${f.label.toLowerCase()}`}
-                        rows={f.rows || 3}
-                        className="w-full border border-slate-200 bg-[#F7FAFB] rounded-xl px-4 py-3 text-[14px] focus:bg-white focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] outline-none transition-all"
-                      />
-                    </div>
-                  );
-                }
-
-                return (
-                  <div key={f.key} className="space-y-1">
-                    <label className="text-[14px] font-semibold text-slate-700 ml-1">{f.label}</label>
-                    <input
-                      name={f.key}
-                      value={value}
-                      onChange={handleChange}
-                      placeholder={`Masukkan ${f.label.toLowerCase()}`}
-                      className="w-full border border-slate-200 bg-[#F7FAFB] rounded-xl px-4 py-3 text-[14px] focus:bg-white focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] outline-none transition-all"
-                    />
-                  </div>
-                );
-              })}
-
-              {/* Special Section: Materi Inti (Dynamic List) */}
-              {(fields === null || fields.some(f => f.key === 'materi_inti')) && (
-                <div className="pt-4 border-t border-[#e2e8f0]">
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <h3 className="text-[16px] font-bold text-slate-800">Materi Inti</h3>
-                      <p className="text-[12px] text-slate-500 mt-1">Tambahkan satu atau lebih blok materi inti.</p>
-                    </div>
+                      className="px-6 py-2.5 rounded-xl bg-[#185FA5] hover:bg-[#185FA5]/90 text-white text-[15px] font-bold disabled:opacity-60 transition-all shadow-sm active:scale-95"
+                    >
+                      {saving ? "Menyimpan..." : editingId ? "Ubah Konten" : "Simpan Konten"}
+                    </button>
                     <button
                       type="button"
-                      onClick={handleAddMateriInti}
-                      className="flex items-center gap-1.5 px-4 py-2 bg-[#185FA5]/10 text-[#185FA5] rounded-lg text-[14px] font-semibold hover:bg-[#185FA5]/20 transition-colors"
+                      onClick={() => {
+                        if (view === "form") {
+                          navigate(listPath || "/edukasi-digital/informasi-umum");
+                          return;
+                        }
+                        resetForm();
+                      }}
+                      className="px-6 py-2.5 rounded-xl bg-white text-slate-700 text-[15px] font-bold border border-slate-200 hover:bg-slate-50 transition-all shadow-sm active:scale-95"
                     >
-                      <Plus size={16} /> Tambah Materi
+                      Batal
                     </button>
                   </div>
-
-                  <div className="space-y-4">
-                    {materiIntiList.map((item, index) => (
-                      <div key={index} className="bg-[#F7FAFB] p-5 rounded-2xl border border-[#e2e8f0] relative group/item">
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveMateriInti(index)}
-                          className="absolute top-4 right-4 p-1.5 text-slate-400 hover:text-[#A32D2D] hover:bg-[#A32D2D]/10 rounded-lg transition-colors opacity-0 group-hover/item:opacity-100"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                        <div className="space-y-4 pr-8">
-                          <div className="space-y-1">
-                            <label className="text-[14px] font-semibold text-slate-700 ml-1">Judul Materi {index + 1}</label>
-                            <input
-                              value={item.judul}
-                              onChange={(e) => handleChangeMateriInti(index, "judul", e.target.value)}
-                              placeholder="Contoh: Pengertian ASI Eksklusif"
-                              className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-[14px] focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] outline-none transition-all"
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <label className="text-[14px] font-semibold text-slate-700 ml-1">Isi Materi</label>
-                            <textarea
-                              value={item.isi}
-                              onChange={(e) => handleChangeMateriInti(index, "isi", e.target.value)}
-                              placeholder="Tulis penjelasan detail di sini..."
-                              rows={3}
-                              className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-[14px] focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] outline-none transition-all"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-
-                    {materiIntiList.length === 0 && (
-                      <div className="text-center py-8 border-2 border-dashed border-[#e2e8f0] rounded-2xl bg-[#F7FAFB]">
-                        <BookOpen size={28} className="mx-auto text-slate-300 mb-3" />
-                        <p className="text-[14px] font-medium text-slate-500">Belum ada materi inti yang ditambahkan</p>
-                      </div>
-                    )}
-                  </div>
                 </div>
-              )}
 
-              {error ? <p className="text-[14px] text-[#A32D2D] bg-[#A32D2D]/10 p-3 rounded-lg">{error}</p> : null}
+                {/* Right/Sidebar Column (lg:col-span-4) */}
+                <div className="lg:col-span-4 space-y-6">
+                  {/* Media Utama Card */}
+                  {groupedFields.sidebar.some(f => f.type === "image" || f.key === "gambar_url" || f.key === "thumbnail_url") && (
+                    <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+                      <h3 className="text-[15px] font-bold text-slate-800 flex items-center gap-2">
+                        <span className="w-1.5 h-4 bg-[#185FA5] rounded-full"></span>
+                        Media Utama
+                      </h3>
+                      {groupedFields.sidebar
+                        .filter(f => f.type === "image" || f.key === "gambar_url" || f.key === "thumbnail_url")
+                        .map((f) => renderField(f))}
+                    </div>
+                  )}
 
-              <div className="flex gap-3 pt-4">
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="px-6 py-2.5 rounded-lg bg-[#185FA5] text-white text-[16px] font-semibold disabled:opacity-60 hover:bg-[#185FA5]/90 transition-colors"
-                >
-                  {saving ? "Menyimpan..." : editingId ? "Ubah Konten" : "Simpan Konten"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (view === "form") {
-                      navigate(listPath || "/edukasi-digital/informasi-umum");
-                      return;
-                    }
-                    resetForm();
-                  }}
-                  className="px-6 py-2.5 rounded-lg bg-[#F7FAFB] text-slate-700 text-[16px] font-semibold border border-slate-200 hover:bg-[#e2e8f0] transition-colors"
-                >
-                  Batal
-                </button>
+                  {/* Status/Pengaturan Publikasi Card */}
+                  {groupedFields.sidebar.some(f => f.type === "checkbox" || f.key === "is_active") && (
+                    <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+                      <h3 className="text-[15px] font-bold text-slate-800 flex items-center gap-2">
+                        <span className="w-1.5 h-4 bg-[#185FA5] rounded-full"></span>
+                        Pengaturan Publikasi
+                      </h3>
+                      <div className="space-y-3">
+                        {groupedFields.sidebar
+                          .filter(f => f.type === "checkbox" || f.key === "is_active")
+                          .map((f) => renderField(f))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </form>
             )}

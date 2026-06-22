@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Plus, Pencil, Trash2, Home, X, Search } from "lucide-react";
 import MainLayout from "../../components/Layout/MainLayout";
 import Swal from "sweetalert2";
+import Pagination from "../../components/Pagination/Pagination";
 import {
 	getAllPosyandu,
 	createPosyandu,
@@ -28,6 +29,10 @@ export default function KelolaPosyandu() {
 	const [filterPuskesmas, setFilterPuskesmas] = useState("");
 	const [search, setSearch] = useState("");
 
+	// Pagination state
+	const [currentPage, setCurrentPage] = useState(1);
+	const [itemsPerPage] = useState(10);
+
 	const fetchData = async () => {
 		try {
 			setLoading(true);
@@ -38,11 +43,14 @@ export default function KelolaPosyandu() {
 				getAllPuskesmas(),
 				listDesa(),
 			]);
-			setPosyandu(posyanduData || []);
-			setPuskesmas(puskesmasData || []);
-			setDesa(desaData || []);
+			// Ensure posyanduData is always an array
+			setPosyandu(Array.isArray(posyanduData) ? posyanduData : []);
+			setPuskesmas(Array.isArray(puskesmasData) ? puskesmasData : []);
+			setDesa(Array.isArray(desaData) ? desaData : []);
 		} catch (error) {
 			console.error("Error fetching data:", error);
+			// Set empty arrays on error
+			setPosyandu([]);
 			Swal.fire("Error", "Gagal memuat data", "error");
 		} finally {
 			setLoading(false);
@@ -160,6 +168,18 @@ export default function KelolaPosyandu() {
 		);
 	}, [posyandu, search]);
 
+	// Paginated data
+	const paginatedPosyandu = useMemo(() => {
+		const startIndex = (currentPage - 1) * itemsPerPage;
+		const endIndex = startIndex + itemsPerPage;
+		return filteredPosyandu.slice(startIndex, endIndex);
+	}, [filteredPosyandu, currentPage, itemsPerPage]);
+
+	// Reset to page 1 when search or filter changes
+	useEffect(() => {
+		setCurrentPage(1);
+	}, [search, filterPuskesmas]);
+
 	return (
 		<MainLayout>
 			<div className="p-6 bg-gray-50 min-h-screen">
@@ -176,6 +196,13 @@ export default function KelolaPosyandu() {
 								className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
 							/>
 						</div>
+						<button
+							type="button"
+							className="inline-flex items-center gap-2 rounded-2xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors"
+						>
+							<Search className="w-4 h-4" />
+							Cari
+						</button>
 						<select
 							value={filterPuskesmas}
 							onChange={(e) => setFilterPuskesmas(e.target.value)}
@@ -205,7 +232,11 @@ export default function KelolaPosyandu() {
 							</div>
 						) : filteredPosyandu.length === 0 ? (
 							<div className="p-8 text-center text-gray-500">
-								{search ? "Tidak ada posyandu yang cocok dengan pencarian" : "Belum ada data posyandu"}
+								{search 
+									? "Tidak ada posyandu yang cocok dengan pencarian" 
+									: filterPuskesmas 
+										? "Belum ada data posyandu untuk puskesmas ini" 
+										: "Belum ada data posyandu"}
 							</div>
 						) : (
 							<div className="overflow-x-auto">
@@ -233,13 +264,13 @@ export default function KelolaPosyandu() {
 										</tr>
 									</thead>
 									<tbody className="divide-y divide-gray-200">
-										{filteredPosyandu.map((item, index) => (
+										{paginatedPosyandu.map((item, index) => (
 											<tr
 												key={item.id}
 												className="hover:bg-gray-50 transition-colors"
 											>
 												<td className="px-6 py-4 text-sm text-gray-900">
-													{index + 1}
+													{(currentPage - 1) * itemsPerPage + index + 1}
 												</td>
 												<td className="px-6 py-4">
 													<div className="flex items-center gap-2">
@@ -281,6 +312,18 @@ export default function KelolaPosyandu() {
 									</tbody>
 								</table>
 							</div>
+						)}
+
+						{/* Pagination */}
+						{!loading && filteredPosyandu.length > 0 && (
+							<Pagination
+								currentPage={currentPage}
+								totalPages={Math.ceil(filteredPosyandu.length / itemsPerPage)}
+								totalItems={filteredPosyandu.length}
+								itemsPerPage={itemsPerPage}
+								onPageChange={(page) => setCurrentPage(page)}
+								loading={loading}
+							/>
 						)}
 					</div>
 				</div>

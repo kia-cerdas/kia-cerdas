@@ -31,20 +31,20 @@ var roleDestinations = map[string]roleDestination{
 }
 
 var roleAliases = map[string]string{
-	"admin":           "Admin",
-	"dokter":          "Dokter",
+	"admin":            "Admin",
+	"dokter":           "Dokter",
 	"tenagakesehatan":  "Tenaga-kesehatan",
 	"tenaga-kesehatan": "Tenaga-kesehatan",
 	"tenaga kesehatan": "Tenaga-kesehatan",
-	"kader":           "Kader",
-	"bidan":           "Bidan",
-	"bidanpuskesmas":  "Bidan_puskesmas",
-	"bidan_puskesmas": "Bidan_puskesmas",
-	"superadmin":      "Superadmin",
-	"orangtua":        "Orangtua",
-	"orang tua":       "Orangtua",
-	"orang-tua":       "Orangtua",
-	"Ibu":             "Orangtua",
+	"kader":            "Kader",
+	"bidan":            "Bidan",
+	"bidanpuskesmas":   "Bidan_puskesmas",
+	"bidan_puskesmas":  "Bidan_puskesmas",
+	"superadmin":       "Superadmin",
+	"orangtua":         "Orangtua",
+	"orang tua":        "Orangtua",
+	"orang-tua":        "Orangtua",
+	"Ibu":              "Orangtua",
 }
 
 var phonePattern = regexp.MustCompile(`^\+62[0-9]{8,13}$`)
@@ -150,7 +150,7 @@ func (m *Main) buildAccessToken(user *models.User, destination roleDestination, 
 		TargetApp:     destination.TargetApp,
 		RedirectRoute: destination.RedirectRoute,
 		// DesaID:        desaID,
-		PosyanduID:    posyanduID, 
+		PosyanduID: posyanduID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:   fmt.Sprintf("%d", user.ID),
 			IssuedAt:  jwt.NewNumericDate(now),
@@ -310,68 +310,67 @@ func (m *Main) Login(req *models.LoginRequest) (*models.LoginResponse, error) {
 	var posyanduNama string
 	var phoneNumber string
 
-	 if user.PendudukID != nil {
-        pendudukID := int32(*user.PendudukID)
-        
-        // Ambil phone number dari penduduk
-        penduduk, err := m.repository.Kependudukan.FindByID(pendudukID)
-        if err == nil && penduduk != nil {
-            phoneNumber = penduduk.Telepon
-        }
+	if user.PendudukID != nil {
+		pendudukID := int32(*user.PendudukID)
 
-        switch canonicalRoleName {
-        case "Bidan":
-            //  Cari bidan
-            bidan, bErr := m.repository.Bidan.FindByPendudukID(pendudukID)
-            if bErr != nil {
-                return nil, customerror.NewBadRequestError("data bidan tidak ditemukan")
-            }
-            if bidan == nil {
-                return nil, customerror.NewBadRequestError("data bidan tidak ditemukan")
-            }
-            if strings.ToLower(strings.TrimSpace(bidan.Status)) != "aktif" {
-                return nil, customerror.NewBadRequestError("akun bidan nonaktif")
-            }
-            
-            //  AMBIL POSYANDU_ID DARI BIDAN
-            if bidan.PosyanduID != nil {
-                posyanduID = bidan.PosyanduID
-                // Ambil nama posyandu
-                if bidan.Posyandu != nil {
-                    posyanduNama = bidan.Posyandu.Nama
-                }
-            } else {
-                //  Logging jika posyandu_id di bidan NULL
-                fmt.Printf("⚠️ Bidan dengan penduduk_id %d tidak memiliki posyandu_id\n", pendudukID)
-            }
+		// Ambil phone number dari penduduk
+		penduduk, err := m.repository.Kependudukan.FindByID(pendudukID)
+		if err == nil && penduduk != nil {
+			phoneNumber = penduduk.Telepon
+		}
 
-        case "Kader":
-            //  Cari kader
-            kader, kErr := m.repository.Kader.FindByPendudukID(pendudukID)
-            if kErr != nil {
-                return nil, customerror.NewBadRequestError("data kader tidak ditemukan")
-            }
-            if kader == nil {
-                return nil, customerror.NewBadRequestError("data kader tidak ditemukan")
-            }
-            if strings.ToLower(strings.TrimSpace(kader.Status)) != "aktif" {
-                return nil, customerror.NewBadRequestError("akun kader nonaktif")
-            }
-            
-            //  AMBIL POSYANDU_ID DARI KADER
-            if kader.PosyanduID != nil {
-                // Konversi jika tipe data berbeda
-                id := int32(*kader.PosyanduID)
-                posyanduID = &id
-                if kader.Posyandu != nil {
-                    posyanduNama = kader.Posyandu.Nama
-                }
-            } else {
-                fmt.Printf("⚠️ Kader dengan penduduk_id %d tidak memiliki posyandu_id\n", pendudukID)
-            }
-        }
-    }
+		switch canonicalRoleName {
+		case "Bidan":
+			//  Cari bidan
+			bidan, bErr := m.repository.Bidan.FindByPendudukID(pendudukID)
+			if bErr != nil {
+				return nil, customerror.NewBadRequestError("data bidan tidak ditemukan")
+			}
+			if bidan == nil {
+				return nil, customerror.NewBadRequestError("data bidan tidak ditemukan")
+			}
+			if strings.ToLower(strings.TrimSpace(bidan.Status)) != "aktif" {
+				return nil, customerror.NewBadRequestError("akun bidan nonaktif")
+			}
 
+			//  AMBIL POSYANDU_ID DARI BIDAN
+			if bidan.PosyanduID != nil {
+				posyanduID = bidan.PosyanduID
+				// Ambil nama posyandu
+				if bidan.Posyandu != nil {
+					posyanduNama = bidan.Posyandu.Nama
+				}
+			} else {
+				//  Logging jika posyandu_id di bidan NULL
+				fmt.Printf("⚠️ Bidan dengan penduduk_id %d tidak memiliki posyandu_id\n", pendudukID)
+			}
+
+		case "Kader":
+			//  Cari kader
+			kader, kErr := m.repository.Kader.FindByPendudukID(pendudukID)
+			if kErr != nil {
+				return nil, customerror.NewBadRequestError("data kader tidak ditemukan")
+			}
+			if kader == nil {
+				return nil, customerror.NewBadRequestError("data kader tidak ditemukan")
+			}
+			if strings.ToLower(strings.TrimSpace(kader.Status)) != "aktif" {
+				return nil, customerror.NewBadRequestError("akun kader nonaktif")
+			}
+
+			//  AMBIL POSYANDU_ID DARI KADER
+			if kader.PosyanduID != nil {
+				// Konversi jika tipe data berbeda
+				id := int32(*kader.PosyanduID)
+				posyanduID = &id
+				if kader.Posyandu != nil {
+					posyanduNama = kader.Posyandu.Nama
+				}
+			} else {
+				fmt.Printf("⚠️ Kader dengan penduduk_id %d tidak memiliki posyandu_id\n", pendudukID)
+			}
+		}
+	}
 
 	destination, ok := roleRedirect(canonicalRoleName)
 	if !ok {
@@ -392,7 +391,6 @@ func (m *Main) Login(req *models.LoginRequest) (*models.LoginResponse, error) {
 			}
 		}
 	}
-
 	// =============================================
 	// BUILD TOKEN DENGAN POSYANDU_ID
 	// =============================================
@@ -417,12 +415,13 @@ func (m *Main) Login(req *models.LoginRequest) (*models.LoginResponse, error) {
 		RedirectRoute: destination.RedirectRoute,
 		DesaID:        desaID,
 		DesaNama:      desaNama,
-		PosyanduID:    posyanduID,   
-		PosyanduNama:  posyanduNama, 
+		PosyanduID:    posyanduID,
+		PosyanduNama:  posyanduNama,
 	}
 
 	return res, nil
 }
+
 // func (m *Main) Login(req *models.LoginRequest) (*models.LoginResponse, error) {
 // 	if req == nil {
 // 		return nil, customerror.NewBadRequestError("request tidak valid")
@@ -555,7 +554,7 @@ func (m *Main) Login(req *models.LoginRequest) (*models.LoginResponse, error) {
 // 		UserID:        user.ID,
 // 		Name:          user.Name,
 // 		Email:         user.Email,
-// 		PhoneNumber:   phoneNumber,              
+// 		PhoneNumber:   phoneNumber,
 // 		Role:          user.Role.Name,
 // 		TargetApp:     destination.TargetApp,
 // 		RedirectRoute: destination.RedirectRoute,
