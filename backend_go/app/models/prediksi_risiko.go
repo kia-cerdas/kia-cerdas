@@ -1,4 +1,4 @@
-	package models
+package models
 
 type PrediksiRisikoRequest struct {
 	UsiaIbu           float64 `json:"usia_ibu"`
@@ -23,8 +23,22 @@ type PrediksiRisikoRequest struct {
 }
 
 type PrediksiRisikoResponse struct {
-	Prediction    int       `json:"prediction"`
-	Label         string    `json:"label"`
-	Probabilities []float64 `json:"probabilities"`
-	RiskScore     int       `json:"risk_score"`
+	Prediction        int              `json:"prediction"`
+	Label             string           `json:"label"`
+	OverallPrediction int              `json:"overall_prediction"`
+	OverallLabel      string           `json:"overall_label"`
+	Probabilities     []float64        `json:"probabilities"`
+	RiskScore         float64          `json:"risk_score"`
+	RiskTypes         []RiskTypeDetail `json:"risk_types"`
+	ActiveRiskCount   int              `json:"active_risk_count"`
+	AlasanKlinis      []string         `json:"alasan_klinis"`
+	RekomendasiUtama  string           `json:"rekomendasi_utama"`
+}
+
+type RiskTypeDetail struct {
+	Name        string   `json:"name"`
+	Detected    bool     `json:"detected"`
+	Probability float64  `json:"probability"`
+	Tindakan    []string `json:"tindakan"`
+	Referensi   string   `json:"referensi"`
 }

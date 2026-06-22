@@ -82,6 +82,17 @@ const HelpTooltip = ({ text }) => (
   </span>
 );
 
+// ─── SectionCard: kartu section konsisten ────────────────────────────────────
+const SectionCard = ({ icon: Icon, title, iconColor = "text-[#185FA5]", bgColor = "bg-[#EEF5FF]", children }) => (
+  <div className="bg-white rounded-xl shadow-sm border border-[#E2E8F0] overflow-hidden">
+    <div className={`flex items-center gap-2 px-6 py-3 ${bgColor}`}>
+      {Icon && <Icon size={16} className={iconColor} />}
+      <h3 className={`font-bold text-lg text-gray-800`}>{title}</h3>
+    </div>
+    <div className="px-6 py-5">{children}</div>
+  </div>
+);
+
 // ─── InfoCard: sinkronisasi data dari kehamilan/ibu (read-only) ──────────────
 const DataKehamilanCard = ({ kehamilan, ibu }) => {
   if (!kehamilan) return null;
@@ -91,16 +102,16 @@ const DataKehamilanCard = ({ kehamilan, ibu }) => {
   const abortus = kehamilan.abortus ?? ibu?.abortus ?? "-";
 
   return (
-    <div className="bg-[#EEF5FF] border border-[#C5D9F2] rounded-xl p-5 mb-2">
-      <div className="flex items-center gap-2 mb-4">
+    <div className="bg-[#EEF5FF] rounded-lg p-4 mb-4">
+      <div className="flex items-center gap-2 mb-3">
         <Baby size={18} className="text-[#185FA5]" />
-        <h3 className="font-semibold text-[#185FA5] text-base">
+        <h3 className="font-bold text-lg text-[#185FA5]">
           Data Kehamilan (Tersinkronisasi Otomatis)
         </h3>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
         <div>
-          <span className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
+        <span className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">
             HPHT
           </span>
           <span className="font-medium text-gray-800 flex items-center gap-1">
@@ -163,7 +174,7 @@ const DataKehamilanCard = ({ kehamilan, ibu }) => {
           </span>
         </div>
       </div>
-      <p className="text-xs text-[#185FA5] mt-3 italic">
+      <p className="text-xs text-[#185FA5] mt-2 italic">
         * Data ini tersinkronisasi otomatis dari data ibu dan tidak perlu diisi ulang.
       </p>
     </div>
@@ -203,283 +214,250 @@ const EvaluationView = ({
 
   return (
     <div className="space-y-5">
-      {/* Data kehamilan otomatis */}
-      <DataKehamilanCard kehamilan={kehamilan} ibu={ibu} />
+      <div className="bg-white rounded-xl shadow-sm border border-[#E2E8F0] overflow-hidden">
+        <div className="px-6 py-5 space-y-6">
+          {/* Data kehamilan otomatis */}
+          <DataKehamilanCard kehamilan={kehamilan} ibu={ibu} />
 
-      {/* Info pemeriksaan */}
-      <div className="bg-white rounded-xl shadow-sm p-6 border border-[#E2E8F0]">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-base">
+          {/* Kondisi Kesehatan Ibu */}
           <div>
-            <span className="font-bold text-gray-500 text-sm uppercase tracking-wide block mb-1">
-              Nama Dokter
-            </span>
-            <span className="flex items-center gap-1.5">
-              <User size={14} className="text-[#185FA5]" />
-              {form.nama_dokter || evaluasi.nama_dokter || "-"}
-            </span>
-          </div>
-          <div>
-            <span className="font-bold text-gray-500 text-sm uppercase tracking-wide block mb-1">
-              Tanggal Periksa
-            </span>
-            {formatDate(form.tanggal_periksa)}
-          </div>
-          <div>
-            <span className="font-bold text-gray-500 text-sm uppercase tracking-wide block mb-1">
-              Fasilitas Kesehatan
-            </span>
-            {form.fasilitas_kesehatan || "-"}
-          </div>
-        </div>
-      </div>
-
-      {/* Kondisi Kesehatan Ibu */}
-      <div className="bg-white rounded-xl shadow-sm p-6 border border-[#E2E8F0]">
-        <h3 className="font-semibold text-[22px] text-[#185FA5] mb-6 flex items-center gap-2">
-          Kondisi Kesehatan Ibu{" "}
-          <HelpTooltip text="TB, BB, IMT, dan LiLA saat evaluasi ini dilakukan" />
-        </h3>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-6 text-base">
-          <div>
-            <span className="font-bold text-gray-500 text-xs uppercase block mb-1">
-              TB (Tinggi)
-            </span>
-            {form.tb_cm ? `${form.tb_cm} cm` : "-"}
-          </div>
-          <div>
-            <span className="font-bold text-gray-500 text-xs uppercase block mb-1">
-              BB (Berat)
-            </span>
-            {form.bb_kg ? `${form.bb_kg} kg` : "-"}
-          </div>
-          <div>
-            <span className="font-bold text-gray-500 text-xs uppercase block mb-1">
-              IMT
-            </span>
-            {form.tb_cm && form.bb_kg
-              ? `${calculateIMT(form.tb_cm, form.bb_kg).imt} kg/m²`
-              : "-"}
-          </div>
-          <div>
-            <span className="font-bold text-gray-500 text-xs uppercase block mb-1">
-              Status Gizi
-            </span>
-            <span
-              className={`px-2 py-1 rounded text-xs font-bold ${
-                form.imt_kategori === "Normal"
-                  ? "bg-[#E1F5EE] text-[#085041]"
-                  : "bg-[#FAEEDA] text-[#633806]"
-              }`}
-            >
-              {form.imt_kategori || "-"}
-            </span>
-          </div>
-          <div>
-            <span className="font-bold text-gray-500 text-xs uppercase block mb-1">
-              LiLA (Lengan)
-            </span>
-            {form.lila_cm ? `${form.lila_cm} cm` : "-"}
-          </div>
-        </div>
-      </div>
-
-      {/* Status Imunisasi TT */}
-      <div className="bg-white rounded-xl shadow-sm p-6 border border-[#E2E8F0]">
-        <h3 className="font-semibold text-[22px] text-[#185FA5] border-b pb-3 mb-5 flex items-center gap-2">
-          Status Imunisasi TT{" "}
-          <HelpTooltip text="TT = Tetanus Toxoid. Dosis lengkap 5 kali memberikan perlindungan seumur hidup." />
-        </h3>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
-          {[1, 2, 3, 4, 5].map((n) => (
-            <div key={n} className="flex items-center gap-2">
-              <span className="font-bold text-gray-700 text-base">TT {n}</span>
-              <RenderCheck value={form[`status_tt_${n}`]} />
-            </div>
-          ))}
-        </div>
-        <div className="mt-6 pt-5 border-t border-gray-100">
-          <span className="block text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">
-            Imunisasi Lainnya (Misal: Covid-19)
-          </span>
-          <p className="text-base text-gray-900">
-            {form.imunisasi_lainnya_covid19 || "-"}
-          </p>
-        </div>
-      </div>
-
-      {/* Pemeriksaan Khusus (Inspeksi) */}
-      <div className="bg-white rounded-xl shadow-sm p-6 border border-[#E2E8F0]">
-        <h3 className="font-semibold text-[22px] text-[#185FA5] mb-6">
-          Pemeriksaan Khusus (Inspeksi)
-        </h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-8 text-base">
-          {["porsio", "uretra", "vagina", "vulva", "fluksus", "fluor"].map(
-            (item) => (
-              <div key={item}>
+            <h3 className="font-bold text-lg text-gray-800 mb-3">Kondisi Kesehatan Ibu</h3>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-6 text-base">
+              <div>
                 <span className="font-bold text-gray-500 text-xs uppercase block mb-1">
-                  {item}
+                  TB (Tinggi)
+                </span>
+                {form.tb_cm ? `${form.tb_cm} cm` : "-"}
+              </div>
+              <div>
+                <span className="font-bold text-gray-500 text-xs uppercase block mb-1">
+                  BB (Berat)
+                </span>
+                {form.bb_kg ? `${form.bb_kg} kg` : "-"}
+              </div>
+              <div>
+                <span className="font-bold text-gray-500 text-xs uppercase block mb-1">
+                  IMT
+                </span>
+                {form.tb_cm && form.bb_kg
+                  ? `${calculateIMT(form.tb_cm, form.bb_kg).imt} kg/m²`
+                  : "-"}
+              </div>
+              <div>
+                <span className="font-bold text-gray-500 text-xs uppercase block mb-1">
+                  Status Gizi
                 </span>
                 <span
-                  className={`px-3 py-1 rounded-full text-sm font-bold ${
-                    form[`inspeksi_${item}`] === "Normal"
-                      ? "bg-[#E1F5EE] text-[#085041]"
-                      : "bg-[#FCEBEB] text-[#791F1F]"
+                  className={`px-2 py-1 rounded text-xs font-bold ${
+                    form.imt_kategori === "Normal"
+                      ? "bg-green-100 text-green-700"
+                      : form.imt_kategori === "Kurus"
+                      ? "bg-yellow-100 text-yellow-700"
+                      : form.imt_kategori === "Gemuk" || form.imt_kategori === "Obesitas"
+                      ? "bg-red-100 text-red-700"
+                      : "bg-gray-100 text-gray-600"
                   }`}
                 >
-                  {form[`inspeksi_${item}`] || "-"}
+                  {form.imt_kategori || "-"}
                 </span>
               </div>
-            )
-          )}
-        </div>
-      </div>
-
-      {/* Riwayat Kesehatan Ibu */}
-      <div className="bg-white rounded-xl shadow-sm p-6 border border-[#E2E8F0]">
-        <h3 className="font-semibold text-[22px] text-[#185FA5] mb-6">
-          Riwayat Kesehatan Ibu
-        </h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 text-sm mb-3">
-          {[
-            ["alergi", "Alergi"],
-            ["asma", "Asma"],
-            ["autoimun", "Autoimun"],
-            ["diabetes", "Diabetes"],
-            ["hepatitis_b", "Hepatitis B"],
-            ["hipertensi", "Hipertensi"],
-            ["jantung", "Jantung"],
-            ["jiwa", "Gangguan Jiwa"],
-            ["sifilis", "Sifilis"],
-            ["tb", "Tuberkulosis"],
-          ].map(([key, label]) => (
-            <div key={key} className="flex items-center gap-1.5">
-              <span className="font-medium text-gray-700">{label}:</span>{" "}
-              <RenderCheck value={form[`riwayat_${key}`]} />
+              <div>
+                <span className="font-bold text-gray-500 text-xs uppercase block mb-1">
+                  LiLA (Lengan)
+                </span>
+                {form.lila_cm ? `${form.lila_cm} cm` : "-"}
+              </div>
             </div>
-          ))}
-        </div>
-        <div>
-          <span className="font-medium text-sm text-gray-700">Lainnya:</span>{" "}
-          {form.riwayat_kesehatan_lainnya || "-"}
-        </div>
-      </div>
-
-      {/* Perilaku Berisiko */}
-      <div className="bg-white rounded-lg shadow-sm p-6 border border-[#E2E8F0]">
-        <h3 className="font-semibold text-lg text-[#185FA5] mb-6">
-          Perilaku Berisiko (1 bulan sebelum hamil)
-        </h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm mb-3">
-          {[
-            ["aktivitas_fisik_kurang", "Kurang aktivitas fisik"],
-            ["alkohol", "Konsumsi alkohol"],
-            ["kosmetik_berbahaya", "Kosmetik berbahaya"],
-            ["merokok", "Merokok"],
-            ["obat_teratogenik", "Obat teratogenik"],
-            ["pola_makan_berisiko", "Pola makan berisiko"],
-          ].map(([key, label]) => (
-            <div key={key} className="flex items-center gap-1.5">
-              <span className="font-medium text-gray-700">{label}:</span>{" "}
-              <RenderCheck value={form[`perilaku_${key}`]} />
-            </div>
-          ))}
-        </div>
-        <div>
-          <span className="font-medium text-sm text-gray-700">Lainnya:</span>{" "}
-          {form.perilaku_lainnya || "-"}
-        </div>
-      </div>
-
-      {/* Riwayat Penyakit Keluarga */}
-      <div className="bg-white rounded-lg shadow-sm p-6 border border-[#E2E8F0]">
-        <h3 className="font-semibold text-lg text-[#185FA5] mb-6">
-          Riwayat Penyakit Keluarga
-        </h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 text-sm mb-3">
-          {[
-            ["alergi", "Alergi"],
-            ["asma", "Asma"],
-            ["autoimun", "Autoimun"],
-            ["diabetes", "Diabetes"],
-            ["hepatitis_b", "Hepatitis B"],
-            ["hipertensi", "Hipertensi"],
-            ["jantung", "Jantung"],
-            ["jiwa", "Gangguan Jiwa"],
-            ["sifilis", "Sifilis"],
-            ["tb", "Tuberkulosis"],
-          ].map(([key, label]) => (
-            <div key={key} className="flex items-center gap-1.5">
-              <span className="font-medium text-gray-700">{label}:</span>{" "}
-              <RenderCheck value={form[`keluarga_${key}`]} />
-            </div>
-          ))}
-        </div>
-        <div>
-          <span className="font-medium text-sm text-gray-700">Lainnya:</span>{" "}
-          {form.keluarga_lainnya || "-"}
-        </div>
-      </div>
-
-      {/* Riwayat Kehamilan Lalu — READ ONLY dari database */}
-      <div className="bg-white rounded-xl shadow-sm p-6 border border-[#E2E8F0]">
-        <div className="flex items-center justify-between mb-5">
-          <h3 className="font-semibold text-[22px] text-[#185FA5]">
-            Riwayat Kehamilan Lalu
-          </h3>
-          <span className="text-xs bg-[#EEF5FF] text-[#185FA5] px-3 py-1 rounded-full border border-[#C5D9F2]">
-            Data dari sistem
-          </span>
-        </div>
-        {riwayatList.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-[#E2E8F0] text-base">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase">No</th>
-                  <th className="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase">Tahun</th>
-                  <th className="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase">Berat (gr)</th>
-                  <th className="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase">Proses Melahirkan</th>
-                  <th className="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase">Penolong</th>
-                  <th className="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase">Masalah</th>
-                  {canEdit && (
-                    <th className="px-3 py-3 text-center text-xs font-bold text-gray-500 uppercase">Aksi</th>
-                  )}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#F1F5F9]">
-                {riwayatList.map((r, idx) => (
-                  <tr key={r.id_riwayat || idx} className="hover:bg-gray-50">
-                    <td className="px-3 py-4">{r.no_urut}</td>
-                    <td className="px-3 py-4 font-bold">{r.tahun}</td>
-                    <td className="px-3 py-4">{r.bb_gram || "-"}</td>
-                    <td className="px-3 py-4">{r.proses_melahirkan}</td>
-                    <td className="px-3 py-4">{r.penolong_proses_melahirkan || "-"}</td>
-                    <td className="px-3 py-4">{r.masalah || "-"}</td>
-                    {canEdit && (
-                      <td className="px-3 py-4 text-center">
-                        <button
-                          onClick={() => handleDeleteRiwayat(r.id_riwayat)}
-                          className="p-1 text-[#A32D2D] hover:bg-red-50 rounded transition-colors"
-                          title="Hapus baris ini"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </td>
-                    )}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
           </div>
-        ) : (
-          <p className="text-gray-400 text-sm">
-            Belum ada riwayat kehamilan lalu tercatat di sistem.
-          </p>
-        )}
+
+          {/* Status Imunisasi TT */}
+          <div>
+            <h3 className="font-bold text-lg text-gray-800 mb-3">Status Imunisasi TT</h3>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
+              {[1, 2, 3, 4, 5].map((n) => (
+                <div key={n} className="flex items-center gap-2">
+                  <span className="font-bold text-gray-700 text-base">TT {n}</span>
+                  <RenderCheck value={form[`status_tt_${n}`]} />
+                </div>
+              ))}
+            </div>
+            <div className="mt-6 pt-5 border-t border-gray-100">
+              <span className="block text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">
+                Imunisasi Lainnya (Misal: Covid-19)
+              </span>
+              <p className="text-base text-gray-900">
+                {form.imunisasi_lainnya_covid19 || "-"}
+              </p>
+            </div>
+          </div>
+
+          {/* Pemeriksaan Khusus (Inspeksi) */}
+          <div>
+            <h3 className="font-bold text-lg text-gray-800 mb-3">Pemeriksaan Khusus (Inspeksi)</h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-8 text-base">
+              {["porsio", "uretra", "vagina", "vulva", "fluksus", "fluor"].map(
+                (item) => (
+                  <div key={item}>
+                    <span className="font-bold text-gray-500 text-xs uppercase block mb-1">
+                      {item}
+                    </span>
+                    <span
+                      className={`px-3 py-1 rounded-full text-sm font-bold ${
+                        form[`inspeksi_${item}`] === "Normal"
+                          ? "bg-[#E1F5EE] text-[#085041]"
+                          : "bg-[#FCEBEB] text-[#791F1F]"
+                      }`}
+                    >
+                      {form[`inspeksi_${item}`] || "-"}
+                    </span>
+                  </div>
+                )
+              )}
+            </div>
+          </div>
+
+          {/* Riwayat Kesehatan Ibu */}
+          <div>
+            <h3 className="font-bold text-lg text-gray-800 mb-3">Riwayat Kesehatan Ibu</h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 text-sm mb-3">
+              {[
+                ["alergi", "Alergi"],
+                ["asma", "Asma"],
+                ["autoimun", "Autoimun"],
+                ["diabetes", "Diabetes"],
+                ["hepatitis_b", "Hepatitis B"],
+                ["hipertensi", "Hipertensi"],
+                ["jantung", "Jantung"],
+                ["jiwa", "Gangguan Jiwa"],
+                ["sifilis", "Sifilis"],
+                ["tb", "Tuberkulosis"],
+              ].map(([key, label]) => (
+                <div key={key} className="flex items-center gap-1.5">
+                  <span className="font-medium text-gray-700">{label}:</span>{" "}
+                  <RenderCheck value={form[`riwayat_${key}`]} />
+                </div>
+              ))}
+            </div>
+            <div>
+              <span className="font-medium text-sm text-gray-700">Lainnya:</span>{" "}
+              {form.riwayat_kesehatan_lainnya || "-"}
+            </div>
+          </div>
+
+          {/* Perilaku Berisiko */}
+          <div>
+            <h3 className="font-bold text-lg text-gray-800 mb-3">Perilaku Berisiko (1 bulan sebelum hamil)</h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm mb-3">
+              {[
+                ["aktivitas_fisik_kurang", "Kurang aktivitas fisik"],
+                ["alkohol", "Konsumsi alkohol"],
+                ["kosmetik_berbahaya", "Kosmetik berbahaya"],
+                ["merokok", "Merokok"],
+                ["obat_teratogenik", "Obat teratogenik"],
+                ["pola_makan_berisiko", "Pola makan berisiko"],
+              ].map(([key, label]) => (
+                <div key={key} className="flex items-center gap-1.5">
+                  <span className="font-medium text-gray-700">{label}:</span>{" "}
+                  <RenderCheck value={form[`perilaku_${key}`]} />
+                </div>
+              ))}
+            </div>
+            <div>
+              <span className="font-medium text-sm text-gray-700">Lainnya:</span>{" "}
+              {form.perilaku_lainnya || "-"}
+            </div>
+          </div>
+
+          {/* Riwayat Penyakit Keluarga */}
+          <div>
+            <h3 className="font-bold text-lg text-gray-800 mb-3">Riwayat Penyakit Keluarga</h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 text-sm mb-3">
+              {[
+                ["alergi", "Alergi"],
+                ["asma", "Asma"],
+                ["autoimun", "Autoimun"],
+                ["diabetes", "Diabetes"],
+                ["hepatitis_b", "Hepatitis B"],
+                ["hipertensi", "Hipertensi"],
+                ["jantung", "Jantung"],
+                ["jiwa", "Gangguan Jiwa"],
+                ["sifilis", "Sifilis"],
+                ["tb", "Tuberkulosis"],
+              ].map(([key, label]) => (
+                <div key={key} className="flex items-center gap-1.5">
+                  <span className="font-medium text-gray-700">{label}:</span>{" "}
+                  <RenderCheck value={form[`keluarga_${key}`]} />
+                </div>
+              ))}
+            </div>
+            <div>
+              <span className="font-medium text-sm text-gray-700">Lainnya:</span>{" "}
+              {form.keluarga_lainnya || "-"}
+            </div>
+          </div>
+
+          {/* Riwayat Kehamilan Lalu — READ ONLY dari database */}
+          <div className="border-t border-[#E2E8F0] pt-5">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="font-bold text-lg text-[#185FA5]">
+                Riwayat Kehamilan Lalu
+              </h3>
+              <span className="text-xs bg-[#EEF5FF] text-[#185FA5] px-3 py-1 rounded-full border border-[#C5D9F2]">
+                Data dari sistem
+              </span>
+            </div>
+            {riwayatList.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-[#E2E8F0] text-base">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase">No</th>
+                      <th className="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase">Tahun</th>
+                      <th className="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase">Berat (gr)</th>
+                      <th className="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase">Proses Melahirkan</th>
+                      <th className="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase">Penolong</th>
+                      <th className="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase">Masalah</th>
+                      {canEdit && (
+                        <th className="px-3 py-3 text-center text-xs font-bold text-gray-500 uppercase">Aksi</th>
+                      )}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#F1F5F9]">
+                    {riwayatList.map((r, idx) => (
+                      <tr key={r.id_riwayat || idx} className="hover:bg-gray-50">
+                        <td className="px-3 py-4">{r.no_urut}</td>
+                        <td className="px-3 py-4 font-bold">{r.tahun}</td>
+                        <td className="px-3 py-4">{r.bb_gram || "-"}</td>
+                        <td className="px-3 py-4">{r.proses_melahirkan}</td>
+                        <td className="px-3 py-4">{r.penolong_proses_melahirkan || "-"}</td>
+                        <td className="px-3 py-4">{r.masalah || "-"}</td>
+                        {canEdit && (
+                          <td className="px-3 py-4 text-center">
+                            <button
+                              onClick={() => handleDeleteRiwayat(r.id_riwayat)}
+                              className="p-1 text-[#A32D2D] hover:bg-red-50 rounded transition-colors"
+                              title="Hapus baris ini"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </td>
+                        )}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="text-gray-400 text-sm">
+                Belum ada riwayat kehamilan lalu tercatat di sistem.
+              </p>
+            )}
+          </div>
+        </div>
       </div>
 
       {canEdit && evaluasi && (
-        <div className="flex justify-end gap-4 mt-8">
+        <div className="flex justify-end gap-4">
           <button
             onClick={() => setIsEditing(true)}
             className="bg-[#185FA5] text-white rounded-full px-8 py-3 text-base font-semibold flex items-center gap-2 hover:bg-[#185FA5]/90 transition shadow-lg min-h-[48px]"
@@ -526,392 +504,348 @@ const EvaluationForm = ({
 
   return (
     <form onSubmit={handleSubmitEvaluasi} noValidate className="space-y-4">
-      {/* Data kehamilan otomatis (read-only) */}
-      <DataKehamilanCard kehamilan={kehamilan} ibu={ibu} />
+      <div className="bg-white rounded-xl shadow-sm border border-[#E2E8F0] overflow-hidden">
+        <div className="px-6 py-5 space-y-6">
+          {/* Data kehamilan otomatis (read-only) */}
+          <DataKehamilanCard kehamilan={kehamilan} ibu={ibu} />
 
-      {/* Data Pemeriksaan */}
-      <div className="bg-white rounded-xl shadow-sm p-5 border border-[#E2E8F0]">
-        <h3 className="font-semibold text-[22px] text-[#185FA5] mb-6">
-          Data Pemeriksaan
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Nama Dokter: auto dari login, read-only */}
+          {/* Antropometri */}
           <div>
-            <label className="block text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">
-              Nama Dokter
-            </label>
-            <div className="w-full border border-[#E2E8F0] rounded-lg px-4 py-3 bg-[#F0F7FF] text-base text-gray-900 font-medium flex items-center gap-2 min-h-[48px]">
-              <User size={15} className="text-[#185FA5] flex-shrink-0" />
-              <span>{form.nama_dokter || "-"}</span>
-            </div>
-            <p className="text-xs text-[#185FA5] mt-1">Otomatis dari akun yang login</p>
-          </div>
-
-          {/* Tanggal Periksa: wajib */}
-          <div>
-            <label className="block text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">
-              Tanggal Periksa <span className="text-[#A32D2D]">*</span>
-            </label>
-            <input
-              type="date"
-              name="tanggal_periksa"
-              value={form.tanggal_periksa}
-              onChange={handleChange}
-              max={new Date().toISOString().split("T")[0]}
-              required
-              className={`w-full border rounded-lg px-4 h-12 text-base focus:outline-none focus:ring-2 focus:ring-[#185FA5]/20 transition ${
-                errors.tanggal_periksa
-                  ? "border-[#A32D2D] bg-red-50"
-                  : "border-[#E2E8F0] focus:border-[#185FA5]"
-              }`}
-            />
-            {errors.tanggal_periksa && (
-              <p className="text-[#A32D2D] text-xs mt-1">{errors.tanggal_periksa}</p>
-            )}
-          </div>
-
-          {/* Fasilitas Kesehatan: wajib */}
-          <div>
-            <label className="block text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">
-              Fasilitas Kesehatan <span className="text-[#A32D2D]">*</span>
-            </label>
-            <input
-              name="fasilitas_kesehatan"
-              value={form.fasilitas_kesehatan}
-              onChange={handleChange}
-              placeholder="Contoh: Puskesmas Sukamaju"
-              required
-              className={`w-full border rounded-lg px-4 h-12 text-base focus:outline-none focus:ring-2 focus:ring-[#185FA5]/20 transition ${
-                errors.fasilitas_kesehatan
-                  ? "border-[#A32D2D] bg-red-50"
-                  : "border-[#E2E8F0] focus:border-[#185FA5]"
-              }`}
-            />
-            {errors.fasilitas_kesehatan && (
-              <p className="text-[#A32D2D] text-xs mt-1">{errors.fasilitas_kesehatan}</p>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Antropometri */}
-      <div className="bg-white rounded-xl shadow-sm p-5 border border-[#E2E8F0]">
-        <h3 className="font-semibold text-[22px] text-[#185FA5] mb-6 flex items-center gap-2">
-          Antropometri{" "}
-          <HelpTooltip text="Ukuran tinggi badan, berat badan, dan lingkar lengan atas saat evaluasi ini dilakukan" />
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
-          {/* TB */}
-          <div>
-            <label className="block text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">
-              TB (cm) <span className="text-[#A32D2D]">*</span>
-            </label>
-            <input
-              type="number"
-              step="0.1"
-              min="50"
-              max="250"
-              name="tb_cm"
-              value={form.tb_cm}
-              onChange={handleChange}
-              placeholder="cth: 158"
-              required
-              className={`w-full border rounded-lg px-4 h-12 text-base focus:outline-none focus:ring-2 focus:ring-[#185FA5]/20 transition ${
-                errors.tb_cm
-                  ? "border-[#A32D2D] bg-red-50"
-                  : "border-[#E2E8F0] focus:border-[#185FA5]"
-              }`}
-            />
-            {errors.tb_cm && (
-              <p className="text-[#A32D2D] text-xs mt-1">{errors.tb_cm}</p>
-            )}
-          </div>
-
-          {/* BB */}
-          <div>
-            <label className="block text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">
-              BB (kg) <span className="text-[#A32D2D]">*</span>
-            </label>
-            <input
-              type="number"
-              step="0.1"
-              min="20"
-              max="300"
-              name="bb_kg"
-              value={form.bb_kg}
-              onChange={handleChange}
-              placeholder="cth: 55"
-              required
-              className={`w-full border rounded-lg px-4 h-12 text-base focus:outline-none focus:ring-2 focus:ring-[#185FA5]/20 transition ${
-                errors.bb_kg
-                  ? "border-[#A32D2D] bg-red-50"
-                  : "border-[#E2E8F0] focus:border-[#185FA5]"
-              }`}
-            />
-            {errors.bb_kg && (
-              <p className="text-[#A32D2D] text-xs mt-1">{errors.bb_kg}</p>
-            )}
-          </div>
-
-          {/* IMT (auto-hitung) */}
-          <div>
-            <label className="block text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">
-              IMT (kg/m²)
-            </label>
-            <input
-              type="text"
-              value={imtNumeric ? `${imtNumeric}` : "-"}
-              readOnly
-              className="w-full border border-gray-200 rounded-lg px-4 h-12 bg-gray-100 text-base cursor-not-allowed"
-            />
-            <p className="text-xs text-gray-400 mt-1">Dihitung otomatis</p>
-          </div>
-
-          {/* Kategori IMT (auto-hitung) */}
-          <div>
-            <label className="block text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">
-              Kategori IMT
-            </label>
-            <input
-              type="text"
-              value={form.imt_kategori || "-"}
-              readOnly
-              className={`w-full border rounded-lg px-4 h-12 text-base cursor-not-allowed ${
-                form.imt_kategori === "Normal"
-                  ? "bg-[#E1F5EE] text-[#085041] border-[#85C9A9]"
-                  : form.imt_kategori
-                  ? "bg-[#FAEEDA] text-[#633806] border-[#E0C080]"
-                  : "bg-gray-100 text-gray-500 border-gray-200"
-              }`}
-            />
-            <p className="text-xs text-gray-400 mt-1">Dihitung otomatis</p>
-          </div>
-
-          {/* LiLA */}
-          <div>
-            <label className="block text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">
-              LiLA (cm) <span className="text-[#A32D2D]">*</span>
-            </label>
-            <input
-              type="number"
-              step="0.1"
-              min="10"
-              max="60"
-              name="lila_cm"
-              value={form.lila_cm}
-              onChange={handleChange}
-              placeholder="cth: 24"
-              required
-              className={`w-full border rounded-lg px-4 h-12 text-base focus:outline-none focus:ring-2 focus:ring-[#185FA5]/20 transition ${
-                errors.lila_cm
-                  ? "border-[#A32D2D] bg-red-50"
-                  : "border-[#E2E8F0] focus:border-[#185FA5]"
-              }`}
-            />
-            {errors.lila_cm && (
-              <p className="text-[#A32D2D] text-xs mt-1">{errors.lila_cm}</p>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Status Imunisasi TT */}
-      <div className="bg-white rounded-xl shadow-sm p-5 border border-[#E2E8F0]">
-        <h3 className="font-semibold text-[22px] text-[#185FA5] border-b pb-3 mb-5 flex items-center gap-2">
-          Status Imunisasi TT{" "}
-          <HelpTooltip text="TT = Tetanus Toxoid. Dosis lengkap 5 kali memberikan perlindungan seumur hidup." />
-        </h3>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-3">
-          {[
-            { n: 1, desc: "Kunjungan pertama (TT1)" },
-            { n: 2, desc: "4 minggu setelah TT1 (TT2)" },
-            { n: 3, desc: "6 bulan setelah TT2 (TT3)" },
-            { n: 4, desc: "1 tahun setelah TT3 (TT4)" },
-            { n: 5, desc: "1 tahun setelah TT4 (TT5)" },
-          ].map(({ n, desc }) => (
-            <label
-              key={n}
-              className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors text-sm"
-              title={desc}
-            >
-              <input
-                type="checkbox"
-                name={`status_tt_${n}`}
-                checked={form[`status_tt_${n}`]}
-                onChange={handleChange}
-                className="w-4 h-4 text-[#185FA5] border-[#E2E8F0] rounded focus:ring-[#185FA5]"
-              />
-              <span>TT{n}</span>
-              <span className="text-gray-400 text-xs hidden md:inline">({desc.split("(")[1]?.replace(")", "")})</span>
-            </label>
-          ))}
-        </div>
-        <div className="mt-4">
-          <label className="block text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">
-            Imunisasi Lainnya (Covid-19, dll)
-          </label>
-          <input
-            name="imunisasi_lainnya_covid19"
-            value={form.imunisasi_lainnya_covid19}
-            onChange={handleChange}
-            className="w-full border border-[#E2E8F0] rounded-lg px-4 h-12 text-base focus:outline-none focus:border-[#185FA5] focus:ring-2 focus:ring-[#185FA5]/20 transition"
-            placeholder="Contoh: Covid-19 dosis 2, Influenza..."
-          />
-        </div>
-      </div>
-
-      {/* Riwayat Kesehatan, Perilaku, Keluarga */}
-      <div className="bg-white rounded-xl shadow-sm p-6 space-y-8 border border-[#E2E8F0]">
-        {/* Riwayat Kesehatan Ibu */}
-        <div>
-          <h4 className="font-semibold text-base text-[#185FA5] mb-3">
-            Riwayat Kesehatan Ibu
-          </h4>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {[
-              ["alergi", "Alergi"],
-              ["asma", "Asma"],
-              ["autoimun", "Autoimun"],
-              ["diabetes", "Diabetes"],
-              ["hepatitis_b", "Hepatitis B"],
-              ["hipertensi", "Hipertensi"],
-              ["jantung", "Jantung"],
-              ["jiwa", "Gangguan Jiwa"],
-              ["sifilis", "Sifilis"],
-              ["tb", "Tuberkulosis"],
-            ].map(([key, label]) => (
-              <label key={key} className="flex items-center gap-2 text-base cursor-pointer">
-                <input
-                  type="checkbox"
-                  name={`riwayat_${key}`}
-                  checked={form[`riwayat_${key}`]}
-                  onChange={handleChange}
-                  className="w-5 h-5 accent-[#185FA5]"
-                />
-                {label}
-              </label>
-            ))}
-          </div>
-          <input
-            name="riwayat_kesehatan_lainnya"
-            placeholder="Riwayat kesehatan lainnya (opsional)"
-            value={form.riwayat_kesehatan_lainnya}
-            onChange={handleChange}
-            className="w-full border border-[#E2E8F0] rounded-lg px-4 h-12 mt-3 text-base focus:outline-none focus:border-[#185FA5] focus:ring-2 focus:ring-[#185FA5]/20 transition"
-          />
-        </div>
-
-        {/* Perilaku Berisiko */}
-        <div>
-          <h4 className="font-semibold text-base text-[#185FA5] mb-3">
-            Perilaku Berisiko (1 bulan sebelum hamil)
-          </h4>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {[
-              ["aktivitas_fisik_kurang", "Kurang aktivitas fisik"],
-              ["alkohol", "Konsumsi alkohol"],
-              ["kosmetik_berbahaya", "Kosmetik berbahaya"],
-              ["merokok", "Merokok"],
-              ["obat_teratogenik", "Obat teratogenik"],
-              ["pola_makan_berisiko", "Pola makan berisiko"],
-            ].map(([key, label]) => (
-              <label key={key} className="flex items-center gap-2 text-base cursor-pointer">
-                <input
-                  type="checkbox"
-                  name={`perilaku_${key}`}
-                  checked={form[`perilaku_${key}`]}
-                  onChange={handleChange}
-                  className="w-5 h-5 accent-[#185FA5]"
-                />
-                {label}
-              </label>
-            ))}
-          </div>
-          <input
-            name="perilaku_lainnya"
-            placeholder="Perilaku berisiko lainnya (opsional)"
-            value={form.perilaku_lainnya}
-            onChange={handleChange}
-            className="w-full border border-[#E2E8F0] rounded-lg px-4 h-12 mt-3 text-base focus:outline-none focus:border-[#185FA5] focus:ring-2 focus:ring-[#185FA5]/20 transition"
-          />
-        </div>
-
-        {/* Riwayat Kesehatan Keluarga */}
-        <div>
-          <h4 className="font-bold text-[22px] text-[#185FA5] mb-3">
-            Riwayat Kesehatan Keluarga
-          </h4>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {[
-              ["alergi", "Alergi"],
-              ["asma", "Asma"],
-              ["autoimun", "Autoimun"],
-              ["diabetes", "Diabetes"],
-              ["hepatitis_b", "Hepatitis B"],
-              ["hipertensi", "Hipertensi"],
-              ["jantung", "Jantung"],
-              ["jiwa", "Gangguan Jiwa"],
-              ["sifilis", "Sifilis"],
-              ["tb", "Tuberkulosis"],
-            ].map(([key, label]) => (
-              <label key={key} className="flex items-center gap-2 text-base cursor-pointer">
-                <input
-                  type="checkbox"
-                  name={`keluarga_${key}`}
-                  checked={form[`keluarga_${key}`]}
-                  onChange={handleChange}
-                  className="w-5 h-5 accent-[#185FA5]"
-                />
-                {label}
-              </label>
-            ))}
-          </div>
-          <input
-            name="keluarga_lainnya"
-            placeholder="Penyakit keluarga lainnya (opsional)"
-            value={form.keluarga_lainnya}
-            onChange={handleChange}
-            className="w-full border border-[#E2E8F0] rounded-lg px-4 h-12 mt-3 text-base focus:outline-none focus:border-[#185FA5] focus:ring-2 focus:ring-[#185FA5]/20 transition"
-          />
-        </div>
-      </div>
-
-      {/* Inspeksi Medis */}
-      <div className="bg-white rounded-xl shadow-sm p-5 border border-[#E2E8F0]">
-        <h3 className="font-bold text-[22px] text-[#185FA5] border-b pb-3 mb-6">
-          Inspeksi Medis <span className="text-[#A32D2D] text-base">*</span>
-        </h3>
-        <p className="text-xs text-gray-500 mb-4">Semua field inspeksi wajib diisi.</p>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {["porsio", "uretra", "vagina", "vulva", "fluksus", "fluor"].map(
-            (item) => (
-              <div key={item}>
-                <label className="block capitalize text-sm font-bold text-gray-500 uppercase mb-2">
-                  {item} <span className="text-[#A32D2D]">*</span>
+            <h3 className="font-bold text-lg text-gray-800 mb-2">
+              Antropometri
+            </h3>
+            <p className="text-sm text-gray-500 mb-4">
+              Isi data tinggi badan, berat badan, dan lingkar lengan atas (LiLA) ibu saat pemeriksaan dilakukan. IMT akan dihitung otomatis berdasarkan TB dan BB yang dimasukkan.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
+              {/* LiLA */}
+              <div>
+                <label className="block text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">
+                  LiLA (cm) <span className="text-[#A32D2D]">*</span>
                 </label>
-                <select
-                  name={`inspeksi_${item}`}
-                  value={form[`inspeksi_${item}`]}
+                <input
+                  type="number"
+                  step="0.1"
+                  min="10"
+                  max="60"
+                  name="lila_cm"
+                  value={form.lila_cm}
                   onChange={handleChange}
+                  placeholder="Contoh: 24,0"
                   required
-                  className={`w-full border rounded-lg px-4 h-12 text-base focus:outline-none focus:border-[#185FA5] focus:ring-2 focus:ring-[#185FA5]/20 transition ${
-                    errors[`inspeksi_${item}`]
+                  className={`w-full border rounded-lg px-4 h-12 text-base focus:outline-none focus:ring-2 focus:ring-[#185FA5]/20 transition ${
+                    errors.lila_cm
                       ? "border-[#A32D2D] bg-red-50"
-                      : "border-[#E2E8F0]"
+                      : "border-[#E2E8F0] focus:border-[#185FA5]"
                   }`}
-                >
-                  <option value="">-- Pilih --</option>
-                  <option value="Normal">Normal</option>
-                  <option value="Abnormal">Abnormal</option>
-                </select>
-                {errors[`inspeksi_${item}`] && (
-                  <p className="text-[#A32D2D] text-xs mt-1">
-                    {errors[`inspeksi_${item}`]}
-                  </p>
+                />
+                {errors.lila_cm && (
+                  <p className="text-[#A32D2D] text-xs mt-1">{errors.lila_cm}</p>
                 )}
               </div>
-            )
-          )}
+
+              {/* BB */}
+              <div>
+                <label className="block text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">
+                  BB (kg) <span className="text-[#A32D2D]">*</span>
+                </label>
+                <input
+                  type="number"
+                  step="0.1"
+                  min="20"
+                  max="300"
+                  name="bb_kg"
+                  value={form.bb_kg}
+                  onChange={handleChange}
+                  placeholder="Contoh: 55,0"
+                  required
+                  className={`w-full border rounded-lg px-4 h-12 text-base focus:outline-none focus:ring-2 focus:ring-[#185FA5]/20 transition ${
+                    errors.bb_kg
+                      ? "border-[#A32D2D] bg-red-50"
+                      : "border-[#E2E8F0] focus:border-[#185FA5]"
+                  }`}
+                />
+                {errors.bb_kg && (
+                  <p className="text-[#A32D2D] text-xs mt-1">{errors.bb_kg}</p>
+                )}
+              </div>
+
+              {/* TB */}
+              <div>
+                <label className="block text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">
+                  TB (cm) <span className="text-[#A32D2D]">*</span>
+                </label>
+                <input
+                  type="number"
+                  step="0.1"
+                  min="50"
+                  max="250"
+                  name="tb_cm"
+                  value={form.tb_cm}
+                  onChange={handleChange}
+                  placeholder="Contoh: 158,0"
+                  required
+                  className={`w-full border rounded-lg px-4 h-12 text-base focus:outline-none focus:ring-2 focus:ring-[#185FA5]/20 transition ${
+                    errors.tb_cm
+                      ? "border-[#A32D2D] bg-red-50"
+                      : "border-[#E2E8F0] focus:border-[#185FA5]"
+                  }`}
+                />
+                {errors.tb_cm && (
+                  <p className="text-[#A32D2D] text-xs mt-1">{errors.tb_cm}</p>
+                )}
+              </div>
+
+              {/* IMT (auto-hitung) */}
+              <div>
+                <label className="block text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">
+                  IMT (kg/m²)
+                </label>
+                <input
+                  type="text"
+                  value={imtNumeric ? `${imtNumeric}` : "-"}
+                  readOnly
+                  className="w-full border border-gray-200 rounded-lg px-4 h-12 bg-gray-100 text-base cursor-not-allowed"
+                />
+                <p className="text-xs text-gray-400 mt-1">Dihitung otomatis</p>
+              </div>
+
+              {/* Kategori IMT (auto-hitung) */}
+              <div>
+                <label className="block text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">
+                  Kategori IMT
+                </label>
+              <input
+                type="text"
+                value={form.imt_kategori || "-"}
+                readOnly
+                className={`w-full border rounded-lg px-4 h-12 text-base cursor-not-allowed ${
+                  form.imt_kategori === "Normal"
+                    ? "bg-green-100 text-green-700 border-green-300"
+                    : form.imt_kategori === "Kurus"
+                    ? "bg-yellow-100 text-yellow-700 border-yellow-300"
+                    : form.imt_kategori === "Gemuk" || form.imt_kategori === "Obesitas"
+                    ? "bg-red-100 text-red-700 border-red-300"
+                    : "bg-gray-100 text-gray-500 border-gray-200"
+                }`}
+              />
+                <p className="text-xs text-gray-400 mt-1">Dihitung otomatis</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Status Imunisasi TT */}
+          <div>
+            <h3 className="font-bold text-lg text-[#185FA5] border-b pb-3 mb-2">
+              Status Imunisasi TT
+            </h3>
+            <p className="text-sm text-gray-500 mb-4">
+              TT (Tetanus Toxoid) melindungi ibu dan bayi dari tetanus saat persalinan. Dosis lengkap 5 kali memberikan perlindungan seumur hidup. Centang dosis yang telah diterima.
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-3">
+              {[
+                { n: 1, desc: "Kunjungan pertama (TT1)" },
+                { n: 2, desc: "4 minggu setelah TT1 (TT2)" },
+                { n: 3, desc: "6 bulan setelah TT2 (TT3)" },
+                { n: 4, desc: "1 tahun setelah TT3 (TT4)" },
+                { n: 5, desc: "1 tahun setelah TT4 (TT5)" },
+              ].map(({ n, desc }) => (
+                <label
+                  key={n}
+                  className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors text-sm"
+                  title={desc}
+                >
+                  <input
+                    type="checkbox"
+                    name={`status_tt_${n}`}
+                    checked={form[`status_tt_${n}`]}
+                    onChange={handleChange}
+                    className="w-4 h-4 text-[#185FA5] border-[#E2E8F0] rounded focus:ring-[#185FA5]"
+                  />
+                  <span className="font-medium text-gray-700 text-sm">{desc}</span>
+                </label>
+              ))}
+            </div>
+            <div className="mt-4">
+              <label className="block text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">
+                Imunisasi Lainnya (Covid-19, dll)
+              </label>
+              <input
+                name="imunisasi_lainnya_covid19"
+                value={form.imunisasi_lainnya_covid19}
+                onChange={handleChange}
+                className="w-full border border-[#E2E8F0] rounded-lg px-4 h-12 text-base focus:outline-none focus:border-[#185FA5] focus:ring-2 focus:ring-[#185FA5]/20 transition"
+                placeholder="Contoh: Covid-19 dosis 2, Influenza..."
+              />
+            </div>
+          </div>
+
+          {/* Riwayat Kesehatan, Perilaku, Keluarga */}
+          <div>
+            {/* <h3 className="font-bold text-lg text-gray-800 mb-4">Riwayat Kesehatan, Perilaku, dan Keluarga</h3> */}
+            {/* Riwayat Kesehatan Ibu */}
+            <div className="mb-6">
+              <h4 className="font-bold text-base text-[#185FA5] mb-2">
+                Riwayat Kesehatan, Perilaku, dan Keluarga
+              </h4>
+              <p className="text-xs text-gray-500 mb-3">
+                Pilih riwayat penyakit yang pernah atau sedang diderita ibu atau keluarga. Centang semua yang sesuai.
+              </p>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {[
+                  ["alergi", "Alergi"],
+                  ["asma", "Asma"],
+                  ["autoimun", "Autoimun"],
+                  ["diabetes", "Diabetes"],
+                  ["hepatitis_b", "Hepatitis B"],
+                  ["hipertensi", "Hipertensi"],
+                  ["jantung", "Jantung"],
+                  ["jiwa", "Gangguan Jiwa"],
+                  ["sifilis", "Sifilis"],
+                  ["tb", "Tuberkulosis"],
+                ].map(([key, label]) => (
+                  <label key={key} className="flex items-center gap-2 text-base cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name={`riwayat_${key}`}
+                      checked={form[`riwayat_${key}`]}
+                      onChange={handleChange}
+                      className="w-5 h-5 accent-[#185FA5]"
+                    />
+                    {label}
+                  </label>
+                ))}
+              </div>
+              <input
+                name="riwayat_kesehatan_lainnya"
+                placeholder="Riwayat kesehatan lainnya (opsional)"
+                value={form.riwayat_kesehatan_lainnya}
+                onChange={handleChange}
+                className="w-full border border-[#E2E8F0] rounded-lg px-4 h-12 mt-3 text-base focus:outline-none focus:border-[#185FA5] focus:ring-2 focus:ring-[#185FA5]/20 transition"
+              />
+            </div>
+
+            {/* Perilaku Berisiko */}
+            <div className="mb-6">
+              <h4 className="font-bold text-base text-[#185FA5] mb-2">
+                Perilaku Berisiko (1 bulan sebelum hamil)
+              </h4>
+              <p className="text-xs text-gray-500 mb-3">
+                Pilih perilaku berisiko yang dilakukan ibu selama 1 bulan sebelum kehamilan.
+              </p>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {[
+                  ["aktivitas_fisik_kurang", "Kurang aktivitas fisik"],
+                  ["alkohol", "Konsumsi alkohol"],
+                  ["kosmetik_berbahaya", "Kosmetik berbahaya"],
+                  ["merokok", "Merokok"],
+                  ["obat_teratogenik", "Obat teratogenik"],
+                  ["pola_makan_berisiko", "Pola makan berisiko"],
+                ].map(([key, label]) => (
+                  <label key={key} className="flex items-center gap-2 text-base cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name={`perilaku_${key}`}
+                      checked={form[`perilaku_${key}`]}
+                      onChange={handleChange}
+                      className="w-5 h-5 accent-[#185FA5]"
+                    />
+                    {label}
+                  </label>
+                ))}
+              </div>
+              <input
+                name="perilaku_lainnya"
+                placeholder="Perilaku berisiko lainnya (opsional)"
+                value={form.perilaku_lainnya}
+                onChange={handleChange}
+                className="w-full border border-[#E2E8F0] rounded-lg px-4 h-12 mt-3 text-base focus:outline-none focus:border-[#185FA5] focus:ring-2 focus:ring-[#185FA5]/20 transition"
+              />
+            </div>
+
+            {/* Riwayat Kesehatan Keluarga */}
+            <div>
+              <h4 className="font-bold text-base text-[#185FA5] mb-2">
+                Riwayat Kesehatan Keluarga
+              </h4>
+              <p className="text-xs text-gray-500 mb-3">
+                Pilih riwayat penyakit yang ada pada keluarga ibu (ayah, ibu, saudara kandung).
+              </p>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {[
+                  ["alergi", "Alergi"],
+                  ["asma", "Asma"],
+                  ["autoimun", "Autoimun"],
+                  ["diabetes", "Diabetes"],
+                  ["hepatitis_b", "Hepatitis B"],
+                  ["hipertensi", "Hipertensi"],
+                  ["jantung", "Jantung"],
+                  ["jiwa", "Gangguan Jiwa"],
+                  ["sifilis", "Sifilis"],
+                  ["tb", "Tuberkulosis"],
+                ].map(([key, label]) => (
+                  <label key={key} className="flex items-center gap-2 text-base cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name={`keluarga_${key}`}
+                      checked={form[`keluarga_${key}`]}
+                      onChange={handleChange}
+                      className="w-5 h-5 accent-[#185FA5]"
+                    />
+                    {label}
+                  </label>
+                ))}
+              </div>
+              <input
+                name="keluarga_lainnya"
+                placeholder="Penyakit keluarga lainnya (opsional)"
+                value={form.keluarga_lainnya}
+                onChange={handleChange}
+                className="w-full border border-[#E2E8F0] rounded-lg px-4 h-12 mt-3 text-base focus:outline-none focus:border-[#185FA5] focus:ring-2 focus:ring-[#185FA5]/20 transition"
+              />
+            </div>
+          </div>
+
+          {/* Inspeksi Medis */}
+          <div>
+            <h3 className="font-bold text-lg text-[#185FA5] border-b pb-3 mb-2">
+              Inspeksi Medis <span className="text-[#A32D2D] text-base">*</span>
+            </h3>
+            <p className="text-sm text-gray-500 mb-4">
+              Pilih hasil pemeriksaan visual pada area genital. Semua field inspeksi wajib diisi.
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {["porsio", "uretra", "vagina", "vulva", "fluksus", "fluor"].map(
+                (item) => (
+                  <div key={item}>
+                    <label className="block capitalize text-sm font-bold text-gray-500 uppercase mb-2">
+                      {item} <span className="text-[#A32D2D]">*</span>
+                    </label>
+                    <select
+                      name={`inspeksi_${item}`}
+                      value={form[`inspeksi_${item}`]}
+                      onChange={handleChange}
+                      required
+                      className={`w-full border rounded-lg px-4 h-12 text-base focus:outline-none focus:border-[#185FA5] focus:ring-2 focus:ring-[#185FA5]/20 transition ${
+                        errors[`inspeksi_${item}`]
+                          ? "border-[#A32D2D] bg-red-50"
+                          : "border-[#E2E8F0]"
+                      }`}
+                    >
+                      <option value="">-- Pilih --</option>
+                      <option value="Normal">Normal</option>
+                      <option value="Abnormal">Abnormal</option>
+                    </select>
+                    {errors[`inspeksi_${item}`] && (
+                      <p className="text-[#A32D2D] text-xs mt-1">
+                        {errors[`inspeksi_${item}`]}
+                      </p>
+                    )}
+                  </div>
+                )
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1069,9 +1003,7 @@ export default function EvaluasiKesehatanIbu() {
           setEvaluasi(e);
           setForm({
             nama_dokter: dokterNama || e.nama_dokter || "",
-            tanggal_periksa: e.tanggal_periksa
-              ? e.tanggal_periksa.split("T")[0]
-              : new Date().toISOString().split("T")[0],
+            tanggal_periksa: new Date().toISOString().split("T")[0],
             fasilitas_kesehatan: e.fasilitas_kesehatan || "",
             tb_cm: e.tb_cm ?? "",
             bb_kg: e.bb_kg ?? "",
@@ -1401,9 +1333,10 @@ export default function EvaluasiKesehatanIbu() {
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate(-1)}
-              className="flex items-center gap-2 text-[#185FA5] hover:text-[#185FA5]/80 text-base font-medium"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#185FA5] text-[#185FA5] text-sm font-semibold hover:bg-[#185FA5]/5 transition"
             >
-              <ArrowLeft size={20} /> Kembali
+              <ArrowLeft size={16} />
+              <span>Kembali</span>
             </button>
             <h1 className="text-[28px] font-bold text-gray-900">
               Evaluasi Kesehatan Ibu
