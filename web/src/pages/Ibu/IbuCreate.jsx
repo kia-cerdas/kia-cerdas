@@ -339,6 +339,22 @@ export default function IbuCreate() {
       }));
     }
   }, [formKehamilan.hpht]);
+  useEffect(() => {
+    if (formKehamilan.hpht) {
+      // Hitung usia kehamilan dari HPHT ke sekarang
+      const usia = hitungUsiaKehamilan(formKehamilan.hpht);
+      const status = getStatusKehamilan(usia);
+      const trimesterValue = getTrimester(usia);
+
+      setUsiaKehamilan(usia);
+      setStatusKehamilan(status);
+      setTrimester(trimesterValue);
+    } else {
+      setUsiaKehamilan(0);
+      setStatusKehamilan("");
+      setTrimester(0);
+    }
+  }, [formKehamilan.hpht]); // Akan jalan setiap HPHT berubah
 
   // ========== VALIDASI FORM AKUN ==========
   const validateAkunForm = () => {
@@ -459,7 +475,10 @@ export default function IbuCreate() {
     try {
       const ibu = await createIbu({
         id_kependudukan: Number(formIbu.id_kependudukan),
-       id_suami: formIbu.id_suami && formIbu.id_suami !== "not_found" ? Number(formIbu.id_suami) : null,
+        id_suami:
+          formIbu.id_suami && formIbu.id_suami !== "not_found"
+            ? Number(formIbu.id_suami)
+            : null,
         gravida: Number(formIbu.gravida) || 0,
         paritas: Number(formIbu.paritas) || 0,
         abortus: Number(formIbu.abortus) || 0,
@@ -468,7 +487,7 @@ export default function IbuCreate() {
 
       // 2. Buat Akun User untuk Ibu
       const selectedPenduduk = ibuList.find(
-        (kk) => String(kk.id) === formIbu.id_kependudukan
+        (kk) => String(kk.id) === formIbu.id_kependudukan,
       );
 
       if (selectedPenduduk) {
@@ -560,6 +579,7 @@ export default function IbuCreate() {
           parseInt(formKehamilan.jarak_kehamilan_sebelumnya) || 0,
         bb_awal: parseFloat(formKehamilan.bb_awal),
         tb: parseFloat(formKehamilan.tb),
+        status_kehamilan: statusKehamilan, 
       });
       setStep(3);
       setTimeout(() => {
@@ -582,6 +602,48 @@ export default function IbuCreate() {
     { num: 2, label: "Data Kehamilan", icon: Baby },
     { num: 3, label: "Selesai", icon: CheckCircle2 },
   ];
+
+  const hitungUsiaKehamilan = (hpht) => {
+    if (!hpht) return 0;
+    const hphtDate = new Date(hpht);
+    const now = new Date();
+    const diffTime = now - hphtDate;
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    const minggu = Math.floor(diffDays / 7);
+    return minggu < 0 ? 0 : minggu;
+  };
+
+  const getStatusKehamilan = (usiaMinggu) => {
+    if (usiaMinggu <= 0) return "Belum Hamil";
+    if (usiaMinggu <= 13) return "Trimester 1";
+    if (usiaMinggu <= 27) return "Trimester 2";
+    if (usiaMinggu <= 40) return "Trimester 3";
+    if (usiaMinggu <= 46) return "Nifas";
+    return "Pasca Nifas";
+  };
+  const getTrimester = (usiaMinggu) => {
+    if (usiaMinggu <= 0) return 0;
+    if (usiaMinggu <= 13) return 1;
+    if (usiaMinggu <= 27) return 2;
+    if (usiaMinggu <= 40) return 3;
+    return 4; // Nifas/Pasca
+  };
+
+  const getStatusColor = (status) => {
+    const colors = {
+      "Belum Hamil": "text-gray-500 bg-gray-100",
+      "Trimester 1": "text-blue-600 bg-blue-50",
+      "Trimester 2": "text-green-600 bg-green-50",
+      "Trimester 3": "text-yellow-600 bg-yellow-50",
+      Nifas: "text-purple-600 bg-purple-50",
+      "Pasca Nifas": "text-pink-600 bg-pink-50",
+    };
+    return colors[status] || "text-gray-500 bg-gray-100";
+  };
+
+  const [usiaKehamilan, setUsiaKehamilan] = useState(0);
+  const [statusKehamilan, setStatusKehamilan] = useState("");
+  const [trimester, setTrimester] = useState(0);
 
   return (
     <MainLayout>
@@ -639,7 +701,7 @@ export default function IbuCreate() {
               <CheckCircle2 size={18} className="text-green-600 mt-0.5" />
               <div>
                 <p className="text-sm font-medium text-green-800">
-                  ✅ Akun untuk login ibu telah dibuat!
+                   Akun untuk login ibu telah dibuat!
                 </p>
                 {accountInfo && (
                   <div className="mt-2 text-xs text-green-700 space-y-1">
@@ -701,7 +763,8 @@ export default function IbuCreate() {
                     ) : (
                       filteredIbuList.map((kk) => {
                         const idPenduduk = kk.id;
-                        const nama = kk.nama_anggota_keluarga || "Tidak ada nama";
+                        const nama =
+                          kk.nama_anggota_keluarga || "Tidak ada nama";
                         const nik = kk.nik || "-";
                         const telepon = kk.telepon || "";
                         const kodeKeluarga = kk.kode_keluarga || "-";
@@ -1045,6 +1108,63 @@ export default function IbuCreate() {
           <form onSubmit={handleSubmitKehamilan}>
             <div className="bg-white rounded-2xl p-6 shadow-sm">
               <h3 className="font-semibold mb-4">Data Kehamilan</h3>
+              {formKehamilan.hpht && (
+                <div
+                  className="mb-6 p-4 rounded-xl border"
+                  style={{
+                    backgroundColor:
+                      statusKehamilan === "Trimester 1"
+                        ? "#EFF6FF"
+                        : statusKehamilan === "Trimester 2"
+                          ? "#F0FDF4"
+                          : statusKehamilan === "Trimester 3"
+                            ? "#FEFCE8"
+                            : statusKehamilan === "Nifas"
+                              ? "#FAF5FF"
+                              : statusKehamilan === "Pasca Nifas"
+                                ? "#FDF2F8"
+                                : "#F9FAFB",
+                  }}
+                >
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <div>
+                      <p className="text-sm text-gray-500">
+                        Status Kehamilan Saat Ini
+                      </p>
+                      <p className="text-xl font-bold text-gray-800">
+                        {statusKehamilan || "Belum diketahui"}
+                      </p>
+                      {usiaKehamilan > 0 && (
+                        <div className="flex items-center gap-4 mt-1 text-sm text-gray-500">
+                          <span>
+                            Usia:{" "}
+                            <span className="font-semibold text-gray-700">
+                              {usiaKehamilan} minggu
+                            </span>
+                          </span>
+                          {trimester > 0 && trimester <= 3 && (
+                            <span>
+                              Trimester:{" "}
+                              <span className="font-semibold text-gray-700">
+                                Trimester {trimester}
+                              </span>
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    <div
+                      className={`px-4 py-2 rounded-full text-sm font-semibold ${
+                        statusKehamilan
+                          ? getStatusColor(statusKehamilan)
+                          : "text-gray-500 bg-gray-100"
+                      }`}
+                    >
+                      {statusKehamilan || "Belum diketahui"}
+                    </div>
+                  </div>
+                </div>
+              )}
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   HPHT

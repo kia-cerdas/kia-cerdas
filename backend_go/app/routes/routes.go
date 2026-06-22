@@ -720,9 +720,9 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	tenaga.GET("/laporan/ibu/preview", controller.LaporanIbu.Preview)
 	tenaga.GET("/laporan/ibu/export/excel", controller.LaporanIbu.ExportExcel)
 
-	// untuk laporan anak
-	tenaga.GET("/laporan/anak/preview", controller.LaporanAnak.Preview)
-	tenaga.GET("/laporan/anak/export/excel", controller.LaporanAnak.ExportExcel)
+	// untuk laporan balita
+	tenaga.GET("/laporan/balita/preview", controller.LaporanBalita.Preview)
+	tenaga.GET("/laporan/balita/export/excel", controller.LaporanBalita.ExportExcel)
 
 	// untuk laporan remaja
 	tenaga.GET("/laporan/remaja/preview", controller.LaporanRemaja.Preview)
@@ -735,6 +735,10 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	// untuk laporan lansia
 	tenaga.GET("/laporan/lansia/preview", controller.LaporanLansia.Preview)
 	tenaga.GET("/laporan/lansia/export/excel", controller.LaporanLansia.ExportExcel)
+
+		// untuk laporan anak usiaa 5-9 tahun
+	tenaga.GET("/laporan/anak/preview", controller.LaporanAnak.Preview)
+	tenaga.GET("/laporan/anak/export/excel", controller.LaporanAnak.ExportExcel)
 
 	//==== IBU ====
 	ibu := e.Group("/ibu")

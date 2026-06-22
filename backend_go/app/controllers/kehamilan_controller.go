@@ -30,7 +30,7 @@ type createKehamilanRequest struct {
 	TaksiranPersalinan string `json:"taksiran_persalinan,omitempty"`
 	// UKKehamilanSaatIni       int32   `json:"uk_kehamilan_saat_ini,omitempty"`
 	JarakKehamilanSebelumnya int32 `json:"jarak_kehamilan_sebelumnya,omitempty"`
-	// StatusKehamilan          string  `json:"status_kehamilan,omitempty"`
+	StatusKehamilan          string  `json:"status_kehamilan,omitempty"`
 	BB_Awal float64 `json:"bb_awal,omitempty"`
 	TB      float64 `json:"tb,omitempty"`
 }
@@ -57,6 +57,7 @@ func (c *KehamilanController) Create(ctx echo.Context) error {
 		// StatusKehamilan:          req.StatusKehamilan,
 		BB_Awal: req.BB_Awal,
 		TB:      req.TB,
+		StatusKehamilan:          req.StatusKehamilan,
 	}
 	if req.HPHT != "" {
 		if t, err := time.Parse("2006-01-02", req.HPHT); err == nil {

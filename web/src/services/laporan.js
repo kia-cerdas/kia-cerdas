@@ -21,8 +21,8 @@ export const exportLaporanIbu = async (bulan, tahun) => {
 };
 
 // Laporan anak
-export const previewLaporanAnak = async (startDate, endDate) => {
-  let url = "/tenaga-kesehatan/laporan/anak/preview";
+export const previewLaporanBalita = async (startDate, endDate) => {
+  let url = "/tenaga-kesehatan/laporan/balita/preview";
   if (startDate && endDate) {
     url += `?start_date=${startDate}&end_date=${endDate}`;
   }
@@ -30,8 +30,8 @@ export const previewLaporanAnak = async (startDate, endDate) => {
   return response.data;
 };
 
-export const exportLaporanAnak = async (startDate, endDate) => {
-  let url = "/tenaga-kesehatan/laporan/anak/export/excel";
+export const exportLaporanBalita = async (startDate, endDate) => {
+  let url = "/tenaga-kesehatan/laporan/balita/export/excel";
   if (startDate && endDate) {
     url += `?start_date=${startDate}&end_date=${endDate}`;
   }
@@ -95,6 +95,30 @@ export const previewLaporanLansia = async (startDate, endDate) => {
 
 export const exportLaporanLansia = async (startDate, endDate) => {
   let url = "/tenaga-kesehatan/laporan/lansia/export/excel";
+  if (startDate && endDate) {
+    url += `?start_date=${startDate}&end_date=${endDate}`;
+  }
+  const res = await api.get(url, {
+    responseType: "blob",
+  });
+  return res.data;
+};
+
+
+// services/laporan.js
+
+// Laporan Anak
+export const previewLaporanAnak = async (startDate, endDate) => {
+  let url = "/tenaga-kesehatan/laporan/anak/preview";
+  if (startDate && endDate) {
+    url += `?start_date=${startDate}&end_date=${endDate}`;
+  }
+  const response = await api.get(url);
+  return response.data;
+};
+
+export const exportLaporanAnak = async (startDate, endDate) => {
+  let url = "/tenaga-kesehatan/laporan/anak/export/excel";
   if (startDate && endDate) {
     url += `?start_date=${startDate}&end_date=${endDate}`;
   }

@@ -49,6 +49,7 @@ import DetailAnak from "./pages/Anak/detail";
 import Monitoring from "./pages/Monitoring";
 import Laporan from "./pages/Laporan";
 import LaporanIbuPreview from "./pages/previewlaporanibu";
+import LaporanBalitaPreview from "./pages/previewlaporanbalita";
 import LaporanAnakPreview from "./pages/previewlaporananak";
 import LaporanRemajaPreview from "./pages/previewlaporanremaja";
 import LaporanDewasaPreview from "./pages/previewlaporandewasa";
@@ -246,6 +247,7 @@ function App() {
           <Route path="/monitoring" element={<Monitoring />} />
           <Route path="/laporan" element={<Laporan />} />
           <Route path="/laporan/ibu/preview" element={<LaporanIbuPreview />} />
+          <Route path="/laporan/balita/preview" element={<LaporanBalitaPreview />} />
           <Route path="/laporan/anak/preview" element={<LaporanAnakPreview />} />
           <Route path="/laporan/remaja/preview" element={<LaporanRemajaPreview />} />
           <Route path="/laporan/dewasa/preview" element={<LaporanDewasaPreview />} />
