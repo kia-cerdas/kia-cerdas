@@ -120,14 +120,14 @@ func (m *Main) GetKunjunganImunisasiByID(
 		ki.tanggal_kunjungan,
 		sk.status_kunjungan,
 
-		p_anak.nama_lengkap AS nama_anak,
+		p_anak.nama_anggota_keluarga AS nama_anak,
 		p_anak.tanggal_lahir,
 		p_anak.dusun AS dusun,
 
-		p_ibu.nama_lengkap AS nama_ibu,
+		p_ibu.nama_anggota_keluarga AS nama_ibu,
 		p_ibu.telepon AS nomor_telepon_ibu,
 
-		p_ayah.nama_lengkap AS nama_ayah,
+		p_ayah.nama_anggota_keluarga AS nama_ayah,
 		p_ayah.telepon AS nomor_telepon_ayah,
 
 		v.nama AS nama_vaksin,
@@ -184,7 +184,7 @@ func (m *Main) GetKunjunganImunisasiByID(
 	return &result, nil
 }
 
-func (m *Main) GetAllKunjunganImunisasi() ([]KunjunganImunisasiJoin, error) {
+func (m *Main) GetAllKunjunganImunisasi(kaderID uint) ([]KunjunganImunisasiJoin, error) {
 
 	var result []KunjunganImunisasiJoin
 
@@ -195,7 +195,7 @@ func (m *Main) GetAllKunjunganImunisasi() ([]KunjunganImunisasiJoin, error) {
 			ki.tanggal_kunjungan,
 			sk.status_kunjungan,
 
-			p_anak.nama_lengkap AS nama_anak
+			p_anak.nama_anggota_keluarga AS nama_anak
 		`).
 		Joins(`
 			INNER JOIN status_kunjungan sk
@@ -213,6 +213,7 @@ func (m *Main) GetAllKunjunganImunisasi() ([]KunjunganImunisasiJoin, error) {
 			INNER JOIN penduduk p_anak
 			ON p_anak.id = a.penduduk_id
 		`).
+		Where("ki.kader_id = ?", kaderID).
 		Order("ki.tanggal_kunjungan DESC").
 		Scan(&result).Error
 
@@ -264,6 +265,7 @@ func (m *Main) MarkOverdueKunjunganImunisasi() (int64, error) {
 
 func (m *Main) GetKunjunganImunisasiByStatus(
 	statusID uint,
+	kaderID uint,
 ) (
 	[]KunjunganImunisasiJoin,
 	error,
@@ -278,7 +280,7 @@ func (m *Main) GetKunjunganImunisasiByStatus(
 			ki.tanggal_kunjungan,
 			sk.status_kunjungan,
 
-			p_anak.nama_lengkap AS nama_anak
+			p_anak.nama_anggota_keluarga AS nama_anak
 		`).
 		Joins(`
 			INNER JOIN status_kunjungan sk
@@ -296,10 +298,8 @@ func (m *Main) GetKunjunganImunisasiByStatus(
 			INNER JOIN penduduk p_anak
 			ON p_anak.id = a.penduduk_id
 		`).
-		Where(
-			"ki.id_status_kunjungan = ?",
-			statusID,
-		).
+		Where("ki.id_status_kunjungan = ?", statusID).
+		Where("ki.kader_id = ?", kaderID).
 		Order("ki.tanggal_kunjungan DESC").
 		Scan(&result).Error
 
