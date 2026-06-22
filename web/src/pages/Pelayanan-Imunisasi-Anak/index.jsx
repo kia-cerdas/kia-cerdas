@@ -478,6 +478,41 @@ const PelayananImunisasi = () => {
       return;
     }
 
+    // Konfirmasi sebelum menyimpan paraf
+    const selectedVaccineNames = formData.selectedJadwalIds
+      .map(id => {
+        const jadwal = jadwalList.find(j => j.jadwal_id === id);
+        return jadwal?.nama_dosis;
+      })
+      .filter(Boolean);
+
+    const result = await Swal.fire({
+      icon: 'question',
+      title: 'Konfirmasi Paraf Imunisasi',
+      html: `
+        <div class="text-left">
+          <p class="mb-3 text-gray-700">Apakah Anda yakin vaksin berikut <b>sudah diberikan</b> kepada anak?</p>
+          <div class="bg-blue-50 border-l-4 border-blue-500 p-3 rounded mb-3">
+            <ul class="list-disc list-inside space-y-1">
+              ${selectedVaccineNames.map(name => `<li class="font-semibold text-blue-900">${name}</li>`).join('')}
+            </ul>
+          </div>
+          <p class="text-sm text-gray-600 mt-2">
+            <span class="text-amber-600 font-semibold">⚠️ Peringatan:</span> Paraf akan disimpan dan data akan tercatat dalam sistem.
+          </p>
+        </div>
+      `,
+      showCancelButton: true,
+      confirmButtonText: '✓ Ya, Sudah Vaksin',
+      cancelButtonText: '✕ Belum',
+      confirmButtonColor: '#10b981',
+      cancelButtonColor: '#6b7280',
+      reverseButtons: true,
+      width: '500px'
+    });
+
+    if (!result.isConfirmed) return;
+
     try {
       setIsSubmitting(true);
       for (const jadwalId of formData.selectedJadwalIds) {
@@ -910,9 +945,9 @@ const PelayananImunisasi = () => {
       {/* ═══════════ MODAL PARAF IMUNISASI ═══════════ */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-hidden shadow-2xl border-t-4 border-blue-600 flex flex-col">
+          <div className="bg-white rounded-2xl w-full max-w-lg max-h-[85vh] overflow-hidden shadow-2xl border-t-4 border-blue-600 flex flex-col">
             {/* Modal Header */}
-            <div className="bg-gray-800 p-4 text-white flex justify-between items-center flex-shrink-0">
+            <div className="bg-gray-800 px-4 py-3 text-white flex justify-between items-center flex-shrink-0">
               <span className="flex items-center gap-2 font-bold text-sm uppercase tracking-wider">
                 <Syringe size={18} className="text-blue-400" /> Paraf Imunisasi
               </span>
@@ -925,14 +960,14 @@ const PelayananImunisasi = () => {
             </div>
 
             {/* Modal Form - Scrollable */}
-            <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto">
-              <div className="p-6 space-y-4">
+            <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden">
+              <div className="flex-1 overflow-y-auto p-5 space-y-3.5">
                 {/* Tanggal - Bebas pilih tanggal */}
                 <div>
                   <label className="text-gray-500 mb-1 block text-xs font-bold uppercase tracking-wider">
                     Tanggal Pemberian
                   </label>
-                  <div className="flex items-center gap-2 border-b-2 focus-within:border-blue-600 pb-2">
+                  <div className="flex items-center gap-2 border-b-2 focus-within:border-blue-600 pb-1.5">
                     <Calendar size={16} className="text-gray-400" />
                     <input
                       type="date"
@@ -950,8 +985,8 @@ const PelayananImunisasi = () => {
                 </div>
 
                 {/* Vaccine Selection */}
-                <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
-                  <div className="flex justify-between items-center mb-3">
+                <div className="bg-gray-50 p-3.5 rounded-xl border border-gray-200">
+                  <div className="flex justify-between items-center mb-2.5">
                     <label className="text-gray-400 text-[10px] font-bold uppercase tracking-widest">
                       Vaksin yang Belum Diberikan:
                     </label>
@@ -962,7 +997,7 @@ const PelayananImunisasi = () => {
 
                   {/* Empty State Messages */}
                   {allAvailableJadwal.length === 0 && (
-                    <div className="text-center py-8">
+                    <div className="text-center py-6">
                       <AlertTriangle size={32} className="text-amber-400 mx-auto mb-2" />
                       <p className="text-sm text-gray-600 font-medium">Tidak ada vaksin tersedia</p>
                       <p className="text-xs text-gray-500 mt-1">
@@ -971,7 +1006,7 @@ const PelayananImunisasi = () => {
                     </div>
                   )}
 
-                  <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
+                  <div className="space-y-2 max-h-52 overflow-y-auto pr-1.5">
                     {allAvailableJadwal.map((jadwal) => {
                       const isSelected = formData.selectedJadwalIds.includes(
                         jadwal.jadwal_id
@@ -1010,7 +1045,7 @@ const PelayananImunisasi = () => {
                               }
                               handleToggleJadwal(jadwal.jadwal_id);
                             }}
-                            className={`flex items-center justify-between gap-3 p-3 rounded-lg border-2 transition-all cursor-pointer ${
+                            className={`flex items-center justify-between gap-3 p-2.5 rounded-lg border-2 transition-all cursor-pointer ${
                               !canBeSelected
                                 ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed opacity-70'
                                 : isSelected
@@ -1058,7 +1093,7 @@ const PelayananImunisasi = () => {
                               <input
                                 type="text"
                                 placeholder="No. Batch Vaksin (opsional)"
-                                className="w-full text-xs border-2 border-blue-200 rounded-lg px-3 py-2 outline-none focus:border-blue-400 bg-blue-50/30"
+                                className="w-full text-xs border-2 border-blue-200 rounded-lg px-2.5 py-1.5 outline-none focus:border-blue-400 bg-blue-50/30"
                                 value={formData.batches[jadwal.jadwal_id] || ''}
                                 onChange={(e) =>
                                   setFormData((prev) => ({
@@ -1087,7 +1122,7 @@ const PelayananImunisasi = () => {
                     Catatan Umum
                   </label>
                   <textarea
-                    className="w-full border-2 border-gray-200 p-2 outline-none text-sm focus:border-blue-600 rounded-lg resize-none"
+                    className="w-full border-2 border-gray-200 p-2 outline-none text-xs focus:border-blue-600 rounded-lg resize-none"
                     placeholder="Catatan tambahan (opsional)..."
                     rows="2"
                     value={formData.catatan}
@@ -1098,14 +1133,14 @@ const PelayananImunisasi = () => {
                 </div>
               </div>
 
-              {/* Submit Button - Fixed at bottom */}
-              <div className="p-6 pt-0 border-t border-gray-100 bg-white flex-shrink-0">
+              {/* Submit Button - Fixed at bottom, always visible */}
+              <div className="px-5 py-3.5 border-t border-gray-100 bg-white flex-shrink-0">
                 <button
                   disabled={
                     isSubmitting || formData.selectedJadwalIds.length === 0
                   }
                   type="submit"
-                  className="w-full bg-blue-600 text-white py-3.5 rounded-xl hover:bg-blue-700 flex justify-center items-center gap-3 transition-all font-bold text-sm uppercase tracking-wider disabled:bg-gray-300"
+                  className="w-full bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 flex justify-center items-center gap-3 transition-all font-bold text-sm uppercase tracking-wider disabled:bg-gray-300 shadow-lg disabled:shadow-none"
                 >
                   {isSubmitting ? (
                     <>

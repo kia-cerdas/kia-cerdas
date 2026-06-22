@@ -141,7 +141,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         { path: "/edukasi-digital/mpasi", name: "MPASI", icon: ClipboardList },
       ],
     },
-    { path: "/jadwal-layanan", name: "Jadwal Layanan", icon: Calendar },
+    { path: "/jadwal-layanan", name: "Jadwal Layanan Posyandu", icon: Calendar },
     {
       name: "Pencatatan Kesehatan",
       icon: ClipboardList,

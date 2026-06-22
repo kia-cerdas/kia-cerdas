@@ -144,10 +144,18 @@ const headerByPath = (pathname) => {
     };
   }
 
-  if (pathname.startsWith("/dashboard/admin/jadwal-layanan")) {
+  if (pathname.startsWith("/jadwal-layanan/form")) {
     return {
-      title: "Jadwal Layanan",
-      subtitle: "Kelola daftar posyandu sebagai referensi jadwal layanan kesehatan.",
+      title: pathname.includes("/form/") ? "Edit Jadwal Layanan Posyandu" : "Tambah Jadwal Layanan Posyandu",
+      subtitle: "1. Isi nama layanan (Contoh: Pelayanan Imunisasi Rutin).\n2. Pilih dosis vaksin yang akan diberikan pada jadwal ini.\n3. Pilih posyandu, tanggal pelayanan, dan rentang waktu mulai-selesai.\n4. Tambahkan keterangan opsional jika diperlukan.\n5. Klik 'Simpan Jadwal' untuk menyimpan data.",
+      variant: "hero",
+    };
+  }
+
+  if (pathname.startsWith("/jadwal-layanan")) {
+    return {
+      title: "Jadwal Layanan Posyandu",
+      subtitle: "1. Gunakan tab 'Hari Ini', 'Akan Datang', atau 'Sudah Selesai' untuk melihat jadwal berdasarkan status.\n2. Klik 'Tambah Jadwal' untuk membuat sesi imunisasi baru.\n3. Gunakan ikon pensil untuk mengubah atau ikon tong sampah untuk menghapus jadwal.\n4. Card berwarna biru untuk jadwal hari ini, kuning untuk mendatang, dan hijau untuk selesai.",
       variant: "hero",
     };
   }
