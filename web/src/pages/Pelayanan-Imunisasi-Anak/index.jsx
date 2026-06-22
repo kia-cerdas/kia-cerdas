@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import {
   Save, Syringe, CheckSquare, Square, Calendar,
-  CheckCircle2, RefreshCw, X, ArrowLeft, AlertTriangle, XCircle, CalendarClock
+  CheckCircle2, RefreshCw, X, ArrowLeft, AlertTriangle, XCircle, CalendarClock, Lock, Clock
 } from 'lucide-react';
 import Swal from 'sweetalert2';
 import MainLayout from "../../components/Layout/MainLayout";
@@ -614,14 +614,14 @@ const PelayananImunisasi = () => {
 
           {/* ═══════════ HEADER ═══════════ */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-6">
-            <div>
+            <div className="w-full md:w-auto">
               <Link
                 to={`/data-anak/dashboard/${id}`}
-                className="flex items-center gap-2 text-gray-500 hover:text-blue-600 text-sm mb-1 transition-colors"
+                className="flex items-center gap-2 text-gray-500 hover:text-blue-600 text-sm mb-2 transition-colors"
               >
                 <ArrowLeft size={16} /> Kembali
               </Link>
-              <h1 className="text-2xl font-bold text-gray-800">Pelayanan Imunisasi</h1>
+            
               {dataAnak && (
                 <div className="mt-2 space-y-1">
                   <p className="text-gray-500 text-sm">
@@ -634,7 +634,7 @@ const PelayananImunisasi = () => {
                       const sisaHari = umurHari % 30;
                       return (
                         <p className="text-blue-600 text-sm font-semibold">
-                          Umur saat ini: {umurBulan} bulan {sisaHari} hari ({umurHari} hari)
+                          Umur saat ini: {umurBulan} bulan {sisaHari} hari
                         </p>
                       );
                     }
@@ -645,9 +645,7 @@ const PelayananImunisasi = () => {
             </div>
 
             <div className="flex items-center gap-3">
-              <span className="bg-green-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm">
-                Diisi oleh Tenaga Kesehatan
-              </span>
+             
 
               <button
                 onClick={() => {
@@ -669,7 +667,8 @@ const PelayananImunisasi = () => {
               </button>
             </div>
           </div>
-
+                  {/* Title - Centered */}
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-800 text-center mb-2">Pelayanan Imunisasi</h1>
           {/* ═══════════ TABEL IMUNISASI KIA ═══════════ */}
           <div key={refreshKey} className="bg-white shadow-xl border border-gray-300 rounded overflow-hidden mb-4">
             <div className="overflow-x-auto">
@@ -838,7 +837,7 @@ const PelayananImunisasi = () => {
               <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-4 border-b border-blue-800">
                 <h2 className="text-white font-bold text-lg flex items-center gap-2">
                   <Syringe size={20} />
-                  Catatan Imunisasi
+                 Riwayat Catatan Imunisasi
                 </h2>
                 <p className="text-blue-100 text-xs mt-1">
                   Riwayat pemberian imunisasi yang telah dilakukan
@@ -959,30 +958,31 @@ const PelayananImunisasi = () => {
               </button>
             </div>
 
+            {/* Tanggal Pemberian - Fixed at top */}
+            <div className="px-5 pt-4 pb-3 bg-blue-50 border-b border-blue-100 flex-shrink-0">
+              <label className="text-gray-600 mb-1.5 block text-xs font-bold uppercase tracking-wider">
+                Tanggal Pemberian
+              </label>
+              <div className="flex items-center gap-2 bg-white border-2 border-blue-200 rounded-lg px-3 py-2 focus-within:border-blue-500 transition-colors">
+                <Calendar size={18} className="text-blue-500" />
+                <input
+                  type="date"
+                  className="w-full outline-none font-bold text-sm bg-transparent text-black"
+                  style={{ colorScheme: 'light' }}
+                  value={formData.tanggal}
+                  onChange={(e) => setFormData({ ...formData, tanggal: e.target.value })}
+                  max={new Date().toISOString().split('T')[0]}
+                  required
+                />
+              </div>
+              <p className="text-xs text-blue-600 mt-1.5 font-medium">
+                📅 Pilih tanggal pemberian imunisasi
+              </p>
+            </div>
+
             {/* Modal Form - Scrollable */}
             <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden">
               <div className="flex-1 overflow-y-auto p-5 space-y-3.5">
-                {/* Tanggal - Bebas pilih tanggal */}
-                <div>
-                  <label className="text-gray-500 mb-1 block text-xs font-bold uppercase tracking-wider">
-                    Tanggal Pemberian
-                  </label>
-                  <div className="flex items-center gap-2 border-b-2 focus-within:border-blue-600 pb-1.5">
-                    <Calendar size={16} className="text-gray-400" />
-                    <input
-                      type="date"
-                      className="w-full outline-none font-bold text-sm bg-transparent text-black"
-                      style={{ colorScheme: 'light' }}
-                      value={formData.tanggal}
-                      onChange={(e) => setFormData({ ...formData, tanggal: e.target.value })}
-                      max={new Date().toISOString().split('T')[0]}
-                      required
-                    />
-                  </div>
-                  <p className="text-xs text-gray-400 mt-1">
-                    📅 Pilih tanggal pemberian imunisasi
-                  </p>
-                </div>
 
                 {/* Vaccine Selection */}
                 <div className="bg-gray-50 p-3.5 rounded-xl border border-gray-200">
@@ -1021,6 +1021,25 @@ const PelayananImunisasi = () => {
                       const aturan = findAturanByDosisId(jadwal.dosis_vaksin_id);
                       const minUsiaBulan = aturan?.min_usia_hari ? Math.floor(aturan.min_usia_hari / 30) : 0;
 
+                      // Determine icon and color based on condition
+                      let StatusIcon = XCircle;
+                      let iconColor = 'text-gray-400';
+                      let reasonText = '';
+                      
+                      if (!prevDoseOk) {
+                        StatusIcon = Lock;
+                        iconColor = 'text-red-500';
+                        reasonText = `Memerlukan ${prevDoseName} selesai terlebih dahulu`;
+                      } else if (!usiaCukup) {
+                        StatusIcon = Clock;
+                        iconColor = 'text-amber-500';
+                        reasonText = `Anak belum mencapai usia minimal ${minUsiaBulan} bulan`;
+                      } else if (usiaTerlambat) {
+                        StatusIcon = AlertTriangle;
+                        iconColor = 'text-orange-500';
+                        reasonText = 'Terlambat dari jadwal ideal';
+                      }
+
                       return (
                         <div key={jadwal.jadwal_id} className="space-y-2">
                           <div
@@ -1030,15 +1049,17 @@ const PelayananImunisasi = () => {
                                   Swal.fire({
                                     icon: 'warning',
                                     title: 'Belum Bisa Diberikan',
-                                    html: `<b>${jadwal.nama_dosis}</b> memerlukan dosis <b>${prevDoseName}</b> diselesaikan terlebih dahulu.`,
-                                    confirmButtonColor: '#2563eb'
+                                    html: `<div class="text-left"><p class="mb-2"><b>${jadwal.nama_dosis}</b> memerlukan dosis <b>${prevDoseName}</b> diselesaikan terlebih dahulu.</p><p class="text-sm text-gray-600">📋 Dosis harus diberikan secara berurutan untuk memastikan kekebalan yang optimal.</p></div>`,
+                                    confirmButtonColor: '#2563eb',
+                                    confirmButtonText: 'Mengerti'
                                   });
                                 } else if (!usiaCukup) {
                                   Swal.fire({
-                                    icon: 'warning',
+                                    icon: 'info',
                                     title: 'Anak Belum Cukup Umur',
-                                    html: `<b>${jadwal.nama_dosis}</b> dapat diberikan minimal pada usia <b>${minUsiaBulan} bulan</b>.<br/><small class="text-gray-500">Anak ini belum mencapai usia minimal untuk vaksin tersebut.</small>`,
-                                    confirmButtonColor: '#2563eb'
+                                    html: `<div class="text-left"><p class="mb-2"><b>${jadwal.nama_dosis}</b> dapat diberikan minimal pada usia <b>${minUsiaBulan} bulan</b>.</p><p class="text-sm text-gray-600">⏰ Anak ini belum mencapai usia minimal untuk vaksin tersebut.</p></div>`,
+                                    confirmButtonColor: '#2563eb',
+                                    confirmButtonText: 'Mengerti'
                                   });
                                 }
                                 return;
@@ -1047,45 +1068,46 @@ const PelayananImunisasi = () => {
                             }}
                             className={`flex items-center justify-between gap-3 p-2.5 rounded-lg border-2 transition-all cursor-pointer ${
                               !canBeSelected
-                                ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed opacity-70'
+                                ? 'bg-gray-50 border-gray-200 text-gray-500 cursor-not-allowed'
                                 : isSelected
-                                  ? 'bg-blue-600 text-white border-blue-600'
-                                  : 'bg-white border-gray-100 text-gray-700 hover:border-blue-300'
+                                  ? 'bg-blue-600 text-white border-blue-600 shadow-md'
+                                  : 'bg-white border-gray-200 text-gray-700 hover:border-blue-300 hover:shadow-sm'
                             }`}
                           >
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-3 flex-1">
                               {!canBeSelected ? (
-                                <XCircle size={18} className="text-gray-400 flex-shrink-0" />
+                                <StatusIcon size={20} className={`${iconColor} flex-shrink-0`} />
                               ) : isSelected ? (
-                                <CheckSquare size={18} />
+                                <CheckSquare size={20} className="flex-shrink-0" />
                               ) : (
-                                <Square size={18} />
+                                <Square size={20} className="flex-shrink-0" />
                               )}
-                              <div className="flex flex-col">
-                                <span className="text-xs font-medium">
+                              <div className="flex flex-col flex-1">
+                                <span className="text-sm font-semibold">
                                   {jadwal.nama_dosis}
                                 </span>
-                                {!prevDoseOk && (
-                                  <span className="text-[10px] text-red-500 mt-0.5">
-                                    ⚠️ Memerlukan {prevDoseName} selesai
+                                {!canBeSelected && reasonText && (
+                                  <span className={`text-[10px] mt-0.5 flex items-start gap-1 ${
+                                    !prevDoseOk ? 'text-red-600' : 'text-amber-600'
+                                  }`}>
+                                    <span className="font-bold">●</span>
+                                    <span>{reasonText}</span>
                                   </span>
                                 )}
-                                {prevDoseOk && !usiaCukup && (
-                                  <span className="text-[10px] text-amber-600 mt-0.5">
-                                    ⏳ Min. usia {minUsiaBulan} bulan
-                                  </span>
-                                )}
-                                {usiaTerlambat && (
-                                  <span className="text-[10px] text-orange-600 mt-0.5">
-                                    ⚠️ Terlambat dari jadwal ideal
+                                {canBeSelected && usiaTerlambat && (
+                                  <span className="text-[10px] text-orange-600 mt-0.5 flex items-center gap-1">
+                                    <AlertTriangle size={12} />
+                                    <span>{reasonText}</span>
                                   </span>
                                 )}
                               </div>
                             </div>
-                            <CheckCircle2
-                              size={16}
-                              className={isSelected ? 'text-white' : !canBeSelected ? 'text-gray-300' : 'text-gray-300'}
-                            />
+                            {canBeSelected && (
+                              <CheckCircle2
+                                size={18}
+                                className={`flex-shrink-0 ${isSelected ? 'text-white' : 'text-gray-300'}`}
+                              />
+                            )}
                           </div>
 
                           {isSelected && (

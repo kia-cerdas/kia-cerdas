@@ -558,26 +558,6 @@ export default function JadwalLayananPage() {
   return (
     <MainLayout>
       <div className="space-y-4 sm:space-y-5">
-        {/* Stats bar */}
-        {!loading && allRows.length > 0 && (
-          <section className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="grid grid-cols-3 divide-x divide-slate-100">
-              <div className="px-3 sm:px-6 py-2 sm:py-3 text-center">
-                <p className="text-lg sm:text-2xl font-bold text-slate-800">{allRows.length}</p>
-                <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5">Total jadwal</p>
-              </div>
-              <div className="px-3 sm:px-6 py-2 sm:py-3 text-center">
-                <p className="text-lg sm:text-2xl font-bold text-[#185FA5]">{tabCounts.today}</p>
-                <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5">Jadwal hari ini</p>
-              </div>
-              <div className="px-3 sm:px-6 py-2 sm:py-3 text-center">
-                <p className="text-lg sm:text-2xl font-bold text-slate-500">{tabCounts.upcoming}</p>
-                <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5">Akan datang</p>
-              </div>
-            </div>
-          </section>
-        )}
-
         {/* Tabs & Tombol Tambah Jadwal dalam satu baris */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
           {/* Tab Buttons */}
