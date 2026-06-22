@@ -175,15 +175,15 @@ const KondisiIbuCard = ({ exam, risiko }) => {
 const SkriningPreeklampsiaCard = ({ skrining, risiko }) => {
   if (!skrining) return null;
   return (
-    <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 space-y-3">
-      <h3 className="font-semibold text-purple-800 flex items-center gap-2">
+    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 space-y-3">
+      <h3 className="font-semibold text-blue-800 flex items-center gap-2">
         <AlertTriangle size={16} /> Hasil Skrining Preeklampsia
       </h3>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
         {/* Risiko Sedang */}
         <div className="space-y-1">
-          <p className="text-xs font-semibold text-yellow-700">Faktor Risiko Sedang:</p>
+          <p className="text-xs font-semibold text-blue-700">Faktor Risiko Sedang:</p>
           <div className="space-y-0.5">
             {skrining.anamnesis_multipara_pasangan_baru_sedang && <p className="text-xs text-gray-700">• Multipara dengan pasangan baru</p>}
             {skrining.anamnesis_teknologi_reproduksi_berbantu_sedang && <p className="text-xs text-gray-700">• Teknologi reproduksi berbantu</p>}
@@ -212,7 +212,7 @@ const SkriningPreeklampsiaCard = ({ skrining, risiko }) => {
 
       {/* Pemeriksaan Fisik */}
       <div className="space-y-1">
-        <p className="text-xs font-semibold text-purple-700">Pemeriksaan Fisik:</p>
+        <p className="text-xs font-semibold text-blue-700">Pemeriksaan Fisik:</p>
         <div className="flex gap-4 text-xs">
           <span className={skrining.fisik_map_diatas_90_mmhg ? "text-red-700 font-semibold" : "text-gray-400"}>
             MAP &gt; 90 mmHg: {skrining.fisik_map_diatas_90_mmhg ? "Ya" : "Tidak"}
@@ -224,14 +224,14 @@ const SkriningPreeklampsiaCard = ({ skrining, risiko }) => {
       </div>
 
       {skrining.kesimpulan_skrining_preeklampsia && (
-        <div className="pt-2 border-t border-purple-200">
-          <p className="text-xs font-semibold text-purple-700 mb-1">Kesimpulan Klinis:</p>
+        <div className="pt-2 border-t border-blue-200">
+          <p className="text-xs font-semibold text-blue-700 mb-1">Kesimpulan Klinis:</p>
           <p className="text-xs text-gray-700">{skrining.kesimpulan_skrining_preeklampsia}</p>
         </div>
       )}
 
       {risiko.faktor.length > 0 && (
-        <div className="mt-2 pt-2 border-t border-purple-200">
+        <div className="mt-2 pt-2 border-t border-blue-200">
           <p className="text-xs font-semibold text-red-700 mb-1">Indikator Risiko Terdeteksi:</p>
           <ul className="space-y-0.5">
             {risiko.faktor.map((f, i) => (
@@ -488,10 +488,10 @@ export default function Rujukan() {
   // ── Badge status risiko ──
   const RisikoBadge = () => {
     const s = risiko.status_risiko;
-    const cls = s === "PERLU RUJUKAN"  ? "bg-red-100 text-red-700 border-red-300"
-              : s === "PERLU TINDAKAN" ? "bg-yellow-100 text-yellow-700 border-yellow-300"
-              : s === "NORMAL"         ? "bg-green-100 text-green-700 border-green-300"
-              : "bg-gray-100 text-gray-600 border-gray-300";
+  const cls = s === "PERLU RUJUKAN"  ? "bg-red-100 text-red-700 border-red-300"
+            : s === "PERLU TINDAKAN" ? "bg-amber-50 text-amber-700 border-amber-200"
+            : s === "NORMAL"         ? "bg-blue-100 text-blue-700 border-blue-200"
+            : "bg-gray-100 text-gray-600 border-gray-300";
     return (
       <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${cls}`}>{s}</span>
     );
@@ -500,14 +500,14 @@ export default function Rujukan() {
   // ── Style helpers untuk konsistensi warna ──
   const getRiskCardStyles = (status) => {
     if (status === "PERLU RUJUKAN")  return "bg-red-50 border-red-200 text-red-700";
-    if (status === "PERLU TINDAKAN") return "bg-yellow-50 border-yellow-200 text-yellow-700";
-    if (status === "NORMAL")         return "bg-green-50 border-green-200 text-green-700";
+    if (status === "PERLU TINDAKAN") return "bg-amber-50 border-amber-200 text-amber-700";
+    if (status === "NORMAL")         return "bg-blue-50 border-blue-200 text-blue-700";
     return "bg-gray-50 border-gray-200 text-gray-700";
   };
 
   if (loading) return (
     <MainLayout>
-      <div className="min-h-screen flex items-center justify-center text-indigo-600">Memuat data...</div>
+      <div className="min-h-screen flex items-center justify-center text-blue-600">Memuat data...</div>
     </MainLayout>
   );
 
@@ -544,20 +544,20 @@ export default function Rujukan() {
             </div>
           )}
 
-          {/* Kondisi ibu otomatis */}
-          {sourceParam === "preeklampsia" ? (
+          {/* Kondisi ibu otomatis — tidak ditampilkan saat mode form-bidan karena sudah ada di dalam form */}
+          {mode !== "form-bidan" && (sourceParam === "preeklampsia" ? (
             <SkriningPreeklampsiaCard skrining={skriningPreeklampsia} risiko={risiko} />
           ) : (
             <KondisiIbuCard exam={latestExam} risiko={risiko} />
-          )}
+          ))}
 
           {/* ══════════════════════════════════════════
               MODE: EMPTY — belum ada rujukan sama sekali
               ══════════════════════════════════════════ */}
           {mode === "empty" && (
             <div className="bg-white rounded-xl shadow-sm p-8 text-center space-y-4">
-              <div className="p-4 bg-indigo-50 rounded-full w-fit mx-auto">
-                <Plus size={40} className="text-indigo-600" />
+              <div className="p-4 bg-blue-50 rounded-full w-fit mx-auto">
+                <Plus size={40} className="text-blue-600" />
               </div>
               <h3 className="text-[22px] font-semibold text-[#185FA5]">Belum Ada Permintaan Rujukan</h3>
               {isBidan && isActive && (
@@ -585,14 +585,14 @@ export default function Rujukan() {
 
               {/* ─── Bagian Bidan: Permintaan Rujukan ─── */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="bg-indigo-50 px-5 py-3 flex justify-between items-center border-b border-indigo-100">
-                  <div className="flex items-center gap-2 text-indigo-700 font-semibold">
+                <div className="bg-blue-50 px-5 py-3 flex justify-between items-center border-b border-blue-100">
+                  <div className="flex items-center gap-2 text-blue-700 font-semibold">
                     <User size={16} /> Permintaan Rujukan (Bidan)
                   </div>
                   {isBidan && isActive && !data.rujukan_resume_pemeriksaan_tatalaksana && (
                     <button
                       onClick={() => setMode("form-bidan")}
-                      className="flex items-center gap-1.5 text-xs text-indigo-600 border border-indigo-300 px-3 py-1.5 rounded-lg hover:bg-indigo-50 font-semibold"
+                      className="flex items-center gap-1.5 text-xs text-blue-600 border border-blue-300 px-3 py-1.5 rounded-lg hover:bg-blue-50 font-semibold"
                     >
                       <Edit2 size={12} /> Edit
                     </button>
@@ -600,7 +600,7 @@ export default function Rujukan() {
                 </div>
                 <div className="p-5">
                   <DetailItem
-                    label="Alasan Dirujuk ke FKRTL"
+                    label="Alasan Dirujuk ke Fasilitas Kesehatan Rujukan Tingkat Lanjutan"
                     value={data.rujukan_alasan_dirujuk_ke_fkrtl}
                   />
                 </div>
@@ -608,11 +608,11 @@ export default function Rujukan() {
 
               {/* ─── Bagian Dokter: Respon ─── */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="bg-green-50 px-5 py-3 flex justify-between items-center border-b border-green-100">
-                  <div className="flex items-center gap-2 text-green-700 font-semibold">
+                <div className="bg-blue-50 px-5 py-3 flex justify-between items-center border-b border-blue-100">
+                  <div className="flex items-center gap-2 text-blue-700 font-semibold">
                     <Stethoscope size={16} /> Respon Dokter
                     {!data.rujukan_resume_pemeriksaan_tatalaksana && (
-                      <span className="text-xs font-normal text-yellow-600 bg-yellow-100 px-2 py-0.5 rounded-full flex items-center gap-1">
+                      <span className="text-xs font-normal text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full flex items-center gap-1">
                         <Clock size={11} /> Menunggu respon dokter
                       </span>
                     )}
@@ -620,7 +620,7 @@ export default function Rujukan() {
                   {isDokter && isActive && (
                     <button
                       onClick={() => setMode("form-dokter")}
-                      className="flex items-center gap-1.5 text-xs text-green-700 border border-green-300 px-3 py-1.5 rounded-lg hover:bg-green-50 font-semibold"
+                      className="flex items-center gap-1.5 text-xs text-blue-700 border border-blue-300 px-3 py-1.5 rounded-lg hover:bg-blue-50 font-semibold"
                     >
                       <Edit2 size={12} /> {data.rujukan_resume_pemeriksaan_tatalaksana ? "Edit Respon" : "Beri Respon"}
                     </button>
@@ -666,13 +666,10 @@ export default function Rujukan() {
               ══════════════════════════════════════════ */}
           {mode === "form-bidan" && isBidan && (
             <form onSubmit={handleSubmitBidan} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="bg-indigo-50 px-5 py-3 border-b border-indigo-100 flex justify-between items-center">
-                <div className="flex items-center gap-2 text-indigo-700 font-semibold">
+              <div className="bg-blue-50 px-5 py-3 border-b border-blue-100">
+                <div className="flex items-center gap-2 text-blue-700 font-semibold">
                   <User size={16} /> {data ? "Edit Permintaan Rujukan" : "Buat Permintaan Rujukan"}
                 </div>
-                <button type="button" onClick={handleCancel} className="text-gray-500 hover:text-gray-700">
-                  <X size={18} />
-                </button>
               </div>
               <div className="p-5 space-y-5">
                 {/* Kondisi otomatis — read only */}
@@ -721,7 +718,7 @@ export default function Rujukan() {
                 {/* Alasan rujukan — diisi bidan */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Alasan Dirujuk ke Dokter / FKRTL <span className="text-red-500">*</span>
+                    Alasan Dirujuk ke Dokter / Fasilitas Kesehatan Rujukan Tingkat Lanjutan <span className="text-red-500">*</span>
                   </label>
                   <textarea
                     name="rujukan_alasan_dirujuk_ke_fkrtl"
@@ -729,7 +726,7 @@ export default function Rujukan() {
                     onChange={e => setFormBidan(prev => ({ ...prev, rujukan_alasan_dirujuk_ke_fkrtl: e.target.value }))}
                     rows={4}
                     placeholder="Jelaskan alasan ibu ini perlu dirujuk ke dokter / rumah sakit..."
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                   />
                 </div>
 
@@ -740,7 +737,7 @@ export default function Rujukan() {
                   <button
                     type="submit"
                     disabled={saving}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg flex items-center gap-2 text-sm font-semibold disabled:opacity-50"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg flex items-center gap-2 text-sm font-semibold disabled:opacity-50"
                   >
                     <Save size={16} /> {saving ? "Menyimpan..." : "Kirim Permintaan Rujukan"}
                   </button>
@@ -754,8 +751,8 @@ export default function Rujukan() {
               ══════════════════════════════════════════ */}
           {mode === "form-dokter" && isDokter && (
             <form onSubmit={handleSubmitDokter} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="bg-green-50 px-5 py-3 border-b border-green-100 flex justify-between items-center">
-                <div className="flex items-center gap-2 text-green-700 font-semibold">
+              <div className="bg-blue-50 px-5 py-3 border-b border-blue-100 flex justify-between items-center">
+                <div className="flex items-center gap-2 text-blue-700 font-semibold">
                   <Stethoscope size={16} /> Respon Dokter terhadap Rujukan
                 </div>
                 <button type="button" onClick={handleCancel} className="text-gray-500 hover:text-gray-700">
@@ -765,8 +762,8 @@ export default function Rujukan() {
               <div className="p-5 space-y-5">
 
                 {/* Permintaan bidan — read only */}
-                <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-4">
-                  <p className="text-xs font-semibold text-indigo-600 uppercase tracking-wide mb-1 flex items-center gap-1">
+                <div className="bg-blue-50 border border-blue-100 rounded-lg p-4">
+                  <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-1 flex items-center gap-1">
                     <User size={12} /> Permintaan dari Bidan
                   </p>
                   <p className="text-sm text-gray-800 whitespace-pre-wrap">
@@ -783,17 +780,17 @@ export default function Rujukan() {
                       onChange={e => setFormDokter(p => ({ ...p, rujukan_resume_pemeriksaan_tatalaksana: e.target.value }))}
                       rows={3}
                       placeholder="Ringkasan hasil pemeriksaan dan tatalaksana yang diberikan"
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-green-500 focus:ring-1 focus:ring-green-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Diagnosis Akhir</label>
-                    <input
-                      value={formDokter.rujukan_diagnosis_akhir}
-                      onChange={e => setFormDokter(p => ({ ...p, rujukan_diagnosis_akhir: e.target.value }))}
-                      placeholder="Diagnosis akhir"
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-green-500 focus:ring-1 focus:ring-green-500"
-                    />
+                       className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                     />
+                   </div>
+                   <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">Diagnosis Akhir</label>
+                     <input
+                       value={formDokter.rujukan_diagnosis_akhir}
+                       onChange={e => setFormDokter(p => ({ ...p, rujukan_diagnosis_akhir: e.target.value }))}
+                       placeholder="Diagnosis akhir"
+                       className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                     />
                   </div>
                 </div>
 
@@ -808,17 +805,17 @@ export default function Rujukan() {
                         value={formDokter.rujukan_balik_tanggal}
                         onChange={e => setFormDokter(p => ({ ...p, rujukan_balik_tanggal: e.target.value }))}
                         min={new Date().toISOString().split('T')[0]}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-green-500 focus:ring-1 focus:ring-green-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Diagnosis Akhir (dari RS)</label>
-                      <input
-                        value={formDokter.rujukan_balik_diagnosis_akhir}
-                        onChange={e => setFormDokter(p => ({ ...p, rujukan_balik_diagnosis_akhir: e.target.value }))}
-                        placeholder="Diagnosis dari RS"
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-green-500 focus:ring-1 focus:ring-green-500"
-                      />
+                         className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                       />
+                     </div>
+                     <div>
+                       <label className="block text-sm font-medium text-gray-700 mb-1">Diagnosis Akhir (dari RS)</label>
+                       <input
+                         value={formDokter.rujukan_balik_diagnosis_akhir}
+                         onChange={e => setFormDokter(p => ({ ...p, rujukan_balik_diagnosis_akhir: e.target.value }))}
+                         placeholder="Diagnosis dari RS"
+                         className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                       />
                     </div>
                   </div>
                   <div>
@@ -828,30 +825,30 @@ export default function Rujukan() {
                       onChange={e => setFormDokter(p => ({ ...p, rujukan_balik_resume_pemeriksaan_tatalaksana: e.target.value }))}
                       rows={3}
                       placeholder="Ringkasan hasil pemeriksaan dan tatalaksana dari rumah sakit"
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-green-500 focus:ring-1 focus:ring-green-500"
-                    />
-                  </div>
-                </div>
+                       className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                     />
+                   </div>
+                 </div>
 
-                {/* Anjuran */}
+                 {/* Anjuran */}
                 <div className="border-t pt-4">
                   <label className="block text-sm font-medium text-gray-700 mb-1">Rekomendasi Tempat Melahirkan</label>
                   <input
                     value={formDokter.anjuran_rekomendasi_tempat_melahirkan}
                     onChange={e => setFormDokter(p => ({ ...p, anjuran_rekomendasi_tempat_melahirkan: e.target.value }))}
                     placeholder="Contoh: RSUD X, Klinik Y, atau Puskesmas"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-green-500 focus:ring-1 focus:ring-green-500"
-                  />
-                </div>
+                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                 />
+               </div>
 
-                <div className="flex justify-end gap-3 pt-2 border-t">
+               <div className="flex justify-end gap-3 pt-2 border-t">
                   <button type="button" onClick={handleCancel} className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50">
                     Batal
                   </button>
                   <button
                     type="submit"
                     disabled={saving}
-                    className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg flex items-center gap-2 text-sm font-semibold disabled:opacity-50"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg flex items-center gap-2 text-sm font-semibold disabled:opacity-50"
                   >
                     <Save size={16} /> {saving ? "Menyimpan..." : "Simpan Respon"}
                   </button>

@@ -31,7 +31,7 @@ const Breadcrumb = () => {
     "skrining-dashboard": "Beranda Skrining",
     "Skrining-Diabetes-Melitus-Gestasional": "Skrining Diabetes Melitus Gestasional",
     "pemeriksaan-fisik": "Pemeriksaan Fisik",
-    "pemeriksaan-rutin": "Pemantauan ANC",
+    "pemeriksaan-rutin": "Pemantauan Antenatal Care",
     "pemeriksaan-dokter-t1-complete": "Trimester 1",
     "pemeriksaan-dokter-t3-complete": "Trimester 3",
 
