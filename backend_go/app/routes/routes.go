@@ -1,4 +1,4 @@
-﻿package routes
+package routes
 
 import (
 	"fmt"
@@ -37,6 +37,7 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 		return c.JSON(200, res)
 	})
 	e.GET("/debug-antropometri", controller.DebugAntropometri)
+	e.GET("/debug-anaks-full", controller.DebugAnaksFull)
 
 	// Auth routes
 	auth := e.Group("/auth")
@@ -560,7 +561,6 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	tenaga.PUT("/pemeriksaan-lab-jiwa/:id", controller.PemeriksaanLaboratoriumJiwa.Update)
 	tenaga.DELETE("/pemeriksaan-lab-jiwa/:id", controller.PemeriksaanLaboratoriumJiwa.Delete)
 
-
 	// ==================== CATATAN PELAYANAN TRIMESTER 2 ====================
 	tenaga.POST("/catatan-pelayanan-t2", controller.CatatanPelayananTrimester2.Create)
 	tenaga.GET("/catatan-pelayanan-t2/:id", controller.CatatanPelayananTrimester2.GetByID)
@@ -742,7 +742,7 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	tenaga.GET("/laporan/lansia/preview", controller.LaporanLansia.Preview)
 	tenaga.GET("/laporan/lansia/export/excel", controller.LaporanLansia.ExportExcel)
 
-		// untuk laporan anak usiaa 5-9 tahun
+	// untuk laporan anak usiaa 5-9 tahun
 	tenaga.GET("/laporan/anak/preview", controller.LaporanAnak.Preview)
 	tenaga.GET("/laporan/anak/export/excel", controller.LaporanAnak.ExportExcel)
 
@@ -873,6 +873,8 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 
 	// Profile
 	ibuk.GET("/profil", controller.ProfilIbu.GetProfilSaya)
+	// Profil keluarga
+	ibuk.GET("/profil/keluarga", controller.ProfilIbu.GetProfilKeluarga)
 	ibuk.GET("/neonatus/anak/:anak_id", controller.Neonatus.GetByAnakIDForIbu)
 	ibuk.GET("/neonatus/:id", controller.Neonatus.GetByIDForIbu)
 	// Riwayat Kehamilan Ibu

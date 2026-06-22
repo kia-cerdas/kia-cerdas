@@ -1,5 +1,3 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:ta_pa2_pa3_project/core/services/auth_session.dart';
 import 'package:ta_pa2_pa3_project/core/themes/app_theme.dart';
@@ -74,9 +72,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   // [SCOPE: modul-ibu] Set fase yang boleh diklik di tab selector.
   // Aturan bisnis:
-  //   - Status HAMIL  → {'Hamil', 'Tumbuh'}   (Nifas & Menyusui dinonaktifkan)
-  //   - Status NIFAS  → {'Nifas', 'Menyusui', 'Tumbuh'}  (Hamil dinonaktifkan)
+  //   - Status HAMIL  → {'Hamil', 'Menyusui', 'Tumbuh'}   (hanya Nifas dinonaktifkan)
+  //   - Status NIFAS  → {'Nifas', 'Menyusui', 'Tumbuh'}   (hanya Hamil dinonaktifkan)
   //   - null          → loading / belum diketahui → semua tab bebas
+  // Catatan: 'Menyusui' bisa diakses di KEDUA status (hamil & nifas) karena
+  // edukasinya relevan untuk keduanya.
   // Variabel ini TIDAK memengaruhi logika modul anak atau modul lainnya.
   Set<String>? _enabledIbuPhases;
 
@@ -412,10 +412,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final kehamilan = await _kehamilanService.getKehamilanAktif();
       if (!mounted) return;
       // [SCOPE: modul-ibu] Kehamilan aktif ditemukan → ibu masih HAMIL.
-      // Hanya tab Hamil & Tumbuh yang bisa diakses; Nifas & Menyusui dinonaktifkan.
+      // Tab Hamil, Menyusui & Tumbuh bisa diakses; HANYA Nifas yang dinonaktifkan.
+      // Catatan: Menyusui sengaja DIBUKA saat hamil, karena materi menyusui
+      // (IMD & ASI Eksklusif) memang perlu dipelajari sejak masa kehamilan,
+      // bukan hanya setelah melahirkan.
       setState(() {
         _kehamilanAktif = kehamilan;
-        _enabledIbuPhases = {'Hamil', 'Tumbuh'};
+        _enabledIbuPhases = {'Hamil', 'Menyusui', 'Tumbuh'};
         _selectedPhase = 'Hamil';
       });
       _checkKontrolAlert();
@@ -821,7 +824,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               children: [
                 const SizedBox(height: 24),
                 // [SCOPE: modul-ibu] enabledPhases dikontrol oleh _loadKehamilanAktif.
-                // Hamil → {'Hamil','Tumbuh'} | Nifas → {'Nifas','Menyusui','Tumbuh'}
+                // Hamil → {'Hamil','Menyusui','Tumbuh'} | Nifas → {'Nifas','Menyusui','Tumbuh'}
                 DashboardPhaseSelector(
                   selectedPhase: _selectedPhase,
                   onPhaseSelected: (phase) =>

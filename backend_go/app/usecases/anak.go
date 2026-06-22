@@ -89,19 +89,22 @@ func (u *AnakUseCase) CreateAnak(req models.CreateAnakRequest) (*models.AnakResp
 		nik := fmt.Sprintf("A%d", time.Now().UnixNano())
 
 		var desaID *int32
+		var posyanduID *int32
 		if req.IbuID > 0 {
 			ibuRecord, errIbuTable := u.ibuRepo.FindByID(req.IbuID)
 			if errIbuTable == nil && ibuRecord != nil && ibuRecord.Kependudukan != nil {
 				desaID = ibuRecord.Kependudukan.DesaID
+				posyanduID = ibuRecord.Kependudukan.PosyanduID
 			}
 		}
 
 		newPenduduk := &models.Kependudukan{
-			NIK:          &nik,
-			NamaAnggotaKeluarga:  req.Nama,
-			JenisKelamin: req.JenisKelamin,
-			TanggalLahir: tglLahir,
-			DesaID:       desaID,
+			NIK:                 &nik,
+			NamaAnggotaKeluarga: req.Nama,
+			JenisKelamin:        req.JenisKelamin,
+			TanggalLahir:        tglLahir,
+			DesaID:              desaID,
+			PosyanduID:          posyanduID,
 		}
 
 		if err := u.kependudukanRepo.Create(newPenduduk); err != nil {
@@ -180,21 +183,24 @@ func (u *AnakUseCase) CreateAnakDenganPenduduk(req models.CreateAnakDenganPendud
 	}
 
 	var desaID *int32
+	var posyanduID *int32
 	ibuRecord, errIbuTable := u.ibuRepo.FindByID(req.IbuID)
 	if errIbuTable == nil && ibuRecord != nil && ibuRecord.Kependudukan != nil {
 		desaID = ibuRecord.Kependudukan.DesaID
+		posyanduID = ibuRecord.Kependudukan.PosyanduID
 	}
 
 	nikSementara := fmt.Sprintf("A%d", time.Now().UnixNano())
 
 	newPenduduk := &models.Kependudukan{
-		NIK:           &nikSementara,
-		NamaAnggotaKeluarga:   req.Nama,
-		JenisKelamin:  req.JenisKelamin,
-		TanggalLahir:  tanggalLahir,
-		TempatLahir:   req.TempatLahir,
-		GolonganDarah: req.GolonganDarah,
-		DesaID:        desaID, // ✅ otomatis dari ibu
+		NIK:                 &nikSementara,
+		NamaAnggotaKeluarga: req.Nama,
+		JenisKelamin:        req.JenisKelamin,
+		TanggalLahir:        tanggalLahir,
+		TempatLahir:         req.TempatLahir,
+		GolonganDarah:       req.GolonganDarah,
+		DesaID:              desaID,     // ✅ otomatis dari ibu
+		PosyanduID:          posyanduID, // ✅ otomatis dari ibu
 	}
 
 	if err := u.kependudukanRepo.Create(newPenduduk); err != nil {

@@ -144,10 +144,18 @@ const headerByPath = (pathname) => {
     };
   }
 
-  if (pathname.startsWith("/dashboard/admin/jadwal-layanan")) {
+  if (pathname.startsWith("/jadwal-layanan/form")) {
     return {
-      title: "Jadwal Layanan",
-      subtitle: "Kelola daftar posyandu sebagai referensi jadwal layanan kesehatan.",
+      title: pathname.includes("/form/") ? "Edit Jadwal Layanan Posyandu" : "Tambah Jadwal Layanan Posyandu",
+      subtitle: "1. Isi nama layanan (Contoh: Pelayanan Imunisasi Rutin).\n2. Pilih dosis vaksin yang akan diberikan pada jadwal ini.\n3. Pilih posyandu, tanggal pelayanan, dan rentang waktu mulai-selesai.\n4. Tambahkan keterangan opsional jika diperlukan.\n5. Klik 'Simpan Jadwal' untuk menyimpan data.",
+      variant: "hero",
+    };
+  }
+
+  if (pathname.startsWith("/jadwal-layanan")) {
+    return {
+      title: "Jadwal Layanan Posyandu",
+      subtitle: "1. Gunakan tab 'Hari Ini', 'Akan Datang', atau 'Sudah Selesai' untuk melihat jadwal berdasarkan status.\n2. Klik 'Tambah Jadwal' untuk membuat sesi imunisasi baru.\n3. Gunakan ikon pensil untuk mengubah atau ikon tong sampah untuk menghapus jadwal.\n4. Card berwarna biru untuk jadwal hari ini, kuning untuk mendatang, dan hijau untuk selesai.",
       variant: "hero",
     };
   }
@@ -447,8 +455,8 @@ const Header = ({ onToggleSidebar, isSidebarOpen }) => {
               className={`flex items-center gap-2 py-1.5 pl-1.5 pr-3 rounded-full
                           border transition-colors
                           ${isDropdownOpen
-                            ? "bg-white/20 border-white/30"
-                            : "border-white/20 hover:bg-white/15"}`}
+                  ? "bg-white/20 border-white/30"
+                  : "border-white/20 hover:bg-white/15"}`}
             >
               <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center
                               text-white font-semibold text-sm flex-shrink-0">

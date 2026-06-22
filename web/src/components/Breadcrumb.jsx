@@ -16,9 +16,9 @@ const Breadcrumb = () => {
 
     // Data Management
     "data-ibu": "Data Ibu hamil",
-    "data-anak": "Data Anak",
+    "data-anak": "Data Balita",
     kependudukan: "Kependudukan",
-    "daftar-anak": "Data Anak Balita",
+    "daftar-anak": "Data Balita",
     "daftar-rujukan": "Daftar Rujukan",
     "daftar-skrining": "Daftar Skrining",
     "manajemen-posyandu": "Manajemen Posyandu",
@@ -31,7 +31,7 @@ const Breadcrumb = () => {
     "skrining-dashboard": "Beranda Skrining",
     "Skrining-Diabetes-Melitus-Gestasional": "Skrining Diabetes Melitus Gestasional",
     "pemeriksaan-fisik": "Pemeriksaan Fisik",
-    "pemeriksaan-rutin": "Pemantauan ANC",
+    "pemeriksaan-rutin": "Pemantauan Antenatal Care",
     "pemeriksaan-dokter-t1-complete": "Trimester 1",
     "pemeriksaan-dokter-t3-complete": "Trimester 3",
 
@@ -101,7 +101,7 @@ const Breadcrumb = () => {
 
     // General
     "tenaga-kesehatan": "Tenaga Kesehatan",
-    "jadwal-layanan": "Jadwal Layanan",
+    "jadwal-layanan": "Jadwal Layanan Posyandu",
     "perubahan-jadwal-imunisasi": "Perubahan Jadwal Imunisasi",
 
     // Additional categories & sub-pages
@@ -117,6 +117,7 @@ const Breadcrumb = () => {
     "kelola-posyandu": "Kelola Posyandu",
     "kelola-penduduk": "Kelola Penduduk",
     "form-versi": "Kelola Form Versi",
+    "kelola-vaksin": "Kelola Vaksin",
   };
 
   // Build breadcrumb items
@@ -135,11 +136,20 @@ const Breadcrumb = () => {
   // Segments to skip entirely (role prefixes, not meaningful in breadcrumb)
   const skipSegments = ["superadmin"];
 
+  // Check if this is a preview page (/laporan/{type}/preview)
+  const isPreviewPage = pathSegments.includes("preview") && pathSegments.length >= 3 && pathSegments[0] === "laporan";
+
   pathSegments.forEach((segment, index) => {
     currentPath += "/" + segment;
 
     // Skip role-prefix segments
     if (skipSegments.includes(segment)) return;
+    
+    // Special handling for preview pages: combine type + preview into one breadcrumb item
+    if (isPreviewPage && segment !== "laporan" && segment !== "preview") {
+      // This is the "ibu" or "balita" segment - skip it as we'll combine it with "preview"
+      return;
+    }
 
     // Check if segment is an ID (UUID or numeric ID)
     const isId = /^[0-9a-f-]{36}$|^\d+$/.test(segment);
@@ -150,7 +160,16 @@ const Breadcrumb = () => {
       if (segment === "form") {
         const nextSegment = pathSegments[index + 1];
         const hasId = nextSegment && /^[0-9a-f-]{36}$|^\d+$/.test(nextSegment);
+<<<<<<< HEAD
         label = hasId ? "Ubah Konten" : "Tambah Konten";
+      } else if (isPreviewPage && segment === "preview") {
+        // Combine with previous type (ibu/balita) to make "Preview Ibu" or "Preview Balita"
+        const typeSegment = pathSegments[pathSegments.indexOf("preview") - 1];
+        const typeLabel = breadcrumbLabels[typeSegment] || formatLabel(typeSegment);
+        label = `Preview ${typeLabel}`;
+=======
+        label = hasId ? "Ubah Konten" : "Form Tambah Jadwal Posyandu";
+>>>>>>> 2ac4102 (redesign jadwal layanan posyandu)
       } else {
         label = breadcrumbLabels[segment] || formatLabel(segment);
       }

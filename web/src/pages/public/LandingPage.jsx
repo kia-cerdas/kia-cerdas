@@ -253,7 +253,7 @@ export default function LandingPage() {
                 const desc =
                   descText.slice(0, 140) + (descText.length > 140 ? "..." : "");
                 const image = item.gambar_url || item.GambarURL || item.thumbnail_url || item.ThumbnailURL || item.gambar || null;
-                
+
                 allArticles.push({
                   ...cat,
                   id: item.id ?? item.ID ?? null,
@@ -352,12 +352,9 @@ export default function LandingPage() {
                     className="px-8 py-4 bg-primary hover:bg-primary-600 text-white font-bold rounded-2xl shadow-lg shadow-primary/25 hover:shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-2.5 group text-base"
                   >
                     <Download size={20} />
-                    Unduh Gratis untuk Android
+                    Unduh Gratis
                     <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                   </button>
-                  <span className="text-xs text-slate-400 text-center sm:text-left">
-                    v1.0 · Android 8.0+
-                  </span>
                 </div>
 
                 {/* Feature Pills */}
@@ -875,60 +872,60 @@ export default function LandingPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {loadingEdukasi
                 ? Array.from({ length: 3 }).map((_, idx) => (
-                    <article
-                      key={idx}
-                      className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm flex flex-col"
-                    >
-                      <div className="h-48 bg-slate-100 flex items-center justify-center relative animate-pulse" />
-                      <div className="p-6 flex-grow flex flex-col justify-between">
-                        <div className="space-y-3">
-                          <div className="h-5 w-3/4 rounded-lg bg-slate-200 animate-pulse" />
-                          <div className="h-4 w-full rounded-lg bg-slate-200 animate-pulse" />
-                          <div className="h-4 w-5/6 rounded-lg bg-slate-200 animate-pulse" />
-                        </div>
-                        <div className="h-4 w-32 rounded-lg bg-slate-200 animate-pulse mt-6" />
+                  <article
+                    key={idx}
+                    className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm flex flex-col"
+                  >
+                    <div className="h-48 bg-slate-100 flex items-center justify-center relative animate-pulse" />
+                    <div className="p-6 flex-grow flex flex-col justify-between">
+                      <div className="space-y-3">
+                        <div className="h-5 w-3/4 rounded-lg bg-slate-200 animate-pulse" />
+                        <div className="h-4 w-full rounded-lg bg-slate-200 animate-pulse" />
+                        <div className="h-4 w-5/6 rounded-lg bg-slate-200 animate-pulse" />
                       </div>
-                    </article>
-                  ))
+                      <div className="h-4 w-32 rounded-lg bg-slate-200 animate-pulse mt-6" />
+                    </div>
+                  </article>
+                ))
                 : (featuredEdukasi.length > 0 ? featuredEdukasi : FALLBACK_ARTIKEL).map((artikel) => (
-                    <article
-                      key={artikel.key + "-" + (artikel.id || "fallback")}
-                      className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-left flex flex-col group"
-                    >
-                      <div className="h-48 relative overflow-hidden bg-slate-100">
-                        <img
-                          src={artikel.image || artikel.fallbackImage}
-                          alt={artikel.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                          onError={(e) => {
-                            e.target.src = artikel.fallbackImage || "https://images.unsplash.com/photo-1596464716127-f2a82984de30?w=600&auto=format&fit=crop";
-                          }}
-                        />
-                        <div className="absolute top-3 left-3">
-                          <span className="inline-block px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-sm text-primary-600 text-xs font-bold shadow-sm">
-                            {artikel.tag}
-                          </span>
-                        </div>
+                  <article
+                    key={artikel.key + "-" + (artikel.id || "fallback")}
+                    className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-left flex flex-col group"
+                  >
+                    <div className="h-48 relative overflow-hidden bg-slate-100">
+                      <img
+                        src={artikel.image || artikel.fallbackImage}
+                        alt={artikel.title}
+                        className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
+                        onError={(e) => {
+                          e.target.src = artikel.fallbackImage || "https://images.unsplash.com/photo-1596464716127-f2a82984de30?w=600&auto=format&fit=crop";
+                        }}
+                      />
+                      <div className="absolute top-3 left-3">
+                        <span className="inline-block px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-sm text-primary-600 text-xs font-bold shadow-sm">
+                          {artikel.tag}
+                        </span>
                       </div>
-                      <div className="p-6 flex-grow flex flex-col justify-between">
-                        <div>
-                          <h3 className="text-lg font-bold text-slate-800 mb-3 group-hover:text-primary transition-colors">
-                            <Link to={artikel.id ? `/edukasi-publik/${artikel.key}/${artikel.id}` : `/edukasi-publik/${artikel.key}`}>
-                              {artikel.title}
-                            </Link>
-                          </h3>
-                          <p className="text-sm text-slate-500 line-clamp-3 leading-relaxed mb-6">{artikel.desc}</p>
-                        </div>
-                        <Link
-                          to={artikel.id ? `/edukasi-publik/${artikel.key}/${artikel.id}` : `/edukasi-publik/${artikel.key}`}
-                          className="inline-flex items-center gap-1 text-sm font-bold text-primary hover:text-primary-600 mt-auto group-hover:gap-2 transition-all"
-                        >
-                          Baca Selengkapnya
-                          <ArrowRight size={14} />
-                        </Link>
+                    </div>
+                    <div className="p-6 flex-grow flex flex-col justify-between">
+                      <div>
+                        <h3 className="text-lg font-bold text-slate-800 mb-3 group-hover:text-primary transition-colors">
+                          <Link to={artikel.id ? `/edukasi-publik/${artikel.key}/${artikel.id}` : `/edukasi-publik/${artikel.key}`}>
+                            {artikel.title}
+                          </Link>
+                        </h3>
+                        <p className="text-sm text-slate-500 line-clamp-3 leading-relaxed mb-6">{artikel.desc}</p>
                       </div>
-                    </article>
-                  ))}
+                      <Link
+                        to={artikel.id ? `/edukasi-publik/${artikel.key}/${artikel.id}` : `/edukasi-publik/${artikel.key}`}
+                        className="inline-flex items-center gap-1 text-sm font-bold text-primary hover:text-primary-600 mt-auto group-hover:gap-2 transition-all"
+                      >
+                        Baca Selengkapnya
+                        <ArrowRight size={14} />
+                      </Link>
+                    </div>
+                  </article>
+                ))}
             </div>
           </div>
         </section>
@@ -953,7 +950,7 @@ export default function LandingPage() {
                     Unduh Aplikasi Generasi Sehat Sekarang!
                   </h2>
                   <p className="text-base text-primary-200 leading-relaxed max-w-xl mb-8">
-                    Pantau grafik tumbuh kembang, jadwal imunisasi, resep MPASI, dan data kesehatan anak Anda — langsung dari smartphone Android.
+                    Pantau grafik tumbuh kembang, jadwal imunisasi, resep MPASI, dan data kesehatan anak Anda — langsung dari handphone anda.
                   </p>
 
                   <div className="flex flex-col sm:flex-row items-center gap-4 justify-center md:justify-start">
@@ -962,11 +959,10 @@ export default function LandingPage() {
                       className="w-full sm:w-auto px-8 py-4 bg-white hover:bg-slate-50 text-primary-900 font-bold rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2.5 group active:scale-[0.98]"
                     >
                       <Download size={20} className="text-primary" />
-                      Unduh APK Android
+                      Unduh APK
                       <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                     </button>
                     <div className="text-center sm:text-left">
-                      <p className="text-xs text-primary-300 font-medium">Kompatibel Android 8.0+</p>
                       <p className="text-[10px] text-primary-400">Ukuran ≈ 25 MB</p>
                     </div>
                   </div>

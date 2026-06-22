@@ -26,21 +26,21 @@ export default function LaporanIbuPreview() {
   const [activeTab, setActiveTab] = useState("ibu");
 
   // Filter state
-  const [bulan, setBulan] = useState(new Date().getMonth() + 1);
-  const [tahun, setTahun] = useState(new Date().getFullYear());
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [filterEnabled, setFilterEnabled] = useState(false);
 
   useEffect(() => {
     fetchPreview();
-  }, [bulan, tahun, filterEnabled]);
+  }, [filterEnabled]);
 
   const fetchPreview = async () => {
     setLoading(true);
     setError("");
     try {
       let rawData;
-      if (filterEnabled) {
-        rawData = await previewLaporanIbu(bulan, tahun);
+      if (filterEnabled && startDate && endDate) {
+        rawData = await previewLaporanIbu(startDate, endDate);
       } else {
         rawData = await previewLaporanIbu();
       }
@@ -50,7 +50,7 @@ export default function LaporanIbuPreview() {
       setData(normalized);
 
       if (normalized.length === 0 && filterEnabled) {
-        setError(`Tidak ada data ditemukan untuk periode ${bulan}/${tahun}`);
+        setError(`Tidak ada data ditemukan untuk rentang tanggal ${startDate} s.d. ${endDate}`);
       } else if (normalized.length === 0) {
         setError("Belum ada data ibu yang tersedia");
       }
@@ -68,15 +68,15 @@ export default function LaporanIbuPreview() {
     setExporting(true);
     try {
       let blob;
-      if (filterEnabled) {
-        blob = await exportLaporanIbu(bulan, tahun);
+      if (filterEnabled && startDate && endDate) {
+        blob = await exportLaporanIbu(startDate, endDate);
       } else {
         blob = await exportLaporanIbu();
       }
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `laporan_ibu_${filterEnabled ? `${tahun}_${bulan}` : "semua"}.xlsx`;
+      a.download = `laporan_ibu_${filterEnabled ? `${startDate}_to_${endDate}` : "semua"}.xlsx`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -85,7 +85,7 @@ export default function LaporanIbuPreview() {
       Swal.fire({
         icon: "success",
         title: "Export Berhasil",
-        text: `File laporan_ibu_${filterEnabled ? `${tahun}_${bulan}` : "semua"}.xlsx berhasil diunduh`,
+        text: `File laporan_ibu_${filterEnabled ? `${startDate}_to_${endDate}` : "semua"}.xlsx berhasil diunduh`,
         confirmButtonColor: "#185FA5",
       });
     } catch (err) {
@@ -101,12 +101,21 @@ export default function LaporanIbuPreview() {
   };
 
   const handleApplyFilter = () => {
+    if (!startDate || !endDate) {
+      Swal.fire({
+        icon: "warning",
+        title: "Tanggal Belum Dipilih",
+        text: "Silakan pilih tanggal awal dan akhir terlebih dahulu.",
+        confirmButtonColor: "#185FA5",
+      });
+      return;
+    }
     setFilterEnabled(true);
   };
 
   const handleResetFilter = () => {
-    setBulan(new Date().getMonth() + 1);
-    setTahun(new Date().getFullYear());
+    setStartDate("");
+    setEndDate("");
     setFilterEnabled(false);
   };
 
@@ -266,43 +275,31 @@ export default function LaporanIbuPreview() {
                   Filter Tanggal:
                 </span>
                 <div className="flex items-center gap-2">
-                  <select
-                    value={bulan}
-                    onChange={(e) => setBulan(parseInt(e.target.value))}
-                    className="border rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-300 bg-white"
-                  >
-                    {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-                      <option key={m} value={m}>
-                        Bulan {m}
-                      </option>
-                    ))}
-                  </select>
-                  <span className="text-gray-400 text-sm">-</span>
-                  <select
-                    value={tahun}
-                    onChange={(e) => setTahun(parseInt(e.target.value))}
-                    className="border rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-300 bg-white"
-                  >
-                    {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i).map(
-                      (y) => (
-                        <option key={y} value={y}>
-                          {y}
-                        </option>
-                      )
-                    )}
-                  </select>
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="border rounded-lg px-5 py-2 text-sm focus:ring-2 focus:ring-blue-300 bg-white"
+                  />
+                  <span className="text-gray-400 text-sm">s.d.</span>
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="border rounded-lg px-5 py-2 text-sm focus:ring-2 focus:ring-blue-300 bg-white"
+                  />
                 </div>
                 <div className="flex gap-2">
                   <button
                     onClick={handleApplyFilter}
-                    className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition shadow-sm"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg flex items-center justify-center gap-2 transition shadow-sm"
                   >
                     Terapkan Filter
                   </button>
                   {filterEnabled && (
                     <button
                       onClick={handleResetFilter}
-                      className="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-200 transition"
+                      className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2 rounded-lg flex items-center justify-center gap-2 transition"
                     >
                       Reset
                     </button>
@@ -321,28 +318,13 @@ export default function LaporanIbuPreview() {
             </button>
           </div>
 
-          {filterEnabled && (
+          {filterEnabled && startDate && endDate && (
             <div className="mt-3 text-xs text-blue-600 bg-blue-50 p-2 rounded-lg inline-flex items-center gap-1">
-              <Calendar size={12} /> Memfilter data untuk {bulan}/{tahun}
+              <Calendar size={12} /> Memfilter data dari {new Date(startDate).toLocaleDateString("id-ID")} s.d. {new Date(endDate).toLocaleDateString("id-ID")}
             </div>
           )}
         </div>
 
-        {/* Tab Buttons */}
-        {!loading && !error && data && data.length > 0 && (
-          <div className="flex border-b border-gray-200 mb-4 overflow-x-auto whitespace-nowrap">
-            <button
-              onClick={() => setActiveTab("ibu")}
-              className={`py-2.5 px-4 font-medium text-sm border-b-2 transition-all ${
-                activeTab === "ibu"
-                  ? "border-blue-600 text-blue-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
-            >
-              Data Ibu ({data.length})
-            </button>
-          </div>
-        )}
 
         {/* Loading skeleton */}
         {loading && (

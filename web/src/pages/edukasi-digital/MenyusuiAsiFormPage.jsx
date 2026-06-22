@@ -10,7 +10,7 @@ export default function MenyusuiAsiFormPage() {
       listPath="/edukasi-digital/menyusui-asi"
       fields={[
         { key: "judul", label: "Judul", type: "text" },
-        { key: "gambar_url", label: "Gambar (opsional)", type: "image" },
+        { key: "gambar_url", label: "Gambar", type: "image" },
         { key: "isi", label: "Isi / Deskripsi Umum", type: "textarea", rows: 4 },
         { key: "manfaat_asi", label: "Manfaat ASI", type: "textarea", rows: 4 },
         { key: "cara", label: "Cara Menyusui yang Benar", type: "textarea", rows: 4 },

@@ -5,11 +5,10 @@ import "monitoring-service/pkg/customerror"
 func (m *Main) IsAnakMilikOrangtua(userID, anakID uint) (bool, error) {
 	var count int64
 	err := m.postgres.Table("anak a").
-		Joins("LEFT JOIN ibu i ON i.id = a.ibu_id").
-		Joins("LEFT JOIN kependudukan ki ON ki.id = i.kependudukan_id").
-		Joins("LEFT JOIN kartu_keluarga kk ON kk.id = ki.no_kartu_keluarga_id").
-		Where("a.id = ?", anakID).
-		Where("kk.user_id = ?", userID).
+		Joins("JOIN kehamilan k ON k.id = a.kehamilan_id").
+		Joins("JOIN ibu i ON i.id = k.ibu_id").
+		Joins("JOIN pengguna u ON u.penduduk_id = i.penduduk_id").
+		Where("a.id = ? AND u.id = ? AND a.deleted_at IS NULL AND k.deleted_at IS NULL AND i.is_deleted IS NULL", anakID, userID).
 		Count(&count).Error
 	if err != nil {
 		return false, customerror.NewInternalServiceError("gagal memverifikasi kepemilikan data anak")
@@ -22,11 +21,10 @@ func (m *Main) IsCatatanMilikOrangtua(userID, catatanID uint) (bool, error) {
 	var count int64
 	err := m.postgres.Table("catatan_pertumbuhan cp").
 		Joins("JOIN anak a ON a.id = cp.anak_id").
-		Joins("LEFT JOIN ibu i ON i.id = a.ibu_id").
-		Joins("LEFT JOIN kependudukan ki ON ki.id = i.kependudukan_id").
-		Joins("LEFT JOIN kartu_keluarga kk ON kk.id = ki.no_kartu_keluarga_id").
-		Where("cp.id = ?", catatanID).
-		Where("kk.user_id = ?", userID).
+		Joins("JOIN kehamilan k ON k.id = a.kehamilan_id").
+		Joins("JOIN ibu i ON i.id = k.ibu_id").
+		Joins("JOIN pengguna u ON u.penduduk_id = i.penduduk_id").
+		Where("cp.id = ? AND u.id = ? AND cp.deleted_at IS NULL AND a.deleted_at IS NULL AND k.deleted_at IS NULL AND i.is_deleted IS NULL", catatanID, userID).
 		Count(&count).Error
 	if err != nil {
 		return false, customerror.NewInternalServiceError("gagal memverifikasi kepemilikan data catatan")

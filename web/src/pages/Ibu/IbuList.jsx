@@ -5,7 +5,8 @@
   import { getIbuDashboard } from "../../services/ibu";
   import { 
     Plus, Search, Users, Eye, Edit, Filter, 
-    Activity, AlertTriangle, UserCheck
+    Activity, AlertTriangle, UserCheck,
+    TruckElectric, Check
   } from "lucide-react";
 
   // Badge untuk status kehamilan (trimester + nifas)
@@ -229,9 +230,9 @@
                 filterRisiko === "NORMAL" && !showHistory ? "ring-2 ring-green-300" : ""
               }`}
             >
-              <div className="flex items-center gap-2 border-[#3B6D11] mb-1">
-                <Activity size={16} />
-                <span className="text-sm font-medium">RISIKO RENDAH/NORMAL</span>
+              <div className="flex items-center gap-2 text-[#3B6D11] mb-1">
+                <Check size={16} />
+                <span className="text-sm font-medium text-[#3B6D11]">NORMAL</span>
               </div>
               <p className="text-xl font-bold text-gray-800">{totalNormal}</p>
             </button>

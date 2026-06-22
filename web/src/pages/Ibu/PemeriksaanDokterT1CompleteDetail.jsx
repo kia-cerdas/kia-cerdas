@@ -593,7 +593,7 @@ export default function PemeriksaanDokterT1CompleteDetail() {
                   label="GS (minggu)"
                   value={
                     d.usg_diameter_gs_minggu
-                      ? `${d.usg_diameter_gs_minggu} mg`
+                      ? `${d.usg_diameter_gs_minggu} minggu`
                       : null
                   }
                 />
@@ -621,7 +621,7 @@ export default function PemeriksaanDokterT1CompleteDetail() {
                 <InfoRow
                   label="CRL (minggu)"
                   value={
-                    d.usg_crl_minggu ? `${d.usg_crl_minggu} mg` : null
+                    d.usg_crl_minggu ? `${d.usg_crl_minggu} minggu` : null
                   }
                 />
                 <InfoRow
