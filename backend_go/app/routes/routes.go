@@ -873,6 +873,8 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 
 	// Profile
 	ibuk.GET("/profil", controller.ProfilIbu.GetProfilSaya)
+	// Profil keluarga
+	ibuk.GET("/profil/keluarga", controller.ProfilIbu.GetProfilKeluarga)
 	ibuk.GET("/neonatus/anak/:anak_id", controller.Neonatus.GetByAnakIDForIbu)
 	ibuk.GET("/neonatus/:id", controller.Neonatus.GetByIDForIbu)
 	// Riwayat Kehamilan Ibu

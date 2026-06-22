@@ -386,6 +386,8 @@ func Init(opts Options) *Main {
 		opts.Repository.EvaluasiKesehatanIbu,
 		opts.Repository.RiwayatKehamilanLalu,
 		opts.Repository.Desa,
+		// Profil keluargaa
+		opts.Repository.Kependudukan,
 	)
 	// Riwayat Kehamilan Ibu 
 	m.DetailKehamilanIbu = NewDetailKehamilanIbuUsecase(

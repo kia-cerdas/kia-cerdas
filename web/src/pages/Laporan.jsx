@@ -32,7 +32,7 @@ export default function Laporan() {
     {
       id: "balita",
       title: "Laporan Data Balita",
-      description: "Data balita beserta riwayat pertumbuhan dan perkembangan",
+      description: "Data balita beserta riwayat dan perkembangan",
       path: "/laporan/balita/preview",
       icon: FileDown,
     },
@@ -105,7 +105,7 @@ export default function Laporan() {
                       e.currentTarget.style.backgroundColor = "#185FA5";
                     }}
                   >
-                    <Eye size={18} /> Lihat & Export Laporan
+                    Lihat Laporan
                   </button>
                 </div>
               </div>

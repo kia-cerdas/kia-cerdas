@@ -131,6 +131,12 @@ func (m *Main) Init() (err error) {
 		`ALTER TABLE prediksi_stunting ALTER COLUMN classification TYPE varchar(30)`,
 		`ALTER TABLE aturan_porsi_mpasi ADD COLUMN IF NOT EXISTS gambar_url text`,
 		`ALTER TABLE jadwal_harian_mpasi ADD COLUMN IF NOT EXISTS gambar_url text`,
+		`ALTER TABLE pemeriksaan_kehamilan ADD COLUMN IF NOT EXISTS overall_prediction INTEGER DEFAULT 0`,
+		`ALTER TABLE pemeriksaan_kehamilan ADD COLUMN IF NOT EXISTS overall_label VARCHAR(20) DEFAULT 'NORMAL'`,
+		`ALTER TABLE pemeriksaan_kehamilan ADD COLUMN IF NOT EXISTS active_risk_count INTEGER DEFAULT 0`,
+		`ALTER TABLE pemeriksaan_kehamilan ADD COLUMN IF NOT EXISTS alasan_klinis TEXT`,
+		`ALTER TABLE pemeriksaan_kehamilan ADD COLUMN IF NOT EXISTS rekomendasi_utama TEXT`,
+		`ALTER TABLE pemeriksaan_kehamilan ADD COLUMN IF NOT EXISTS risk_types TEXT`,
 	}
 	for _, q := range fixQueries {
 		if execErr := m.database.Postgres.Exec(q).Error; execErr != nil {
