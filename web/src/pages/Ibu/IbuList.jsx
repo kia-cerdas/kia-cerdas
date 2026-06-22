@@ -145,7 +145,7 @@
       <div className="text-center py-12">
         <Users size={48} className="mx-auto text-gray-300" />
         <p className="mt-2 text-gray-600 text-base">
-          {showHistory ? "Tidak ada riwayat kehamilan yang tersedia." : "Tidak ada ibu hamil atau nifas aktif."}
+          {showHistory ? "Tidak ada 0 kehamilan yang tersedia." : "Tidak ada ibu hamil atau nifas aktif."}
         </p>
         <button
           onClick={() => {
@@ -247,7 +247,7 @@
 
           {/* SEARCH & FILTERS */}
           <div className="flex flex-col md:flex-row justify-between gap-3 mb-5">
-            <div className="relative w-full md:max-w-md">
+            <div className="relative flex-1">
               <Search className="absolute left-3 top-3 text-gray-400" size={18} />
               <input
                 className="pl-10 pr-4 py-2 border border-[#E2E8F0] rounded-lg w-full focus:ring-2 focus:ring-[#185FA5] focus:border-[#185FA5] text-sm"
@@ -258,45 +258,40 @@
               />
             </div>
 
-            <div className="flex flex-wrap lg:flex-nowrap gap-2 items-center justify-end">
+            <div className="flex flex-wrap lg:flex-nowrap gap-2 items-center">
               <div className="relative flex-shrink-0">
                 <select
-                  className="pl-3 pr-8 py-2 border border-[#E2E8F0] rounded-lg bg-white text-sm"
-                  value={filterRisiko}
-                  onChange={(e) => setFilterRisiko(e.target.value)}
+                  className="pl-3 pr-12 py-2 border border-[#E2E8F0] rounded-lg bg-white text-sm"
+                  value={showHistory ? "RIWAYAT" : filterTrimester}
+                  onChange={(e) => {
+                    if (e.target.value === "RIWAYAT") {
+                      setShowHistory(true);
+                    } else if (e.target.value === "KEMBALI") {
+                      setShowHistory(false);
+                    } else {
+                      setFilterTrimester(e.target.value);
+                    }
+                  }}
                 >
-                  <option value="">Semua Risiko</option>
-                  <option value="PERLU_RUJUKAN">Tinggi</option>
-                  <option value="PERLU_TINDAKAN">Sedang</option>
-                  <option value="NORMAL">Normal</option>
+                  {showHistory ? (
+                    <>
+                      <option value="RIWAYAT">Riwayat</option>
+                      <option value="KEMBALI">Kembali</option>
+                    </>
+                  ) : (
+                    <>
+                      <option value="">Semua Status</option>
+                      <option value="TRIMESTER 1">Trimester 1</option>
+                      <option value="TRIMESTER 2">Trimester 2</option>
+                      <option value="TRIMESTER 3">Trimester 3</option>
+                      <option value="NIFAS">Nifas</option>
+                      <option value="RIWAYAT">Riwayat</option>
+                    </>
+                  )}
                 </select>
                 {/* <Filter size={12} className="absolute right-3 top-2.5 text-gray-400 pointer-events-none" /> */}
               </div>
 
-              {!showHistory && (
-                <div className="relative flex-shrink-0">
-                  <select
-                    className="pl-3 pr-8 py-2 border border-[#E2E8F0] rounded-lg bg-white text-sm"
-                    value={filterTrimester}
-                    onChange={(e) => setFilterTrimester(e.target.value)}
-                  >
-                    <option value="">Semua Status</option>
-                    <option value="TRIMESTER 1">Trimester 1</option>
-                    <option value="TRIMESTER 2">Trimester 2</option>
-                    <option value="TRIMESTER 3">Trimester 3</option>
-                    <option value="NIFAS">Nifas</option>
-                  </select>
-                  {/* <Filter size={12} className="absolute right-3 top-2.5 text-gray-400 pointer-events-none" /> */}
-                </div>
-              )}
-
-              <button
-                onClick={() => setShowHistory(!showHistory)}
-                className="px-4 py-2 rounded-full border border-[#185FA5] text-[#185FA5] bg-transparent flex items-center gap-2 transition text-sm font-medium hover:bg-[#185FA5]/5 whitespace-nowrap"
-              >
-                <Activity size={14} />
-                {showHistory ? "Sembunyikan" : "Riwayat"}
-              </button>
 
               <Link
                 to="/data-ibu/create"
@@ -396,36 +391,42 @@
 
           {/* PAGINATION */}
           {!loading && displayedData.length > 0 && (
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-3 p-3 bg-white rounded-lg shadow-sm mt-3">
-              <div className="flex items-center gap-2">
-                <span className="text-base text-gray-600">Tampilkan</span>
-                <select
-                  className="border border-[#E2E8F0] rounded-lg px-2 py-1 text-base"
-                  value={itemsPerPage}
-                  onChange={(e) => setItemsPerPage(Number(e.target.value))}
+            <div className="flex justify-end items-center gap-1 p-3 bg-white rounded-lg shadow-sm mt-3">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium transition ${
+                  currentPage === 1
+                    ? "text-gray-400 bg-gray-100 cursor-not-allowed"
+                    : "text-gray-600 hover:bg-gray-50"
+                }`}
+              >
+                &lt;
+              </button>
+              {Array.from({ length: totalPages || 1 }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium transition ${
+                    currentPage === page
+                      ? "bg-[#185FA5] text-white"
+                      : "text-gray-600 hover:bg-gray-50"
+                  }`}
                 >
-                  <option>10</option>
-                  <option>25</option>
-                  <option>50</option>
-                </select>
-                <span className="text-base text-gray-600">data</span>
-              </div>
-
-              <div className="flex items-center gap-1">
-                {Array.from({ length: totalPages || 1 }, (_, i) => i + 1).map((page) => (
-                  <button
-                    key={page}
-                    onClick={() => setCurrentPage(page)}
-                    className={`px-3 py-1 rounded-lg text-sm font-medium transition ${
-                      currentPage === page
-                        ? "bg-[#185FA5] text-white"
-                        : "border border-[#E2E8F0] text-gray-600 hover:bg-gray-50"
-                    }`}
-                  >
-                    {page}
-                  </button>
-                ))}
-              </div>
+                  {page}
+                </button>
+              ))}
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+                className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium transition ${
+                  currentPage === totalPages
+                    ? "text-gray-400 bg-gray-100 cursor-not-allowed"
+                    : "text-gray-600 hover:bg-gray-50"
+                }`}
+              >
+                &gt;
+              </button>
             </div>
           )}
         </div>

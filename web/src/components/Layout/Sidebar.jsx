@@ -74,7 +74,7 @@ const Sidebar = () => {
 
   // Menu untuk bidan (lengkap)
   const bidanMenuItems = [
-    { path: "/data-ibu", name: "Data Ibu Hamil", icon: Users },
+    { path: "/data-ibu", name: "Data Ibu Hamil", icon: Users, prefixMatch: true, extraMatchPaths: ["/daftar-rujukan"] },
     { path: "/daftar-anak", name: "Data Anak Balita", icon: Baby },
     // { path: "/kependudukan", name: "Manajemen KK", icon: UserCheck },
     // { path: "/monitoring", name: "Monitoring", icon: Activity },
@@ -149,33 +149,7 @@ const Sidebar = () => {
 
   // Menu untuk dokter (menampilkan semua fitur puskesmas)
   const dokterMenuItems = [
-    { path: "/puskesmas/kelola-vaksin", name: "Kelola Vaksin", icon: ShieldPlus },
-    {
-      name: "Dashboard Dokter",
-      icon: BriefcaseMedical,
-      isDropdown: true,
-      dropdownKey: "dashboardDokter",
-      children: [
-        { path: "/data-ibu", name: "Data Ibu Hamil", icon: Users },
-        { path: "/daftar-rujukan", name: "Rujukan", icon: ClipboardList },
-      ],
-    },
-    { path: "/laporan", name: "Laporan", icon: BarChart3 },
-  ];
-
-  // Menu untuk bidan puskesmas (menampilkan semua fitur puskesmas)
-  const bidanPuskesmasMenuItems = [
-    { path: "/puskesmas/kelola-vaksin", name: "Kelola Vaksin", icon: ShieldPlus },
-    {
-      name: "Dashboard Dokter",
-      icon: BriefcaseMedical,
-      isDropdown: true,
-      dropdownKey: "dashboardDokter",
-      children: [
-        { path: "/data-ibu", name: "Data Ibu Hamil", icon: Users },
-        { path: "/daftar-rujukan", name: "Rujukan", icon: ClipboardList },
-      ],
-    },
+    { path: "/data-ibu", name: "Data Ibu Hamil", icon: Users, prefixMatch: true, extraMatchPaths: ["/daftar-rujukan"] },
     { path: "/laporan", name: "Laporan", icon: BarChart3 },
   ];
 
@@ -229,24 +203,30 @@ const Sidebar = () => {
 
   const settingsMenu = { path: "/pengaturan", name: "Pengaturan", icon: Settings };
 
-  const renderNavLink = (item, className = "text-sm") => (
-    <NavLink
-      key={item.path}
-      to={item.path}
-      end
-      className={({ isActive }) => `${baseItemClass(isActive)} ${className}`}
-    >
-      {({ isActive }) => (
-        <>
-          <item.icon
-            size={18}
-            className={`flex-shrink-0 ${isActive ? "text-blue-600" : "text-slate-400 group-hover:text-slate-600"}`}
-          />
-          <span className="truncate text-sm">{item.name}</span>
-        </>
-      )}
-    </NavLink>
-  );
+  const renderNavLink = (item, className = "text-sm") => {
+    const hasExtraMatch = item.extraMatchPaths?.some((p) =>
+      location.pathname.startsWith(p)
+    ) ?? false;
+
+    return (
+      <NavLink
+        key={item.path}
+        to={item.path}
+        end={!item.prefixMatch}
+        className={({ isActive }) => `${baseItemClass(isActive || hasExtraMatch)} ${className}`}
+      >
+        {({ isActive }) => (
+          <>
+            <item.icon
+              size={18}
+              className={`flex-shrink-0 ${(isActive || hasExtraMatch) ? "text-blue-600" : "text-slate-400 group-hover:text-slate-600"}`}
+            />
+            <span className="truncate text-sm">{item.name}</span>
+          </>
+        )}
+      </NavLink>
+    );
+  };
 
   const hasActiveDescendant = (item) => {
     if (!item?.children?.length) {

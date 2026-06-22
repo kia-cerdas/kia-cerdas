@@ -15,7 +15,7 @@ const Breadcrumb = () => {
     superadmin: "Superadmin",
 
     // Data Management
-    "data-ibu": "Data Ibu",
+    "data-ibu": "Data Ibu hamil",
     "data-anak": "Data Anak",
     kependudukan: "Kependudukan",
     "daftar-anak": "Daftar Anak",
@@ -31,9 +31,9 @@ const Breadcrumb = () => {
     "skrining-dashboard": "Beranda Skrining",
     "Skrining-Diabetes-Melitus-Gestasional": "Skrining Diabetes Melitus Gestasional",
     "pemeriksaan-fisik": "Pemeriksaan Fisik",
-    "pemeriksaan-rutin": "Pemeriksaan Rutin",
-    "pemeriksaan-dokter-t1-complete": "Pemeriksaan Dokter T1 Complete",
-    "pemeriksaan-dokter-t3-complete": "Pemeriksaan Dokter T3 Complete",
+    "pemeriksaan-rutin": "Pemantauan ANC",
+    "pemeriksaan-dokter-t1-complete": "Trimester 1",
+    "pemeriksaan-dokter-t3-complete": "Trimester 3",
 
     // Ibu - Grafik & Evaluasi
     "grafik-evaluasi": "Grafik Evaluasi Kehamilan",

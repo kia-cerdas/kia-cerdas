@@ -18,7 +18,7 @@ import {
   Filler,
 } from "chart.js";
 
-import { Plus, AlertTriangle, Activity, Scale, Heart, Droplets, FileText, TrendingUp, Eye } from "lucide-react";
+import { Plus, AlertTriangle, Activity, Scale, Heart, Droplets, FileText, ChevronDown, ChevronUp, ArrowLeft } from "lucide-react";
 import Swal from "sweetalert2";
 
 ChartJS.register(
@@ -30,6 +30,30 @@ ChartJS.register(
   Legend,
   Filler
 );
+
+// ─────────────────────────────────────────────
+// Helper: Parse alasan_klinis from JSON string
+// ─────────────────────────────────────────────
+const parseAlasanKlinis = (alasanString) => {
+  if (!alasanString) return [];
+  try {
+    return JSON.parse(alasanString);
+  } catch {
+    return [];
+  }
+};
+
+// ─────────────────────────────────────────────
+// Helper: Parse risk_types from JSON string
+// ─────────────────────────────────────────────
+const parseRiskTypes = (riskTypesString) => {
+  if (!riskTypesString) return [];
+  try {
+    return JSON.parse(riskTypesString);
+  } catch {
+    return [];
+  }
+};
 
 // ─────────────────────────────────────────────
 // Helper: Hitung batas kenaikan BB (Buku KIA)
@@ -140,6 +164,7 @@ export default function PemeriksaanKehamilanList() {
   const [grafik,       setGrafik]       = useState(null);
   const [loading,      setLoading]      = useState(true);
   const [error,        setError]        = useState(null);
+  const [expandedRisks, setExpandedRisks] = useState({});
 
   useEffect(() => {
     const fetchData = async () => {
@@ -210,20 +235,36 @@ export default function PemeriksaanKehamilanList() {
   }, [examinations, hasExaminations]);
 
   // ── Hitung status risiko dari kunjungan terakhir ──
-  // Prioritas: jika backend sudah mengisi status_risiko → pakai itu
-  // Jika belum (string kosong) → hitung dari frontend
+  // Prioritas: gunakan ML API results dari backend (overall_label)
+  // Fallback: gunakan status_risiko lama jika ada
+  // Terakhir: hitung dari frontend
   const riskFromBackend = grafik?.detail_risiko;
   const riskFromFrontend = useMemo(() => hitungStatusRisiko(latestExam), [latestExam]);
 
   const risk = useMemo(() => {
     if (!hasExaminations) return null;
-    // Gunakan data backend jika sudah terisi
+    
+    // Gunakan ML API results jika available
+    if (latestExam?.overall_label) {
+      return {
+        status_risiko: latestExam.overall_label,
+        ringkasan: latestExam.rekomendasi_utama || latestExam.detail_risiko || "",
+        skor_risiko: latestExam.skor_risiko || 0,
+        active_risk_count: latestExam.active_risk_count || 0,
+        alasan_klinis: parseAlasanKlinis(latestExam.alasan_klinis),
+        risk_types: parseRiskTypes(latestExam.risk_types),
+        is_ml_prediction: true,
+      };
+    }
+    
+    // Gunakan data backend lama jika sudah terisi
     if (riskFromBackend?.status_risiko && riskFromBackend.status_risiko !== "") {
       return riskFromBackend;
     }
+    
     // Fallback: hitung di frontend
     return riskFromFrontend;
-  }, [hasExaminations, riskFromBackend, riskFromFrontend]);
+  }, [hasExaminations, riskFromBackend, riskFromFrontend, latestExam]);
 
   // ── Style helpers ──
   const getRiskStyles = (status) => {
@@ -240,13 +281,10 @@ export default function PemeriksaanKehamilanList() {
     return "bg-green-100 text-green-700 border-green-200";
   };
 
-  // ── Normalize status for display consistency ──
-  const normalizeDisplayStatus = (status) => {
-    const upperStatus = status?.toUpperCase() || "";
-    if (upperStatus === "PERLU RUJUKAN" || upperStatus === "TINGGI") return "PERLU RUJUKAN";
-    if (upperStatus === "PERLU TINDAKAN" || upperStatus === "SEDANG") return "PERLU TINDAKAN";
-    if (upperStatus === "NORMAL" || upperStatus === "RENDAH" || upperStatus === "RISIKO RENDAH") return "NORMAL";
-    return status || "NORMAL";
+  const getRiskIconColor = (status) => {
+    if (status === "PERLU RUJUKAN")  return "text-red-600";
+    if (status === "PERLU TINDAKAN") return "text-yellow-600";
+    return "text-green-600";
   };
 
   // ── Chart options ──
@@ -336,9 +374,28 @@ export default function PemeriksaanKehamilanList() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div className="flex-1">
             <div className="flex items-center gap-3 flex-wrap">
+              <Link
+                to={`/data-ibu/${ibuId}?kehamilan_id=${kehamilan.id}`}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#185FA5] text-[#185FA5] text-sm font-semibold hover:bg-[#185FA5]/5 transition"
+              >
+                <ArrowLeft size={16} />
+                <span>Kembali</span>
+              </Link>
               <h1 className="text-3xl font-extrabold text-gray-900">Pemantauan ANC</h1>
             </div>
-            <p className="text-gray-500 italic mt-1">Berdasarkan Standar Buku KIA & Skrining Risiko</p>
+            <p className="text-gray-500 italic mt-1">Berdasarkan Standar Buku KIA & Prediksi Machine Learning</p>
+
+            {/* Peringatan jika status bukan NORMAL
+            {showWarning && (
+              <div className={`mt-2 text-sm p-2 rounded-lg inline-block ${
+                risk.status_risiko === "PERLU RUJUKAN"
+                  ? "text-red-600 bg-red-50"
+                  : "text-yellow-700 bg-yellow-50"
+              }`}>
+                ⚠️ Ibu hamil dengan status {risk.status_risiko} memerlukan perhatian khusus.
+                {risk.status_risiko === "PERLU RUJUKAN" && " Segera lakukan rujukan."}
+              </div>
+            )} */}
           </div>
 
           <div className="flex gap-3 flex-shrink-0">
@@ -374,21 +431,83 @@ export default function PemeriksaanKehamilanList() {
         {hasExaminations && risk && (
           <div className={`border-l-4 p-5 rounded-r-2xl shadow-sm flex gap-4 ${getRiskStyles(risk.status_risiko)}`}>
             <AlertTriangle className="flex-shrink-0" size={28} />
-            <div>
+            <div className="flex-1">
               <h3 className="font-bold text-lg uppercase tracking-wide">
                 Status: {normalizeDisplayStatus(risk.status_risiko)}
               </h3>
               <p className="text-sm leading-relaxed mt-1">{risk.ringkasan}</p>
 
-              {/* Detail faktor risiko jika ada */}
-              {risk.faktorRujukan?.length > 0 && (
+              {/* Only Detected Risks */}
+              {risk.is_ml_prediction && risk.risk_types && risk.risk_types.length > 0 && (
+                <div className="mt-3">
+                  <p className="text-xs font-semibold opacity-80 mb-3">Risiko yang Terdeteksi:</p>
+                  {risk.risk_types.filter(riskType => riskType.detected).length > 0 ? (
+                    <div className="space-y-2">
+                      {risk.risk_types
+                        .filter(riskType => riskType.detected)
+                        .sort((a, b) => b.probability - a.probability)
+                        .map((riskType, idx) => (
+                        <div 
+                          key={idx} 
+                          className="bg-white rounded-lg border border-red-200 shadow-sm"
+                        >
+                          <button
+                            onClick={() => setExpandedRisks(prev => ({ ...prev, [idx]: !prev[idx] }))}
+                            className="w-full p-2 flex items-center justify-between hover:bg-red-50 transition-colors"
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold text-xs text-gray-800">{riskType.name}</span>
+                              <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-medium">
+                                {(riskType.probability * 100).toFixed(1)}%
+                              </span>
+                            </div>
+                            {expandedRisks[idx] ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                          </button>
+                          {expandedRisks[idx] && riskType.tindakan && riskType.tindakan.length > 0 && (
+                            <div className="p-2 pt-0 border-t border-red-100">
+                              <p className="text-xs font-semibold text-gray-700 mb-1 mt-2">Tindakan yang Disarankan:</p>
+                              <ul className="text-xs text-gray-600 space-y-0.5">
+                                {riskType.tindakan.map((tindakan, tIdx) => (
+                                  <li key={tIdx} className="flex items-start gap-2">
+                                    <span className="text-red-500 mt-0.5">•</span>
+                                    <span>{tindakan}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-3 rounded-xl border border-emerald-200 bg-emerald-50">
+                      <p className="text-xs text-emerald-700 font-medium">✅ Tidak ada risiko yang terdeteksi</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Alasan Klinis dari ML API */}
+              {risk.is_ml_prediction && risk.alasan_klinis && risk.alasan_klinis.length > 0 && (
+                <div className="mt-3">
+                  <p className="text-xs font-semibold opacity-80 mb-1">Alasan Klinis:</p>
+                  <ul className="text-xs space-y-0.5 list-disc list-inside opacity-80">
+                    {risk.alasan_klinis.map((alasan, i) => (
+                      <li key={i}>{alasan}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Detail faktor risiko lama (fallback) */}
+              {!risk.is_ml_prediction && risk.faktorRujukan?.length > 0 && (
                 <ul className="mt-2 text-xs space-y-0.5 list-disc list-inside opacity-80">
                   {risk.faktorRujukan.map((f, i) => (
                     <li key={i}>{f}</li>
                   ))}
                 </ul>
               )}
-              {risk.faktorTindakan?.length > 0 && (
+              {!risk.is_ml_prediction && risk.faktorTindakan?.length > 0 && (
                 <ul className="mt-2 text-xs space-y-0.5 list-disc list-inside opacity-80">
                   {risk.faktorTindakan.map((f, i) => (
                     <li key={i}>{f}</li>

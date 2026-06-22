@@ -734,10 +734,10 @@ export default function Dashboard() {
                       ) : selectedKategori === "ibu-hamil" ? (
                         `Ibu dengan ${selectedRiskLabel}`
                       ) : (
-                        `Daftar dengan Risiko ${activeRiskLabelKelompok || "-"} - ${kelompokList.find((k) => k.key === selectedKategori)?.label || selectedKategori}`
+                        `Daftar dengan Risiko ${activeRiskLabelKelompok || "-"} ${kelompokList.find((k) => k.key === selectedKategori)?.label || selectedKategori}`
                       )}
                     </h2>
-                    <span style={{ fontSize: 11, background: "#fef2f2", color: "#ef4444", padding: "2px 8px", borderRadius: 20, fontWeight: 600 }}>
+                    <span style={{ fontSize: 11, background: "#fef2f2", color: "#ef4444", padding: "1px 10px", borderRadius: 20, fontWeight: 600, whiteSpace: "nowrap" }}>
                       {selectedDusun ? dusunIbuList.length : (selectedKategori === "ibu-hamil" ? filteredIbuList.length : daftarKelompok.length)} orang
                     </span>
                   </div>

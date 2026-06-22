@@ -20,6 +20,7 @@ import {
   EyeOff,
   XCircle,
   AlertTriangle,
+  Info, // <-- Tambahkan import Info
 } from "lucide-react";
 
 export default function SkriningPreeklampsia() {
@@ -147,15 +148,8 @@ export default function SkriningPreeklampsia() {
     setForm((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
   };
 
-  // CEK apakah ada faktor risiko yang dipilih
   const hasRiskFactors = () => {
     return riskFactorKeys.some(key => form[key] === true);
-  };
-
-  // VALIDASI - Semua field opsional
-  const validateForm = () => {
-    // Tidak ada validasi wajib
-    return true;
   };
 
   const handleSubmit = async (e) => {
@@ -168,16 +162,6 @@ export default function SkriningPreeklampsia() {
       });
       return;
     }
-    
-    // HAPUS validasi wajib - semua field opsional
-    // if (!validateForm()) {
-    //   Swal.fire({
-    //     icon: 'warning',
-    //     title: 'Data Belum Lengkap',
-    //     text: 'Setidaknya satu faktor risiko harus dipilih.'
-    //   });
-    //   return;
-    // }
 
     if (!kehamilan) {
       Swal.fire({
@@ -188,7 +172,6 @@ export default function SkriningPreeklampsia() {
       return;
     }
 
-    // Konfirmasi jika tidak ada faktor risiko yang dipilih
     if (!hasRiskFactors()) {
       const confirm = await Swal.fire({
         icon: 'info',
@@ -205,7 +188,7 @@ export default function SkriningPreeklampsia() {
         return;
       }
     }
-    
+
     setSaving(true);
     try {
       const payload = {
@@ -228,14 +211,13 @@ export default function SkriningPreeklampsia() {
         timer: 2000,
         showConfirmButton: false
       });
-      
+
       setIsEditing(false);
       const refreshed = await getSkriningByKehamilanId(kehamilan.id);
       if (refreshed && refreshed.length > 0) setSkrining(refreshed[0]);
     } catch (err) {
       console.error(err);
-      
-      // Handle error duplicate key
+
       if (err.response?.status === 409 || err.message?.includes('duplicate')) {
         Swal.fire({
           icon: 'info',
@@ -257,7 +239,7 @@ export default function SkriningPreeklampsia() {
 
   const hitungRisiko = () => {
     if (!skrining) return "TIDAK ADA DATA";
-    
+
     const risikoSedang = [
       skrining.anamnesis_multipara_pasangan_baru_sedang,
       skrining.anamnesis_teknologi_reproduksi_berbantu_sedang,
@@ -267,7 +249,7 @@ export default function SkriningPreeklampsia() {
       skrining.anamnesis_riwayat_preeklampsia_keluarga_sedang,
       skrining.anamnesis_obesitas_imt_diatas_30_sedang,
     ].filter(Boolean).length;
-    
+
     const risikoTinggi = [
       skrining.anamnesis_riwayat_preeklampsia_sebelumnya_tinggi,
       skrining.anamnesis_kehamilan_multipel_tinggi,
@@ -277,15 +259,14 @@ export default function SkriningPreeklampsia() {
       skrining.anamnesis_penyakit_autoimun_sle_tinggi,
       skrining.anamnesis_anti_phospholipid_syndrome_tinggi,
     ].filter(Boolean).length;
-    
+
     const map = skrining.fisik_map_diatas_90_mmhg;
     const protein = skrining.fisik_proteinuria_urin_celup;
-    
-    // Jika semua false, return TIDAK PERLU RUJUKAN
+
     if (risikoSedang === 0 && risikoTinggi === 0 && !map && !protein) {
       return "TIDAK PERLU RUJUKAN";
     }
-    
+
     if (risikoTinggi >= 1 || risikoSedang >= 2 || map || protein) {
       return "PERLU RUJUKAN";
     }
@@ -294,7 +275,6 @@ export default function SkriningPreeklampsia() {
 
   const isRujukan = hitungRisiko() === "PERLU RUJUKAN";
 
-  // Handler untuk tombol rujukan
   const handleRujukClick = (e) => {
     e.preventDefault();
     Swal.fire({
@@ -314,7 +294,6 @@ export default function SkriningPreeklampsia() {
     });
   };
 
-  // Komponen checkbox dengan gaya design system
   const CheckboxItem = ({ name, label, description }) => {
     const isChecked = form[name];
     return (
@@ -335,7 +314,6 @@ export default function SkriningPreeklampsia() {
     );
   };
 
-  // Tampilan hasil (view mode)
   const ResultView = () => {
     if (!skrining) {
       return (
@@ -368,7 +346,6 @@ export default function SkriningPreeklampsia() {
       );
     }
 
-    // Cek apakah ada faktor risiko yang dipilih
     const hasSelectedRisk = riskFactorKeys.some(key => skrining[key] === true);
 
     return (
@@ -398,7 +375,6 @@ export default function SkriningPreeklampsia() {
           </div>
         </div>
 
-        {/* Tampilkan informasi jika tidak ada faktor risiko */}
         {!hasSelectedRisk && (
           <div className="bg-gray-50 border border-gray-200 p-4 rounded-lg flex items-start gap-3">
             <Info size={20} className="text-gray-400 mt-0.5 flex-shrink-0" />
@@ -414,7 +390,6 @@ export default function SkriningPreeklampsia() {
           </div>
         )}
 
-        {/* Detail skrining */}
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           <div className="bg-[#185FA5] px-5 py-3">
             <div className="flex items-center gap-2">
@@ -425,7 +400,7 @@ export default function SkriningPreeklampsia() {
           <div className="p-5 space-y-5">
             {/* Risiko Sedang */}
             <div>
-              <h4 className="font-semibold text-[#BA7517] text-lg flex items-center gap-2 mb-3">
+              <h4 className="font-semibold text-yellow-600 text-lg flex items-center gap-2 mb-3">
                 <AlertCircle size={18} /> Risiko Sedang
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -503,7 +478,7 @@ export default function SkriningPreeklampsia() {
                   )}
                   <div>
                     <span className={skrining.fisik_map_diatas_90_mmhg ? "text-gray-900 font-medium" : "text-gray-400"}>
-                      MAP {" > "} 90 mmHg
+                      MAP {">"} 90 mmHg
                     </span>
                     <p className="text-xs text-gray-500">MAP = Mean Arterial Pressure (tekanan arteri rata-rata)</p>
                   </div>
@@ -542,7 +517,6 @@ export default function SkriningPreeklampsia() {
               <Edit2 size={18} /> Edit Skrining
             </button>
           )}
-          {/* Tombol Rujuk: muncul jika PERLU RUJUKAN, dan hanya untuk bidan (canEdit) */}
           {isRujukan && canEdit && (
             <button
               onClick={handleRujukClick}
@@ -562,13 +536,12 @@ export default function SkriningPreeklampsia() {
     );
   };
 
-  // FormView (mode edit)
   const FormView = () => {
     const hasSelectedRisk = hasRiskFactors();
 
     return (
       <form onSubmit={handleSubmit} className="space-y-8">
-        {/* Banner informasi - Semua field opsional */}
+        {/* Banner informasi */}
         <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg flex items-start gap-3">
           <Info size={20} className="text-blue-600 mt-0.5 flex-shrink-0" />
           <div>
@@ -585,32 +558,7 @@ export default function SkriningPreeklampsia() {
           </div>
         </div>
 
-        {/* Banner status risiko (real-time) */}
-        <div
-          className={`p-5 rounded-2xl flex items-center justify-between shadow-sm border ${
-            hitungRisiko() === "PERLU RUJUKAN"
-              ? "bg-[#A32D2D]/10 border-[#A32D2D]/30 text-[#A32D2D]"
-              : "bg-[#3B6D11]/10 border-[#3B6D11]/30 text-[#3B6D11]"
-          }`}
-        >
-          <div className="flex items-center gap-4">
-            {hitungRisiko() === "PERLU RUJUKAN" ? (
-              <ShieldAlert size={36} className="text-[#A32D2D]" />
-            ) : (
-              <CheckCircle2 size={36} className="text-[#3B6D11]" />
-            )}
-            <div>
-              <h3 className="text-xl font-bold">Status Risiko: {hitungRisiko()}</h3>
-              <p className="text-base">
-                {hitungRisiko() === "PERLU RUJUKAN"
-                  ? "Pasien ini memiliki indikasi risiko tinggi dan disarankan untuk segera dirujuk."
-                  : "Risiko rendah terpantau. Dapat melanjutkan ANC secara rutin."}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Risiko Sedang */}
+        {/* Risiko Sedang (hanya satu blok) */}
         <div className="bg-white rounded-xl shadow-sm p-5">
           <h3 className="font-bold text-[22px] text-[#BA7517] border-b pb-2 flex items-center gap-2">
             <AlertCircle size={20} /> Anamnesis - Risiko Sedang
@@ -707,6 +655,7 @@ export default function SkriningPreeklampsia() {
             />
           </div>
         </div>
+
         <div className="mt-4">
           <label className="block font-semibold mb-2 text-sm text-gray-800">
             Kesimpulan Klinis (Opsional)
@@ -806,11 +755,23 @@ export default function SkriningPreeklampsia() {
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate(-1)}
-              className="p-2 rounded-full hover:bg-gray-100 transition"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#185FA5] text-[#185FA5] text-sm font-semibold hover:bg-[#185FA5]/5 transition"
             >
-              <ArrowLeft size={20} className="text-[#185FA5]" />
+              <ArrowLeft size={16} />
+              <span>Kembali</span>
             </button>
             <h1 className="text-[28px] font-bold text-gray-900">Skrining Preeklampsia</h1>
+          </div>
+
+          <div className="bg-[#E1F5EE] border-2 border-[#0F6E56]/20 rounded-xl p-4 flex items-start gap-3">
+            <ClipboardList size={20} className="text-[#0F6E56] mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="font-semibold text-[#085041] text-sm">Skrining Trimester 2</p>
+              <p className="text-[#085041]/80 text-sm mt-0.5">
+                Halaman ini adalah pengisian skrining preeklampsia yang digunakan untuk keperluan data pemantauan Trimester 2. 
+                Silakan lengkapi data skrining berikut sesuai dengan hasil pemeriksaan.
+              </p>
+            </div>
           </div>
 
           {!isActive && (
@@ -829,4 +790,4 @@ export default function SkriningPreeklampsia() {
       </div>
     </MainLayout>
   );
-} 
+}

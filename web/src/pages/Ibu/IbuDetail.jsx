@@ -26,7 +26,9 @@ import {
   Hospital,
   Droplet,
   UserPlus,
-  Info
+  Info,
+  Venus,
+  Mars
 } from "lucide-react";
 
 // Fungsi helper untuk menghitung usia
@@ -99,7 +101,7 @@ const handleNonAktif = async () => {
   const result = await Swal.fire({
     title: "Tandai Abortus?",
     text: "Kehamilan ini akan ditandai sebagai abortus dan dinonaktifkan.",
-    icon: "warning",
+    iconHtml: '<div style="display:flex;align-items:center;justify-content:center;width:80px;height:80px;margin:20px auto;background:#ffffff;border-radius:50%;border:4px solid #ffffff;box-shadow:0 0 0 4px #fecaca"><svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>',
     showCancelButton: true,
     confirmButtonColor: "#ef4444",
     cancelButtonColor: "#6b7280",
@@ -275,7 +277,7 @@ const handleNonAktif = async () => {
     return (
       <MainLayout>
         <div className="min-h-screen bg-[#F7FAFB] p-4">
-          <div className="bg-[#FCEBEB] border-l-4 border-[#A32D2D] p-3 mb-3 text-[#791F1F] text-sm">
+          <div className="bg-red-50 border-l-4 border-red-500 p-3 mb-3 text-red-700 text-sm">
             {error}
           </div>
           <Link to="/data-ibu" className="text-[#185FA5] flex items-center gap-2 text-sm">
@@ -290,7 +292,7 @@ const handleNonAktif = async () => {
     return (
       <MainLayout>
         <div className="min-h-screen bg-[#F7FAFB] p-4">
-          <div className="bg-[#FAEEDA] border-l-4 border-[#BA7517] p-3 text-[#633806] text-sm">
+          <div className="bg-yellow-50 border-l-4 border-yellow-500 p-3 text-yellow-700 text-sm">
             {error || "Belum ada data kehamilan."}
           </div>
           <Link to="/data-ibu" className="text-[#185FA5] flex items-center gap-2 mt-3 text-sm">
@@ -319,49 +321,51 @@ const handleNonAktif = async () => {
       <div className="min-h-screen bg-[#F7FAFB]">
         <div className="max-w-7xl mx-auto p-4 space-y-4">
           {/* Header */}
-    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            {/* Grup kiri - Buttons */}
+            <div className="flex flex-wrap items-center gap-3">
+              <Link
+                to="/data-ibu"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#185FA5] text-[#185FA5] text-sm font-semibold hover:bg-[#185FA5]/5 transition"
+              >
+                <ArrowLeft size={16} />
+                <span>Kembali</span>
+              </Link>
 
-  {/* Grup kiri */}
-  <div className="flex items-center gap-2">
-    <Link
-      to="/data-ibu"
-      className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-[#185FA5] text-[#185FA5] text-sm font-semibold hover:bg-[#185FA5]/5 transition w-fit"
-    >
-      <ArrowLeft size={16} />
-      <span>Kembali</span>
-    </Link>
+              {kehamilan.status_kehamilan !== "NON-AKTIF" && (
+                <button
+                  onClick={handleNonAktif}
+                  disabled={nonAktifLoading}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-red-400 text-red-500 text-sm font-semibold hover:bg-red-50 transition disabled:opacity-50"
+                >
+                  <XCircle size={16} />
+                  {nonAktifLoading ? "Memproses..." : "Tandai Abortus"}
+                </button>
+              )}
 
-    {kehamilan.status_kehamilan !== "NON-AKTIF" && (
-      <button
-        onClick={handleNonAktif}
-        disabled={nonAktifLoading}
-        className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-red-400 text-red-500 text-sm font-semibold hover:bg-red-50 transition w-fit disabled:opacity-50"
-      >
-        <XCircle size={16} />
-        {nonAktifLoading ? "Memproses..." : "Tandai Abortus"}
-      </button>
-    )}
+              {kehamilan.status_kehamilan === "NON-AKTIF" && (
+                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-100 text-red-600 text-sm font-semibold">
+                  <XCircle size={14} /> Abortus
+                </span>
+              )}
+            </div>
 
-    {kehamilan.status_kehamilan === "NON-AKTIF" && (
-      <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-100 text-red-600 text-sm font-semibold">
-        <XCircle size={14} /> Abortus
-      </span>
-    )}
-  </div> 
-
-
-            <div className="flex flex-wrap gap-2">
-              <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-xl shadow-sm text-xs md:text-sm border border-gray-100">
+            {/* Grup kanan - Data Points */}
+            <div className="flex flex-wrap items-center gap-4 lg:gap-6 text-xs md:text-sm">
+              <div className="flex items-center gap-2">
                 <Calendar size={16} className="text-[#0F6E56]" />
-                <span className="text-gray-700">HPHT: <span className="font-semibold">{hphtFormatted}</span></span>
+                <span className="text-gray-600">HPHT:</span>
+                <span className="font-semibold text-gray-800">{hphtFormatted}</span>
               </div>
-              <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-xl shadow-sm text-xs md:text-sm border border-gray-100">
+              <div className="flex items-center gap-2">
                 <Target size={16} className="text-[#BA7517]" />
-                <span className="text-gray-700">HPL: <span className="font-semibold">{hplFormatted}</span></span>
+                <span className="text-gray-600">HPL:</span>
+                <span className="font-semibold text-gray-800">{hplFormatted}</span>
               </div>
-              <div className="flex items-center gap-2 bg-[#E1F5EE] px-4 py-2 rounded-xl text-xs md:text-sm border border-[#0F6E56]/20">
+              <div className="flex items-center gap-2">
                 <Baby size={16} className="text-[#085041]" />
-                <span className="text-[#085041] font-semibold">Usia: {usiaKehamilan}</span>
+                <span className="text-gray-600">Usia Kehamilan:</span>
+                <span className="font-semibold text-[#085041]">{usiaKehamilan}</span>
               </div>
             </div>
           </div>
@@ -369,9 +373,9 @@ const handleNonAktif = async () => {
           {/* Kartu Identitas Ibu dan Suami */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {/* Card Data Ibu */}
-            <div className="bg-white shadow-sm rounded-xl p-4 border border-gray-100">
+            <div className="bg-white shadow-sm rounded-xl p-4 border-2 border-gray-100">
               <h2 className="text-base font-semibold text-[#185FA5] flex items-center gap-2 mb-3">
-                <Users size={18} /> Data Ibu
+                <Venus size={18} /> Data Ibu
               </h2>
               <div className="grid grid-cols-2 gap-y-2 gap-x-3 text-sm">
                 <span className="text-gray-500 text-xs">Nama Lengkap</span>
@@ -407,10 +411,10 @@ const handleNonAktif = async () => {
               </div>
             </div>
 
-            {/* Card Data Suami */}
-            <div className="bg-white shadow-sm rounded-xl p-4 border border-gray-100">
+            {/* Card Data Ayah */}
+            <div className="bg-white shadow-sm rounded-xl p-4 border-2 border-gray-100">
               <h2 className="text-base font-semibold text-[#0F6E56] flex items-center gap-2 mb-3">
-                <Heart size={18} /> Data Suami
+                <Mars size={18} /> Data Ayah
               </h2>
               {suami ? (
                 <div className="grid grid-cols-2 gap-y-2 gap-x-3 text-sm">
@@ -440,63 +444,63 @@ const handleNonAktif = async () => {
           {/* Jalur Pelayanan KIA - tetap sama */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {/* Skrining & Evaluasi */}
-            <div className="bg-white shadow-sm rounded-xl overflow-hidden border border-gray-100">
-              <div className="bg-transparent px-4 py-3 border-b border-gray-200">
+            <div className="bg-white shadow-sm rounded-xl overflow-hidden border-2 border-gray-100">
+              <div className="bg-transparent px-4 py-3 border-b-2 border-gray-200">
                 <h3 className="text-sm font-semibold text-[#185FA5] uppercase tracking-wide flex items-center gap-2">
-                  <ClipboardList size={16} /> Skrining & Evaluasi
+                  <ClipboardList size={16} /> Skrining & Pemeriksaan
                 </h3>
               </div>
-              <div className="p-4 space-y-1">
+              <div className="p-4 space-y-2">
                 <Link 
                   to={withKehamilan(`/data-ibu/${id}/evaluasi-kesehatan`)}
-                  className="flex items-center gap-2 w-full text-left p-2.5 rounded-lg hover:bg-gray-50 text-gray-700 text-sm"
+                  className="flex items-center gap-2 w-full text-left p-2.5 rounded-lg border-2 border-[#0F6E56]/30 hover:bg-[#0F6E56]/5 text-gray-700 text-sm font-medium transition"
                 >
                   <Activity size={16} className="text-[#0F6E56] flex-shrink-0" /> Evaluasi Kesehatan
                 </Link>
                 <Link 
-                  to={withKehamilan(`/data-ibu/${id}/skrining-preeklampsia`)}
-                  className="flex items-center gap-2 w-full text-left p-2.5 rounded-lg hover:bg-gray-50 text-gray-700 text-sm"
+                  to={withKehamilan(`/data-ibu/${id}/pemeriksaan-rutin`)}
+                  className="flex items-center gap-2 w-full text-left p-2.5 rounded-lg border-2 border-[#BA7517]/30 hover:bg-[#BA7517]/5 text-gray-700 text-sm font-medium transition"
                 >
-                  <Search size={16} className="text-[#BA7517] flex-shrink-0" /> Skrining Preeklampsia
+                  <Activity size={16} className="text-[#BA7517] flex-shrink-0" /> Input ANC Rutin
                 </Link>
                 <Link 
                   to={withKehamilan(`/data-ibu/${id}/Skrining-Diabetes-Melitus-Gestasional`)}
-                  className="flex items-center gap-2 w-full text-left p-2.5 rounded-lg hover:bg-gray-50 text-gray-700 text-sm"
+                  className="flex items-center gap-2 w-full text-left p-2.5 rounded-lg border-2 border-[#185FA5]/30 hover:bg-[#185FA5]/5 text-gray-700 text-sm font-medium transition"
                 >
                   <Droplet size={16} className="text-[#185FA5] flex-shrink-0" /> Skrining DMG
                 </Link>
               </div>
             </div>
 
-            {/* Pemantauan ANC */}
-            <div className="bg-white shadow-sm rounded-xl overflow-hidden border border-gray-100">
-              <div className="bg-transparent px-4 py-3 border-b border-gray-200">
+            {/* Pemantauan Trimester */}
+            <div className="bg-white shadow-sm rounded-xl overflow-hidden border-2 border-gray-100">
+              <div className="bg-transparent px-4 py-3 border-b-2 border-gray-200">
                 <h3 className="text-sm font-semibold text-[#0F6E56] uppercase tracking-wide flex items-center gap-2">
-                  <Stethoscope size={16} /> Pemantauan ANC
+                  <Stethoscope size={16} /> Pemantauan Trimester
                 </h3>
               </div>
-              <div className="p-4 space-y-1">
-                <Link 
-                  to={withKehamilan(`/data-ibu/${id}/pemeriksaan-rutin`)}
-                  className="flex items-center gap-2 w-full text-left p-2.5 rounded-lg hover:bg-gray-50 text-gray-700 text-sm"
-                >
-                  <Activity size={16} className="text-[#185FA5] flex-shrink-0" /> Input ANC Rutin
-                </Link>
-                <div className="flex flex-col gap-1.5 pt-1">
+              <div className="p-4 space-y-2">
+                <div className="flex flex-col gap-1.5">
                   <button 
                     onClick={handleT1Click} 
                     disabled={checkingT1}
-                    className="w-full flex items-center justify-center gap-2 p-2.5 rounded-lg border border-[#185FA5] text-[#185FA5] text-sm font-semibold hover:bg-[#185FA5]/5 disabled:opacity-50 transition"
+                    className="flex items-center gap-2 w-full text-left p-2.5 rounded-lg border-2 border-[#185FA5]/30 hover:bg-[#185FA5]/5 text-gray-700 text-sm font-medium transition disabled:opacity-50"
                   >
-                    {checkingT1 ? <Loader2 size={14} className="animate-spin" /> : <UserPlus size={14} />} 
+                    {checkingT1 ? <Loader2 size={16} className="animate-spin text-[#185FA5] flex-shrink-0" /> : <UserPlus size={16} className="text-[#185FA5] flex-shrink-0" />} 
                     Trimester 1
                   </button>
+                  <Link 
+                    to={withKehamilan(`/data-ibu/${id}/skrining-preeklampsia`)}
+                    className="flex items-center gap-2 w-full text-left p-2.5 rounded-lg border-2 border-[#185FA5]/30 hover:bg-[#185FA5]/5 text-gray-700 text-sm font-medium transition"
+                  >
+                    <UserPlus size={16} className="text-[#185FA5] flex-shrink-0" /> Trimester 2
+                  </Link>
                   <button 
                     onClick={handleT3Click} 
                     disabled={checkingT3}
-                    className="w-full flex items-center justify-center gap-2 p-2.5 rounded-lg border border-[#185FA5] text-[#185FA5] text-sm font-semibold hover:bg-[#185FA5]/5 disabled:opacity-50 transition"
+                    className="flex items-center gap-2 w-full text-left p-2.5 rounded-lg border-2 border-[#185FA5]/30 hover:bg-[#185FA5]/5 text-gray-700 text-sm font-medium transition disabled:opacity-50"
                   >
-                    {checkingT3 ? <Loader2 size={14} className="animate-spin" /> : <UserPlus size={14} />} 
+                    {checkingT3 ? <Loader2 size={16} className="animate-spin text-[#185FA5] flex-shrink-0" /> : <UserPlus size={16} className="text-[#185FA5] flex-shrink-0" />} 
                     Trimester 3
                   </button>
                 </div>
@@ -504,28 +508,28 @@ const handleNonAktif = async () => {
             </div>
 
             {/* Persalinan & Nifas */}
-            <div className="bg-white shadow-sm rounded-xl overflow-hidden border border-gray-100">
-              <div className="bg-transparent px-4 py-3 border-b border-gray-200">
+            <div className="bg-white shadow-sm rounded-xl overflow-hidden border-2 border-gray-100">
+              <div className="bg-transparent px-4 py-3 border-b-2 border-gray-200">
                 <h3 className="text-sm font-semibold text-[#BA7517] uppercase tracking-wide flex items-center gap-2">
                   <Hospital size={16} /> Persalinan & Nifas
                 </h3>
               </div>
-              <div className="p-4 space-y-1">
+              <div className="p-4 space-y-2">
                 <Link 
                   to={withKehamilan(`/data-ibu/${id}/rencana-persalinan`)}
-                  className="flex items-center gap-2 w-full text-left p-2.5 rounded-lg hover:bg-gray-50 text-gray-700 text-sm"
+                  className="flex items-center gap-2 w-full text-left p-2.5 rounded-lg border-2 border-[#BA7517]/30 hover:bg-[#BA7517]/5 text-gray-700 text-sm font-medium transition"
                 >
                   <FileText size={16} className="text-[#BA7517] flex-shrink-0" /> Rencana Persalinan
                 </Link>
                 <Link 
                   to={withKehamilan(`/data-ibu/${id}/pelayanan-persalinan`)}
-                  className="flex items-center gap-2 w-full text-left p-2.5 rounded-lg hover:bg-gray-50 text-gray-700 text-sm"
+                  className="flex items-center gap-2 w-full text-left p-2.5 rounded-lg border-2 border-[#0F6E56]/30 hover:bg-[#0F6E56]/5 text-gray-700 text-sm font-medium transition"
                 >
-                  <Baby size={16} className="text-[#0F6E56] flex-shrink-0" /> Riwayat Melahirkan
+                  <Baby size={16} className="text-[#0F6E56] flex-shrink-0" /> Pelayanan Persalinan
                 </Link>
                 <Link 
                   to={withKehamilan(`/data-ibu/${id}/pelayanan-nifas`)}
-                  className="flex items-center gap-2 w-full text-left p-2.5 rounded-lg hover:bg-gray-50 text-gray-700 text-sm"
+                  className="flex items-center gap-2 w-full text-left p-2.5 rounded-lg border-2 border-[#185FA5]/30 hover:bg-[#185FA5]/5 text-gray-700 text-sm font-medium transition"
                 >
                   <Heart size={16} className="text-[#185FA5] flex-shrink-0" /> Pelayanan Nifas
                 </Link>
@@ -533,24 +537,24 @@ const handleNonAktif = async () => {
             </div>
 
             {/* Rujukan Medis */}
-            <div className="bg-white shadow-sm rounded-xl overflow-hidden border border-gray-100">
-              <div className="bg-transparent px-4 py-3 border-b border-gray-200">
+            <div className="bg-white shadow-sm rounded-xl overflow-hidden border-2 border-gray-100">
+              <div className="bg-transparent px-4 py-3 border-b-2 border-gray-200">
                 <h3 className="text-sm font-semibold text-[#A32D2D] uppercase tracking-wide flex items-center gap-2">
                   <AlertTriangle size={16} /> Rujukan Medis
                 </h3>
               </div>
-              <div className="p-4 space-y-1">
+              <div className="p-4 space-y-2">
                 <Link 
                   to={withKehamilan(`/data-ibu/${id}/rujukan`)}
-                  className="flex items-center gap-2 w-full text-left p-2.5 rounded-lg hover:bg-gray-50 text-gray-700 text-sm"
+                  className="flex items-center gap-2 w-full text-left p-2.5 rounded-lg border-2 border-[#A32D2D]/30 hover:bg-[#A32D2D]/5 text-gray-700 text-sm font-medium transition"
                 >
                   <AlertTriangle size={16} className="text-[#A32D2D] flex-shrink-0" /> {isDokter ? 'Lihat Rujukan' : 'Buat / Lihat Rujukan'}
                 </Link>
                 <Link 
                   to="/daftar-rujukan"
-                  className="block text-center text-[#185FA5] text-sm font-semibold py-2.5 hover:underline"
+                  className="flex items-center gap-2 w-full text-left p-2.5 rounded-lg border-2 border-[#185FA5]/30 hover:bg-[#185FA5]/5 text-gray-700 text-sm font-medium transition"
                 >
-                  Daftar Semua Rujukan
+                  <AlertTriangle size={16} className="text-[#185FA5] flex-shrink-0" /> Daftar Semua Rujukan
                 </Link>
               </div>
             </div>

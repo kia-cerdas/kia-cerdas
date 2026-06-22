@@ -1120,8 +1120,12 @@ export default function RencanaPersalinan() {
       <div className="p-6 max-w-5xl mx-auto">
         {/* ── Header ── */}
         <div className="flex items-center gap-4 mb-6">
-          <button onClick={() => navigate(`/data-ibu/${id}`)} className="p-2 rounded-full hover:bg-gray-100 transition">
-            <ArrowLeft size={20} />
+          <button
+            onClick={() => navigate(`/data-ibu/${id}`)}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#185FA5] text-[#185FA5] text-sm font-semibold hover:bg-[#185FA5]/5 transition"
+          >
+            <ArrowLeft size={16} />
+            Kembali
           </button>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Rencana Persalinan</h1>

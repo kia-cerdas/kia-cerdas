@@ -504,13 +504,14 @@ export default function SkriningDMGestasional() {
     <MainLayout>
       <div className="min-h-screen bg-[#F7FAFB]">
         <div className="max-w-5xl mx-auto p-5 space-y-6">
-          {/* Header - disamakan dengan Skrining Preeklampsia */}
+          {/* Header */}
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate(-1)}
-              className="p-2 rounded-full hover:bg-gray-100 transition"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#185FA5] text-[#185FA5] text-sm font-semibold hover:bg-[#185FA5]/5 transition"
             >
-              <ArrowLeft size={20} className="text-[#185FA5]" />
+              <ArrowLeft size={16} />
+              <span>Kembali</span>
             </button>
             <h1 className="text-[28px] font-bold text-gray-900">
               Skrining DM Gestasional
@@ -744,7 +745,6 @@ export default function SkriningDMGestasional() {
                 </button>
               </div>
 
-              {/* ========== TAMBAHKAN INI ========== */}
               {/* Banner peringatan di dalam form */}
               {(isEarlySkrining || isLateSkrining) && (
                 <div

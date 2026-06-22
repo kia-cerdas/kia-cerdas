@@ -166,7 +166,7 @@ const Header = () => {
 
   return (
     <header className="px-6 py-4 border-b border-gray-100 bg-white relative z-50">
-      <div className="bg-gradient-to-r from-blue-700 via-cyan-600 to-teal-600 text-white rounded-2xl p-4 md:p-5 shadow-lg flex flex-col md:flex-row md:items-start justify-between gap-3">
+      <div className="bg-gradient-to-r from-[#185FA5] to-[#185FA5] text-white rounded-2xl p-4 md:p-5 shadow-lg flex flex-col md:flex-row md:items-start justify-between gap-3">
         <div className="min-w-0">
           <h1 className="text-xl md:text-2xl font-bold leading-tight">{pageHeader.title}</h1>
           <p className="text-cyan-100 mt-1.5 text-xs md:text-sm leading-relaxed">{pageHeader.subtitle}</p>
