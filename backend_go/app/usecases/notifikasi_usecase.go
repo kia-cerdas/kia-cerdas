@@ -12,10 +12,27 @@ import (
 	"firebase.google.com/go/v4/messaging"
 )
 
+var bulanID = [...]string{
+	"", "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+	"Juli", "Agustus", "September", "Oktober", "November", "Desember",
+}
+
+func formatTanggalID(t time.Time) string {
+	return fmt.Sprintf("%02d %s %d", t.Day(), bulanID[t.Month()], t.Year())
+}
 func (u *Main) sendFCM(
 	token,
 	title,
 	message string,
+) error {
+	return u.sendFCMWithData(token, title, message, nil)
+}
+
+func (u *Main) sendFCMWithData(
+	token,
+	title,
+	message string,
+	data map[string]string,
 ) error {
 
 	if u.fcmClient == nil {
@@ -30,6 +47,7 @@ func (u *Main) sendFCM(
 			Title: title,
 			Body:  message,
 		},
+		Data: data,
 	}
 
 	response, err := u.fcmClient.Send(
@@ -101,7 +119,7 @@ func (u *Main) ProcessReminder() error {
 		case 3:
 			if j.StatusID == 1 && !j.IsSentH3 {
 				title = "Imunisasi 3 Hari Lagi"
-				body = "Halo Ibu " + j.NamaAnak + ", jadwal imunisasi " + j.NamaDosis + " semakin dekat (3 hari lagi). Ketepatan waktu membantu menjaga perlindungan anak tetap optimal. Silakan kunjungi Posyandu atau Puskesmas terdekat."
+				body = "Halo Ibu " + j.NamaAnak + ", jadwal imunisasi " + j.NamaDosis + " 3 hari lagi. Ketepatan waktu membantu menjaga perlindungan anak tetap optimal. Silakan kunjungi Posyandu atau Puskesmas terdekat."
 				needSend = true
 				u.repository.MarkSent(j.JadwalID, "h3")
 			}
@@ -131,7 +149,13 @@ func (u *Main) ProcessReminder() error {
 
 				log.Println("[REMINDER] sending FCM to anak:", j.AnakID)
 
-				if err := u.sendFCM(t, title, body); err != nil {
+				fcmData := map[string]string{
+					"type":      "reminder_imunisasi",
+					"jadwal_id": fmt.Sprintf("%d", j.JadwalID),
+					"anak_id":   fmt.Sprintf("%d", j.AnakID),
+				}
+
+				if err := u.sendFCMWithData(t, title, body, fcmData); err != nil {
 					log.Println("[REMINDER] FCM error:", err)
 				}
 			}
@@ -203,7 +227,6 @@ func (u *Main) send(
 		// simpan notifikasi ke DB
 		_ = u.repository.CreateNotifikasi(models.Notifikasi{
 			PenggunaID:            userID,
-			JadwalImunisasiAnakId: j.ID,
 			Judul:                 finalTitle,
 			Pesan:                 finalBody,
 			TipeNotifikasiID:      1,
@@ -383,7 +406,7 @@ func (u *Main) ProcessPosyanduReminder() error {
 
 		tglStr := "-"
 		if j.Tanggal != nil {
-			tglStr = j.Tanggal.Format("02 January 2006")
+			tglStr = formatTanggalID(*j.Tanggal)
 		}
 
 		title := "Pelayanan Posyandu dalam 3 Hari"

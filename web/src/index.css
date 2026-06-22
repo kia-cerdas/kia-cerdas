@@ -36,4 +36,9 @@
 
 .animate-swal-backdrop {
   animation: swal-fade-in 0.25s ease-out forwards;
-}
+}
+
+/* SweetAlert2 - sesuaikan border-radius dengan mobile (16px) */
+.swal2-popup {
+  border-radius: 16px !important;
+}

@@ -15,10 +15,10 @@ const Breadcrumb = () => {
     superadmin: "Superadmin",
 
     // Data Management
-    "data-ibu": "Data Ibu",
+    "data-ibu": "Data Ibu hamil",
     "data-anak": "Data Anak",
     kependudukan: "Kependudukan",
-    "daftar-anak": "Daftar Anak",
+    "daftar-anak": "Data Anak Balita",
     "daftar-rujukan": "Daftar Rujukan",
     "daftar-skrining": "Daftar Skrining",
     "manajemen-posyandu": "Manajemen Posyandu",
@@ -31,9 +31,9 @@ const Breadcrumb = () => {
     "skrining-dashboard": "Beranda Skrining",
     "Skrining-Diabetes-Melitus-Gestasional": "Skrining Diabetes Melitus Gestasional",
     "pemeriksaan-fisik": "Pemeriksaan Fisik",
-    "pemeriksaan-rutin": "Pemeriksaan Rutin",
-    "pemeriksaan-dokter-t1-complete": "Pemeriksaan Dokter T1 Complete",
-    "pemeriksaan-dokter-t3-complete": "Pemeriksaan Dokter T3 Complete",
+    "pemeriksaan-rutin": "Pemantauan ANC",
+    "pemeriksaan-dokter-t1-complete": "Trimester 1",
+    "pemeriksaan-dokter-t3-complete": "Trimester 3",
 
     // Ibu - Grafik & Evaluasi
     "grafik-evaluasi": "Grafik Evaluasi Kehamilan",
@@ -58,6 +58,9 @@ const Breadcrumb = () => {
     "pelayanan-Imunisasi": "Pelayanan Imunisasi",
     "pelayanan-Gigi": "Pelayanan Gigi",
     "Tumbuh-kembang-Anak": "Tumbuh Kembang Anak",
+    keluhan: "Keluhan",
+    pemantauan: "Pemantauan",
+    perawatan: "Lembar Perawatan",
     lila: "LILA",
 
     // Anak - Monitoring
@@ -74,7 +77,7 @@ const Breadcrumb = () => {
     "kelola-perkembangan": "Kelola Perawatan",
 
     // Edukasi Digital
-    "edukasi-digital": "Edukasi Digital",
+    "edukasi-digital": "Edukasi",
     "informasi-umum": "Informasi Umum",
     trimester: "Trimester",
     "tanda-melahirkan": "Tanda Melahirkan",
@@ -86,13 +89,11 @@ const Breadcrumb = () => {
     "kesehatan-mental": "Kesehatan Mental",
     "perawatan-anak": "Perawatan Anak",
     mpasi: "MPASI",
-    "mpasi-aturan-porsi": "Aturan Porsi MPASI",
-    "mpasi-jadwal-harian": "Jadwal Harian MPASI",
-    "mpasi-resep": "Resep MPASI",
+    "mpasi-aturan-porsi": "MPASI",
+    "mpasi-jadwal-harian": "MPASI",
+    "mpasi-resep": "MPASI",
 
     // Admin
-    "akun-keluarga": "Akun Keluarga",
-    "manajemen-keluarga": "Manajemen Keluarga",
     "kelola-desa": "Kelola Desa",
 
     // Actions
@@ -115,9 +116,10 @@ const Breadcrumb = () => {
     preview: "Preview",
     // "audit-trail": "Audit Trail",
     "kelola-user": "Kelola User",
-    "kelola-user-per-desa": "Kelola Akun User Per Desa",
+    "kelola-nakes": "Kelola Nakes",
     "kelola-puskesmas": "Kelola Puskesmas",
     "kelola-posyandu": "Kelola Posyandu",
+    "kelola-penduduk": "Kelola Penduduk",
     "form-versi": "Kelola Form Versi",
   };
 
@@ -134,15 +136,28 @@ const Breadcrumb = () => {
   // Build path incrementally
   let currentPath = "";
 
+  // Segments to skip entirely (role prefixes, not meaningful in breadcrumb)
+  const skipSegments = ["superadmin"];
+
   pathSegments.forEach((segment, index) => {
     currentPath += "/" + segment;
+
+    // Skip role-prefix segments
+    if (skipSegments.includes(segment)) return;
 
     // Check if segment is an ID (UUID or numeric ID)
     const isId = /^[0-9a-f-]{36}$|^\d+$/.test(segment);
 
     if (!isId) {
-      // Get label from mapping or format it
-      const label = breadcrumbLabels[segment] || formatLabel(segment);
+      // Kontekstual: "form" tampilkan sebagai "Tambah" atau "Ubah" tergantung apakah ada ID setelahnya
+      let label;
+      if (segment === "form") {
+        const nextSegment = pathSegments[index + 1];
+        const hasId = nextSegment && /^[0-9a-f-]{36}$|^\d+$/.test(nextSegment);
+        label = hasId ? "Ubah Konten" : "Tambah Konten";
+      } else {
+        label = breadcrumbLabels[segment] || formatLabel(segment);
+      }
       const itemPath = getBreadcrumbPath(location.pathname, segment, currentPath);
       breadcrumbItems.push({
         label,
@@ -156,6 +171,7 @@ const Breadcrumb = () => {
   if (
     breadcrumbItems.length <= 1 ||
     location.pathname === "/dashboard" ||
+    location.pathname === "/superadmin/dashboard" ||
     location.pathname === "/dashboard/bidan" ||
     location.pathname === "/dashboard/admin" ||
     location.pathname === "/dashboard/dokter"
@@ -179,7 +195,7 @@ const Breadcrumb = () => {
             >
               <Home className="w-4 h-4" />
               <span className="hidden sm:inline">{item.label}</span>
-              <span className="sm:hidden">Home</span>
+              <span className="sm:hidden">Beranda</span>
             </Link>
           ) : index === breadcrumbItems.length - 1 ? (
             // Last item (current page) - tidak bisa di-klik
@@ -229,6 +245,9 @@ function getBreadcrumbPath(pathname, segment, currentPath) {
   }
   if (segment === "edukasi-digital") {
     return "/edukasi-digital/informasi-umum";
+  }
+  if (["mpasi", "mpasi-aturan-porsi", "mpasi-jadwal-harian", "mpasi-resep"].includes(segment)) {
+    return "/edukasi-digital/mpasi";
   }
 
   // 2. Child/toddler paths with IDs: /data-anak/CATEGORY/ID/...

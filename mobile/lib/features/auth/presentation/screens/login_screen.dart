@@ -38,12 +38,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       String? deviceFcmToken;
-      // try {
-      //   deviceFcmToken = await FirebaseMessaging.instance.getToken();
-      //   debugPrint("Berhasil mendapatkan FCM Token: $deviceFcmToken");
-      // } catch (e) {
-      //   debugPrint("Gagal mendapatkan FCM Token: $e");
-      // }
       try {
         deviceFcmToken = await FirebaseMessaging.instance
             .getToken()
@@ -60,14 +54,47 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (!mounted) return;
-// AMBIL ROLE DARI SESSION YANG BARU DISIMPAN
+
       final role = AuthSession.role?.toLowerCase();
+
+      // Popup login berhasil
+      await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.check_circle, color: Colors.green, size: 28),
+              const SizedBox(width: 8),
+              const Text(
+                'Login Berhasil!',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          content: Text(
+            'Selamat datang, ${AuthSession.userName ?? "User"}!',
+            style: const TextStyle(fontSize: 14, color: Colors.black87),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+
+      if (!mounted) return;
+
       Widget destination;
       if (role == 'kader') {
-        destination =
-            const DashboardKaderScreen(); // Arahkan ke dashboard kader
+        destination = const DashboardKaderScreen();
       } else {
-        destination = const DashboardScreen(); // Default ke dashboard ibu
+        destination = const DashboardScreen();
       }
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (_) => destination),
@@ -75,8 +102,47 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
+
+      // Extract clean error message
+      String message = e.toString();
+      if (message.startsWith('Exception: ')) {
+        message = message.substring(11);
+      }
+      if (message.isEmpty) {
+        message = 'Username/email atau password salah. Silakan coba lagi.';
+      }
+
+      // Popup login gagal
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.error, color: Colors.red, size: 28),
+              const SizedBox(width: 8),
+              const Text(
+                'Login Gagal',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          content: Text(
+            message,
+            style: const TextStyle(fontSize: 14, color: Colors.black87),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text(
+                'Coba Lagi',
+                style: TextStyle(color: Color(0xFF185FA5), fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
       );
     } finally {
       if (mounted) {
@@ -92,11 +158,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF1565C0), Color(0xFF42A5F5)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          color: Color(0xFFF5F5F5),
         ),
         child: SafeArea(
           child: Center(
@@ -121,19 +183,22 @@ class _LoginScreenState extends State<LoginScreen> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       const Text(
-                        'Masuk Akun KIA',
+                        'Generasi Sehat',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.w700,
+                          color: Color(0xFF185FA5),
                         ),
                       ),
                       const SizedBox(height: 8),
                       const Text(
-                        'Gunakan email dan password untuk mengakses fitur yang membutuhkan bearer token.',
+                        'Sistem Informasi Kesehatan Ibu dan Anak',
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.black54),
+                        style: TextStyle(color: Colors.black54, fontSize: 13),
                       ),
+                      const SizedBox(height: 4),
+                      
                       const SizedBox(height: 20),
                       Semantics(
                         identifier: 'username_input',
@@ -141,34 +206,27 @@ class _LoginScreenState extends State<LoginScreen> {
                           key: const Key('username_input'),
                           controller: _identifierController,
                         decoration: const InputDecoration(
-                          labelText: 'Email / No HP',
+                          labelText: 'Username / Email',
                           border: OutlineInputBorder(),
                           prefixIcon: Icon(Icons.person_outline),
                         ),
-                        // validator: (value) {
-                        //   if (value == null || value.trim().isEmpty) {
-                        //     return 'Identifier wajib diisi';
-                        //   }
-                        //   return null;
-                        // },
-                                                validator: (value) {
+                        validator: (value) {
                           if (value == null || value.trim().isEmpty) {
-                            return 'Identifier wajib diisi';
+                            return 'Username atau email wajib diisi';
                           }
-                          
+
                           final v = value.trim();
-                          
-                          // Cek apakah ini No HP (dimulai angka)
-                          final isPhoneNumber = RegExp(r'^[0-9]').hasMatch(v);
-                          
-                          if (!isPhoneNumber) {
-                            // Jika bukan No HP, maka WAJIB format email valid
+
+                          // Jika mengandung '@', perlakukan sebagai email dan validasi formatnya.
+                          // Selain itu (username biasa atau nomor hp) diterima apa adanya;
+                          // backend yang menentukan apakah identifier valid.
+                          if (v.contains('@')) {
                             final emailRegex = RegExp(r'^[\w\.-]+@[\w\.-]+\.\w+$');
                             if (!emailRegex.hasMatch(v)) {
                               return 'Pastikan format email benar (contoh: pengguna@gmail.com)';
                             }
                           }
-                          
+
                           return null;
                         },
                       ),
@@ -212,6 +270,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           height: 48,
                           child: FilledButton(
                           key: const Key('login_button'),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: const Color(0xFF185FA5),
+                          ),
                           onPressed: _loading ? null : _submit,
                           child: _loading
                               ? const SizedBox(

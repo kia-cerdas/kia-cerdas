@@ -4,7 +4,9 @@ import "time"
 
 type User struct {
 	ID          int32          `gorm:"column:id;primaryKey" json:"id"`
-	Name        string         `gorm:"column:nama;type:varchar(120);not null" json:"name"`
+	// Username menyimpan nama login pengguna (kolom DB tetap `nama`).
+	// JSON key dibiarkan `name` agar konsumen web/mobile yang sudah ada tetap kompatibel.
+	Username    string         `gorm:"column:nama;type:varchar(120);not null" json:"name"`
 	Email       string         `gorm:"column:email;type:varchar(120);not null;uniqueIndex" json:"email"`
 	IsActive    bool           `gorm:"column:is_active;not null;default:true" json:"is_active"`
 	Password    string         `gorm:"column:kata_sandi;type:text;not null" json:"-"`

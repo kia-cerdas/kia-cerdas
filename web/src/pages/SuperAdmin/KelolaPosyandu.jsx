@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Plus, Pencil, Trash2, Home, X } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { Plus, Pencil, Trash2, Home, X, Search } from "lucide-react";
 import MainLayout from "../../components/Layout/MainLayout";
 import Swal from "sweetalert2";
 import {
@@ -26,10 +26,7 @@ export default function KelolaPosyandu() {
 		alamat: "",
 	});
 	const [filterPuskesmas, setFilterPuskesmas] = useState("");
-
-	useEffect(() => {
-		fetchData();
-	}, [filterPuskesmas]);
+	const [search, setSearch] = useState("");
 
 	const fetchData = async () => {
 		try {
@@ -51,6 +48,11 @@ export default function KelolaPosyandu() {
 			setLoading(false);
 		}
 	};
+
+	useEffect(() => {
+		fetchData();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [filterPuskesmas]);
 
 	const handleOpenModal = (posyanduData = null) => {
 		if (posyanduData) {
@@ -147,48 +149,52 @@ export default function KelolaPosyandu() {
 		}
 	};
 
+	// Filter tabel berdasarkan kata kunci (nama posyandu, desa, puskesmas, alamat)
+	const filteredPosyandu = useMemo(() => {
+		const keyword = search.trim().toLowerCase();
+		if (!keyword) return posyandu;
+		return posyandu.filter((item) =>
+			[item.nama, item.nama_desa, item.nama_puskesmas, item.alamat]
+				.filter(Boolean)
+				.some((v) => String(v).toLowerCase().includes(keyword))
+		);
+	}, [posyandu, search]);
+
 	return (
 		<MainLayout>
 			<div className="p-6 bg-gray-50 min-h-screen">
 				<div className="max-w-7xl mx-auto">
-					{/* Header */}
-					<div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-						<div>
-							<div className="flex items-center gap-3 mb-2">
-								<Home className="w-8 h-8 text-indigo-600" />
-								<h1 className="text-3xl font-bold text-gray-800">
-									Kelola Posyandu
-								</h1>
-							</div>
-							<p className="text-gray-600">
-								Manajemen data posyandu untuk sistem monitoring kesehatan
-							</p>
+					{/* Search & Actions */}
+					<div className="flex flex-wrap items-center gap-3 mb-6">
+						<div className="flex-1 min-w-[200px] relative">
+							<Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+							<input
+								type="text"
+								value={search}
+								onChange={(e) => setSearch(e.target.value)}
+								placeholder="Cari nama posyandu, desa, atau alamat..."
+								className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+							/>
 						</div>
+						<select
+							value={filterPuskesmas}
+							onChange={(e) => setFilterPuskesmas(e.target.value)}
+							className="rounded-2xl px-4 py-2.5 border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+						>
+							<option value="">Semua Puskesmas</option>
+							{puskesmas.map((p) => (
+								<option key={p.id} value={p.id}>
+									{p.nama}
+								</option>
+							))}
+						</select>
 						<button
 							onClick={() => handleOpenModal()}
-							className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition-colors shadow-sm mt-4 md:mt-0"
+							className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-2xl font-medium transition-colors shadow-sm text-sm"
 						>
-							<Plus className="w-5 h-5" />
+							<Plus className="w-4 h-4" />
 							Tambah Posyandu
 						</button>
-					</div>
-
-					{/* Filter */}
-					<div className="mb-6">
-						<div className="md:max-w-xs">
-							<select
-								value={filterPuskesmas}
-								onChange={(e) => setFilterPuskesmas(e.target.value)}
-								className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-							>
-								<option value="">Semua Puskesmas</option>
-								{puskesmas.map((p) => (
-									<option key={p.id} value={p.id}>
-										{p.nama}
-									</option>
-								))}
-							</select>
-						</div>
 					</div>
 
 					{/* Table */}
@@ -197,9 +203,9 @@ export default function KelolaPosyandu() {
 							<div className="p-8 text-center text-gray-500">
 								Memuat data...
 							</div>
-						) : posyandu.length === 0 ? (
+						) : filteredPosyandu.length === 0 ? (
 							<div className="p-8 text-center text-gray-500">
-								Belum ada data posyandu
+								{search ? "Tidak ada posyandu yang cocok dengan pencarian" : "Belum ada data posyandu"}
 							</div>
 						) : (
 							<div className="overflow-x-auto">
@@ -227,7 +233,7 @@ export default function KelolaPosyandu() {
 										</tr>
 									</thead>
 									<tbody className="divide-y divide-gray-200">
-										{posyandu.map((item, index) => (
+										{filteredPosyandu.map((item, index) => (
 											<tr
 												key={item.id}
 												className="hover:bg-gray-50 transition-colors"

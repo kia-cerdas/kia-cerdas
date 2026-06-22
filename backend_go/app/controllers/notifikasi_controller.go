@@ -90,22 +90,39 @@ func (m *Main) TestReminder(c echo.Context) error {
 	)
 }
 
+func (m *Main) TestPosyanduReminder(c echo.Context) error {
+	err := m.usecases.ProcessPosyanduReminder()
+	if err != nil {
+		return helpers.Response(
+			c,
+			http.StatusInternalServerError,
+			[]string{err.Error()},
+		)
+	}
+	return helpers.StandardResponse(
+		c,
+		http.StatusOK,
+		[]string{"Posyandu reminder test dijalankan"},
+		nil,
+		nil,
+	)
+}
 
 // Reminder kontrol debug :
 func (m *Main) TestKontrolReminder(c echo.Context) error {
-    err := m.usecases.ProcessKontrolReminder()
-    if err != nil {
-        return helpers.Response(
-            c,
-            http.StatusInternalServerError,
-            []string{err.Error()},
-        )
-    }
-    return helpers.StandardResponse(
-        c,
-        http.StatusOK,
-        []string{"Kontrol reminder test dijalankan"},
-        nil,
-        nil,
-    )
+	err := m.usecases.ProcessKontrolReminder()
+	if err != nil {
+		return helpers.Response(
+			c,
+			http.StatusInternalServerError,
+			[]string{err.Error()},
+		)
+	}
+	return helpers.StandardResponse(
+		c,
+		http.StatusOK,
+		[]string{"Kontrol reminder test dijalankan"},
+		nil,
+		nil,
+	)
 }

@@ -18,15 +18,37 @@ type DesaUsecase interface {
 }
 
 type desaUsecase struct {
-	repo *repositories.DesaRepository
+	repo        *repositories.DesaRepository
+	wilayahRepo *repositories.WilayahRepository
 }
 
-func NewDesaUsecase(repo *repositories.DesaRepository) DesaUsecase {
-	return &desaUsecase{repo: repo}
+func NewDesaUsecase(repo *repositories.DesaRepository, wilayahRepo *repositories.WilayahRepository) DesaUsecase {
+	return &desaUsecase{repo: repo, wilayahRepo: wilayahRepo}
 }
 
 func trimDesaInput(value string) string {
 	return strings.TrimSpace(value)
+}
+
+// applyKecamatanMaster mengisi string Kecamatan/Kabupaten/Provinsi dari master
+// ketika KecamatanID diberikan, supaya tetap sinkron & kompatibel dengan modul lain.
+// Return error bila kecamatan_id tidak ditemukan.
+func (u *desaUsecase) applyKecamatanMaster(d *models.Desa) error {
+	if d.KecamatanID == nil {
+		return nil
+	}
+	kec, err := u.wilayahRepo.GetKecamatan(*d.KecamatanID)
+	if err != nil {
+		return customerror.NewBadRequestError("kecamatan tidak ditemukan")
+	}
+	d.Kecamatan = kec.Nama
+	if kec.Kabupaten != nil {
+		d.Kabupaten = kec.Kabupaten.Nama
+		if kec.Kabupaten.Provinsi != nil {
+			d.Provinsi = kec.Kabupaten.Provinsi.Nama
+		}
+	}
+	return nil
 }
 
 func (u *desaUsecase) GetAll() ([]models.Desa, error) {
@@ -51,8 +73,16 @@ func (u *desaUsecase) Create(req *models.Desa) error {
 	req.IsActive = true
 	req.DeletedAt = nil
 
-	if req.Kecamatan == "" || req.Kabupaten == "" || req.Provinsi == "" || req.NamaDesa == "" || req.KodeDesa == "" {
-		return customerror.NewBadRequestError("kecamatan, kabupaten, provinsi, nama_desa, dan kode_desa wajib diisi")
+	// Bila kecamatan_id dikirim, isi string dari master (sinkron).
+	if err := u.applyKecamatanMaster(req); err != nil {
+		return err
+	}
+
+	if req.NamaDesa == "" || req.KodeDesa == "" {
+		return customerror.NewBadRequestError("nama_desa dan kode_desa wajib diisi")
+	}
+	if req.Kecamatan == "" || req.Kabupaten == "" || req.Provinsi == "" {
+		return customerror.NewBadRequestError("wilayah (kecamatan) wajib dipilih")
 	}
 
 	return u.repo.Create(req)
@@ -74,11 +104,20 @@ func (u *desaUsecase) Update(id int32, req *models.Desa) error {
 	existing.NamaDesa = trimDesaInput(req.NamaDesa)
 	existing.KodeDesa = trimDesaInput(req.KodeDesa)
 	existing.Keterangan = trimDesaInput(req.Keterangan)
+	existing.KecamatanID = req.KecamatanID
 	existing.UpdatedAt = time.Now()
 	existing.DeletedAt = nil
 
-	if existing.Kecamatan == "" || existing.Kabupaten == "" || existing.Provinsi == "" || existing.NamaDesa == "" || existing.KodeDesa == "" {
-		return customerror.NewBadRequestError("kecamatan, kabupaten, provinsi, nama_desa, dan kode_desa wajib diisi")
+	// Bila kecamatan_id dikirim, isi string dari master (sinkron).
+	if err := u.applyKecamatanMaster(existing); err != nil {
+		return err
+	}
+
+	if existing.NamaDesa == "" || existing.KodeDesa == "" {
+		return customerror.NewBadRequestError("nama_desa dan kode_desa wajib diisi")
+	}
+	if existing.Kecamatan == "" || existing.Kabupaten == "" || existing.Provinsi == "" {
+		return customerror.NewBadRequestError("wilayah (kecamatan) wajib dipilih")
 	}
 
 	return u.repo.Save(existing)

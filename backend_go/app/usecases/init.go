@@ -66,6 +66,7 @@ type Main struct {
 	AdminTenagaKesehatan *AdminTenagaKesehatanUsecase
 	SuperadminUser       *SuperadminUserUsecase
 	Desa                 DesaUsecase
+	Wilayah              WilayahUsecase
 	KeteranganLahir      KeteranganLahirUsecase
 	Bbl                  BblUsecase
 	JenisPelayanan       JenisPelayananUsecase
@@ -187,7 +188,7 @@ func Init(opts Options) *Main {
 	}
 
 	//  BUAT PREDIKSI USECASE (panggil service Python)
-	mlURL := "https://model.generasisehat.com"
+	mlURL := "http://localhost:8001"
 	if opts.Config != nil && opts.Config.MLServiceURL != "" {
 		mlURL = opts.Config.MLServiceURL
 	}
@@ -273,7 +274,8 @@ func Init(opts Options) *Main {
 		opts.Repository.Role,
 	)
 	m.SuperadminUser = NewSuperadminUserUsecase(opts.Repository)
-	m.Desa = NewDesaUsecase(opts.Repository.Desa)
+	m.Desa = NewDesaUsecase(opts.Repository.Desa, opts.Repository.Wilayah)
+	m.Wilayah = NewWilayahUsecase(opts.Repository.Wilayah)
 	m.KeteranganLahir = NewKeteranganLahirUsecase(opts.Repository.KeteranganLahir)
 	m.JenisPelayanan = NewJenisPelayananUsecase(opts.Repository.JenisPelayanan)
 	m.KeluhanAnak = NewKeluhanAnakUseCase(opts.Repository.KeluhanAnak)

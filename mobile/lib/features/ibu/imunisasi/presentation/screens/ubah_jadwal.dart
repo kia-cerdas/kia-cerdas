@@ -43,19 +43,6 @@ class _UbahJadwalScreenState extends State<UbahJadwalScreen> {
     super.dispose();
   }
 
-  Future<void> fetchJadwalLayanan() async {
-    try {
-      final result = await service.getJadwalLayananUpcoming();
-
-      setState(() {
-        jadwalLayanan = result;
-      });
-    } catch (e) {
-      debugPrint(
-        'Error getJadwalLayananUpcoming: $e',
-      );
-    }
-  }
 
   Future<void> fetchData() async {
     try {
@@ -79,17 +66,34 @@ class _UbahJadwalScreenState extends State<UbahJadwalScreen> {
     }
   }
 
+Future<void> _pickDate() async {
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+
+  final picked = await showDatePicker(
+    context: context,
+    initialDate: selectedDate ?? today.add(const Duration(days: 1)),
+    firstDate: today.add(const Duration(days: 1)),  // tidak bisa pilih hari ini atau sebelumnya
+    lastDate: DateTime(today.year + 2),
+  );
+
+  if (picked != null) {
+    setState(() {
+      selectedDate = picked;
+      tanggalController.text = DateFormat('dd MMMM yyyy', 'id_ID').format(picked);
+    });
+  }
+}
+
+
   Future<void> submitRequestPerubahan() async {
-    if (selectedJadwal == null) {
+    if (selectedDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            "Pilih jadwal posyandu terlebih dahulu",
-          ),
-        ),
+        const SnackBar(content: Text("Pilih tanggal baru terlebih dahulu")),
       );
       return;
     }
+
 
     if (alasanController.text.isEmpty) {
       debugPrint("❌ alasan kosong");
@@ -102,17 +106,17 @@ class _UbahJadwalScreenState extends State<UbahJadwalScreen> {
       return;
     }
 
-    final tanggalBaru =
-        DateFormat('yyyy-MM-dd').format(selectedJadwal!.tanggal);
+final tanggalBaru = DateFormat('yyyy-MM-dd').format(selectedDate!);
     setState(() => isSubmitting = true);
 
     try {
       await service.requestPerubahanJadwal(
         widget.jadwalId,
-        selectedJadwal!.id,
+        tanggalBaru,
         alasanController.text,
       );
       if (!mounted) return;
+
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -244,38 +248,41 @@ class _UbahJadwalScreenState extends State<UbahJadwalScreen> {
 
                       // ================= EDIT DATE =================
                       
-                      _buildCard(
-                        title: "Ubah Tanggal Estimasi",
-                        children: [
-                          Text("Jumlah jadwal: ${jadwalLayanan.length}"),
-DropdownButtonFormField<JadwalLayananModel>(
-  
-  isExpanded: true,
-  value: selectedJadwal,
-  decoration: InputDecoration(
-    labelText: "Pilih Jadwal Posyandu",
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-    ),
-  ),
-  items: jadwalLayanan.map((item) {
-    return DropdownMenuItem<JadwalLayananModel>(
-      value: item,
-      child: Text(
-        "${DateFormat('dd MMM yyyy').format(item.tanggal)} - ${item.layanan}",
-        overflow: TextOverflow.ellipsis,
+_buildCard(
+  title: "Ubah Tanggal Estimasi",
+  children: [
+    GestureDetector(
+      onTap: _pickDate,
+      child: AbsorbPointer(
+        child: TextFormField(
+          controller: tanggalController,
+          decoration: InputDecoration(
+            labelText: "Pilih Tanggal Baru",
+            hintText: "Ketuk untuk memilih tanggal",
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            prefixIcon: const Icon(Icons.calendar_today,
+                color: Color(0xFF2563EB)),
+            suffixIcon: const Icon(Icons.arrow_drop_down,
+                color: Color(0xFF64748B)),
+          ),
+        ),
       ),
-    );
-  }).toList(),
-  onChanged: (value) {
-    debugPrint("Dipilih: ${value?.id}");
-    setState(() {
-      selectedJadwal = value;
-    });
-  },
-)
-                        ],
-                      ),
+    ),
+    if (selectedDate != null)
+      Padding(
+        padding: const EdgeInsets.only(top: 8),
+        child: Text(
+          "Tanggal dipilih: ${DateFormat('EEEE, dd MMMM yyyy', 'id_ID').format(selectedDate!)}",
+          style: const TextStyle(
+            fontSize: 12,
+            color: Color(0xFF2563EB),
+          ),
+        ),
+      ),
+  ],
+),
 
                       const SizedBox(height: 12),
 

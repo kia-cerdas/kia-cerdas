@@ -30,6 +30,17 @@ func (m *Main) GetUserByEmail(email string) (*models.User, error) {
 	return &user, nil
 }
 
+func (m *Main) GetUserByUsername(username string) (*models.User, error) {
+	var user models.User
+	if err := m.postgres.Preload("Role").Where("nama = ?", username).First(&user).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, customerror.NewNotFoundError("username belum terdaftar")
+		}
+		return nil, err
+	}
+	return &user, nil
+}
+
 func (m *Main) GetUserByPhoneNumber(phoneNumber string) (*models.User, error) {
 	var user models.User
 	if err := m.postgres.Preload("Role").Preload("Penduduk").

@@ -106,7 +106,7 @@ class _AnakImunisasiDetailScreenState extends State<AnakImunisasiDetailScreen> {
         elevation: 0,
         centerTitle: true,
         title: const Text(
-          'Detail Kunjungan',
+          'Detail Kunjungan Imunisasi',
           style: TextStyle(
             color: Color(0xFF1E293B),
             fontSize: 16,
@@ -162,7 +162,7 @@ class _AnakImunisasiDetailScreenState extends State<AnakImunisasiDetailScreen> {
                 ),
 
                 _infoRow(
-                  "Tanggal Kunjungan",
+                  "Tanggal Kunjungan Imunisasi",
                   item.tanggalKunjungan != null
                       ? DateFormat(
                           'dd MMM yyyy',
@@ -205,7 +205,7 @@ class _AnakImunisasiDetailScreenState extends State<AnakImunisasiDetailScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              "Jadwal Imunisasi",
+                              "Jadwal Imunisasi Seharusnya",
                               style: TextStyle(
                                 fontSize: 13,
                                 color: Colors.grey,
@@ -279,7 +279,7 @@ class _AnakImunisasiDetailScreenState extends State<AnakImunisasiDetailScreen> {
                   height: 16,
                 ),
                 _sectionTitle(
-                  "Kunjungan",
+                  "Kunjungan Imunisasi",
                 ),
                 const SizedBox(
                   height: 8,

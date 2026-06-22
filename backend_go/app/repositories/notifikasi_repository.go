@@ -26,7 +26,7 @@ func (r *Main) GetJadwalForReminder() ([]models.JadwalImunisasiJoin, error) {
 		Joins("JOIN dosis_vaksin dv ON dv.id = j.id_dosis_vaksin").
 		Joins("JOIN status_jadwal s ON s.id = j.id_status_jadwal").
 		Where("j.tanggal_estimasi IS NOT NULL").
-		Where("id_status_jadwal NOT IN ?", []int{6}).Error
+		Where("id_status_jadwal NOT IN ?", []int{6}).Scan(&data).Error
 
 	return data, err
 }
@@ -38,6 +38,8 @@ func (r *Main) GetFCMTokensByUserID(userID uint) ([]string, error) {
 		Select("perangkat.fcm_token").
 		Joins("JOIN perangkat ON perangkat.id_pengguna = pengguna.id").
 		Where("pengguna.id = ?", userID).
+		Where("perangkat.deleted_at IS NULL").
+		Where("perangkat.fcm_token IS NOT NULL AND perangkat.fcm_token != ''").
 		Scan(&tokens).Error
 
 	return tokens, err
@@ -121,11 +123,16 @@ func (r *Main) GetFCMTokensByAnakID(anakID uint) ([]string, error) {
 	var tokens []string
 
 	err := r.postgres.
-		Table("pengguna p").
+		Table("anak a").
 		Select("d.fcm_token").
-		Joins("JOIN anak a ON a.id = ?", anakID).
-		Joins("JOIN pengguna u ON u.id = p.id").
-		Joins("JOIN perangkat d ON d.id_pengguna = u.id").
+		Joins("JOIN kehamilan k ON k.id = a.kehamilan_id").
+		Joins("JOIN ibu i ON i.id = k.ibu_id").
+		Joins("JOIN penduduk pd ON pd.id = i.penduduk_id").
+		Joins("JOIN pengguna p ON p.penduduk_id = pd.id").
+		Joins("JOIN perangkat d ON d.id_pengguna = p.id").
+		Where("a.id = ?", anakID).
+		Where("d.fcm_token IS NOT NULL").
+		Where("d.deleted_at IS NULL").
 		Scan(&tokens).Error
 
 	return tokens, err

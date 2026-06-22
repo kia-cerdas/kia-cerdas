@@ -216,6 +216,9 @@ class _RiwayatSkriningTandaBahayaScreenState
           ? (child!['penduduk'] as Map<String, dynamic>)['nama_lengkap']
           : null,
       child?['penduduk'] is Map<String, dynamic>
+          ? (child!['penduduk'] as Map<String, dynamic>)['nama_anggota_keluarga']
+          : null,
+      child?['penduduk'] is Map<String, dynamic>
           ? (child!['penduduk'] as Map<String, dynamic>)['nama']
           : null,
       child?['nama'],
@@ -243,6 +246,18 @@ class _RiwayatSkriningTandaBahayaScreenState
                   ? (((child['kehamilan'] as Map<String, dynamic>)['ibu']
                           as Map<String, dynamic>)['kependudukan']
                       as Map<String, dynamic>)['nama_lengkap']
+                  : null
+              : null
+          : null,
+      child?['kehamilan'] is Map<String, dynamic>
+          ? (child!['kehamilan'] as Map<String, dynamic>)['ibu']
+                  is Map<String, dynamic>
+              ? ((child['kehamilan'] as Map<String, dynamic>)['ibu']
+                          as Map<String, dynamic>)['kependudukan']
+                      is Map<String, dynamic>
+                  ? (((child['kehamilan'] as Map<String, dynamic>)['ibu']
+                          as Map<String, dynamic>)['kependudukan']
+                      as Map<String, dynamic>)['nama_anggota_keluarga']
                   : null
               : null
           : null,

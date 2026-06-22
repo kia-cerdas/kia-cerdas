@@ -1,6 +1,6 @@
 // src/pages/Ibu/Rujukan.jsx
 import React, { useEffect, useState } from "react";
-import { useParams, useSearchParams, useNavigate } from "react-router-dom";
+import { useParams, useSearchParams, useNavigate, Link } from "react-router-dom";
 import Swal from "sweetalert2";
 import MainLayout from "../../components/Layout/MainLayout";
 import { getKehamilanByIbuId } from "../../services/kehamilan";
@@ -497,6 +497,14 @@ export default function Rujukan() {
     );
   };
 
+  // ── Style helpers untuk konsistensi warna ──
+  const getRiskCardStyles = (status) => {
+    if (status === "PERLU RUJUKAN")  return "bg-red-50 border-red-200 text-red-700";
+    if (status === "PERLU TINDAKAN") return "bg-yellow-50 border-yellow-200 text-yellow-700";
+    if (status === "NORMAL")         return "bg-green-50 border-green-200 text-green-700";
+    return "bg-gray-50 border-gray-200 text-gray-700";
+  };
+
   if (loading) return (
     <MainLayout>
       <div className="min-h-screen flex items-center justify-center text-indigo-600">Memuat data...</div>
@@ -510,16 +518,23 @@ export default function Rujukan() {
 
           {/* Header */}
           <div className="flex items-center gap-3">
-            <button onClick={() => navigate(-1)} className="p-2 rounded-lg hover:bg-gray-200 transition">
-              <ArrowLeft size={20} className="text-indigo-600" />
-            </button>
-            <div className="flex-1">
-              <div className="flex items-center gap-3 flex-wrap">
-                <h1 className="text-[28px] font-bold text-gray-900">Rujukan Medis</h1>
-                <RisikoBadge />
+            <Link
+              to={`/data-ibu/${ibuId}?kehamilan_id=${kehamilanIdParam || (kehamilan?.id || "")}`}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#185FA5] text-[#185FA5] text-sm font-semibold hover:bg-[#185FA5]/5 transition"
+            >
+              <ArrowLeft size={16} />
+              <span>Kembali</span>
+            </Link>
+              <div className="flex-1">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <h1 className="text-2xl font-bold text-gray-900">Rujukan Medis</h1>
+                  <RisikoBadge />
+                </div>
+                <p className="text-gray-500 text-sm mt-1">
+                  <span className="font-medium text-gray-700">Cara kerja:</span> 
+                  Bidan membuat permintaan rujukan → Dokter meninjau dan memberikan respon → Bidan melihat hasil rujukan balik
+                </p>
               </div>
-              <p className="text-gray-500 text-sm">Alur rujukan bidan → dokter → respon balik</p>
-            </div>
           </div>
 
           {/* Banner kehamilan non-aktif */}

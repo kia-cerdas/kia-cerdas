@@ -31,7 +31,7 @@ export const deleteEvaluasi = async (id) => {
 
 // ==================== RIWAYAT KEHAMILAN LALU ====================
 export const getRiwayatKehamilanByEvaluasiId = async (evaluasiId) => {
-  const res = await api.get(`${BASE_RIWAYAT}?id_evaluasi=${evaluasiId}`);
+  const res = await api.get(`${BASE_RIWAYAT}?evaluasi_id=${evaluasiId}`);
   return res.data.data;
 };
 
