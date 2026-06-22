@@ -447,8 +447,8 @@ const Header = ({ onToggleSidebar, isSidebarOpen }) => {
               className={`flex items-center gap-2 py-1.5 pl-1.5 pr-3 rounded-full
                           border transition-colors
                           ${isDropdownOpen
-                            ? "bg-white/20 border-white/30"
-                            : "border-white/20 hover:bg-white/15"}`}
+                  ? "bg-white/20 border-white/30"
+                  : "border-white/20 hover:bg-white/15"}`}
             >
               <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center
                               text-white font-semibold text-sm flex-shrink-0">

@@ -88,7 +88,8 @@ func (r *UserRepository) FindByKartuKeluargaID(kartuKeluargaID int64) (*models.U
 	var user models.User
 	err := r.db.Preload("Role").
 		Joins("JOIN penduduk p ON p.id = pengguna.penduduk_id").
-		Where("p.kartu_keluarga_id = ? AND p.deleted_at IS NULL", kartuKeluargaID).
+		Joins("JOIN kartu_keluarga kk ON kk.no_kk = p.kode_keluarga").
+		Where("kk.id = ? AND p.deleted_at IS NULL AND kk.deleted_at IS NULL", kartuKeluargaID).
 		Order("pengguna.id ASC").
 		First(&user).Error
 	return &user, err

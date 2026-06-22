@@ -101,6 +101,8 @@ func (r *laporanBalitaRepository) GetLaporanPertumbuhan(startDate, endDate strin
 		`).
 		Joins("JOIN anak a ON a.id = cp.anak_id AND a.deleted_at IS NULL").
 		Joins("JOIN penduduk pa ON pa.id = a.penduduk_id AND pa.deleted_at IS NULL").
+		Joins("LEFT JOIN ibu i ON i.id = a.ibu_id").
+		Joins("LEFT JOIN penduduk pi ON pi.id = i.penduduk_id AND pi.deleted_at IS NULL").
 		Where("cp.deleted_at IS NULL")
 
 	// Filter tanggal pengukuran
@@ -141,6 +143,8 @@ func (r *laporanBalitaRepository) GetLaporanImunisasi(startDate, endDate string,
 		Joins("JOIN kehadiran_imunisasi ki ON ki.id = dpi.kunjungan_imunisasi_id AND ki.deleted_at IS NULL").
 		Joins("JOIN anak a ON a.id = ki.anak_id AND a.deleted_at IS NULL").
 		Joins("JOIN penduduk pa ON pa.id = a.penduduk_id AND pa.deleted_at IS NULL").
+		Joins("LEFT JOIN ibu i ON i.id = a.ibu_id").
+		Joins("LEFT JOIN penduduk pi ON pi.id = i.penduduk_id AND pi.deleted_at IS NULL").
 		Joins("LEFT JOIN jenis_pelayanan jp ON jp.id = dpi.jenis_pelayanan_id AND jp.deleted_at IS NULL").
 		Where("dpi.deleted_at IS NULL")
 

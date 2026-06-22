@@ -33,7 +33,7 @@ func (r *prediksiStuntingRepository) GetLatestMeasurementByAnakID(anakID int32) 
 		Table("anak a").
 		Select(`
 			a.id as anak_id,
-			p.nama_lengkap as nama,
+			p.nama_anggota_keluarga as nama,
 			p.jenis_kelamin,
 			p.tanggal_lahir,
 			COALESCE(a.berat_lahir_kg, 3.0) as berat_lahir_kg,

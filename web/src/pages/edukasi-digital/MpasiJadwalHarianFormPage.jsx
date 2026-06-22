@@ -4,7 +4,7 @@ import EdukasiDigitalCrudPage from "./EdukasiDigitalCrudPage";
 const fields = [
   { key: "bulan_min", label: "Bulan Minimal", type: "number", required: true },
   { key: "bulan_max", label: "Bulan Maksimal", type: "number", required: true },
-  { key: "gambar_url", label: "Gambar (opsional)", type: "image" },
+  { key: "gambar_url", label: "Gambar", type: "image" },
   { key: "waktu", label: "Waktu (contoh: 08:00)", type: "text", required: true },
   { key: "aktivitas", label: "Aktivitas", type: "text", required: true },
 ];

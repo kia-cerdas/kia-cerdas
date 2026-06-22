@@ -83,9 +83,9 @@ func (r *KartuKeluargaRepository) ListPaginated(search string, page int, limit i
 			no_kk ILIKE ? OR EXISTS (
 				SELECT 1
 				FROM penduduk p
-				WHERE p.kartu_keluarga_id = kartu_keluarga.id
+				WHERE p.kode_keluarga = kartu_keluarga.no_kk
 				  AND p.deleted_at IS NULL
-				  AND (p.nik ILIKE ? OR p.nama_lengkap ILIKE ?)
+				  AND (p.nik ILIKE ? OR p.nama_anggota_keluarga ILIKE ?)
 			)
 		`, like, like, like)
 	}

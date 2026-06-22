@@ -53,24 +53,24 @@ export default function LaporanAnakPreview() {
       if (response && response.data) {
         if (Array.isArray(response.data)) {
           rawData = response.data;
-          
+
           // Extract dynamic headers from response
           if (response.dynamic_headers && Array.isArray(response.dynamic_headers)) {
             headers = response.dynamic_headers;
           }
           // Extract dynamic headers from first item if available
           else if (rawData.length > 0 && rawData[0].dynamic_fields) {
-            headers = Object.keys(rawData[0].dynamic_fields).map(key => 
+            headers = Object.keys(rawData[0].dynamic_fields).map(key =>
               key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
             );
           }
         }
-      } 
+      }
       // If response is an array directly
       else if (Array.isArray(response)) {
         rawData = response;
         if (rawData.length > 0 && rawData[0].dynamic_fields) {
-          headers = Object.keys(rawData[0].dynamic_fields).map(key => 
+          headers = Object.keys(rawData[0].dynamic_fields).map(key =>
             key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
           );
         }
@@ -107,13 +107,12 @@ export default function LaporanAnakPreview() {
       } else {
         blob = await exportLaporanAnak();
       }
-      
+
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      const filename = `laporan_anak_${
-        filterEnabled ? `${startDate}_to_${endDate}` : "semua"
-      }.xlsx`;
+      const filename = `laporan_anak_${filterEnabled ? `${startDate}_to_${endDate}` : "semua"
+        }.xlsx`;
       a.download = filename;
       document.body.appendChild(a);
       a.click();

@@ -16,9 +16,9 @@ const Breadcrumb = () => {
 
     // Data Management
     "data-ibu": "Data Ibu hamil",
-    "data-anak": "Data Anak",
+    "data-anak": "Data Balita",
     kependudukan: "Kependudukan",
-    "daftar-anak": "Data Anak Balita",
+    "daftar-anak": "Data Balita",
     "daftar-rujukan": "Daftar Rujukan",
     "daftar-skrining": "Daftar Skrining",
     "manajemen-posyandu": "Manajemen Posyandu",
@@ -117,6 +117,7 @@ const Breadcrumb = () => {
     "kelola-posyandu": "Kelola Posyandu",
     "kelola-penduduk": "Kelola Penduduk",
     "form-versi": "Kelola Form Versi",
+    "kelola-vaksin": "Kelola Vaksin",
   };
 
   // Build breadcrumb items

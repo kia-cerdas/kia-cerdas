@@ -79,7 +79,7 @@ func (r *BidanRepository) List(desa string) ([]BidanListItem, error) {
 	var rows []BidanListItem
 
 	q := r.db.Table("bidan b").
-		Select("b.id, b.penduduk_id, p.nama_lengkap, p.nik, p.kecamatan, p.desa, b.no_str, b.no_sipb, b.status, b.created_at, b.updated_at").
+		Select("b.id, b.penduduk_id, p.nama_anggota_keluarga as nama_lengkap, p.nik, p.kecamatan, p.desa, b.no_str, b.no_sipb, b.status, b.created_at, b.updated_at").
 		Joins("JOIN penduduk p ON p.id = b.penduduk_id").
 		Where("b.deleted_at IS NULL AND p.deleted_at IS NULL").
 		Order("b.id DESC")

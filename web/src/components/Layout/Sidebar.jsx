@@ -37,10 +37,9 @@ import {
 import logo from "./LOGO.png";
 
 const baseItemClass = (isActive) =>
-  `flex items-center gap-2 px-3 py-2.5 rounded-lg transition-all duration-200 group ${
-    isActive
-      ? "bg-blue-50 text-blue-600 font-semibold"
-      : "text-slate-500 hover:bg-gray-50 hover:text-slate-700"
+  `flex items-center gap-2 px-3 py-2.5 rounded-lg transition-all duration-200 group ${isActive
+    ? "bg-blue-50 text-blue-600 font-semibold"
+    : "text-slate-500 hover:bg-gray-50 hover:text-slate-700"
   }`;
 
 const Sidebar = ({ isOpen, onClose }) => {
@@ -232,11 +231,10 @@ const Sidebar = ({ isOpen, onClose }) => {
           <>
             <item.icon
               size={18}
-              className={`flex-shrink-0 ${
-                isActive || hasExtraMatch
-                  ? "text-blue-600"
-                  : "text-slate-400 group-hover:text-slate-600"
-              }`}
+              className={`flex-shrink-0 ${isActive || hasExtraMatch
+                ? "text-blue-600"
+                : "text-slate-400 group-hover:text-slate-600"
+                }`}
             />
             <span className="truncate text-sm">{item.name}</span>
           </>
@@ -272,22 +270,19 @@ const Sidebar = ({ isOpen, onClose }) => {
         <button
           type="button"
           onClick={() => toggleDropdown(item.dropdownKey)}
-          className={`${baseItemClass(isHighlighted)} w-full ${
-            isNested ? "text-sm px-3 py-2 rounded-lg" : ""
-          }`}
+          className={`${baseItemClass(isHighlighted)} w-full ${isNested ? "text-sm px-3 py-2 rounded-lg" : ""
+            }`}
         >
           <item.icon
             size={18}
-            className={`flex-shrink-0 ${
-              isHighlighted ? "text-blue-600" : "text-slate-400 group-hover:text-slate-600"
-            }`}
+            className={`flex-shrink-0 ${isHighlighted ? "text-blue-600" : "text-slate-400 group-hover:text-slate-600"
+              }`}
           />
           <span className="flex-1 text-left truncate text-sm">{item.name}</span>
           <ChevronDown
             size={14}
-            className={`flex-shrink-0 transition-transform duration-200 ${
-              showChildren ? "rotate-180" : "rotate-0"
-            }`}
+            className={`flex-shrink-0 transition-transform duration-200 ${showChildren ? "rotate-180" : "rotate-0"
+              }`}
           />
         </button>
 
@@ -317,9 +312,8 @@ const Sidebar = ({ isOpen, onClose }) => {
       {/* Sidebar */}
       <aside
         className={`fixed inset-y-0 left-0 z-[60] w-64 h-screen bg-white border-r border-gray-100
-                    flex flex-col transform transition-transform duration-300 ease-in-out ${
-                      isOpen ? "translate-x-0" : "-translate-x-full"
-                    }`}
+                    flex flex-col transform transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
       >
         {/* Tombol Close */}
         <button
