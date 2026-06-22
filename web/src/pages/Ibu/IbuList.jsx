@@ -6,15 +6,15 @@
   import { 
     Plus, Search, Users, Eye, Edit, Filter, 
     Activity, AlertTriangle, UserCheck,
-    TruckElectric, Check
+    TruckElectric, Check, Monitor
   } from "lucide-react";
 
   // Badge untuk status kehamilan (trimester + nifas)
   const statusBadge = (status) => {
-    if (status === "TRIMESTER 1") return "bg-[#E1F5EE] text-[#085041]";
-    if (status === "TRIMESTER 2") return "bg-[#FAEEDA] text-[#633806]";
-    if (status === "TRIMESTER 3") return "bg-[#DCFCE7] text-[#3B6D11]";
-    if (status === "NIFAS") return "bg-[#DBEAFE] text-[#1E3A8A]";       // biru untuk nifas
+    if (status === "TRIMESTER 1") return "bg-[#E3F2FD] text-gray-800";
+    if (status === "TRIMESTER 2") return "bg-[#BBDEFB] text-gray-800";
+    if (status === "TRIMESTER 3") return "bg-[#90CAF9] text-gray-800";
+    if (status === "NIFAS") return "bg-[#DBEAFE] text-gray-800";       // biru untuk nifas
     if (status === "NON-AKTIF") return "bg-gray-200 text-gray-700";
     return "bg-gray-100 text-gray-800";
   };
@@ -32,13 +32,13 @@
   const riskLabel = (risk) => {
     const normalized = normalizeRiskStatus(risk);
     if (normalized === "PERLU_RUJUKAN") {
-      return { label: "Tinggi", class: "bg-red-100 text-red-700 border border-red-200" };
+      return { label: "Risiko Tinggi", class: "bg-[#A32D2D]/10 text-[#A32D2D] border border-[#A32D2D]/30" };
     }
     if (normalized === "PERLU_TINDAKAN") {
-      return { label: "Sedang", class: "bg-yellow-100 text-yellow-700 border border-yellow-200" };
+      return { label: "Risiko Sedang", class: "bg-[#BA7517]/10 text-[#BA7517] border border-[#BA7517]/30" };
     }
     if (normalized === "NORMAL") {
-      return { label: "Normal", class: "bg-green-100 text-green-700 border border-green-200" };
+      return { label: "Risiko Rendah", class: "bg-[#3B6D11]/10 text-[#3B6D11] border border-[#3B6D11]/30" };
     }
     return { label: "Belum Diperiksa", class: "bg-gray-100 text-gray-500 border border-gray-200" };
   };
@@ -143,10 +143,10 @@
     };
 
     const EmptyState = () => (
-      <div className="text-center py-12">
+      <div className="text-center py-12 font-sans">
         <Users size={48} className="mx-auto text-gray-300" />
-        <p className="mt-2 text-gray-600 text-base">
-          {showHistory ? "Tidak ada 0 kehamilan yang tersedia." : "Tidak ada ibu hamil atau nifas aktif."}
+        <p className="mt-2 text-gray-600 text-base font-sans">
+          {showHistory ? "Tidak Ada Data" : "Tidak Ada Data"}
         </p>
         <button
           onClick={() => {
@@ -155,9 +155,9 @@
             setFilterTrimester("");
             setShowHistory(false);
           }}
-          className="text-[#185FA5] mt-2 hover:underline text-base"
+          className="text-[#185FA5] mt-2 hover:underline text-base font-sans"
         >
-          Reset filter
+          Bersihkan
         </button>
       </div>
     );
@@ -178,9 +178,9 @@
 
     return (
       <MainLayout>
-        <div className="p-4 bg-white min-h-screen">
+        <div className="p-4 bg-[#F7FAFB] min-h-screen font-sans">
           {/* STATS CARDS */}
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-5">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-5 font-sans">
             <button
               onClick={() => {
                 setFilterRisiko("");
@@ -188,53 +188,53 @@
                 setSearch("");
                 setShowHistory(false);
               }}
-              className="bg-white rounded-lg shadow-sm p-3 border-l-4 border-[#185FA5] text-left hover:shadow-md transition"
+              className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-[#185FA5] text-left hover:shadow-md transition"
             >
               <div className="flex items-center gap-2 text-[#185FA5] mb-1">
                 <Users size={16} />
-                <span className="text-sm font-medium">IBU HAMIL & NIFAS AKTIF</span>
+                <span className="text-sm font-medium font-sans">IBU HAMIL AKTIF</span>
               </div>
-              <p className="text-xl font-bold text-gray-800">{uniqueIbuAktif}</p>
-              <p className="text-xs text-gray-400">{totalAktifRows} kehamilan aktif</p>
+              <p className="text-xl font-bold text-gray-800 font-sans">{uniqueIbuAktif}</p>
+              <p className="text-xs text-gray-400 font-sans">{totalAktifRows} kehamilan</p>
             </button>
 
             <button
               onClick={() => filterByRisiko("PERLU_RUJUKAN")}
-              className={`bg-white rounded-lg shadow-sm p-3 border-l-4 border-red-600 text-left hover:shadow-md transition ${
-                filterRisiko === "PERLU_RUJUKAN" && !showHistory ? "ring-2 ring-red-300" : ""
+              className={`bg-white rounded-lg shadow-sm p-4 border-l-4 border-[#A32D2D] text-left hover:shadow-md transition ${
+                filterRisiko === "PERLU_RUJUKAN" && !showHistory ? "ring-2 ring-[#A32D2D]/30" : ""
               }`}
             >
-              <div className="flex items-center gap-2 text-red-600 mb-1">
+              <div className="flex items-center gap-2 text-[#A32D2D] mb-1">
                 <AlertTriangle size={16} />
-                <span className="text-sm font-medium">RISIKO TINGGI</span>
+                <span className="text-sm font-medium font-sans">RISIKO TINGGI</span>
               </div>
-              <p className="text-xl font-bold text-gray-800">{totalTinggi}</p>
+              <p className="text-xl font-bold text-gray-800 font-sans">{totalTinggi}</p>
             </button>
 
             <button
               onClick={() => filterByRisiko("PERLU_TINDAKAN")}
-              className={`bg-white rounded-lg shadow-sm p-3 border-l-4 border-yellow-500 text-left hover:shadow-md transition ${
-                filterRisiko === "PERLU_TINDAKAN" && !showHistory ? "ring-2 ring-yellow-300" : ""
+              className={`bg-white rounded-lg shadow-sm p-4 border-l-4 border-[#BA7517] text-left hover:shadow-md transition ${
+                filterRisiko === "PERLU_TINDAKAN" && !showHistory ? "ring-2 ring-[#BA7517]/30" : ""
               }`}
             >
-              <div className="flex items-center gap-2 text-yellow-600 mb-1">
+              <div className="flex items-center gap-2 text-[#BA7517] mb-1">
                 <Activity size={16} />
-                <span className="text-sm font-medium">RISIKO SEDANG</span>
+                <span className="text-sm font-medium font-sans">RISIKO SEDANG</span>
               </div>
-              <p className="text-xl font-bold text-gray-800">{totalSedang}</p>
+              <p className="text-xl font-bold text-gray-800 font-sans">{totalSedang}</p>
             </button>
 
             <button
               onClick={() => filterByRisiko("NORMAL")}
-              className={`bg-white rounded-lg shadow-sm p-3 border-l-4 border-[#3B6D11] text-left hover:shadow-md transition ${
-                filterRisiko === "NORMAL" && !showHistory ? "ring-2 ring-green-300" : ""
+              className={`bg-white rounded-lg shadow-sm p-4 border-l-4 border-[#3B6D11] text-left hover:shadow-md transition ${
+                filterRisiko === "NORMAL" && !showHistory ? "ring-2 ring-[#3B6D11]/30" : ""
               }`}
             >
               <div className="flex items-center gap-2 text-[#3B6D11] mb-1">
                 <Check size={16} />
-                <span className="text-sm font-medium text-[#3B6D11]">NORMAL</span>
+                <span className="text-sm font-medium text-[#3B6D11] font-sans">RISIKO RENDAH</span>
               </div>
-              <p className="text-xl font-bold text-gray-800">{totalNormal}</p>
+              <p className="text-xl font-bold text-gray-800 font-sans">{totalNormal}</p>
             </button>
 
             {/* <div className="bg-white rounded-lg shadow-sm p-3 border-l-4 border-[#3B6D11]">
@@ -247,12 +247,12 @@
           </div>
 
           {/* SEARCH & FILTERS */}
-          <div className="flex flex-col md:flex-row justify-between gap-3 mb-5">
+          <div className="flex flex-col md:flex-row justify-between gap-3 mb-5 font-sans">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-3 text-gray-400" size={18} />
               <input
-                className="pl-10 pr-4 py-2 border border-[#E2E8F0] rounded-lg w-full focus:ring-2 focus:ring-[#185FA5] focus:border-[#185FA5] text-sm"
-                placeholder="Cari Nama Ibu..."
+                className="pl-10 pr-4 py-2.5 border border-[#E2E8F0] rounded-lg w-full focus:ring-2 focus:ring-[#185FA5] focus:border-[#185FA5] text-sm font-sans"
+                placeholder="Cari..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 style={{ height: "40px" }}
@@ -262,7 +262,7 @@
             <div className="flex flex-wrap lg:flex-nowrap gap-2 items-center">
               <div className="relative flex-shrink-0">
                 <select
-                  className="pl-3 pr-12 py-2 border border-[#E2E8F0] rounded-lg bg-white text-sm"
+                  className="pl-3 pr-12 py-2.5 border border-[#E2E8F0] rounded-lg bg-white text-sm font-sans"
                   value={showHistory ? "RIWAYAT" : filterTrimester}
                   onChange={(e) => {
                     if (e.target.value === "RIWAYAT") {
@@ -281,7 +281,7 @@
                     </>
                   ) : (
                     <>
-                      <option value="">Semua Status</option>
+                      <option value="">Semua</option>
                       <option value="TRIMESTER 1">Trimester 1</option>
                       <option value="TRIMESTER 2">Trimester 2</option>
                       <option value="TRIMESTER 3">Trimester 3</option>
@@ -296,7 +296,7 @@
 
               <Link
                 to="/data-ibu/create"
-                className="bg-[#185FA5] text-white px-5 py-2 rounded-full flex items-center gap-2 hover:bg-[#0F4A82] transition text-sm font-semibold whitespace-nowrap"
+                className="bg-[#185FA5] text-white px-5 py-2.5 rounded-full flex items-center gap-2 hover:bg-[#0F4A82] transition text-sm font-semibold whitespace-nowrap font-sans"
               >
                 <Plus size={16} /> Tambah Ibu Hamil
               </Link>
@@ -305,16 +305,16 @@
 
           {/* MAIN TABLE */}
           {loading ? (
-            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+            <div className="bg-white rounded-lg shadow-sm overflow-hidden font-sans border border-gray-200">
               <table className="w-full">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="p-2 text-left text-sm font-semibold text-gray-700">Nama</th>
-                    <th className="p-2 text-center text-sm font-semibold text-gray-700">Status</th>
-                    <th className="p-2 text-center text-sm font-semibold text-gray-700">Risiko</th>
-                    <th className="p-2 text-center text-sm font-semibold text-gray-700">Usia Hamil</th>
-                    <th className="p-2 text-center text-sm font-semibold text-gray-700">Dusun</th>
-                    <th className="p-2 text-center text-sm font-semibold text-gray-700">Aksi</th>
+                    <th className="p-2 text-left text-sm font-semibold text-gray-700 font-sans">Nama</th>
+                    <th className="p-2 text-center text-sm font-semibold text-gray-700 font-sans">Status</th>
+                    <th className="p-2 text-center text-sm font-semibold text-gray-700 font-sans">Risiko</th>
+                    <th className="p-2 text-center text-sm font-semibold text-gray-700 font-sans">Usia Hamil</th>
+                    <th className="p-2 text-center text-sm font-semibold text-gray-700 font-sans">Dusun</th>
+                    <th className="p-2 text-center text-sm font-semibold text-gray-700 font-sans">Aksi</th>
                   </tr>
                 </thead>
                 <TableSkeleton />
@@ -323,16 +323,16 @@
           ) : paginatedData.length === 0 ? (
             <EmptyState />
           ) : (
-            <div className="bg-white rounded-lg shadow-sm overflow-x-auto">
+            <div className="bg-white rounded-lg shadow-sm overflow-x-auto font-sans border border-gray-200">
               <table className="w-full min-w-[700px]">
                 <thead className="bg-gray-50 sticky top-0">
                   <tr>
-                    <th className="p-2 text-left text-sm font-semibold text-gray-700">Nama</th>
-                    <th className="p-2 text-center text-sm font-semibold text-gray-700">Status</th>
-                    <th className="p-2 text-center text-sm font-semibold text-gray-700">Risiko</th>
-                    <th className="p-2 text-center text-sm font-semibold text-gray-700">Usia Hamil</th>
-                    <th className="p-2 text-center text-sm font-semibold text-gray-700">Dusun</th>
-                    <th className="p-2 text-center text-sm font-semibold text-gray-700">Aksi</th>
+                    <th className="p-2 text-left text-sm font-semibold text-gray-700 font-sans">Nama</th>
+                    <th className="p-2 text-center text-sm font-semibold text-gray-700 font-sans">Status</th>
+                    <th className="p-2 text-center text-sm font-semibold text-gray-700 font-sans">Risiko</th>
+                    <th className="p-2 text-center text-sm font-semibold text-gray-700 font-sans">Usia Hamil</th>
+                    <th className="p-2 text-center text-sm font-semibold text-gray-700 font-sans">Dusun</th>
+                    <th className="p-2 text-center text-sm font-semibold text-gray-700 font-sans">Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -345,19 +345,19 @@
                     
                     return (
                       <tr key={`${ibu.id_ibu}-${ibu.kehamilan_id}`} className="border-t hover:bg-gray-50 transition">
-                        <td className="p-2 font-medium text-sm">{ibu.nama_anggota_keluarga}</td>
-                        <td className="p-2 text-center text-sm">
+                        <td className="p-2 font-medium text-sm font-sans">{ibu.nama_anggota_keluarga}</td>
+                        <td className="p-2 text-center text-sm font-sans">
                           <span className={`px-2 py-1 text-xs rounded-full inline-block ${statusBadge(ibu.status_kehamilan)}`}>
                             {displayStatus}
                           </span>
                         </td>
-                        <td className="p-2 text-center text-sm">
+                        <td className="p-2 text-center text-sm font-sans">
                           <span className={`px-2 py-1 text-xs rounded-full inline-block ${risk.class}`} title={`Skor: ${ibu.skor_risiko}`}>
                             {risk.label}
                           </span>
                         </td>
-                        <td className="p-2 text-center text-sm">{ibu.usia_kehamilan || "-"} {ibu.usia_kehamilan ? "Minggu" : ""}</td>
-                        <td className="p-2 text-center text-sm">{ibu.dusun || "-"}</td>
+                        <td className="p-2 text-center text-sm font-sans">{ibu.usia_kehamilan || "-"} {ibu.usia_kehamilan ? "Minggu" : ""}</td>
+                        <td className="p-2 text-center text-sm font-sans">{ibu.dusun || "-"}</td>
                         <td className="p-2 text-center">
                           <div className="flex gap-1 justify-center items-center">
                             <button
@@ -365,7 +365,7 @@
                                 if (ibu.kehamilan_id) navigate(`/data-ibu/${ibu.id_ibu}?kehamilan_id=${ibu.kehamilan_id}`);
                               }}
                               disabled={!ibu.kehamilan_id}
-                              className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-[#185FA5] text-[#185FA5] bg-transparent text-xs font-medium hover:bg-[#185FA5]/5 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                              className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-[#185FA5] text-[#185FA5] bg-transparent text-xs font-medium hover:bg-[#185FA5]/5 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap font-sans"
                             >
                               <Eye size={14} /> Detail
                             </button>
@@ -387,47 +387,47 @@
                   })}
                 </tbody>
               </table>
-            </div>
-          )}
-
-          {/* PAGINATION */}
-          {!loading && displayedData.length > 0 && (
-            <div className="flex justify-end items-center gap-1 p-3 bg-white rounded-lg shadow-sm mt-3">
-              <button
-                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                disabled={currentPage === 1}
-                className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium transition ${
-                  currentPage === 1
-                    ? "text-gray-400 bg-gray-100 cursor-not-allowed"
-                    : "text-gray-600 hover:bg-gray-50"
-                }`}
-              >
-                &lt;
-              </button>
-              {Array.from({ length: totalPages || 1 }, (_, i) => i + 1).map((page) => (
-                <button
-                  key={page}
-                  onClick={() => setCurrentPage(page)}
-                  className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium transition ${
-                    currentPage === page
-                      ? "bg-[#185FA5] text-white"
-                      : "text-gray-600 hover:bg-gray-50"
-                  }`}
-                >
-                  {page}
-                </button>
-              ))}
-              <button
-                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                disabled={currentPage === totalPages}
-                className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium transition ${
-                  currentPage === totalPages
-                    ? "text-gray-400 bg-gray-100 cursor-not-allowed"
-                    : "text-gray-600 hover:bg-gray-50"
-                }`}
-              >
-                &gt;
-              </button>
+              
+              {/* PAGINATION */}
+              {displayedData.length > 0 && (
+                <div className="flex justify-end items-center gap-1 p-3 border-t border-gray-200">
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                    className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium transition font-sans ${
+                      currentPage === 1
+                        ? "text-gray-400 bg-gray-100 cursor-not-allowed"
+                        : "text-gray-600 hover:bg-gray-50"
+                    }`}
+                  >
+                    &lt;
+                  </button>
+                  {Array.from({ length: totalPages || 1 }, (_, i) => i + 1).map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium transition font-sans ${
+                        currentPage === page
+                          ? "bg-[#185FA5] text-white"
+                          : "text-gray-600 hover:bg-gray-50"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages}
+                    className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-medium transition font-sans ${
+                      currentPage === totalPages
+                        ? "text-gray-400 bg-gray-100 cursor-not-allowed"
+                        : "text-gray-600 hover:bg-gray-50"
+                    }`}
+                  >
+                    &gt;
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>

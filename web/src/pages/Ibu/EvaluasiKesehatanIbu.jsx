@@ -33,7 +33,7 @@ import { getCurrentUser, isDokterUser, isBidanUser } from "../../services/auth";
 // ─── Helper: checklist Ya/Tidak ──────────────────────────────────────────────
 const RenderCheck = ({ value }) =>
   value ? (
-    <span className="inline-flex items-center gap-1 text-[#3B6D11] font-semibold text-sm">
+    <span className="inline-flex items-center gap-1 text-success font-semibold text-sm">
       <CheckCircle size={14} /> Ya
     </span>
   ) : (
@@ -74,7 +74,7 @@ const formatDate = (val) => {
 
 // ─── Tooltip ─────────────────────────────────────────────────────────────────
 const HelpTooltip = ({ text }) => (
-  <span className="inline-block ml-1 text-[#185FA5] cursor-help group relative">
+  <span className="inline-block ml-1 text-primary cursor-help group relative">
     <Info size={14} />
     <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block bg-gray-800 text-white text-xs rounded px-2 py-1 whitespace-nowrap z-10">
       {text}
@@ -83,8 +83,8 @@ const HelpTooltip = ({ text }) => (
 );
 
 // ─── SectionCard: kartu section konsisten ────────────────────────────────────
-const SectionCard = ({ icon: Icon, title, iconColor = "text-[#185FA5]", bgColor = "bg-[#EEF5FF]", children }) => (
-  <div className="bg-white rounded-xl shadow-sm border border-[#E2E8F0] overflow-hidden">
+const SectionCard = ({ icon: Icon, title, iconColor = "text-primary", bgColor = "bg-primary-50", children }) => (
+  <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
     <div className={`flex items-center gap-2 px-6 py-3 ${bgColor}`}>
       {Icon && <Icon size={16} className={iconColor} />}
       <h3 className={`font-bold text-lg text-gray-800`}>{title}</h3>
@@ -102,10 +102,10 @@ const DataKehamilanCard = ({ kehamilan, ibu }) => {
   const abortus = kehamilan.abortus ?? ibu?.abortus ?? "-";
 
   return (
-    <div className="bg-[#EEF5FF] rounded-lg p-4 mb-4">
+    <div className="bg-primary-50 rounded-lg p-4 mb-4">
       <div className="flex items-center gap-2 mb-3">
-        <Baby size={18} className="text-[#185FA5]" />
-        <h3 className="font-bold text-lg text-[#185FA5]">
+        <Baby size={18} className="text-primary" />
+        <h3 className="font-bold text-lg text-primary">
           Data Kehamilan (Tersinkronisasi Otomatis)
         </h3>
       </div>
@@ -115,7 +115,7 @@ const DataKehamilanCard = ({ kehamilan, ibu }) => {
             HPHT
           </span>
           <span className="font-medium text-gray-800 flex items-center gap-1">
-            <Calendar size={13} className="text-[#185FA5]" />
+            <Calendar size={13} className="text-primary" />
             {formatDate(kehamilan.hpht)}
           </span>
         </div>
@@ -174,7 +174,7 @@ const DataKehamilanCard = ({ kehamilan, ibu }) => {
           </span>
         </div>
       </div>
-      <p className="text-xs text-[#185FA5] mt-2 italic">
+      <p className="text-xs text-primary mt-2 italic">
         * Data ini tersinkronisasi otomatis dari data ibu dan tidak perlu diisi ulang.
       </p>
     </div>
@@ -203,9 +203,9 @@ const EvaluationView = ({
         {canEdit && (
           <button
             onClick={() => setIsEditing(true)}
-            className="bg-[#185FA5] text-white rounded-full px-6 py-3 text-sm font-semibold flex items-center gap-2 mx-auto hover:bg-[#0F4A82] transition"
+            className="bg-primary text-white rounded-full px-6 py-3 text-sm font-semibold flex items-center gap-2 mx-auto hover:bg-primary/90 transition"
           >
-            <Plus size={16} /> Buat Evaluasi Baru
+            <Plus size={16} /> Tambah Evaluasi
           </button>
         )}
       </div>
@@ -214,7 +214,7 @@ const EvaluationView = ({
 
   return (
     <div className="space-y-5">
-      <div className="bg-white rounded-xl shadow-sm border border-[#E2E8F0] overflow-hidden">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="px-6 py-5 space-y-6">
           {/* Data kehamilan otomatis */}
           <DataKehamilanCard kehamilan={kehamilan} ibu={ibu} />
@@ -250,11 +250,11 @@ const EvaluationView = ({
                 <span
                   className={`px-2 py-1 rounded text-xs font-bold ${
                     form.imt_kategori === "Normal"
-                      ? "bg-green-100 text-green-700"
+                      ? "bg-success/10 text-success"
                       : form.imt_kategori === "Kurus"
-                      ? "bg-yellow-100 text-yellow-700"
+                      ? "bg-warning/10 text-warning"
                       : form.imt_kategori === "Gemuk" || form.imt_kategori === "Obesitas"
-                      ? "bg-red-100 text-red-700"
+                      ? "bg-danger/10 text-danger"
                       : "bg-gray-100 text-gray-600"
                   }`}
                 >
@@ -304,8 +304,8 @@ const EvaluationView = ({
                     <span
                       className={`px-3 py-1 rounded-full text-sm font-bold ${
                         form[`inspeksi_${item}`] === "Normal"
-                          ? "bg-[#E1F5EE] text-[#085041]"
-                          : "bg-[#FCEBEB] text-[#791F1F]"
+                          ? "bg-success/10 text-success"
+                          : "bg-danger/10 text-danger"
                       }`}
                     >
                       {form[`inspeksi_${item}`] || "-"}
@@ -397,18 +397,18 @@ const EvaluationView = ({
           </div>
 
           {/* Riwayat Kehamilan Lalu — READ ONLY dari database */}
-          <div className="border-t border-[#E2E8F0] pt-5">
+          <div className="border-t border-gray-200 pt-5">
             <div className="flex items-center justify-between mb-5">
-              <h3 className="font-bold text-lg text-[#185FA5]">
+              <h3 className="font-bold text-lg text-primary">
                 Riwayat Kehamilan Lalu
               </h3>
-              <span className="text-xs bg-[#EEF5FF] text-[#185FA5] px-3 py-1 rounded-full border border-[#C5D9F2]">
+              <span className="text-xs bg-primary-50 text-primary px-3 py-1 rounded-full border border-primary/20">
                 Data dari sistem
               </span>
             </div>
             {riwayatList.length > 0 ? (
               <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-[#E2E8F0] text-base">
+                <table className="min-w-full divide-y divide-gray-200 text-base">
                   <thead className="bg-gray-50">
                     <tr>
                       <th className="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase">No</th>
@@ -422,7 +422,7 @@ const EvaluationView = ({
                       )}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#F1F5F9]">
+                  <tbody className="divide-y divide-gray-100">
                     {riwayatList.map((r, idx) => (
                       <tr key={r.id_riwayat || idx} className="hover:bg-gray-50">
                         <td className="px-3 py-4">{r.no_urut}</td>
@@ -435,7 +435,7 @@ const EvaluationView = ({
                           <td className="px-3 py-4 text-center">
                             <button
                               onClick={() => handleDeleteRiwayat(r.id_riwayat)}
-                              className="p-1 text-[#A32D2D] hover:bg-red-50 rounded transition-colors"
+                              className="p-1 text-danger hover:bg-danger/10 rounded transition-colors"
                               title="Hapus baris ini"
                             >
                               <Trash2 size={16} />
@@ -460,14 +460,14 @@ const EvaluationView = ({
         <div className="flex justify-end gap-4">
           <button
             onClick={() => setIsEditing(true)}
-            className="bg-[#185FA5] text-white rounded-full px-8 py-3 text-base font-semibold flex items-center gap-2 hover:bg-[#185FA5]/90 transition shadow-lg min-h-[48px]"
+            className="bg-warning text-white rounded-full px-8 py-3 text-base font-semibold flex items-center gap-2 hover:bg-warning/90 transition shadow-lg min-h-[48px]"
           >
-            <Edit size={16} /> Edit Evaluasi
+            <Edit size={16} /> Ubah Evaluasi
           </button>
           <button
             onClick={handleDeleteEvaluasi}
             disabled={saving}
-            className="bg-[#A32D2D] text-white rounded-full px-8 py-3 text-base font-semibold flex items-center gap-2 hover:bg-[#A32D2D]/90 transition shadow-lg disabled:opacity-50 min-h-[48px]"
+            className="bg-danger text-white rounded-full px-8 py-3 text-base font-semibold flex items-center gap-2 hover:bg-danger/90 transition shadow-lg disabled:opacity-50 min-h-[48px]"
           >
             <Trash2 size={18} /> Hapus Data
           </button>
@@ -504,7 +504,7 @@ const EvaluationForm = ({
 
   return (
     <form onSubmit={handleSubmitEvaluasi} noValidate className="space-y-4">
-      <div className="bg-white rounded-xl shadow-sm border border-[#E2E8F0] overflow-hidden">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="px-6 py-5 space-y-6">
           {/* Data kehamilan otomatis (read-only) */}
           <DataKehamilanCard kehamilan={kehamilan} ibu={ibu} />
@@ -521,7 +521,7 @@ const EvaluationForm = ({
               {/* LiLA */}
               <div>
                 <label className="block text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">
-                  LiLA (cm) <span className="text-[#A32D2D]">*</span>
+                  LiLA (cm) <span className="text-danger">*</span>
                 </label>
                 <input
                   type="number"
@@ -533,21 +533,21 @@ const EvaluationForm = ({
                   onChange={handleChange}
                   placeholder="Contoh: 24,0"
                   required
-                  className={`w-full border rounded-lg px-4 h-12 text-base focus:outline-none focus:ring-2 focus:ring-[#185FA5]/20 transition ${
+                  className={`w-full border rounded-lg px-4 h-12 text-base focus:outline-none focus:ring-2 focus:ring-primary/20 transition ${
                     errors.lila_cm
-                      ? "border-[#A32D2D] bg-red-50"
-                      : "border-[#E2E8F0] focus:border-[#185FA5]"
+                      ? "border-danger bg-danger/10"
+                      : "border-gray-200 focus:border-primary"
                   }`}
                 />
                 {errors.lila_cm && (
-                  <p className="text-[#A32D2D] text-xs mt-1">{errors.lila_cm}</p>
+                  <p className="text-danger text-xs mt-1">{errors.lila_cm}</p>
                 )}
               </div>
 
               {/* BB */}
               <div>
                 <label className="block text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">
-                  BB (kg) <span className="text-[#A32D2D]">*</span>
+                  BB (kg) <span className="text-danger">*</span>
                 </label>
                 <input
                   type="number"
@@ -559,21 +559,21 @@ const EvaluationForm = ({
                   onChange={handleChange}
                   placeholder="Contoh: 55,0"
                   required
-                  className={`w-full border rounded-lg px-4 h-12 text-base focus:outline-none focus:ring-2 focus:ring-[#185FA5]/20 transition ${
+                  className={`w-full border rounded-lg px-4 h-12 text-base focus:outline-none focus:ring-2 focus:ring-primary/20 transition ${
                     errors.bb_kg
-                      ? "border-[#A32D2D] bg-red-50"
-                      : "border-[#E2E8F0] focus:border-[#185FA5]"
+                      ? "border-danger bg-danger/10"
+                      : "border-gray-200 focus:border-primary"
                   }`}
                 />
                 {errors.bb_kg && (
-                  <p className="text-[#A32D2D] text-xs mt-1">{errors.bb_kg}</p>
+                  <p className="text-danger text-xs mt-1">{errors.bb_kg}</p>
                 )}
               </div>
 
               {/* TB */}
               <div>
                 <label className="block text-sm font-bold text-gray-500 uppercase tracking-wider mb-2">
-                  TB (cm) <span className="text-[#A32D2D]">*</span>
+                  TB (cm) <span className="text-danger">*</span>
                 </label>
                 <input
                   type="number"
@@ -585,14 +585,14 @@ const EvaluationForm = ({
                   onChange={handleChange}
                   placeholder="Contoh: 158,0"
                   required
-                  className={`w-full border rounded-lg px-4 h-12 text-base focus:outline-none focus:ring-2 focus:ring-[#185FA5]/20 transition ${
+                  className={`w-full border rounded-lg px-4 h-12 text-base focus:outline-none focus:ring-2 focus:ring-primary/20 transition ${
                     errors.tb_cm
-                      ? "border-[#A32D2D] bg-red-50"
-                      : "border-[#E2E8F0] focus:border-[#185FA5]"
+                      ? "border-danger bg-danger/10"
+                      : "border-gray-200 focus:border-primary"
                   }`}
                 />
                 {errors.tb_cm && (
-                  <p className="text-[#A32D2D] text-xs mt-1">{errors.tb_cm}</p>
+                  <p className="text-danger text-xs mt-1">{errors.tb_cm}</p>
                 )}
               </div>
 
@@ -621,11 +621,11 @@ const EvaluationForm = ({
                 readOnly
                 className={`w-full border rounded-lg px-4 h-12 text-base cursor-not-allowed ${
                   form.imt_kategori === "Normal"
-                    ? "bg-green-100 text-green-700 border-green-300"
+                    ? "bg-success/10 text-success border-success/30"
                     : form.imt_kategori === "Kurus"
-                    ? "bg-yellow-100 text-yellow-700 border-yellow-300"
+                    ? "bg-warning/10 text-warning border-warning/30"
                     : form.imt_kategori === "Gemuk" || form.imt_kategori === "Obesitas"
-                    ? "bg-red-100 text-red-700 border-red-300"
+                    ? "bg-danger/10 text-danger border-danger/30"
                     : "bg-gray-100 text-gray-500 border-gray-200"
                 }`}
               />
@@ -636,7 +636,7 @@ const EvaluationForm = ({
 
           {/* Status Imunisasi TT */}
           <div>
-            <h3 className="font-bold text-lg text-[#185FA5] border-b pb-3 mb-2">
+            <h3 className="font-bold text-lg text-primary border-b pb-3 mb-2">
               Status Imunisasi TT
             </h3>
             <p className="text-sm text-gray-500 mb-4">
@@ -660,7 +660,7 @@ const EvaluationForm = ({
                     name={`status_tt_${n}`}
                     checked={form[`status_tt_${n}`]}
                     onChange={handleChange}
-                    className="w-4 h-4 text-[#185FA5] border-[#E2E8F0] rounded focus:ring-[#185FA5]"
+                    className="w-4 h-4 text-primary border-gray-200 rounded focus:ring-primary"
                   />
                   <span className="font-medium text-gray-700 text-sm">{desc}</span>
                 </label>
@@ -674,7 +674,7 @@ const EvaluationForm = ({
                 name="imunisasi_lainnya_covid19"
                 value={form.imunisasi_lainnya_covid19}
                 onChange={handleChange}
-                className="w-full border border-[#E2E8F0] rounded-lg px-4 h-12 text-base focus:outline-none focus:border-[#185FA5] focus:ring-2 focus:ring-[#185FA5]/20 transition"
+                className="w-full border border-gray-200 rounded-lg px-4 h-12 text-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition"
                 placeholder="Contoh: Covid-19 dosis 2, Influenza..."
               />
             </div>
@@ -685,7 +685,7 @@ const EvaluationForm = ({
             {/* <h3 className="font-bold text-lg text-gray-800 mb-4">Riwayat Kesehatan, Perilaku, dan Keluarga</h3> */}
             {/* Riwayat Kesehatan Ibu */}
             <div className="mb-6">
-              <h4 className="font-bold text-base text-[#185FA5] mb-2">
+              <h4 className="font-bold text-base text-primary mb-2">
                 Riwayat Kesehatan, Perilaku, dan Keluarga
               </h4>
               <p className="text-xs text-gray-500 mb-3">
@@ -710,7 +710,7 @@ const EvaluationForm = ({
                       name={`riwayat_${key}`}
                       checked={form[`riwayat_${key}`]}
                       onChange={handleChange}
-                      className="w-5 h-5 accent-[#185FA5]"
+                      className="w-5 h-5 accent-primary"
                     />
                     {label}
                   </label>
@@ -721,13 +721,13 @@ const EvaluationForm = ({
                 placeholder="Riwayat kesehatan lainnya (opsional)"
                 value={form.riwayat_kesehatan_lainnya}
                 onChange={handleChange}
-                className="w-full border border-[#E2E8F0] rounded-lg px-4 h-12 mt-3 text-base focus:outline-none focus:border-[#185FA5] focus:ring-2 focus:ring-[#185FA5]/20 transition"
+                className="w-full border border-gray-200 rounded-lg px-4 h-12 mt-3 text-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition"
               />
             </div>
 
             {/* Perilaku Berisiko */}
             <div className="mb-6">
-              <h4 className="font-bold text-base text-[#185FA5] mb-2">
+              <h4 className="font-bold text-base text-primary mb-2">
                 Perilaku Berisiko (1 bulan sebelum hamil)
               </h4>
               <p className="text-xs text-gray-500 mb-3">
@@ -748,7 +748,7 @@ const EvaluationForm = ({
                       name={`perilaku_${key}`}
                       checked={form[`perilaku_${key}`]}
                       onChange={handleChange}
-                      className="w-5 h-5 accent-[#185FA5]"
+                      className="w-5 h-5 accent-primary"
                     />
                     {label}
                   </label>
@@ -759,13 +759,13 @@ const EvaluationForm = ({
                 placeholder="Perilaku berisiko lainnya (opsional)"
                 value={form.perilaku_lainnya}
                 onChange={handleChange}
-                className="w-full border border-[#E2E8F0] rounded-lg px-4 h-12 mt-3 text-base focus:outline-none focus:border-[#185FA5] focus:ring-2 focus:ring-[#185FA5]/20 transition"
+                className="w-full border border-gray-200 rounded-lg px-4 h-12 mt-3 text-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition"
               />
             </div>
 
             {/* Riwayat Kesehatan Keluarga */}
             <div>
-              <h4 className="font-bold text-base text-[#185FA5] mb-2">
+              <h4 className="font-bold text-base text-primary mb-2">
                 Riwayat Kesehatan Keluarga
               </h4>
               <p className="text-xs text-gray-500 mb-3">
@@ -790,7 +790,7 @@ const EvaluationForm = ({
                       name={`keluarga_${key}`}
                       checked={form[`keluarga_${key}`]}
                       onChange={handleChange}
-                      className="w-5 h-5 accent-[#185FA5]"
+                      className="w-5 h-5 accent-primary"
                     />
                     {label}
                   </label>
@@ -801,15 +801,15 @@ const EvaluationForm = ({
                 placeholder="Penyakit keluarga lainnya (opsional)"
                 value={form.keluarga_lainnya}
                 onChange={handleChange}
-                className="w-full border border-[#E2E8F0] rounded-lg px-4 h-12 mt-3 text-base focus:outline-none focus:border-[#185FA5] focus:ring-2 focus:ring-[#185FA5]/20 transition"
+                className="w-full border border-gray-200 rounded-lg px-4 h-12 mt-3 text-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition"
               />
             </div>
           </div>
 
           {/* Inspeksi Medis */}
           <div>
-            <h3 className="font-bold text-lg text-[#185FA5] border-b pb-3 mb-2">
-              Inspeksi Medis <span className="text-[#A32D2D] text-base">*</span>
+            <h3 className="font-bold text-lg text-primary border-b pb-3 mb-2">
+              Inspeksi Medis <span className="text-danger text-base">*</span>
             </h3>
             <p className="text-sm text-gray-500 mb-4">
               Pilih hasil pemeriksaan visual pada area genital. Semua field inspeksi wajib diisi.
@@ -819,17 +819,17 @@ const EvaluationForm = ({
                 (item) => (
                   <div key={item}>
                     <label className="block capitalize text-sm font-bold text-gray-500 uppercase mb-2">
-                      {item} <span className="text-[#A32D2D]">*</span>
+                      {item} <span className="text-danger">*</span>
                     </label>
                     <select
                       name={`inspeksi_${item}`}
                       value={form[`inspeksi_${item}`]}
                       onChange={handleChange}
                       required
-                      className={`w-full border rounded-lg px-4 h-12 text-base focus:outline-none focus:border-[#185FA5] focus:ring-2 focus:ring-[#185FA5]/20 transition ${
+                      className={`w-full border rounded-lg px-4 h-12 text-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition ${
                         errors[`inspeksi_${item}`]
-                          ? "border-[#A32D2D] bg-red-50"
-                          : "border-[#E2E8F0]"
+                          ? "border-danger bg-danger/10"
+                          : "border-gray-200"
                       }`}
                     >
                       <option value="">-- Pilih --</option>
@@ -837,7 +837,7 @@ const EvaluationForm = ({
                       <option value="Abnormal">Abnormal</option>
                     </select>
                     {errors[`inspeksi_${item}`] && (
-                      <p className="text-[#A32D2D] text-xs mt-1">
+                      <p className="text-danger text-xs mt-1">
                         {errors[`inspeksi_${item}`]}
                       </p>
                     )}
@@ -854,16 +854,16 @@ const EvaluationForm = ({
         <button
           type="button"
           onClick={() => setIsEditing(false)}
-          className="px-8 py-3 rounded-full border-[1.5px] border-[#185FA5] text-[#185FA5] text-base font-semibold hover:bg-[#185FA5]/5 transition min-h-[48px]"
+          className="px-8 py-3 rounded-full border-[1.5px] border-primary text-primary text-base font-semibold hover:bg-primary/5 transition min-h-[48px]"
         >
-          Batalkan
+          Batal
         </button>
         <button
           type="submit"
           disabled={saving}
-          className="bg-[#185FA5] text-white rounded-full px-10 py-3 text-base font-semibold flex items-center gap-2 hover:bg-[#185FA5]/90 disabled:opacity-50 transition shadow-lg min-h-[48px]"
+          className="bg-success text-white rounded-full px-10 py-3 text-base font-semibold flex items-center gap-2 hover:bg-success/90 disabled:opacity-50 transition shadow-lg min-h-[48px]"
         >
-          <Save size={20} /> {saving ? "Menyimpan..." : "Simpan Evaluasi"}
+          <Save size={20} /> {saving ? "Menyimpan..." : "Simpan"}
         </button>
       </div>
     </form>
@@ -1159,7 +1159,7 @@ export default function EvaluasiKesehatanIbu() {
         confirmButtonColor: "#185FA5",
       });
       // scroll ke error pertama
-      const firstError = document.querySelector(".border-\\[\\#A32D2D\\]");
+      const firstError = document.querySelector(".border-danger");
       if (firstError) firstError.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
@@ -1208,7 +1208,7 @@ export default function EvaluasiKesehatanIbu() {
       text: "Tindakan ini akan menghapus seluruh data evaluasi kesehatan ibu, termasuk riwayat kehamilan lalu. Apakah Anda yakin?",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#dc2626",
+      confirmButtonColor: "#A32D2D",
       cancelButtonColor: "#6b7280",
       confirmButtonText: "Ya, Hapus!",
       cancelButtonText: "Batal",
@@ -1302,7 +1302,7 @@ export default function EvaluasiKesehatanIbu() {
       text: "Yakin ingin menghapus baris riwayat kehamilan ini?",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#dc2626",
+      confirmButtonColor: "#A32D2D",
       cancelButtonColor: "#6b7280",
       confirmButtonText: "Ya, Hapus!",
       cancelButtonText: "Batal",
@@ -1327,13 +1327,13 @@ export default function EvaluasiKesehatanIbu() {
 
   return (
     <MainLayout>
-      <div className="min-h-screen bg-[#F7FAFB]">
+      <div className="min-h-screen bg-background">
         <div className="max-w-5xl mx-auto p-5 space-y-5">
           {/* Header */}
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate(-1)}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#185FA5] text-[#185FA5] text-sm font-semibold hover:bg-[#185FA5]/5 transition"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-primary text-primary text-sm font-semibold hover:bg-primary/5 transition"
             >
               <ArrowLeft size={16} />
               <span>Kembali</span>
@@ -1345,12 +1345,12 @@ export default function EvaluasiKesehatanIbu() {
 
           {/* Status banner */}
           {!isActive && (
-            <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg text-blue-700 text-base flex items-center gap-2">
+            <div className="bg-secondary/10 border border-secondary/30 text-secondary p-3 rounded-lg text-base flex items-center gap-2">
               <EyeOff size={16} /> Kehamilan ini sudah selesai (NON-AKTIF). Data hanya dapat dilihat, tidak dapat diubah.
             </div>
           )}
           {!canEdit && isActive && (
-            <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg text-blue-700 text-base flex items-center gap-2">
+            <div className="bg-secondary/10 border border-secondary/30 text-secondary p-3 rounded-lg text-base flex items-center gap-2">
               <Eye size={16} /> Anda dalam mode baca (Dokter). Data hanya dapat dilihat, tidak dapat diubah.
             </div>
           )}

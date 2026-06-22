@@ -58,22 +58,22 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 bg-gray-100">
+    <div className="min-h-screen flex items-center justify-center px-4 bg-background">
       <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
-        <h2 className="text-3xl font-bold mb-2 text-center" style={{ color: "#185FA5" }}>Generasi Sehat</h2>
+        <h2 className="text-3xl font-bold mb-2 text-center text-primary">Generasi Sehat</h2>
         <p className="text-gray-600 text-sm text-center mb-1">
           Sistem Informasi Kesehatan Ibu dan Anak
         </p>
         
 
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          <div className="bg-danger/10 border border-danger/30 text-danger px-4 py-3 rounded-lg mb-4">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div>
             <label htmlFor="identifier" className="block text-gray-700 font-semibold mb-2">
               Username / Email
             </label>
@@ -82,14 +82,14 @@ const Login = () => {
               id="identifier"
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#185FA5]"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition"
               placeholder="Masukkan username atau email"
               required
             />
           </div>
 
-          <div className="mb-6">
-            <label htmlFor="password" className="block text-slate-700 font-semibold mb-2">
+          <div>
+            <label htmlFor="password" className="block text-gray-700 font-semibold mb-2">
               Password
             </label>
             <input
@@ -97,7 +97,7 @@ const Login = () => {
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#185FA5]"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition"
               placeholder="Masukkan password"
               required
             />
@@ -106,9 +106,9 @@ const Login = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#185FA5] text-white font-bold py-2 rounded-lg hover:bg-[#134E87] transition disabled:bg-gray-400"
+            className="w-full bg-primary text-white font-bold py-3 rounded-lg hover:bg-primary/90 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
-            {loading ? "Sedang Login..." : "Login"}
+            {loading ? "Sedang Masuk..." : "Masuk"}
           </button>
         </form>
       </div>
