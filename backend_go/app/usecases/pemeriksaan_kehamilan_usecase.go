@@ -133,14 +133,14 @@ func (u *pemeriksaanKehamilanUsecase) Create(p *models.PemeriksaanKehamilan) err
 	if err := u.fillPrediction(p); err != nil {
 		// Jika ML service gagal, gunakan perhitungan manual sebagai fallback
 		fmt.Println("⚠️ Warning: Prediksi risiko ML gagal, gunakan perhitungan manual:", err)
-		p.StatusRisiko = calculateManualRiskStatus(p)
+		// p.StatusRisiko = calculateManualRiskStatus(p)
 		p.DetailRisiko = generateProblemAndRecommendation(p)
 		p.SkorRisiko = 0 // Set skor default jika ML gagal
 	}
 
 	// Pastikan status_risiko selalu terisi
 	if p.StatusRisiko == "" {
-		p.StatusRisiko = calculateManualRiskStatus(p)
+		// p.StatusRisiko = calculateManualRiskStatus(p)
 		p.DetailRisiko = generateProblemAndRecommendation(p)
 	}
 
@@ -175,14 +175,14 @@ func (u *pemeriksaanKehamilanUsecase) Update(p *models.PemeriksaanKehamilan) err
 	if err := u.fillPrediction(p); err != nil {
 		// Jika ML service gagal, gunakan perhitungan manual sebagai fallback
 		fmt.Println("⚠️ Warning: Prediksi risiko ML gagal saat update, gunakan perhitungan manual:", err)
-		p.StatusRisiko = calculateManualRiskStatus(p)
+		// p.StatusRisiko = calculateManualRiskStatus(p)
 		p.DetailRisiko = generateProblemAndRecommendation(p)
 		p.SkorRisiko = 0 // Set skor default jika ML gagal
 	}
 
 	// Pastikan status_risiko selalu terisi
 	if p.StatusRisiko == "" {
-		p.StatusRisiko = calculateManualRiskStatus(p)
+		// p.StatusRisiko = calculateManualRiskStatus(p)
 		p.DetailRisiko = generateProblemAndRecommendation(p)
 	}
 

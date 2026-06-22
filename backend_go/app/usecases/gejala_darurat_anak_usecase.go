@@ -2,7 +2,6 @@ package usecases
 
 import (
 	"errors"
-	"strings"
 	"time"
 
 	"monitoring-service/app/models"
@@ -64,7 +63,9 @@ func (u *gejalaDaruratAnakUsecase) ProsesDeteksi(req *models.DeteksiDaruratReque
 	}
 
 	maxBobot := 0
-	var tindakanList []string
+	totalBobot := 0
+	adaBobot3 := false
+
 	var detailJawaban []models.DetailDeteksi
 
 	for _, gejalaReq := range req.DaftarGejala {
@@ -74,20 +75,32 @@ func (u *gejalaDaruratAnakUsecase) ProsesDeteksi(req *models.DeteksiDaruratReque
 		}
 		detailJawaban = append(detailJawaban, detail)
 
-		if gejalaReq.IsTerjadi {
-			rule, exists := AturanGejala[gejalaReq.KodeGejala]
-			if exists {
-				if rule.Bobot > maxBobot {
-					maxBobot = rule.Bobot
-				}
-				tindakanList = append(tindakanList, rule.Tindakan)
-			}
+		if !gejalaReq.IsTerjadi {
+			continue
+		}
+
+		rule, exists := AturanGejala[gejalaReq.KodeGejala]
+		if !exists {
+			continue
+		}
+
+		totalBobot += rule.Bobot
+
+		if rule.Bobot > maxBobot {
+			maxBobot = rule.Bobot
+		}
+
+		if rule.Bobot == 3 {
+			adaBobot3 = true
 		}
 	}
 
-	tindakanGabungan := "Tetap pantau kondisi anak dan jaga asupan nutrisi."
-	if len(tindakanList) > 0 {
-		tindakanGabungan = strings.Join(tindakanList, " | ")
+	var tindakanGabungan string
+
+	if adaBobot3 {
+		tindakanGabungan = "DARURAT - Segera ke IGD / Hubungi 119"
+	} else {
+		tindakanGabungan = "Periksa ke Puskesmas"
 	}
 
 	riwayat := &models.RiwayatDeteksi{
