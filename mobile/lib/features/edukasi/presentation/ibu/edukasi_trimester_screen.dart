@@ -946,31 +946,44 @@ class _EdukasiTrimesterScreenState extends State<EdukasiTrimesterScreen>
     return filtered;
   }
 
-  // Ambil daftar kategori unik dari data tab aktif
-  List<String> _getKategoriList(
-    List<EdukasiTrimesterModel> data,
-    int tabIndex,
-  ) {
-    final base = tabIndex == 0
-        ? data
-        : data
-            .where((e) => normalizeTrimester(e.trimester) == '$tabIndex')
-            .toList();
-
-    final kategoriSet = base
-        .map((e) => e.kategori)
-        .where((k) => k.trim().isNotEmpty)
-        .toSet()
-        .toList()
-      ..sort();
-
-    return ['Semua', ...kategoriSet];
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F7FB),
+      backgroundColor: const Color(0xFFF5F7FB),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF1E293B)),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Edukasi Trimester',
+              style: TextStyle(
+                color: Color(0xFF1E293B),
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+            Text(
+              'Panduan kesehatan ibu di setiap trimester kehamilan',
+              style: TextStyle(
+                color: Color(0xFF64748B),
+                fontWeight: FontWeight.normal,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+        centerTitle: false,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1.0),
+          child: Container(color: Colors.grey.shade200, height: 1.0),
+        ),
+      ),
       body: FutureBuilder<List<EdukasiTrimesterModel>>(
         future: _futureData,
         builder: (context, snapshot) {
@@ -984,163 +997,59 @@ class _EdukasiTrimesterScreenState extends State<EdukasiTrimesterScreen>
 
           final allData = snapshot.data ?? [];
 
-          return NestedScrollView(
-            headerSliverBuilder: (context, _) => [
-              // ---- HEADER BIRU ----
-              SliverToBoxAdapter(
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.fromLTRB(20, 60, 20, 20),
-                  decoration: const BoxDecoration(color: Color(0xFF1F5EA8)),
-                  child: Row(
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          shape: BoxShape.circle,
-                        ),
-                        child: IconButton(
-                          onPressed: () => Navigator.pop(context),
-                          icon: const Icon(
-                            Icons.arrow_back_ios_new,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Edukasi Trimester',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Panduan kesehatan selama kehamilan',
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.85),
-                                fontSize: 13,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+          return AnimatedBuilder(
+            animation: _tabController,
+            builder: (context, _) {
+              final tabIndex = _tabController.index;
+              final filtered = _filterByTab(allData, tabIndex);
 
-              // ---- TAB BAR (sticky) ----
-              SliverPersistentHeader(
-                pinned: true,
-                delegate: _StickyTabBarDelegate(
-                  TabBar(
-                    controller: _tabController,
-                    isScrollable: true,
-                    tabAlignment: TabAlignment.start,
-                    indicatorColor: const Color(0xFF1F5EA8),
-                    indicatorWeight: 3,
-                    labelColor: const Color(0xFF1F5EA8),
-                    unselectedLabelColor: const Color(0xFF9CA3AF),
-                    labelStyle: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                    ),
-                    unselectedLabelStyle: const TextStyle(fontSize: 13),
-                    tabs: _tabLabels
-                        .map((label) => Tab(text: label))
-                        .toList(),
-                    onTap: (_) =>
-                        setState(() => _selectedKategori = 'Semua'),
-                  ),
-                ),
-              ),
-            ],
-
-            body: AnimatedBuilder(
-              animation: _tabController,
-              builder: (context, _) {
-                final tabIndex = _tabController.index;
-                final kategoriList = _getKategoriList(allData, tabIndex);
-                final filtered = _filterByTab(allData, tabIndex);
-
-                return Column(
-                  children: [
-                    // ---- FILTER KATEGORI ----
-                    if (kategoriList.length > 1)
-                      Container(
-                        color: Colors.white,
-                        padding:
-                            const EdgeInsets.fromLTRB(16, 10, 16, 10),
-                        child: SizedBox(
-                          height: 36,
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: kategoriList.length,
-                            itemBuilder: (context, i) {
-                              final kat = kategoriList[i];
-                              final isSelected = _selectedKategori == kat;
-                              return GestureDetector(
-                                onTap: () => setState(
-                                    () => _selectedKategori = kat),
-                                child: Container(
-                                  margin:
-                                      const EdgeInsets.only(right: 8),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 14,
-                                    vertical: 8,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: isSelected
-                                        ? const Color(0xFF1F5EA8)
-                                        : const Color(0xFFF3F4F6),
-                                    borderRadius:
-                                        BorderRadius.circular(20),
-                                  ),
-                                  child: Text(
-                                    kat,
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                      color: isSelected
-                                          ? Colors.white
-                                          : const Color(0xFF6B7280),
-                                    ),
-                                  ),
-                                ),
-                              );
+              return Column(
+                children: [
+                  // ---- FILTER TAB TRIMESTER (pill, gaya menu utama) ----
+                  Container(
+                    color: Colors.white,
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
+                    child: SizedBox(
+                      height: 38,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: _tabLabels.length,
+                        itemBuilder: (context, i) {
+                          final isSelected = _tabController.index == i;
+                          return _FilterPill(
+                            label: _tabLabels[i],
+                            selected: isSelected,
+                            onTap: () {
+                              setState(() {
+                                _tabController.index = i;
+                                _selectedKategori = 'Semua';
+                              });
                             },
-                          ),
-                        ),
+                          );
+                        },
                       ),
-
-                    // ---- LIST ARTIKEL ----
-                    Expanded(
-                      child: filtered.isEmpty
-                          ? const Center(
-                              child: Text(
-                                'Belum ada edukasi tersedia',
-                                style:
-                                    TextStyle(color: Color(0xFF9CA3AF)),
-                              ),
-                            )
-                          : ListView.builder(
-                              padding: const EdgeInsets.all(16),
-                              itemCount: filtered.length,
-                              itemBuilder: (context, index) =>
-                                  _ArticleCard(item: filtered[index]),
-                            ),
                     ),
-                  ],
-                );
-              },
-            ),
+                  ),
+
+                  // ---- LIST ARTIKEL ----
+                  Expanded(
+                    child: filtered.isEmpty
+                        ? const Center(
+                            child: Text(
+                              'Belum ada edukasi tersedia',
+                              style: TextStyle(color: Color(0xFF9CA3AF)),
+                            ),
+                          )
+                        : ListView.builder(
+                            padding: const EdgeInsets.all(16),
+                            itemCount: filtered.length,
+                            itemBuilder: (context, index) =>
+                                _ArticleCard(item: filtered[index]),
+                          ),
+                  ),
+                ],
+              );
+            },
           );
         },
       ),
@@ -1340,22 +1249,44 @@ class _Badge extends StatelessWidget {
 }
 
 // =========================================================================
-// STICKY TAB BAR DELEGATE
+// FILTER PILL (gaya sama seperti chip kategori di menu utama Edukasi)
 // =========================================================================
-class _StickyTabBarDelegate extends SliverPersistentHeaderDelegate {
-  final TabBar tabBar;
-  const _StickyTabBarDelegate(this.tabBar);
+class _FilterPill extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _FilterPill({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
 
   @override
-  double get minExtent => tabBar.preferredSize.height;
-  @override
-  double get maxExtent => tabBar.preferredSize.height;
-
-  @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return Container(color: Colors.white, child: tabBar);
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(right: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: selected ? const Color(0xFF185FA5) : Colors.white,
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(
+            color: selected ? const Color(0xFF185FA5) : Colors.grey.shade300,
+          ),
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: selected ? Colors.white : Colors.black87,
+            ),
+          ),
+        ),
+      ),
+    );
   }
-
-  @override
-  bool shouldRebuild(_StickyTabBarDelegate old) => false;
 }
