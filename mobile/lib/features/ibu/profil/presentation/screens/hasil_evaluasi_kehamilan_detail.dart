@@ -1,10 +1,3 @@
-// lib/features/ibu/profil/presentation/screens/hasil_evaluasi_kehamilan_detail.dart
-// [SCOPE: modul-ibu / profil / riwayat-kehamilan / hasil-evaluasi-kesehatan-ibu]
-// Halaman penuh menampilkan detail Evaluasi Kesehatan Ibu satu kehamilan.
-// Dipanggil dari DetailRiwayatKehamilanScreen via Navigator.push.
-// Menampilkan: risiko + faktor riwayat penyakit, perilaku, riwayat keluarga,
-// imunisasi TT, inspeksi fisik, dan data antropometri.
-
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;

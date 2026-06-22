@@ -8,6 +8,7 @@ import 'package:ta_pa2_pa3_project/features/ibu/profil/data/services/profil_ibu_
 import 'package:ta_pa2_pa3_project/features/ibu/profil/presentation/screens/profil_ibu_screen.dart'
     as profil_ibu;
 import 'package:ta_pa2_pa3_project/features/ibu/profil/presentation/screens/detail_riwayat_kehamilan_screen.dart';
+import 'package:ta_pa2_pa3_project/features/ibu/profil/presentation/screens/profil_keluarga_screen.dart';
 
 class ProfilScreen extends StatefulWidget {
   const ProfilScreen({super.key});
@@ -189,15 +190,12 @@ class _ProfilScreenState extends State<ProfilScreen>
                     _buildMenuTile(
                       icon: Icons.people_outline,
                       label: 'Profil Keluarga',
-                      onTap: () {
-                        // TODO: ganti dengan ProfilKeluargaScreen() bila sudah dibuat
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Fitur segera tersedia'),
-                            duration: Duration(seconds: 2),
-                          ),
-                        );
-                      },
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const ProfilKeluargaScreen(),
+                        ),
+                      ),
                     ),
                     _buildDivider(),
                     _buildMenuTile(
@@ -419,27 +417,66 @@ class _RiwayatKehamilanListScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF0F4FA),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 18),
-          color: const Color(0xFF1A1A2E),
-          onPressed: () => Navigator.pop(context),
+      body: Column(children: [
+        // ── HEADER PUTIH ─────────────────────────────────────────────
+        Container(
+          width: double.infinity,
+          color: Colors.white,
+          child: SafeArea(
+            bottom: false,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(4, 8, 20, 12),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back_ios_new,
+                            color: Color(0xFF1E293B), size: 20),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF185FA5).withOpacity(0.10),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(Icons.history_outlined,
+                            color: Color(0xFF185FA5), size: 22),
+                      ),
+                      const SizedBox(width: 12),
+                      const Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Riwayat Kehamilan',
+                            style: TextStyle(
+                              color: Color(0xFF1E293B),
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          Text(
+                            'Daftar riwayat kehamilan ibu',
+                            style: TextStyle(
+                              color: Color(0xFF64748B),
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                Divider(height: 1, thickness: 1, color: Colors.grey.shade200),
+              ],
+            ),
+          ),
         ),
-        title: const Text(
-          'Riwayat Kehamilan',
-          style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF1A1A2E)),
-        ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Container(height: 1, color: const Color(0xFFE2E8F0)),
-        ),
-      ),
-      body: list.isEmpty
+        // ── KONTEN ───────────────────────────────────────────────────
+        Expanded(child: list.isEmpty
           ? Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -557,6 +594,8 @@ class _RiwayatKehamilanListScreen extends StatelessWidget {
                 );
               },
             ),
+        ),
+      ]),
     );
   }
 
