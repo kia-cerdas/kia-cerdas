@@ -741,7 +741,7 @@ class DashboardHeader extends StatelessWidget {
                   Icon(Icons.favorite, color: Colors.white70, size: 14),
                   SizedBox(width: 4),
                   Text(
-                    "Semangat jalani hari ini, Bunda!",
+                    "Tetap semangat menjaga kesehatan buah hati!",
                     style: TextStyle(color: Colors.white, fontSize: 12),
                   ),
                 ],

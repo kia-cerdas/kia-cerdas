@@ -98,11 +98,6 @@ class _PilihAnakImunisasiScreenState extends State<PilihAnakImunisasiScreen> {
           }
 
           final anakList = snapshot.data ?? const <IbuAnakModel>[];
-
-for (final anak in anakList) {
-  debugPrint("ID   : ${anak.id}");
-  debugPrint("NAMA : ${anak.nama}");
-}
           if (anakList.isEmpty) {
             return const Center(
               child: Padding(
@@ -125,75 +120,67 @@ for (final anak in anakList) {
     );
   }
 
-  Widget _buildItem(BuildContext context, IbuAnakModel anak) {
-
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE8F1FF),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.blue.shade200),
+  void _navigateToImunisasi(BuildContext context, IbuAnakModel anak) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ImunisasiScreen(
+          anakId: int.tryParse(anak.id.toString()) ?? 0,
+          namaAnak: anak.nama,
+        ),
       ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            backgroundColor: Colors.blue.shade100,
-            child: const Icon(Icons.person, color: Colors.blue),
-          ),
-          const SizedBox(width: 12),
+    );
+  }
 
-          // TEXT
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  anak.nama,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue,
-                  ),
-                ),
-                Text(
-                  anak.usiaTeks.isEmpty
-                      ? 'Siap untuk pemantauan anak'
-                      : anak.usiaTeks,
-                  style: const TextStyle(fontSize: 12),
-                ),
-              ],
+  Widget _buildItem(BuildContext context, IbuAnakModel anak) {
+    return GestureDetector(
+      onTap: () => _navigateToImunisasi(context, anak),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFFE8F1FF),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.blue.shade200),
+        ),
+        child: Row(
+          children: [
+            CircleAvatar(
+              backgroundColor: Colors.blue.shade100,
+              child: const Icon(Icons.person, color: Colors.blue),
             ),
-          ),
+            const SizedBox(width: 12),
 
-
-          // ICON KANAN
-          InkWell(
-            
-            onTap: () {
-              debugPrint("ANAK DIPILIH");
-debugPrint("ID   : ${anak.id}");
-debugPrint("NAMA : ${anak.nama}");
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => ImunisasiScreen(
-                    anakId: int.tryParse(
-                          anak.id.toString(),
-                        ) ??
-                        0,
-                    namaAnak: anak.nama,
+            // TEXT
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    anak.nama,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue,
+                    ),
                   ),
-                ),
-              );
-            },
-            child: const CircleAvatar(
+                  Text(
+                    anak.usiaTeks.isEmpty
+                        ? 'Siap untuk pemantauan anak'
+                        : anak.usiaTeks,
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+
+            // ICON KANAN
+            const CircleAvatar(
               radius: 14,
               backgroundColor: Colors.blue,
               child: Icon(Icons.arrow_forward, size: 14, color: Colors.white),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

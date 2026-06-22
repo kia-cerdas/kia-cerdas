@@ -29,7 +29,7 @@ func (m *Main) GetJadwalImunisasiByUserID(
 		Table("pengguna p").
 		Select(`
 		a.id as anak_id,
-		pd_anak.nama_lengkap as nama_anak,
+		pd_anak.nama_anggota_keluarga as nama_anak,
 		pd_anak.tanggal_lahir,
 
 		j.id as jadwal_id,
@@ -101,7 +101,7 @@ func (m *Main) GetJadwalImunisasiByAnakID(
 		Table("pengguna p").
 		Select(`
 			a.id as anak_id,
-			pd_anak.nama_lengkap as nama_anak,
+			pd_anak.nama_anggota_keluarga as nama_anak,
 			pd_anak.tanggal_lahir,
 
 			j.id as jadwal_id,
@@ -151,7 +151,7 @@ func (m *Main) GetJadwalImunisasiByAnakID(
 			ON v.id = dv.id_vaksin
 		`).
 		Where("p.id = ?", int(userID)).
-		Where("a.id = ?", int(anakID)). // 🔥 filter anak spesifik
+		Where("a.id = ?", int(anakID)).
 		Order("j.tanggal_estimasi ASC").
 		Scan(&result).Error
 
@@ -184,7 +184,7 @@ func (m *Main) GetJadwalImunisasiByJadwalID(
 		Table("pengguna p").
 		Select(`
 			a.id as anak_id,
-			pd_anak.nama_lengkap as nama_anak,
+			pd_anak.nama_anggota_keluarga as nama_anak,
 			pd_anak.tanggal_lahir,
 
 			j.id as jadwal_id,
@@ -268,7 +268,7 @@ func (m *Main) GetJadwalImunisasiByAnakIDBidan(anakID int32) ([]JadwalImunisasiJ
 		Table("anak a").
 		Select(`
 			a.id as anak_id,
-			pd_anak.nama_lengkap as nama_anak,
+			pd_anak.nama_anggota_keluarga as nama_anak,
 			pd_anak.tanggal_lahir,
 
 			j.id as jadwal_id,
@@ -346,14 +346,14 @@ func (m *Main) GetJadwalImunisasiTerlewatByKaderID(
 		Select(`
 		jia.id AS jadwal_id,
 		a.id AS anak_id,
-		p_anak.nama_lengkap AS nama_anak,
+		p_anak.nama_anggota_keluarga AS nama_anak,
 		p_anak.tanggal_lahir,
 		p_anak.dusun,
 
-		p_ibu.nama_lengkap AS nama_ibu,
+		p_ibu.nama_anggota_keluarga AS nama_ibu,
 		p_ibu.telepon AS nomor_telepon_ibu,
 
-		p_ayah.nama_lengkap AS nama_ayah,
+		p_ayah.nama_anggota_keluarga AS nama_ayah,
 		p_ayah.telepon AS nomor_telepon_ayah,
 
 		dv.nama_dosis,
@@ -403,10 +403,10 @@ func (m *Main) GetJadwalImunisasiTerlewatByKaderID(
 	`).
 		Joins(`
 		INNER JOIN kader k
-		ON k.id_penduduk = p_kader.id
+		ON k.penduduk_id = p_kader.id
 	`).
 		Where("status_jadwal.id IN ?", []int{3, 4, 5}).
-		Where("p_anak.desa_id = p_kader.desa_id").
+		Where("p_anak.posyandu_id = k.posyandu_id").
 		Where("jia.tanggal_estimasi < CURRENT_DATE").
 		Where(`
 		(
@@ -503,10 +503,10 @@ func (m *Main) GetJadwalImunisasiTerlewatByID(
 		`).
 		Joins(`
 			INNER JOIN kader k
-			ON k.id_penduduk = p_kader.id
+			ON k.penduduk_id = p_kader.id
 		`).
 		Where("jia.id = ?", jadwalID).
-		Where("p_anak.desa_id = p_kader.desa_id").
+		Where("p_anak.posyandu_id = k.posyandu_id").
 		Scan(&result).Error
 
 	if err != nil {

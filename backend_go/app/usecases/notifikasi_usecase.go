@@ -25,6 +25,15 @@ func (u *Main) sendFCM(
 	title,
 	message string,
 ) error {
+	return u.sendFCMWithData(token, title, message, nil)
+}
+
+func (u *Main) sendFCMWithData(
+	token,
+	title,
+	message string,
+	data map[string]string,
+) error {
 
 	if u.fcmClient == nil {
 		return fmt.Errorf(
@@ -38,6 +47,7 @@ func (u *Main) sendFCM(
 			Title: title,
 			Body:  message,
 		},
+		Data: data,
 	}
 
 	response, err := u.fcmClient.Send(
@@ -139,7 +149,13 @@ func (u *Main) ProcessReminder() error {
 
 				log.Println("[REMINDER] sending FCM to anak:", j.AnakID)
 
-				if err := u.sendFCM(t, title, body); err != nil {
+				fcmData := map[string]string{
+					"type":      "reminder_imunisasi",
+					"jadwal_id": fmt.Sprintf("%d", j.JadwalID),
+					"anak_id":   fmt.Sprintf("%d", j.AnakID),
+				}
+
+				if err := u.sendFCMWithData(t, title, body, fcmData); err != nil {
 					log.Println("[REMINDER] FCM error:", err)
 				}
 			}
@@ -211,7 +227,6 @@ func (u *Main) send(
 		// simpan notifikasi ke DB
 		_ = u.repository.CreateNotifikasi(models.Notifikasi{
 			PenggunaID:            userID,
-			JadwalImunisasiAnakId: j.ID,
 			Judul:                 finalTitle,
 			Pesan:                 finalBody,
 			TipeNotifikasiID:      1,
