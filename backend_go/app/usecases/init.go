@@ -188,7 +188,7 @@ func Init(opts Options) *Main {
 	}
 
 	//  BUAT PREDIKSI USECASE (panggil service Python)
-	mlURL := "https://model.generasisehat.com"
+	mlURL := "http://localhost:8001"
 	if opts.Config != nil && opts.Config.MLServiceURL != "" {
 		mlURL = opts.Config.MLServiceURL
 	}

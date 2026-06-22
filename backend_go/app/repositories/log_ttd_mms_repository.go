@@ -70,14 +70,15 @@ func (r *LogTTDMMSRepository) Upsert(log *models.LogTTDMMS) error {
  
 // RekapIbuTTDMMS adalah struct hasil rekap per ibu hamil untuk kader.
 type RekapIbuTTDMMS struct {
-	HPHT           string `json:"hpht"`
-	IbuID         int32  `json:"ibu_id"`
-	KehamilanID   int32  `json:"kehamilan_id"`
-	NamaIbu       string `json:"nama_ibu"`
-	BulanKe       int32  `json:"bulan_ke"`
-	TotalHari     int32  `json:"total_hari"`
-	TotalDiminum  int32  `json:"total_diminum"`
-	TotalTerlewat int32  `json:"total_terlewat"`
+	HPHT            string `json:"hpht"`
+	IbuID           int32  `json:"ibu_id"`
+	KehamilanID     int32  `json:"kehamilan_id"`
+	NamaIbu         string `json:"nama_ibu"`
+	BulanKe         int32  `json:"bulan_ke"`
+	TotalHari       int32  `json:"total_hari"`
+	TotalDiminum    int32  `json:"total_diminum"`
+	TotalTerlewat   int32  `json:"total_terlewat"`
+	StatusKehamilan string `json:"status_kehamilan"`
 }
  
 // (Dihapus FindKaderByUserID karena sudah tidak dipakai)
@@ -88,21 +89,18 @@ type kehamilanWithNama struct {
 	NamaIbu string `gorm:"column:nama_ibu"`
 }
  
-// FindAllActiveKehamilanByPosyanduID mengambil semua kehamilan aktif ibu (role=Ibu)
-// di posyandu yang sama dengan kader. Nama ibu diambil langsung via JOIN.
+// FindAllActiveKehamilanByPosyanduID mengambil semua kehamilan aktif (TRIMESTER 1/2/3)
+// dan NIFAS ibu di posyandu yang sama dengan kader. Nama ibu diambil langsung via JOIN.
 func (r *LogTTDMMSRepository) FindAllActiveKehamilanByPosyanduID(posyanduID int32) ([]models.Kehamilan, error) {
 	var rows []kehamilanWithNama
- 
+
 	err := r.db.
 		Table("kehamilan k").
-		Select("k.*, kpd.nama_lengkap AS nama_ibu").
+		Select("k.*, kpd.nama_anggota_keluarga AS nama_ibu").
 		Joins("JOIN ibu i ON i.id = k.ibu_id").
 		Joins("JOIN penduduk kpd ON kpd.id = i.penduduk_id").
-		Joins("JOIN pengguna u ON u.penduduk_id = kpd.id").
-		Joins("JOIN roles rl ON rl.id = u.role_id").
 		Where("kpd.posyandu_id = ?", posyanduID).
-		Where("rl.name = ?", "Ibu").
-		Where("k.status_kehamilan IN ?", []string{"aktif", "TRIMESTER 1", "TRIMESTER 2", "TRIMESTER 3"}).
+		Where("k.status_kehamilan IN ?", []string{"aktif", "TRIMESTER 1", "TRIMESTER 2", "TRIMESTER 3", "NIFAS"}).
 		Where("k.deleted_at IS NULL").
 		Scan(&rows).Error
  

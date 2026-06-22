@@ -1206,10 +1206,14 @@ export default function PelayananPersalinan() {
 
   return (
     <MainLayout>
-      <div className="p-4 md:p-6 max-w-5xl w-full">
+      <div className="p-4 md:p-6 max-w-5xl w-full mx-auto">
         <div className="flex items-center gap-3 mb-5">
-          <button onClick={() => navigate(-1)} className="p-2 rounded-full hover:bg-gray-100">
-            <ArrowLeft size={18} />
+          <button
+            onClick={() => navigate(-1)}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#185FA5] text-[#185FA5] text-sm font-semibold hover:bg-[#185FA5]/5 transition"
+          >
+            <ArrowLeft size={16} />
+            Kembali
           </button>
           <div>
             <h1 className="text-xl md:text-2xl font-bold text-gray-900">Proses & Riwayat Melahirkan</h1>
@@ -1244,23 +1248,25 @@ export default function PelayananPersalinan() {
         {activeTab === "ringkasan" && (
           <div className="space-y-4">
             {editTarget && (
-              <RingkasanForm
-                key={editTarget.id}
-                initial={{
-                  ...editTarget,
-                  bayi_anak_ke: editTarget.bayi_anak_ke ?? "",
-                  bayi_berat_lahir_gram: editTarget.bayi_berat_lahir_gram ?? "",
-                  bayi_panjang_badan_cm: editTarget.bayi_panjang_badan_cm ?? "",
-                  bayi_lingkar_kepala_cm: editTarget.bayi_lingkar_kepala_cm ?? "",
-                  nama_anak: "", anak_tanggal_lahir: "", anak_jenis_kelamin: "",
-                  anak_nama_ibu: ibuData?.kependudukan?.nama_lengkap || editTarget.anak_nama_ibu || "",
-                  anak_nama_ayah: ibuData?.suami?.nama_lengkap || editTarget.anak_nama_ayah || "",
-                }}
-                title={`Edit Kelahiran`}
-                onSubmit={handleSubmitEdit}
-                onCancel={() => setEditTarget(null)}
-                saving={saving}
-              />
+              <div className="max-w-5xl mx-auto">
+                <RingkasanForm
+                  key={editTarget.id}
+                  initial={{
+                    ...editTarget,
+                    bayi_anak_ke: editTarget.bayi_anak_ke ?? "",
+                    bayi_berat_lahir_gram: editTarget.bayi_berat_lahir_gram ?? "",
+                    bayi_panjang_badan_cm: editTarget.bayi_panjang_badan_cm ?? "",
+                    bayi_lingkar_kepala_cm: editTarget.bayi_lingkar_kepala_cm ?? "",
+                    nama_anak: "", anak_tanggal_lahir: "", anak_jenis_kelamin: "",
+                    anak_nama_ibu: ibuData?.kependudukan?.nama_lengkap || editTarget.anak_nama_ibu || "",
+                    anak_nama_ayah: ibuData?.suami?.nama_lengkap || editTarget.anak_nama_ayah || "",
+                  }}
+                  title={`Edit Kelahiran`}
+                  onSubmit={handleSubmitEdit}
+                  onCancel={() => setEditTarget(null)}
+                  saving={saving}
+                />
+              </div>
             )}
 
             {!editTarget && kelahiranList.length === 0 && !showNewForm && (
@@ -1309,13 +1315,15 @@ export default function PelayananPersalinan() {
             ))}
 
             {!editTarget && showNewForm && (
-              <RingkasanForm
-                initial={emptyRingkasan(ibuData)}
-                title={`Tambah Kelahiran ke-${kelahiranList.length + 1}`}
-                onSubmit={handleSubmitNew}
-                onCancel={() => setShowNewForm(false)}
-                saving={saving}
-              />
+              <div className="max-w-5xl mx-auto">
+                <RingkasanForm
+                  initial={emptyRingkasan(ibuData)}
+                  title={`Tambah Kelahiran ke-${kelahiranList.length + 1}`}
+                  onSubmit={handleSubmitNew}
+                  onCancel={() => setShowNewForm(false)}
+                  saving={saving}
+                />
+              </div>
             )}
 
             {!editTarget && !showNewForm && kelahiranList.length > 0 && canEditRingkasan && canAccessPersalinan && (
