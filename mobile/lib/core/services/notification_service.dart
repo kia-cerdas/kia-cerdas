@@ -11,8 +11,8 @@ import 'package:ta_pa2_pa3_project/features/ibu/imunisasi/presentation/screens/u
 import '../../firebase_options.dart';
 
 const _androidChannel = AndroidNotificationChannel(
-  'kia_app_channel',
-  'KIA App Notifications',
+  'generasi_sehat_channel',
+  'Notifikasi Generasi Sehat',
   description: 'Notifikasi pengingat imunisasi dan layanan KIA',
   importance: Importance.max,
 );
@@ -122,6 +122,8 @@ class NotificationService {
     final isImunisasiReminder = data['type'] == 'reminder_imunisasi';
 
     final AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+      'generasi_sehat_channel',
+      'Notifikasi Generasi Sehat',
       priority: Priority.high,
       playSound: true,
       actions: isImunisasiReminder
