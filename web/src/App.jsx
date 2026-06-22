@@ -356,33 +356,33 @@ function App() {
         <Route path="/edukasi-digital/mpasi-resep/form/:id" element={<MpasiResepFormPage />} />
 
         {/* ── PUSKESMAS (Bidan Puskesmas & Dokter) ── */}
-        <Route 
-          path="/dashboard/puskesmas" 
+        <Route
+          path="/dashboard/puskesmas"
           element={
             <ProtectedRoute allowedRoles={["bidan_puskesmas", "dokter"]}>
               <DashboardPuskesmas />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/puskesmas/kelola-vaksin" 
+        <Route
+          path="/puskesmas/kelola-vaksin"
           element={
             <ProtectedRoute allowedRoles={["bidan_puskesmas", "dokter"]}>
               <RoleAccessGuard allowedRoles={["bidan_puskesmas"]} featureName="Kelola Vaksin">
                 <KelolaVaksin />
               </RoleAccessGuard>
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/puskesmas/dashboard-dokter" 
+        <Route
+          path="/puskesmas/dashboard-dokter"
           element={
             <ProtectedRoute allowedRoles={["bidan_puskesmas", "dokter"]}>
               <RoleAccessGuard allowedRoles={["dokter"]} featureName="Dashboard Dokter">
-                <Dashboard/>
+                <Dashboard />
               </RoleAccessGuard>
             </ProtectedRoute>
-          } 
+          }
         />
 
         {/* ── DEFAULT ── */}

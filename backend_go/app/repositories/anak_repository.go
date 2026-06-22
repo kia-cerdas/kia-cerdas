@@ -30,24 +30,22 @@ func (m *Main) SearchAnak(namaAnak, namaIbu, noKK string) ([]models.Anak, error)
 		Joins("LEFT JOIN penduduk p ON p.id = anak.penduduk_id").
 		Joins("LEFT JOIN kehamilan k ON k.id = anak.kehamilan_id").
 		Joins("LEFT JOIN ibu i ON i.id = k.ibu_id").
-		Joins("LEFT JOIN penduduk pi ON pi.id = i.penduduk_id").
-		Joins("LEFT JOIN kartu_keluarga kk ON kk.id = p.kartu_keluarga_id")
+		Joins("LEFT JOIN penduduk pi ON pi.id = i.penduduk_id")
 
 	namaAnak = strings.TrimSpace(namaAnak)
 	namaIbu = strings.TrimSpace(namaIbu)
 	noKK = strings.TrimSpace(noKK)
 
 	if namaAnak != "" {
-		query = query.Where("p.nama_lengkap ILIKE ?", "%"+namaAnak+"%")
+		query = query.Where("p.nama_anggota_keluarga ILIKE ?", "%"+namaAnak+"%")
 	}
 
 	if namaIbu != "" {
-		query = query.Where("pi.nama_lengkap ILIKE ?", "%"+namaIbu+"%")
+		query = query.Where("pi.nama_anggota_keluarga ILIKE ?", "%"+namaIbu+"%")
 	}
 
 	if noKK != "" {
-		searchNoKK := "%" + noKK + "%"
-		query = query.Where("kk.no_kartu_keluarga ILIKE ?", searchNoKK)
+		query = query.Where("p.kode_keluarga ILIKE ?", "%"+noKK+"%")
 	}
 
 	err := query.

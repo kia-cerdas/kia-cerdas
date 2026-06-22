@@ -4,7 +4,7 @@ import EdukasiDigitalCrudPage from "./EdukasiDigitalCrudPage";
 const fields = [
   { key: "bulan_min", label: "Bulan Minimal", type: "number", required: true },
   { key: "bulan_max", label: "Bulan Maksimal", type: "number", required: true },
-  { key: "gambar_url", label: "Gambar (opsional)", type: "image" },
+  { key: "gambar_url", label: "Gambar", type: "image" },
   { key: "tekstur", label: "Tekstur", type: "textarea", rows: 2, required: true },
   { key: "frekuensi", label: "Frekuensi", type: "textarea", rows: 2, required: true },
   { key: "porsi", label: "Porsi", type: "textarea", rows: 2, required: true },

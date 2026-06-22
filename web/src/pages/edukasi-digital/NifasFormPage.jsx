@@ -10,7 +10,7 @@ export default function NifasFormPage() {
       listPath="/edukasi-digital/nifas"
       fields={[
         { key: "judul", label: "Judul", type: "text" },
-        { key: "gambar_url", label: "Gambar (opsional)", type: "image" },
+        { key: "gambar_url", label: "Gambar", type: "image" },
         { key: "isi", label: "Isi / Deskripsi Umum", type: "textarea", rows: 4 },
         { key: "perawatan", label: "Perawatan Masa Nifas", type: "textarea", rows: 4 },
         { key: "tanda_bahaya", label: "Tanda Bahaya Nifas", type: "textarea", rows: 4 },

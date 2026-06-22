@@ -523,7 +523,7 @@ export default function PublicEdukasiDetail() {
                 <img
                   src={imgUrl}
                   alt={title}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                   onError={(e) => {
                     e.target.parentNode.style.display = "none";
                   }}

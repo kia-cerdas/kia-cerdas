@@ -22,7 +22,7 @@ export default function PolaAsuhFormPage() {
           type: "select",
           options: RENTANG_USIA_OPTIONS
         },
-        { key: "gambar_url", label: "Gambar (opsional)", type: "image" },
+        { key: "gambar_url", label: "Gambar", type: "image" },
         { key: "isi", label: "Isi konten", type: "textarea", rows: 6 },
       ]}
     />

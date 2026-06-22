@@ -55,7 +55,7 @@ func (h *AnakController) AdminList(c echo.Context) error {
 		posyanduID = nil // admin/dokter/superadmin → lihat semua
 	}
 
-	list, err := h.anakUC.ListAnakByDesa(posyanduID, kehamilanID)
+	list, err := h.anakUC.ListAnakByPosyandu(posyanduID, kehamilanID)
 	if err != nil {
 		return helpers.StandardResponse(c, http.StatusInternalServerError, err.Error(), nil, nil)
 	}
