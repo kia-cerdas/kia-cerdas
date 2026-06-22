@@ -779,7 +779,7 @@ if (selectedKunjungan === "KF4") {
 
   return (
     <MainLayout>
-      <div className="p-6 max-w-5xl">
+      <div className="p-6 max-w-7xl mx-auto">
         {/* Breadcrumb */}
         {/* <Breadcrumb /> */}
 
@@ -928,7 +928,8 @@ if (selectedKunjungan === "KF4") {
         )}
         
         {mode === "form" && (
-          <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm p-6 space-y-4">
+          <div className="flex justify-center">
+            <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm p-6 space-y-4 max-w-4xl w-full">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold text-indigo-700">
                 Form Pelayanan Nifas {getKunjunganLabel()}
@@ -1221,7 +1222,8 @@ if (selectedKunjungan === "KF4") {
                 <Save size={18} /> {saving ? "Menyimpan..." : "Simpan Nifas"}
               </button>
             </div>
-          </form>
+            </form>
+          </div>
         )}
         
         {mode === "detail" && currentData && (

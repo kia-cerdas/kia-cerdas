@@ -453,15 +453,47 @@ const Header = ({ onToggleSidebar, isSidebarOpen }) => {
 
   return (
     <>
+      {/* Fixed sidebar toggle button - ALWAYS VISIBLE when sidebar is closed */}
+      {!isSidebarOpen && (
+        <div className="fixed left-0 top-1/2 -translate-y-1/2 z-[9999]">
+          <button
+            onClick={onToggleSidebar}
+            className="flex items-center gap-2 px-5 py-4 bg-blue-600 hover:bg-blue-700 text-white shadow-2xl hover:shadow-3xl transition-all rounded-r-xl border-2 border-blue-700 border-l-0"
+            aria-label="Buka Menu Sidebar"
+            title="Klik untuk menampilkan Menu Sidebar"
+            style={{ 
+              boxShadow: '8px 0 24px rgba(37, 99, 235, 0.5)',
+              animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+            }}
+          >
+            <Menu size={28} strokeWidth={3} />
+            <span className="font-bold text-base whitespace-nowrap">MENU</span>
+          </button>
+        </div>
+      )}
+
       <header className="px-6 py-4 border-b border-gray-100 bg-white relative z-50">
         <div className="bg-gradient-to-r from-[#185FA5] to-[#185FA5] text-white rounded-2xl p-4 md:p-5 shadow-lg flex flex-col md:flex-row md:items-start justify-between gap-3">
+          {/* Tombol toggle sidebar - ALWAYS VISIBLE */}
+          <button
+            onClick={onToggleSidebar}
+            className="flex items-center gap-2 px-4 py-3 rounded-lg bg-white hover:bg-gray-100 text-gray-800 shadow-md hover:shadow-lg transition-all flex-shrink-0"
+            aria-label={isSidebarOpen ? "Tutup Menu" : "Buka Menu"}
+            title={isSidebarOpen ? "Tutup Menu Sidebar" : "Klik untuk menampilkan Menu Sidebar"}
+          >
+            {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
+            <span className="font-bold text-sm hidden sm:inline">MENU</span>
+          </button>
+
           {/* Judul halaman */}
           <div className="min-w-0">
-            <h1 className="text-xl md:text-2xl font-bold leading-tight">{pageHeader.title}</h1>
-            <p className="text-cyan-100 mt-1.5 text-xs md:text-sm leading-relaxed whitespace-pre-line">{pageHeader.subtitle}</p>
-            {pageHeader.note && (
-              <p className="text-cyan-100 mt-1.5 text-[11px] md:text-xs leading-relaxed">{pageHeader.note}</p>
-            )}
+            <div>
+              <h1 className="text-xl md:text-2xl font-bold leading-tight">{pageHeader.title}</h1>
+              <p className="text-cyan-100 mt-1.5 text-xs md:text-sm leading-relaxed whitespace-pre-line">{pageHeader.subtitle}</p>
+              {pageHeader.note && (
+                <p className="text-cyan-100 mt-1.5 text-[11px] md:text-xs leading-relaxed">{pageHeader.note}</p>
+              )}
+            </div>
           </div>
 
           {/* Dropdown user + tombol toggle sidebar */}
@@ -513,10 +545,10 @@ const Header = ({ onToggleSidebar, isSidebarOpen }) => {
               </div>
             )}
 
-            {/* Tombol buka sidebar (hanya untuk mobile) */}
+            {/* Tombol buka sidebar (untuk semua ukuran layar) */}
             <button
               onClick={onToggleSidebar}
-              className="ml-2 flex items-center justify-center w-9 h-9 rounded-lg hover:bg-white/10 transition-colors md:hidden"
+              className="ml-2 flex items-center justify-center w-9 h-9 rounded-lg hover:bg-white/10 transition-colors"
               aria-label="Open Menu"
               title="Buka Menu"
             >
@@ -524,13 +556,13 @@ const Header = ({ onToggleSidebar, isSidebarOpen }) => {
             </button>
           </div>
 
-          {/* Tombol tutup sidebar (muncul saat sidebar terbuka, mobile) */}
+          {/* Tombol tutup sidebar (muncul saat sidebar terbuka, semua ukuran layar) */}
           {isSidebarOpen && (
             <button
               onClick={onToggleSidebar}
-              className="flex items-center justify-center w-9 h-9 rounded-lg hover:bg-white/10 transition-colors md:hidden self-end"
+              className="flex items-center justify-center w-9 h-9 rounded-lg hover:bg-white/10 transition-colors self-end"
               aria-label="Close Menu"
-              title="Tutup Menu"
+               title="Tutup Menu"
             >
               <X size={20} className="text-white" />
             </button>

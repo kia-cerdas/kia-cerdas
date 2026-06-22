@@ -62,18 +62,14 @@ const Breadcrumb = () => {
     pemantauan: "Pemantauan",
     perawatan: "Lembar Perawatan",
     lila: "LILA",
-
-    // Anak - Monitoring
-    keluhan: "Keluhan",
-    pemantauan: "Pemantauan",
-    perkembangan: "Perawatan",
+    perkembangan: "Perkembangan", // Dipindahkan & label disesuaikan
 
     // Pencatatan & Monitoring
     pencatatan: "Pencatatan",
     "kesehatan-lingkungan": "Kesehatan Lingkungan",
     monitoring: "Monitoring",
-    "lihat": "Lihat Data",
-    "kelola": "Kelola",
+    lihat: "Lihat Data",
+    kelola: "Kelola",
     "kelola-perkembangan": "Kelola Perawatan",
 
     // Edukasi Digital
@@ -180,7 +176,10 @@ const Breadcrumb = () => {
   }
 
   return (
-    <nav className="flex items-center gap-2 py-3 px-4 md:px-8 bg-gradient-to-r from-gray-50 to-white border-b border-gray-200 text-sm shadow-sm" aria-label="Breadcrumb">
+    <nav
+      className="flex items-center gap-2 py-3 px-4 md:px-8 bg-gradient-to-r from-gray-50 to-white border-b border-gray-200 text-sm shadow-sm"
+      aria-label="Breadcrumb"
+    >
       {breadcrumbItems.map((item, index) => (
         <div key={index} className="flex items-center gap-2">
           {index > 0 && (
