@@ -90,14 +90,23 @@ func (r *AbsensiKelasIbuHamilRepository) Upsert(
 
 // BAGIAN KADER
 
-func (r *AbsensiKelasIbuHamilRepository) FindAllWithIbu() ([]models.AbsensiKelasIbuHamil, error) {
+
+
+func (r *AbsensiKelasIbuHamilRepository) FindAllWithIbu(posyanduID *int32) ([]models.AbsensiKelasIbuHamil, error) {
 	var list []models.AbsensiKelasIbuHamil
-	err := r.db.
+	query := r.db.
 		Preload("Kehamilan").
 		Preload("Kehamilan.Ibu").
 		Preload("Kehamilan.Ibu.Kependudukan").
-		Order("created_at DESC").
-		Find(&list).Error
+		Joins("JOIN kehamilan ON kehamilan.id = absensi_kelas_ibu_hamil.kehamilan_id").
+		Joins("JOIN ibu ON ibu.id = kehamilan.ibu_id").
+		Joins("JOIN penduduk ON penduduk.id = ibu.penduduk_id")
+
+	if posyanduID != nil {
+		query = query.Where("penduduk.posyandu_id = ?", *posyanduID)
+	}
+
+	err := query.Order("absensi_kelas_ibu_hamil.created_at DESC").Find(&list).Error
 	return list, err
 }
 

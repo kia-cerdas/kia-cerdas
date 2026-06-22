@@ -1,4 +1,6 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
+import Swal from "sweetalert2";
+import ImageUploader from "../../components/ImageUploader";
 import MainLayout from "../../components/Layout/MainLayout";
 import AlertNotification from "../../components/AlertNotification";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
@@ -21,7 +23,8 @@ import {
   Filter,
   Download,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  ArrowLeft
 } from "lucide-react";
 
 const emptyForm = {
@@ -88,6 +91,11 @@ export default function EdukasiDigitalCrudPage({
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [notification, setNotification] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedItemForDelete, setSelectedItemForDelete] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   const sortedRows = useMemo(() => {
     return [...rows].sort((a, b) => {
@@ -96,6 +104,82 @@ export default function EdukasiDigitalCrudPage({
       return tb - ta;
     });
   }, [rows]);
+
+  const getItemTitle = useCallback((item) => {
+    if (item.judul) return item.judul;
+
+    if (item.bulan_min !== undefined && item.bulan_max !== undefined) {
+      const matchingMateri = mpasiMateriList.find(
+        (m) => m.bulan_min === item.bulan_min && m.bulan_max === item.bulan_max
+      );
+      if (matchingMateri && matchingMateri.judul) {
+        return matchingMateri.judul;
+      }
+      
+      if (resourcePath === "edukasi-mpasi-jadwal-harian") {
+        return `Jadwal Harian MPASI Usia ${item.bulan_min} - ${item.bulan_max} Bulan`;
+      }
+      if (resourcePath === "edukasi-mpasi-aturan-porsi") {
+        return `Aturan Porsi MPASI Usia ${item.bulan_min} - ${item.bulan_max} Bulan`;
+      }
+      return `MPASI Usia ${item.bulan_min} - ${item.bulan_max} Bulan`;
+    }
+
+    return "Tanpa Judul";
+  }, [mpasiMateriList, resourcePath]);
+
+  const getItemDescription = useCallback((item) => {
+    if (item.deskripsi) return item.deskripsi;
+    if (item.isi_konten) return item.isi_konten;
+    if (item.konten) return item.konten;
+    
+    if (item.waktu !== undefined && item.aktivitas !== undefined) {
+      return `Pukul ${item.waktu}: ${item.aktivitas}`;
+    }
+    
+    if (item.tekstur !== undefined) {
+      return `Tekstur: ${item.tekstur} | Frekuensi: ${item.frekuensi} | Porsi: ${item.porsi}`;
+    }
+
+    return "-";
+  }, []);
+
+  const filteredRows = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return sortedRows;
+    return sortedRows.filter((item) => {
+      const itemTitle = getItemTitle(item).toLowerCase();
+      const desc = getItemDescription(item).toLowerCase();
+      return itemTitle.includes(q) || desc.includes(q);
+    });
+  }, [sortedRows, searchQuery, getItemTitle, getItemDescription]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredRows.length / itemsPerPage));
+  const paginatedRows = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredRows.slice(start, start + itemsPerPage);
+  }, [filteredRows, currentPage, itemsPerPage]);
+
+  const paginationStart = (currentPage - 1) * itemsPerPage + 1;
+  const paginationEnd = Math.min(currentPage * itemsPerPage, filteredRows.length);
+
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisible = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+    if (endPage - startPage + 1 < maxVisible) {
+      startPage = Math.max(1, endPage - maxVisible + 1);
+    }
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+    return pages;
+  };
 
   const loadData = async (filterParams = {}) => {
     setLoading(true);
@@ -321,13 +405,13 @@ export default function EdukasiDigitalCrudPage({
         await updateEdukasi(resourcePath, editingId, payload);
         setNotification({
           type: "success",
-          message: "Data edukasi digital berhasil diperbarui ke dalam sistem!"
+          message: "Data edukasi berhasil diperbarui ke dalam sistem!"
         });
       } else {
         await createEdukasi(resourcePath, payload);
         setNotification({
           type: "success",
-          message: "Data edukasi digital berhasil disimpan ke dalam sistem!"
+          message: "Data edukasi berhasil disimpan ke dalam sistem!"
         });
       }
     } catch (err) {
@@ -371,28 +455,33 @@ export default function EdukasiDigitalCrudPage({
 
   const handleDelete = async (item) => {
     const id = guessId(item);
-    if (!id) {
-      setError("ID data tidak ditemukan");
-      return;
-    }
+    if (!id) return;
 
-    const confirmed = window.confirm("Hapus data edukasi ini?");
-    if (!confirmed) return;
+    const result = await Swal.fire({
+      title: "Hapus Konten Edukasi?",
+      text: `"${getItemTitle(item)}" akan dihapus permanen dan tidak dapat dikembalikan.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#EF4444",
+      cancelButtonColor: "#6B7280",
+      confirmButtonText: "Ya, Hapus",
+      cancelButtonText: "Batal",
+    });
+    if (!result.isConfirmed) return;
 
-    setError("");
     try {
       await deleteEdukasi(resourcePath, id);
       setNotification({
         type: "success",
-        message: "Data edukasi digital berhasil dihapus dari sistem!"
+        message: "Konten edukasi berhasil dihapus dari sistem.",
       });
       await loadData();
     } catch (err) {
-      const errMsg = err?.response?.data?.message || err.message || "Unknown error";
+      const errMsg = err?.response?.data?.message || err?.response?.data?.error || err.message || "Unknown error";
       setNotification({
         type: "error",
-        message: "Permintaan gagal diproses. Silakan coba lagi nanti atau hubungi bantuan.",
-        code: errMsg
+        message: "Permintaan gagal diproses. Silakan coba lagi nanti.",
+        code: errMsg,
       });
     }
   };
@@ -404,45 +493,6 @@ export default function EdukasiDigitalCrudPage({
     return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
   };
 
-  const getItemTitle = (item) => {
-    if (item.judul) return item.judul;
-
-    if (item.bulan_min !== undefined && item.bulan_max !== undefined) {
-      const matchingMateri = mpasiMateriList.find(
-        (m) => m.bulan_min === item.bulan_min && m.bulan_max === item.bulan_max
-      );
-      if (matchingMateri && matchingMateri.judul) {
-        return matchingMateri.judul;
-      }
-      
-      if (resourcePath === "edukasi-mpasi-jadwal-harian") {
-        return `Jadwal Harian MPASI Usia ${item.bulan_min} - ${item.bulan_max} Bulan`;
-      }
-      if (resourcePath === "edukasi-mpasi-aturan-porsi") {
-        return `Aturan Porsi MPASI Usia ${item.bulan_min} - ${item.bulan_max} Bulan`;
-      }
-      return `MPASI Usia ${item.bulan_min} - ${item.bulan_max} Bulan`;
-    }
-
-    return "Tanpa Judul";
-  };
-
-  const getItemDescription = (item) => {
-    if (item.deskripsi) return item.deskripsi;
-    if (item.isi_konten) return item.isi_konten;
-    if (item.konten) return item.konten;
-    
-    if (item.waktu !== undefined && item.aktivitas !== undefined) {
-      return `Pukul ${item.waktu}: ${item.aktivitas}`;
-    }
-    
-    if (item.tekstur !== undefined) {
-      return `Tekstur: ${item.tekstur} | Frekuensi: ${item.frekuensi} | Porsi: ${item.porsi}`;
-    }
-
-    return "-";
-  };
-
   return (
     <MainLayout>
       <AlertNotification 
@@ -452,106 +502,110 @@ export default function EdukasiDigitalCrudPage({
       />
       <div className="space-y-6 font-['Noto_Sans',_sans-serif]">
         
-        {/* Header Section */}
-        <section className="bg-white rounded-2xl border border-[#e2e8f0] p-6 shadow-sm">
-          <h1 className="text-[28px] font-bold text-slate-800">{title}</h1>
-          <p className="text-[16px] text-slate-500 mt-2">
-            Kelola konten edukasi digital untuk kategori ini.
-          </p>
-        </section>
-
-        {view === "form" && (
-          <div className="flex justify-start">
+        {/* Header — hanya tampilkan judul tanpa card saat view=form, hilangkan card di list view */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            {/* Tombol Kembali (hanya di view form) */}
+            {view === "form" && (
+              <button
+                type="button"
+                onClick={() => navigate(listPath || "/edukasi-digital/informasi-umum")}
+                className="inline-flex items-center gap-2 px-4 py-2 mb-3 bg-[#185FA5] hover:bg-[#185FA5]/90 text-white text-[14px] font-semibold rounded-xl transition-all active:scale-95 shadow-sm"
+              >
+                <ArrowLeft size={16} /> Kembali ke Daftar
+              </button>
+            )}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+              <h1 className="text-[24px] font-bold text-slate-800">{title}</h1>
+              {view !== "form" && ["edukasi-mpasi", "edukasi-mpasi-aturan-porsi", "edukasi-mpasi-jadwal-harian", "edukasi-mpasi-resep"].includes(resourcePath) && (
+                <select
+                  value={resourcePath}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === "edukasi-mpasi") navigate("/edukasi-digital/mpasi");
+                    else if (val === "edukasi-mpasi-aturan-porsi") navigate("/edukasi-digital/mpasi-aturan-porsi");
+                    else if (val === "edukasi-mpasi-jadwal-harian") navigate("/edukasi-digital/mpasi-jadwal-harian");
+                    else if (val === "edukasi-mpasi-resep") navigate("/edukasi-digital/mpasi-resep");
+                  }}
+                  className="px-3 py-1.5 border border-slate-200 rounded-xl bg-white text-slate-700 text-[14px] font-semibold focus:outline-none focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] transition-colors shadow-sm cursor-pointer"
+                >
+                  <option value="edukasi-mpasi">Menu: Materi MPASI</option>
+                  <option value="edukasi-mpasi-aturan-porsi">Menu: Aturan Porsi</option>
+                  <option value="edukasi-mpasi-jadwal-harian">Menu: Jadwal Harian</option>
+                  <option value="edukasi-mpasi-resep">Menu: Resep MPASI</option>
+                </select>
+              )}
+            </div>
+          </div>
+          {view !== "form" && (
             <button
               type="button"
-              onClick={() => navigate(listPath || "/edukasi-digital/informasi-umum")}
-              className="px-4 py-2 rounded-lg bg-white text-slate-700 text-[16px] font-semibold hover:bg-[#e2e8f0] border border-[#e2e8f0] transition-colors shadow-sm"
+              onClick={() => {
+                if (createPath) {
+                  navigate(createPath);
+                  return;
+                }
+                setForm(emptyForm);
+                setEditingId(null);
+                setShowForm(true);
+              }}
+              className="px-4 py-2 rounded-xl bg-[#185FA5] text-white text-[14px] font-semibold hover:bg-[#185FA5]/90 flex items-center gap-2 transition-all active:scale-95 shadow-sm"
             >
-              Kembali ke Daftar
+              <Plus size={18} /> Tambah Konten
             </button>
-          </div>
-        )}
+          )}
+        </div>
 
         {view !== "form" ? (
           <section className="bg-white rounded-2xl border border-[#e2e8f0] p-6 shadow-sm">
-            {/* Top Toolbar (Filters & Actions) */}
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 gap-4">
-              <div className="flex items-center gap-2 w-full md:w-auto">
-                {/* Search Bar Placeholder */}
-                <div className="relative w-full md:w-64">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Search size={18} className="text-slate-400" />
-                  </div>
-                  <input
-                    type="text"
-                    placeholder="Cari konten..."
-                    className="block w-full pl-10 pr-3 py-2 border border-[#e2e8f0] rounded-xl text-[14px] bg-[#F7FAFB] focus:bg-white focus:outline-none focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] transition-colors"
-                  />
+            {/* Toolbar: Search + Filter Usia */}
+            <div className="flex flex-col md:flex-row items-center gap-3 mb-6">
+              <div className="relative w-full md:w-64">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Search size={18} className="text-slate-400" />
                 </div>
+                <input
+                  type="text"
+                  placeholder="Cari konten..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="block w-full pl-10 pr-3 py-2 border border-[#e2e8f0] rounded-xl text-[14px] bg-[#F7FAFB] focus:bg-white focus:outline-none focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] transition-colors"
+                />
               </div>
 
-              <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-                {resourcePath === "edukasi-perawatan-anak" && (
-                  <select
-                    value={activeRentangUsia}
-                    onChange={(e) => {
-                      const newVal = e.target.value;
-                      setActiveRentangUsia(newVal);
-                      loadData(newVal ? { rentang_usia: newVal } : {});
-                    }}
-                    className="px-3 py-2 border border-[#e2e8f0] rounded-xl bg-[#F7FAFB] text-slate-700 text-[14px] font-semibold hover:bg-white focus:bg-white focus:outline-none focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] transition-colors"
-                  >
-                    <option value="">Semua Umur</option>
-                    <option value="0-3 bulan">0-3 bulan</option>
-                    <option value="0-28 hari">0-28 hari</option>
-                    <option value="3-6 bulan">3-6 bulan</option>
-                    <option value="6-9 bulan">6-9 bulan</option>
-                    <option value="9-12 bulan">9-12 bulan</option>
-                    <option value="12-18 bulan">12-18 bulan</option>
-                    <option value="18-24 bulan">18-24 bulan</option>
-                    <option value="2-3 tahun">2-3 tahun</option>
-                    <option value="3-4 tahun">3-4 tahun</option>
-                    <option value="4-5 tahun">4-5 tahun</option>
-                    <option value="5-6 tahun">5-6 tahun</option>
-                  </select>
-                )}
-                {resourcePath === "edukasi-pola-asuh" && (
-                  <select
-                    value={activeRentangUsia}
-                    onChange={(e) => {
-                      const newVal = e.target.value;
-                      setActiveRentangUsia(newVal);
-                      loadData(newVal ? { rentang_usia: newVal } : {});
-                    }}
-                    className="px-3 py-2 border border-[#e2e8f0] rounded-xl bg-[#F7FAFB] text-slate-700 text-[14px] font-semibold hover:bg-white focus:bg-white focus:outline-none focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] transition-colors"
-                  >
-                    <option value="">Semua Umur</option>
-                    <option value="0-18 Bulan">0-18 Bulan</option>
-                    <option value="1.5 Tahun - 3 Tahun">1.5 Tahun - 3 Tahun</option>
-                    <option value="3 tahun - 6 Tahun">3 tahun - 6 Tahun</option>
-                  </select>
-                )}
-                {/* <button className="px-4 py-2 flex items-center gap-2 rounded-xl bg-white border border-[#e2e8f0] text-slate-700 text-[14px] font-semibold hover:bg-[#F7FAFB] transition-colors">
-                  <Filter size={16} /> Filter & Urutkan
-                </button> */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (createPath) {
-                      navigate(createPath);
-                      return;
-                    }
-                    setForm(emptyForm);
-                    setEditingId(null);
-                    setShowForm(true);
-                  }}
-                  className="px-4 py-2 rounded-xl bg-[#185FA5] text-white text-[16px] font-semibold hover:bg-[#185FA5]/90 flex items-center gap-2 transition-all active:scale-95"
+              {resourcePath === "edukasi-perawatan-anak" && (
+                <select
+                  value={activeRentangUsia}
+                  onChange={(e) => { const v = e.target.value; setActiveRentangUsia(v); loadData(v ? { rentang_usia: v } : {}); }}
+                  className="px-3 py-2 border border-[#e2e8f0] rounded-xl bg-[#F7FAFB] text-slate-700 text-[14px] font-semibold hover:bg-white focus:bg-white focus:outline-none focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] transition-colors"
                 >
-                  <Plus size={18} /> Tambah Konten
-                </button>
-              </div>
+                  <option value="">Semua Umur</option>
+                  <option value="0-28 hari">0-28 hari</option>
+                  <option value="0-3 bulan">0-3 bulan</option>
+                  <option value="3-6 bulan">3-6 bulan</option>
+                  <option value="6-9 bulan">6-9 bulan</option>
+                  <option value="9-12 bulan">9-12 bulan</option>
+                  <option value="12-18 bulan">12-18 bulan</option>
+                  <option value="18-24 bulan">18-24 bulan</option>
+                  <option value="2-3 tahun">2-3 tahun</option>
+                  <option value="3-4 tahun">3-4 tahun</option>
+                  <option value="4-5 tahun">4-5 tahun</option>
+                  <option value="5-6 tahun">5-6 tahun</option>
+                </select>
+              )}
+              {resourcePath === "edukasi-pola-asuh" && (
+                <select
+                  value={activeRentangUsia}
+                  onChange={(e) => { const v = e.target.value; setActiveRentangUsia(v); loadData(v ? { rentang_usia: v } : {}); }}
+                  className="px-3 py-2 border border-[#e2e8f0] rounded-xl bg-[#F7FAFB] text-slate-700 text-[14px] font-semibold hover:bg-white focus:bg-white focus:outline-none focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] transition-colors"
+                >
+                  <option value="">Semua Umur</option>
+                  <option value="0-18 Bulan">0-18 Bulan</option>
+                  <option value="1.5 Tahun - 3 Tahun">1.5 Tahun - 3 Tahun</option>
+                  <option value="3 tahun - 6 Tahun">3 tahun - 6 Tahun</option>
+                </select>
+              )}
             </div>
-
             {/* UI Loader */}
             {loading ? (
               <div className="flex flex-col items-center justify-center py-16 gap-3">
@@ -572,14 +626,14 @@ export default function EdukasiDigitalCrudPage({
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#e2e8f0]">
-                      {sortedRows.length === 0 ? (
+                      {paginatedRows.length === 0 ? (
                         <tr>
                           <td colSpan="4" className="px-6 py-10 text-center text-[14px] text-slate-500 bg-[#F7FAFB]/50">
-                            Belum ada konten yang tersedia.
+                            {searchQuery ? "Tidak ada konten yang cocok dengan pencarian." : "Belum ada konten yang tersedia."}
                           </td>
                         </tr>
                       ) : (
-                        sortedRows.map((item) => {
+                        paginatedRows.map((item) => {
                           const id = guessId(item);
                           return (
                             <tr key={id || item.judul} className="hover:bg-[#F7FAFB]/50 transition-colors group">
@@ -624,30 +678,25 @@ export default function EdukasiDigitalCrudPage({
                                 </span>
                               </td>
                               
-                              <td className="px-6 py-4">
+                              <td className="px-6 py-4 text-center">
                                 <div className="flex items-center justify-center gap-2">
-                                  {/* <button
-                                    type="button"
-                                    className="p-2 text-slate-400 hover:text-[#185FA5] hover:bg-[#185FA5]/10 rounded-lg transition-colors border border-transparent hover:border-[#185FA5]/20"
-                                    title="Detail"
-                                  >
-                                    <Eye size={18} />
-                                  </button> */}
                                   <button
                                     type="button"
                                     onClick={() => handleEdit(item)}
-                                    className="p-2 text-slate-400 hover:text-[#185FA5] hover:bg-[#185FA5]/10 rounded-lg transition-colors border border-transparent hover:border-[#185FA5]/20"
-                                    title="Edit"
+                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-yellow-50 hover:bg-yellow-100 text-yellow-700 border border-yellow-200 rounded-xl text-[13px] font-semibold transition-colors"
+                                    title="Edit Data"
                                   >
-                                    <Pencil size={18} />
+                                    <Pencil size={14} />
+                                    Edit
                                   </button>
                                   <button
                                     type="button"
                                     onClick={() => handleDelete(item)}
-                                    className="p-2 text-slate-400 hover:text-[#A32D2D] hover:bg-[#A32D2D]/10 rounded-lg transition-colors border border-transparent hover:border-[#A32D2D]/20"
-                                    title="Hapus"
+                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl text-[13px] font-semibold transition-colors"
+                                    title="Hapus Data"
                                   >
-                                    <Trash2 size={18} />
+                                    <Trash2 size={14} />
+                                    Hapus
                                   </button>
                                 </div>
                               </td>
@@ -660,21 +709,35 @@ export default function EdukasiDigitalCrudPage({
                 </div>
 
                 {/* Pagination Footer */}
-                {sortedRows.length > 0 && (
+                {filteredRows.length > 0 && (
                   <div className="flex items-center justify-between mt-6 text-[14px] text-slate-500">
-                    <p>Menampilkan 1-{Math.min(5, sortedRows.length)} dari {sortedRows.length} data</p>
+                    <p>Menampilkan {paginationStart}-{paginationEnd} dari {filteredRows.length} data</p>
                     <div className="flex items-center gap-1">
-                      <button className="w-8 h-8 flex items-center justify-center rounded-lg border border-[#e2e8f0] text-slate-400 hover:bg-[#F7FAFB] hover:text-slate-700 transition-colors">
+                      <button 
+                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                        className="w-8 h-8 flex items-center justify-center rounded-lg border border-[#e2e8f0] text-slate-400 hover:bg-[#F7FAFB] hover:text-slate-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
                         <ChevronLeft size={16} />
                       </button>
-                      <button className="w-8 h-8 flex items-center justify-center rounded-lg bg-[#185FA5] text-white font-semibold transition-colors">
-                        1
-                      </button>
-                      <button className="w-8 h-8 flex items-center justify-center rounded-lg border border-[#e2e8f0] text-slate-600 hover:bg-[#F7FAFB] transition-colors">
-                        2
-                      </button>
-                      <span className="px-1 text-slate-400">...</span>
-                      <button className="w-8 h-8 flex items-center justify-center rounded-lg border border-[#e2e8f0] text-slate-400 hover:bg-[#F7FAFB] hover:text-slate-700 transition-colors">
+                      {getPageNumbers().map((page) => (
+                        <button 
+                          key={page}
+                          onClick={() => setCurrentPage(page)}
+                          className={`w-8 h-8 flex items-center justify-center rounded-lg font-semibold transition-colors ${
+                            currentPage === page
+                              ? 'bg-[#185FA5] text-white'
+                              : 'border border-[#e2e8f0] text-slate-600 hover:bg-[#F7FAFB]'
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      ))}
+                      <button 
+                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                        disabled={currentPage === totalPages}
+                        className="w-8 h-8 flex items-center justify-center rounded-lg border border-[#e2e8f0] text-slate-400 hover:bg-[#F7FAFB] hover:text-slate-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
                         <ChevronRight size={16} />
                       </button>
                     </div>
@@ -703,13 +766,28 @@ export default function EdukasiDigitalCrudPage({
             <form onSubmit={handleSubmit} className="space-y-4">
               {(fields && Array.isArray(fields) ? fields : [
                 { key: "judul", label: "Judul", type: "text" },
-                { key: "gambar_url", label: "URL gambar (opsional)", type: "text" },
+                { key: "gambar_url", label: "Gambar (opsional)", type: "image" },
                 { key: "deskripsi", label: "Deskripsi", type: "textarea", rows: 2 },
                 { key: "isi_konten", label: "Isi konten", type: "textarea", rows: 4 },
                 { key: "materi_inti", label: "Materi inti", type: "textarea", rows: 2 },
                 { key: "hal_penting", label: "Hal penting", type: "textarea", rows: 2 },
               ]).filter(f => f.key !== 'materi_inti').map((f) => {
                 const value = form[f.key] ?? "";
+
+                // Image upload field - use ImageUploader component
+                if (f.key === "gambar_url" || f.type === "image") {
+                  return (
+                    <ImageUploader
+                      key={f.key}
+                      value={value}
+                      onChange={(url) => setForm((prev) => ({ ...prev, [f.key]: url }))}
+                      fieldName={f.key}
+                      label={f.label || "Gambar (opsional)"}
+                      disabled={saving}
+                    />
+                  );
+                }
+
                 if (f.type === "checkbox") {
                   return (
                     <label key={f.key} className="flex items-center gap-3 rounded-xl border border-slate-200 bg-[#F7FAFB] px-4 py-3">
@@ -793,24 +871,6 @@ export default function EdukasiDigitalCrudPage({
                       placeholder={`Masukkan ${f.label.toLowerCase()}`}
                       className="w-full border border-slate-200 bg-[#F7FAFB] rounded-xl px-4 py-3 text-[14px] focus:bg-white focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] outline-none transition-all"
                     />
-                    {f.key === "gambar_url" && value && (
-                      <div className="mt-2 w-full max-w-xs h-32 rounded-xl overflow-hidden border border-slate-200 bg-[#F7FAFB] relative">
-                        <img 
-                          src={value} 
-                          alt="Preview" 
-                          key={value}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            e.target.style.opacity = '0';
-                            e.target.parentElement.classList.add('bg-[#A32D2D]/10');
-                          }}
-                        />
-                        <div className="absolute inset-0 flex flex-col items-center justify-center -z-10 text-slate-400 gap-1">
-                          <ImageIcon size={24} />
-                          <span className="text-[12px] font-semibold uppercase">Invalid URL</span>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 );
               })}
@@ -884,7 +944,7 @@ export default function EdukasiDigitalCrudPage({
                   disabled={saving}
                   className="px-6 py-2.5 rounded-lg bg-[#185FA5] text-white text-[16px] font-semibold disabled:opacity-60 hover:bg-[#185FA5]/90 transition-colors"
                 >
-                  {saving ? "Menyimpan..." : editingId ? "Update Konten" : "Simpan Konten"}
+                  {saving ? "Menyimpan..." : editingId ? "Ubah Konten" : "Simpan Konten"}
                 </button>
                 <button
                   type="button"

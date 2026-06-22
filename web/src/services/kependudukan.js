@@ -14,7 +14,9 @@ export const getKependudukanList = async (jenisKelamin = null) => {
   const res = await api.get(BASE_DESA, { params });
   return res.data.data;
 };
+export const pendududkall = async () =>{
 
+}
 export const getPerempuanList = async () => {
   return getKependudukanList("perempuan");
 };
@@ -98,7 +100,18 @@ export const getPendudukWithFilters = async (options = {}) => {
   if (desa_id) params.desa_id = desa_id;
   if (posyandu_id) params.posyandu_id = posyandu_id;
 
+  console.log("🌐 [getPendudukWithFilters] Requesting with params:", params);
+  
   const res = await api.get(BASEADMIN, { params });
+  
+  console.log("🌐 [getPendudukWithFilters] Raw response:", res);
+  console.log("🌐 [getPendudukWithFilters] Response data:", res.data);
+  console.log("🌐 [getPendudukWithFilters] Response data.data:", res.data.data);
+  
+  if (res.data?.data?.items && res.data.data.items.length > 0) {
+    console.log("🌐 [getPendudukWithFilters] Sample item from API:", JSON.stringify(res.data.data.items[0], null, 2));
+  }
+  
   return res.data.data;
 };
 
@@ -138,8 +151,16 @@ export const getStatistikPenduduk = async (params = {}) => {
  * Get all penduduk (tanpa pagination)
  */
 export const getAllPenduduk = async () => {
-  const res = await api.get(BASEADMIN, { params: { limit: 1000 } });
-  return res.data.data.items || [];
+  try {
+    const res = await api.get(`${BASEADMIN}/all`);
+    // Jika backend mengembalikan { data: [...] } langsung
+    return res.data.data || [];
+    // ATAU jika response menggunakan format StandardResponse
+    // return res.data.data || [];
+  } catch (error) {
+    console.error("Error fetching all penduduk:", error);
+    return [];
+  }
 };
 
 // ============================================

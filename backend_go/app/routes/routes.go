@@ -47,6 +47,8 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	secured.Use(middlewares.JWTAuth(controller.JWTSecret()))
 	// secured.Use(middlewares.AuditTrail(controller.AuditTrail))
 	secured.GET("/me", controller.Me)
+	secured.PUT("/me", controller.UpdateMe)
+	secured.PUT("/me/password", controller.UpdateMePassword)
 	secured.POST("/logout", controller.Logout)
 
 	// ==================== INFORMASI UMUM ====================
@@ -60,8 +62,11 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 
 	// ==================== EDUKASI IBU ====================
 	e.GET("/edukasi-imd", controller.EdukasiIMD.GetAll)
+	e.GET("/edukasi-imd/:id", controller.EdukasiIMD.GetByID)
 	e.GET("/edukasi-kesehatan-mental", controller.EdukasiKesehatanMental.GetAll)
+	e.GET("/edukasi-kesehatan-mental/:id", controller.EdukasiKesehatanMental.GetByID)
 	e.GET("/edukasi-menyusui-asi", controller.EdukasiMenyusuiASI.GetAll)
+	e.GET("/edukasi-menyusui-asi/:id", controller.EdukasiMenyusuiASI.GetByID)
 	e.GET("/edukasi-informasi-umum", controller.EdukasiInformasiUmum.GetAll)
 	e.GET("/edukasi-informasi-umum/:id", controller.EdukasiInformasiUmum.GetByID)
 	e.GET("/edukasi-pola-asuh", controller.EdukasiPolaAsuh.GetAll)
@@ -70,8 +75,21 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	e.GET("/edukasi-perawatan-anak/:id", controller.EdukasiPerawatanAnak.GetByID)
 	// e.GET("/edukasi-nifas", controller.EdukasiNifas.GetAll)
 	e.GET("/edukasi-setelah-melahirkan", controller.EdukasiSetelahMelahirkan.GetAll) // Untuk edukasi ibu bagian Edukasi Nifas
+	e.GET("/edukasi-setelah-melahirkan/:id", controller.EdukasiSetelahMelahirkan.GetByID)
 	e.GET("/edukasi-tanda-melahirkan", controller.EdukasiTandaMelahirkan.GetAll)
+	e.GET("/edukasi-tanda-melahirkan/:id", controller.EdukasiTandaMelahirkan.GetByID)
 	e.GET("/edukasi-trimester", controller.EdukasiTrimester.GetAll)
+	e.GET("/edukasi-trimester/:id", controller.EdukasiTrimester.GetByID)
+
+	// Public MPASI routes
+	e.GET("/edukasi-mpasi", controller.EdukasiMPASI.GetMateriAll)
+	e.GET("/edukasi-mpasi/:id", controller.EdukasiMPASI.GetMateriByID)
+	e.GET("/edukasi-mpasi-aturan-porsi", controller.EdukasiAturanPorsiMPASI.GetAll)
+	e.GET("/edukasi-mpasi-aturan-porsi/:id", controller.EdukasiAturanPorsiMPASI.GetByID)
+	e.GET("/edukasi-mpasi-jadwal-harian", controller.EdukasiJadwalHarianMPASI.GetAll)
+	e.GET("/edukasi-mpasi-jadwal-harian/:id", controller.EdukasiJadwalHarianMPASI.GetByID)
+	e.GET("/edukasi-mpasi-resep", controller.EdukasiResepMPASI.GetAll)
+	e.GET("/edukasi-mpasi-resep/:id", controller.EdukasiResepMPASI.GetByID)
 	// e.GET("/edukasi-trimester/:trimester", controller.EdukasiTrimester.GetByTrimester)
 	// e.GET("/edukasi-trimester/:trimester/:kategori", controller.EdukasiTrimester.GetByKategori)
 	// ==================== MODUL ADMIN  ====================
@@ -99,6 +117,7 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	superadmin.GET("/penduduk/:penduduk_id", controller.AdminDetailKependudukan)
 	superadmin.PUT("/penduduk/:penduduk_id", controller.AdminUpdateKependudukan)
 	superadmin.DELETE("/penduduk/:penduduk_id", controller.AdminDeleteKependudukan)
+	superadmin.GET("/penduduk/all", controller.AdminListAllKependudukan)
 
 	// Additional endpoints
 	superadmin.GET("/penduduk/keluarga/:kode_keluarga", controller.AdminGetAnggotaByKodeKeluarga)
@@ -109,7 +128,21 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	superadmin.POST("/desa", controller.Desa.Create)
 	superadmin.PUT("/desa/:id", controller.Desa.Update)
 	superadmin.PATCH("/desa/:id/nonaktif", controller.Desa.Deactivate)
-	superadmin.GET("/penduduk", controller.ListPenduduk)
+
+	// Master Wilayah (Provinsi -> Kabupaten -> Kecamatan)
+	superadmin.GET("/provinsi", controller.Wilayah.ListProvinsi)
+	superadmin.POST("/provinsi", controller.Wilayah.CreateProvinsi)
+	superadmin.PUT("/provinsi/:id", controller.Wilayah.UpdateProvinsi)
+	superadmin.DELETE("/provinsi/:id", controller.Wilayah.DeleteProvinsi)
+	superadmin.GET("/kabupaten", controller.Wilayah.ListKabupaten) // ?provinsi_id=
+	superadmin.POST("/kabupaten", controller.Wilayah.CreateKabupaten)
+	superadmin.PUT("/kabupaten/:id", controller.Wilayah.UpdateKabupaten)
+	superadmin.DELETE("/kabupaten/:id", controller.Wilayah.DeleteKabupaten)
+	superadmin.GET("/kecamatan", controller.Wilayah.ListKecamatan) // ?kabupaten_id=
+	superadmin.POST("/kecamatan", controller.Wilayah.CreateKecamatan)
+	superadmin.PUT("/kecamatan/:id", controller.Wilayah.UpdateKecamatan)
+	superadmin.DELETE("/kecamatan/:id", controller.Wilayah.DeleteKecamatan)
+	// REMOVED DUPLICATE: superadmin.GET("/penduduk", controller.ListPenduduk) - This was overriding AdminListKependudukan
 	superadmin.GET("/users", controller.ListUsers)
 	superadmin.GET("/users/:id", controller.GetUser)
 	superadmin.POST("/users/bidan", controller.CreateBidanUser)

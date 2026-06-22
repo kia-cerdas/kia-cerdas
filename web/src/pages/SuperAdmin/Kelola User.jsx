@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import MainLayout from "../../components/Layout/MainLayout";
 import SearchablePendudukSelect from "../../components/Form/SearchablePendudukSelect";
 import { listPendudukForDropdown } from "../../services/superadminPenduduk";
+import { formatNik } from "../../utils/format";
 import {
   activateSuperadminUser,
   deactivateSuperadminUser,
@@ -22,6 +23,7 @@ import {
   Power,
   Search,
   UserCircle2,
+  UserPlus,
   X,
 } from "lucide-react";
 
@@ -103,16 +105,36 @@ export default function UserPerDesaManagement() {
   }, []);
 
   const pendudukLabel = (penduduk) => {
-    const roleText = penduduk.kedudukan_keluarga ? ` - ${penduduk.kedudukan_keluarga}` : "";
-    return `${penduduk.nama_lengkap} (${penduduk.nik}${roleText})`;
+    const hubungan = penduduk.hubungan ? ` - ${penduduk.hubungan}` : "";
+    return `${penduduk.nama_anggota_keluarga || penduduk.nama_lengkap || "-"} (${formatNik(penduduk.nik)}${hubungan})`;
   };
 
-  const visibleUsers = useMemo(() => {
+  // Peta penduduk_id -> user (akun) untuk tahu penduduk mana yang sudah punya akun
+  const userByPendudukId = useMemo(() => {
+    const map = new Map();
+    users.forEach((user) => {
+      if (user.penduduk_id) {
+        map.set(String(user.penduduk_id), user);
+      }
+    });
+    return map;
+  }, [users]);
+
+  // Cek apakah penduduk punya role khusus (kader/bidan/admin desa) -> disembunyikan
+  const isSpecialRole = (role) => {
+    const r = normalizeRole(role);
+    return specialRoles.includes(r) || specialRoleAliases.includes(r);
+  };
+
+  // Tampilkan SELURUH penduduk, kecuali yang akunnya ber-role kader/bidan/admin desa
+  const visiblePenduduk = useMemo(() => {
     const keyword = search.trim().toLowerCase();
 
-    return users.filter((user) => {
-      const role = normalizeRole(user.role);
-      if (specialRoles.includes(role) || specialRoleAliases.includes(role)) {
+    return pendudukOptions.filter((penduduk) => {
+      const account = userByPendudukId.get(String(penduduk.id));
+
+      // Sembunyikan penduduk yang akunnya kader/bidan/admin desa
+      if (account && isSpecialRole(account.role)) {
         return false;
       }
 
@@ -120,22 +142,24 @@ export default function UserPerDesaManagement() {
         return true;
       }
 
-      return [user.name, user.email, user.phone_number, user.role]
+      const name = penduduk.nama_anggota_keluarga || penduduk.nama_lengkap || "";
+      return [name, penduduk.nik, penduduk.email, account?.role]
         .filter(Boolean)
-        .some((value) => value.toLowerCase().includes(keyword));
+        .some((value) => String(value).toLowerCase().includes(keyword));
     });
-  }, [users, search]);
+  }, [pendudukOptions, userByPendudukId, search]);
 
   const stats = useMemo(() => {
-    const activeUsers = visibleUsers.filter((user) => user.is_active).length;
-    const inactiveUsers = visibleUsers.length - activeUsers;
+    const total = visiblePenduduk.length;
+    const withAccount = visiblePenduduk.filter((p) => userByPendudukId.has(String(p.id))).length;
+    const withoutAccount = total - withAccount;
 
     return [
-      { label: "Total User", value: visibleUsers.length, icon: UserCircle2, tone: "bg-cyan-50 text-cyan-700" },
-      { label: "Aktif", value: activeUsers, icon: CheckCircle2, tone: "bg-emerald-50 text-emerald-700" },
-      { label: "Nonaktif", value: inactiveUsers, icon: Power, tone: "bg-rose-50 text-rose-700" },
+      { label: "Total Penduduk", value: total, icon: UserCircle2, tone: "bg-cyan-50 text-cyan-700" },
+      { label: "Sudah Punya Akun", value: withAccount, icon: CheckCircle2, tone: "bg-emerald-50 text-emerald-700" },
+      { label: "Belum Punya Akun", value: withoutAccount, icon: Power, tone: "bg-rose-50 text-rose-700" },
     ];
-  }, [visibleUsers]);
+  }, [visiblePenduduk, userByPendudukId]);
 
   const clearMessages = () => {
     setErrorMessage("");
@@ -155,8 +179,14 @@ export default function UserPerDesaManagement() {
     return () => window.clearTimeout(timer);
   }, [notificationMessage]);
 
-  const openCreateModal = () => {
-    setCreateForm({ ...emptyCreateForm });
+  // Buka modal buat akun dengan data dari baris penduduk (prefill nama & penduduk)
+  const openCreateModalForPenduduk = (penduduk) => {
+    setCreateForm({
+      ...emptyCreateForm,
+      name: penduduk?.nama_anggota_keluarga || penduduk?.nama_lengkap || "",
+      email: penduduk?.email || "",
+      penduduk_id: penduduk?.id ? String(penduduk.id) : "",
+    });
     setShowCreateModal(true);
   };
 
@@ -184,15 +214,17 @@ export default function UserPerDesaManagement() {
         penduduk_id: createForm.penduduk_id ? Number(createForm.penduduk_id) : undefined,
       });
       closeCreateModal();
-      setSuccessMessage("User baru berhasil ditambahkan");
-      await loadUsers();
+      setSuccessMessage("Akun baru berhasil dibuat");
+      await Promise.all([loadUsers(), loadPenduduk()]);
     } catch (error) {
-      setErrorMessage(superadminUserErrorMessage(error, "Gagal menambahkan user"));
+      setErrorMessage(superadminUserErrorMessage(error, "Gagal membuat akun"));
     } finally {
       setSubmitting(false);
     }
   };
 
+  // Dipertahankan untuk modal Edit Role (saat ini tombolnya disembunyikan dari tabel)
+  // eslint-disable-next-line no-unused-vars
   const openRoleModal = (user) => {
     setSelectedUser(user);
     setRoleForm({
@@ -292,19 +324,19 @@ export default function UserPerDesaManagement() {
 
   return (
     <MainLayout>
-      <div className="p-4 md:p-6 lg:p-8 space-y-6 md:space-y-8 max-w-full overflow-hidden">
-        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="px-4 pb-6 pt-0 space-y-5 md:px-6 max-w-full overflow-hidden">
+        <section className="grid gap-2.5 grid-cols-2 md:grid-cols-3">
           {stats.map((stat) => {
             const Icon = stat.icon;
             return (
-              <div key={stat.label} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-sm text-slate-500">{stat.label}</p>
-                    <h3 className="mt-2 text-3xl font-bold text-slate-900">{stat.value}</h3>
+              <div key={stat.label} className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="text-[11px] leading-tight text-slate-500">{stat.label}</p>
+                    <h3 className="mt-1 text-xl font-bold text-slate-900">{stat.value}</h3>
                   </div>
-                  <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${stat.tone}`}>
-                    <Icon size={20} />
+                  <div className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg ${stat.tone}`}>
+                    <Icon size={16} />
                   </div>
                 </div>
               </div>
@@ -313,27 +345,9 @@ export default function UserPerDesaManagement() {
         </section>
 
         <div className={`${cardClass} p-4 md:p-6 space-y-5`}>
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">Kelola user</p>
-              <h2 className="mt-1 text-xl md:text-2xl font-bold text-slate-900">User selain bidan, kader, dan admin</h2>
-              <p className="mt-1 text-sm text-slate-500">Gunakan halaman ini untuk mengubah role, reset password, dan menonaktifkan user biasa.</p>
-            </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <button onClick={openCreateModal} className="inline-flex items-center gap-2 rounded-2xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">
-                <Plus size={16} />
-                Tambah User
-              </button>
-              <button onClick={loadUsers} className="inline-flex items-center gap-2 rounded-2xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200">
-                <Loader2 size={16} />
-                Refresh
-              </button>
-            </div>
-          </div>
-
-          <div className="grid gap-3">
-            <div className="relative">
-              <Search size={16} className="absolute left-3 top-3 text-slate-400" />
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex-1 min-w-[200px] relative">
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 type="text"
                 value={search}
@@ -342,6 +356,10 @@ export default function UserPerDesaManagement() {
                 className="w-full rounded-2xl border border-slate-200 py-2.5 pl-10 pr-4"
               />
             </div>
+            <button onClick={() => { loadUsers(); loadPenduduk(); }} className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50">
+              <Loader2 size={16} />
+              Refresh
+            </button>
           </div>
 
           <div className="overflow-x-auto rounded-2xl border border-slate-200">
@@ -349,61 +367,73 @@ export default function UserPerDesaManagement() {
               <table className="w-full">
                 <thead className="bg-slate-50 text-left text-sm text-slate-600">
                   <tr>
-                    <th className="px-4 py-3 font-semibold">User</th>
-                    <th className="px-4 py-3 font-semibold">Role</th>
-                    <th className="px-4 py-3 font-semibold">Status</th>
-                    <th className="px-4 py-3 font-semibold">Kontak</th>
+                    <th className="px-4 py-3 font-semibold">Penduduk</th>
+                    <th className="px-4 py-3 font-semibold">Status Akun</th>
+                    <th className="px-4 py-3 font-semibold">Email</th>
                     <th className="px-4 py-3 text-center font-semibold">Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {loadingUsers ? (
+                  {(loadingUsers || loadingPenduduk) ? (
                     <tr>
-                      <td colSpan={5} className="px-4 py-10 text-center text-slate-500">Memuat data user...</td>
+                      <td colSpan={4} className="px-4 py-10 text-center text-slate-500">Memuat data penduduk...</td>
                     </tr>
-                  ) : visibleUsers.length === 0 ? (
+                  ) : visiblePenduduk.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-4 py-10 text-center text-slate-500">Belum ada user yang sesuai filter</td>
+                      <td colSpan={4} className="px-4 py-10 text-center text-slate-500">Belum ada penduduk yang sesuai filter</td>
                     </tr>
                   ) : (
-                    visibleUsers.map((user) => {
+                    visiblePenduduk.map((penduduk) => {
+                      const account = userByPendudukId.get(String(penduduk.id));
+                      const namaPenduduk = penduduk.nama_anggota_keluarga || penduduk.nama_lengkap || "-";
                       return (
-                        <tr key={user.id} className="border-t border-slate-100 align-top hover:bg-slate-50/70">
+                        <tr key={penduduk.id} className="border-t border-slate-100 align-top hover:bg-slate-50/70">
                           <td className="px-4 py-4">
-                            <div className="font-semibold text-slate-900">{user.name}</div>
-                            <div className="text-sm text-slate-500">ID {user.id}</div>
+                            <div className="font-semibold text-slate-900">{namaPenduduk}</div>
+                            <div className="text-xs text-slate-400 mt-0.5 font-mono">NIK {formatNik(penduduk.nik)}</div>
                           </td>
                           <td className="px-4 py-4">
-                            <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700">{user.role}</span>
-                          </td>
-                          <td className="px-4 py-4">
-                            <span className={`inline-flex rounded-full px-3 py-1 text-sm font-medium ${user.is_active ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"}`}>
-                              {user.is_active ? "Aktif" : "Nonaktif"}
-                            </span>
+                            {account ? (
+                              <div className="flex flex-wrap items-center gap-1.5">
+                                <span className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">{account.role}</span>
+                                <span className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${account.is_active ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"}`}>
+                                  {account.is_active ? "Aktif" : "Nonaktif"}
+                                </span>
+                              </div>
+                            ) : (
+                              <span className="inline-flex rounded-full bg-slate-50 px-3 py-1 text-xs font-medium text-slate-400">
+                                Belum punya akun
+                              </span>
+                            )}
                           </td>
                           <td className="px-4 py-4 text-sm text-slate-600">
-                            <div>{user.email}</div>
-                            <div className="text-xs text-slate-400">{user.phone_number || "-"}</div>
+                            <div>{account?.email || penduduk.email || "-"}</div>
+                            <div className="text-xs text-slate-400">{account?.phone_number || penduduk.telepon || "-"}</div>
                           </td>
                           <td className="px-4 py-4">
                             <div className="flex flex-wrap items-center justify-center gap-2">
-                              <button type="button" onClick={() => openRoleModal(user)} className="inline-flex items-center gap-2 rounded-xl bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-100">
-                                <Edit size={16} />
-                                <span className="hidden sm:inline">Edit Role</span>
-                              </button>
-                              <button type="button" onClick={() => openResetModal(user)} className="inline-flex items-center gap-2 rounded-xl bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-700 hover:bg-amber-100">
-                                <KeyRound size={16} />
-                                <span className="hidden sm:inline">Reset</span>
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => openStatusActionModal(user, user.is_active ? "deactivate" : "activate")}
-                                disabled={submitting}
-                                className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold disabled:opacity-60 ${user.is_active ? "bg-rose-50 text-rose-700 hover:bg-rose-100" : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"}`}
-                              >
-                                <Power size={16} />
-                                <span className="hidden sm:inline">{user.is_active ? "Nonaktifkan" : "Aktifkan"}</span>
-                              </button>
+                              {account ? (
+                                <>
+                                  <button type="button" onClick={() => openResetModal(account)} title="Reset Password" className="inline-flex items-center gap-2 rounded-xl bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-700 hover:bg-amber-100">
+                                    <KeyRound size={16} />
+                                    <span className="hidden sm:inline">Reset Password</span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => openStatusActionModal(account, account.is_active ? "deactivate" : "activate")}
+                                    disabled={submitting}
+                                    className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold disabled:opacity-60 ${account.is_active ? "bg-rose-50 text-rose-700 hover:bg-rose-100" : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"}`}
+                                  >
+                                    <Power size={16} />
+                                    <span className="hidden sm:inline">{account.is_active ? "Nonaktifkan" : "Aktifkan"}</span>
+                                  </button>
+                                </>
+                              ) : (
+                                <button type="button" onClick={() => openCreateModalForPenduduk(penduduk)} title="Buat Akun" className="inline-flex items-center gap-2 rounded-xl bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-100">
+                                  <UserPlus size={16} />
+                                  <span className="hidden sm:inline">Buat Akun</span>
+                                </button>
+                              )}
                             </div>
                           </td>
                         </tr>
@@ -442,7 +472,7 @@ export default function UserPerDesaManagement() {
                       setCreateForm((prev) => ({
                         ...prev,
                         penduduk_id: value,
-                        name: selected ? selected.nama_lengkap : prev.name,
+                        name: selected ? (selected.nama_anggota_keluarga || selected.nama_lengkap) : prev.name,
                       }));
                     }}
                     options={pendudukOptions}

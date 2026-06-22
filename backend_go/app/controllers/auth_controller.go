@@ -674,4 +674,15 @@ func (m *Main) DebugAntropometri(c echo.Context) error {
 		"details": results,
 	})
 }
+// AdminListAllKependudukan - Get all penduduk without pagination
+func (m *Main) AdminListAllKependudukan(c echo.Context) error {
+    // Ambil semua data penduduk
+    penduduks, err := m.usecases.Kependudukan.FindAll()
+    if err != nil {
+        statusCode := customerror.GetStatusCode(err)
+        return helpers.Response(c, statusCode, []string{err.Error()})
+    }
 
+    // Response tanpa pagination
+    return helpers.StandardResponse(c, http.StatusOK, []string{constants.SUCCESS_RESPONSE_MESSAGE}, penduduks, nil)
+}

@@ -122,10 +122,6 @@ class NotificationService {
     final isImunisasiReminder = data['type'] == 'reminder_imunisasi';
 
     final AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
-      _androidChannel.id,
-      _androidChannel.name,
-      channelDescription: _androidChannel.description,
-      importance: Importance.max,
       priority: Priority.high,
       playSound: true,
       actions: isImunisasiReminder

@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	"monitoring-service/app/middlewares"
 	"monitoring-service/app/models"
 	"monitoring-service/app/usecases"
 
@@ -124,7 +125,9 @@ func (c *AbsensiKelasIbuHamilController) SaveMine(ctx echo.Context) error {
 
 // BAGIAN KADER
 func (c *AbsensiKelasIbuHamilController) GetAll(ctx echo.Context) error {
-	data, err := c.usecase.GetAll()
+	posyanduID := middlewares.GetPosyanduID(ctx)
+
+	data, err := c.usecase.GetAll(posyanduID)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, models.Response{
 			StatusCode: http.StatusInternalServerError,

@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"monitoring-service/app/middlewares"
 	"monitoring-service/app/models"
 	"monitoring-service/app/usecases"
 
@@ -105,7 +106,9 @@ func (c *AbsensiKelasIbuBalitaController) SaveMine(ctx echo.Context) error {
 }
 
 func (c *AbsensiKelasIbuBalitaController) GetAll(ctx echo.Context) error {
-	data, err := c.usecase.GetAll()
+	posyanduID := middlewares.GetPosyanduID(ctx)
+
+	data, err := c.usecase.GetAll(posyanduID)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, models.Response{
 			StatusCode: http.StatusInternalServerError,

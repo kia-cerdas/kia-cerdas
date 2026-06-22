@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"monitoring-service/app/middlewares"
 	"monitoring-service/app/models"
 	"monitoring-service/app/usecases"
 
@@ -99,7 +100,8 @@ func (c *LogTTDMMSController) GetRekapKader(ctx echo.Context) error {
 		})
 	}
  
-	data, err := c.usecase.GetRekapKader(claims.UserID)
+	posyanduID := middlewares.GetPosyanduID(ctx)
+	data, err := c.usecase.GetRekapKader(posyanduID)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, models.Response{
 			StatusCode: http.StatusInternalServerError,
@@ -134,7 +136,8 @@ func (c *LogTTDMMSController) GetDetailLogKader(ctx echo.Context) error {
 		})
 	}
  
-	data, err := c.usecase.GetDetailLogKader(claims.UserID, int32(kehamilanID))
+	posyanduID := middlewares.GetPosyanduID(ctx)
+	data, err := c.usecase.GetDetailLogKader(posyanduID, int32(kehamilanID))
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, models.Response{
 			StatusCode: http.StatusInternalServerError,

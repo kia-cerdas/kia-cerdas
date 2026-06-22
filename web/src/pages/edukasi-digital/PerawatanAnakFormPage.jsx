@@ -30,7 +30,7 @@ export default function PerawatanAnakFormPage() {
           type: "select",
           options: RENTANG_USIA_OPTIONS
         },
-        { key: "gambar_url", label: "URL gambar (opsional)", type: "text" },
+        { key: "gambar_url", label: "Gambar (opsional)", type: "image" },
         { key: "isi_konten", label: "Isi", type: "textarea", rows: 10 },
       ]}
     />

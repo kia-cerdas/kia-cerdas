@@ -33,6 +33,7 @@ type Main struct {
 	User                          *UserRepository
 	Role                          *RoleRepository
 	Desa                          *DesaRepository
+	Wilayah                       *WilayahRepository
 	KartuKeluarga                 *KartuKeluargaRepository
 	Kependudukan                  *KependudukanRepository
 	Bidan                         *BidanRepository
@@ -151,6 +152,7 @@ func Init(opts Options) *Main {
 	m.ChecklistPemantauanIbuNifas = NewChecklistPemantauanIbuNifasRepository(opts.Postgres)
 	m.Role = NewRoleRepository(opts.Postgres)
 	m.Desa = NewDesaRepository(opts.Postgres)
+	m.Wilayah = NewWilayahRepository(opts.Postgres)
 	m.KartuKeluarga = NewKartuKeluargaRepository(opts.Postgres)
 	m.Kependudukan = NewKependudukanRepository(opts.Postgres)
 	m.Bidan = NewBidanRepository(opts.Postgres)

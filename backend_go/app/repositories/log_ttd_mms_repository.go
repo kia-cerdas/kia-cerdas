@@ -80,18 +80,7 @@ type RekapIbuTTDMMS struct {
 	TotalTerlewat int32  `json:"total_terlewat"`
 }
  
-// FindKaderByUserID mencari data kader (termasuk desa_id via Penduduk) berdasarkan user yang login.
-func (r *LogTTDMMSRepository) FindKaderByUserID(userID int32) (*models.Kader, error) {
-	var kader models.Kader
-	err := r.db.
-		Preload("Penduduk").
-		Table("kader k").
-		Select("k.*").
-		Joins("JOIN pengguna u ON u.penduduk_id = k.id_penduduk").
-		Where("u.id = ? AND k.deleted_at IS NULL", userID).
-		First(&kader).Error
-	return &kader, err
-}
+// (Dihapus FindKaderByUserID karena sudah tidak dipakai)
  
 // kehamilanWithNama adalah struct bantu untuk hasil query JOIN dengan nama ibu.
 type kehamilanWithNama struct {
@@ -99,9 +88,9 @@ type kehamilanWithNama struct {
 	NamaIbu string `gorm:"column:nama_ibu"`
 }
  
-// FindAllActiveKehamilanByDesaID mengambil semua kehamilan aktif ibu (role=Ibu)
-// di desa yang sama dengan kader. Nama ibu diambil langsung via JOIN.
-func (r *LogTTDMMSRepository) FindAllActiveKehamilanByDesaID(desaID int32) ([]models.Kehamilan, error) {
+// FindAllActiveKehamilanByPosyanduID mengambil semua kehamilan aktif ibu (role=Ibu)
+// di posyandu yang sama dengan kader. Nama ibu diambil langsung via JOIN.
+func (r *LogTTDMMSRepository) FindAllActiveKehamilanByPosyanduID(posyanduID int32) ([]models.Kehamilan, error) {
 	var rows []kehamilanWithNama
  
 	err := r.db.
@@ -111,7 +100,7 @@ func (r *LogTTDMMSRepository) FindAllActiveKehamilanByDesaID(desaID int32) ([]mo
 		Joins("JOIN penduduk kpd ON kpd.id = i.penduduk_id").
 		Joins("JOIN pengguna u ON u.penduduk_id = kpd.id").
 		Joins("JOIN roles rl ON rl.id = u.role_id").
-		Where("kpd.desa_id = ?", desaID).
+		Where("kpd.posyandu_id = ?", posyanduID).
 		Where("rl.name = ?", "Ibu").
 		Where("k.status_kehamilan IN ?", []string{"aktif", "TRIMESTER 1", "TRIMESTER 2", "TRIMESTER 3"}).
 		Where("k.deleted_at IS NULL").
@@ -150,9 +139,9 @@ func (r *LogTTDMMSRepository) FindLogByKehamilanIDs(kehamilanIDs []int32) ([]mod
 	return list, err
 }
  
-// IsKehamilanInDesa memverifikasi bahwa kehamilan tertentu memang milik ibu
-// yang tinggal di desa yang sama dengan kader (security check).
-func (r *LogTTDMMSRepository) IsKehamilanInDesa(kehamilanID int32, desaID int32) (bool, error) {
+// IsKehamilanInPosyandu memverifikasi bahwa kehamilan tertentu memang milik ibu
+// yang terdaftar di posyandu yang sama dengan kader (security check).
+func (r *LogTTDMMSRepository) IsKehamilanInPosyandu(kehamilanID int32, posyanduID int32) (bool, error) {
 	var count int64
 	err := r.db.
 		Table("kehamilan k").
@@ -161,7 +150,7 @@ func (r *LogTTDMMSRepository) IsKehamilanInDesa(kehamilanID int32, desaID int32)
 		Joins("JOIN pengguna u ON u.penduduk_id = p.id").
 		Joins("JOIN roles rl ON rl.id = u.role_id").
 		Where("k.id = ?", kehamilanID).
-		Where("p.desa_id = ?", desaID).
+		Where("p.posyandu_id = ?", posyanduID).
 		Where("rl.name = ?", "Ibu").
 		Where("k.deleted_at IS NULL").
 		Count(&count).Error

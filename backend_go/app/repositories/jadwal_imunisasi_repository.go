@@ -410,11 +410,7 @@ func (m *Main) GetJadwalImunisasiTerlewatByKaderID(
 		Where("jia.tanggal_estimasi < CURRENT_DATE").
 		Where(`
 		(
-			NOT EXISTS (
 				SELECT 1
-				FROM kunjungan_imunisasi ki
-				WHERE ki.id_jadwal_imunisasi = jia.id
-			)
 			OR EXISTS (
 				SELECT 1
 				FROM kunjungan_imunisasi ki

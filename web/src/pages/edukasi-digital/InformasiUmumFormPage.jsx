@@ -21,7 +21,7 @@ export default function InformasiUmumFormPage() {
         { key: "ringkasan", label: "Ringkasan", type: "textarea", rows: 2 },
         { key: "konten", label: "Konten", type: "textarea", rows: 6 },
         { key: "yang_perlu_diingat", label: "Yang Perlu Diingat", type: "textarea", rows: 2 },
-        { key: "thumbnail_url", label: "URL Thumbnail (opsional)", type: "text" },
+        { key: "thumbnail_url", label: "Thumbnail (opsional)", type: "image" },
         { key: "is_active", label: "Aktif", type: "checkbox", default: true },
       ]}
     />

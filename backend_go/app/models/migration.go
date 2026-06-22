@@ -14,8 +14,7 @@ func AutoMigrate(db *gorm.DB) error {
 		&KartuKeluarga{},
 		&Bidan{},
 		&Kader{},
-		&KaderPosyandu{},
-		
+		// &KaderPosyandu{},
 
 		// ==================== ANAK & PERTUMBUHAN ====================
 		&Anak{},

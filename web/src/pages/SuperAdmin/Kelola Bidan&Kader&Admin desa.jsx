@@ -29,6 +29,8 @@ import {
   Users,
   X,
 } from "lucide-react";
+// Import getAllPosyandu
+import { getAllPosyandu } from "../../services/posyandu";
 
 const emptyBidanForm = {
   penduduk_id: "",
@@ -37,6 +39,7 @@ const emptyBidanForm = {
   password: "",
   no_str: "",
   no_sipb: "",
+  posyandu_id: "", // Tambahkan posyandu_id untuk bidan
 };
 
 const emptyAdminDesaForm = {
@@ -124,7 +127,8 @@ const UserManagement = () => {
   const loadPosyandu = async () => {
     try {
       setLoadingPosyandu(true);
-      const data = await listSuperadminPosyandu();
+      // Gunakan getAllPosyandu dari service posyandu
+      const data = await getAllPosyandu();
       setPosyanduOptions(Array.isArray(data) ? data : []);
     } catch (error) {
       setErrorMessage(superadminUserErrorMessage(error, "Gagal memuat data posyandu"));
@@ -140,9 +144,7 @@ const UserManagement = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const pendudukLabel = (penduduk) => `${penduduk.nama_lengkap} (${penduduk.nik})`;
-
-
+  const pendudukLabel = (penduduk) => `${penduduk.nama_anggota_keluarga} (${penduduk.nik})`;
 
   const managedUsers = useMemo(() => {
     return users.filter((user) => {
@@ -250,6 +252,7 @@ const UserManagement = () => {
         password: bidanForm.password.trim(),
         no_str: bidanForm.no_str.trim(),
         no_sipb: bidanForm.no_sipb.trim(),
+        posyandu_id: bidanForm.posyandu_id ? Number(bidanForm.posyandu_id) : undefined, // Tambahkan posyandu_id
       });
       resetCreateForms();
       await loadUsers();
@@ -590,6 +593,23 @@ const UserManagement = () => {
                     <Field label="Password Awal" type="password" value={bidanForm.password} onChange={(value) => setBidanForm((prev) => ({ ...prev, password: value }))} />
                     <Field label="No STR" value={bidanForm.no_str} onChange={(value) => setBidanForm((prev) => ({ ...prev, no_str: value }))} />
                     <Field label="No SIPB" value={bidanForm.no_sipb} onChange={(value) => setBidanForm((prev) => ({ ...prev, no_sipb: value }))} />
+                    
+                    {/* Tambahkan field Posyandu untuk Bidan */}
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-slate-700">Posyandu</label>
+                      <select
+                        value={bidanForm.posyandu_id}
+                        onChange={(e) => setBidanForm((prev) => ({ ...prev, posyandu_id: e.target.value }))}
+                        className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-slate-900"
+                      >
+                        <option value="">{loadingPosyandu ? "Memuat posyandu..." : "Pilih posyandu (opsional)"}</option>
+                        {posyanduOptions.map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.nama}{p.alamat ? ` - ${p.alamat}` : ""}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
                 </>
               ) : activeTab === "admin" ? (

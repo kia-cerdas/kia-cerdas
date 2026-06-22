@@ -13,6 +13,7 @@ import {
   ShieldAlert,
   CheckCircle2,
   Edit2,
+  Info,  
   Plus,
   Heart,
   Eye,

@@ -89,7 +89,7 @@ const Login = () => {
           </div>
 
           <div className="mb-6">
-            <label htmlFor="password" className="block text-gray-700 font-semibold mb-2">
+            <label htmlFor="password" className="block text-slate-700 font-semibold mb-2">
               Password
             </label>
             <input

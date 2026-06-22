@@ -375,7 +375,7 @@ const handleNonAktif = async () => {
               </h2>
               <div className="grid grid-cols-2 gap-y-2 gap-x-3 text-sm">
                 <span className="text-gray-500 text-xs">Nama Lengkap</span>
-                <span className="font-medium text-gray-800 text-sm">{kependudukan.nama_lengkap || "-"}</span>
+                <span className="font-medium text-gray-800 text-sm">{kependudukan.nama_anggota_keluarga || "-"}</span>
                 
                 <span className="text-gray-500 text-xs">NIK</span>
                 <span className="text-gray-800 text-sm">{kependudukan.nik || "-"}</span>
@@ -415,7 +415,7 @@ const handleNonAktif = async () => {
               {suami ? (
                 <div className="grid grid-cols-2 gap-y-2 gap-x-3 text-sm">
                   <span className="text-gray-500 text-xs">Nama Lengkap</span>
-                  <span className="font-medium text-gray-800 text-sm">{suami.nama_lengkap || "-"}</span>
+                  <span className="font-medium text-gray-800 text-sm">{suami.nama_anggota_keluarga || "-"}</span>
                   
                   <span className="text-gray-500 text-xs">NIK</span>
                   <span className="text-gray-800 text-sm">{suami.nik || "-"}</span>

@@ -478,9 +478,7 @@ export default function AdminFormVersions() {
     <MainLayout>
       <div className="p-6 max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-2xl font-bold">Kelola Form Versi</h1>
-            <div className="flex gap-2 mt-2">
+          <div className="flex gap-2">
               {["anak", "remaja", "dewasa", "lansia"].map((k) => (
                 <button
                   key={k}
@@ -496,7 +494,6 @@ export default function AdminFormVersions() {
                 </button>
               ))}
             </div>
-          </div>
           <button
             onClick={() => setShowVersionModal(true)}
             className="bg-indigo-600 text-white px-4 py-2 rounded-lg flex items-center gap-2"
