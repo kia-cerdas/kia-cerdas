@@ -5,14 +5,14 @@ import (
 	"monitoring-service/app/models"
 )
 
-func (m *Main) GetAllRequestPerubahanJadwal() (
+func (m *Main) GetAllRequestPerubahanJadwal(posyanduID int32) (
 	[]models.RequestPerubahanJadwalResponse,
 	error,
 ) {
 
 	rows, err :=
 		m.repository.
-			GetAllRequestPerubahanJadwal()
+			GetAllRequestPerubahanJadwal(posyanduID)
 
 	if err != nil {
 		return nil, err

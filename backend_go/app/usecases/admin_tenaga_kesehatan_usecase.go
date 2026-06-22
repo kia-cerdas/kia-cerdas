@@ -100,16 +100,16 @@ func (u *AdminTenagaKesehatanUsecase) CreateBidan(req *AdminCreateBidanRequest) 
 		return nil, err
 	}
 
-	if _, err := u.bidanRepo.FindByPendudukID(req.PendudukID); err == nil {
-		return nil, customerror.NewConflictError("penduduk sudah terdaftar sebagai bidan")
-	} else if !isNotFound(err) {
+	if bidanData, err := u.bidanRepo.FindByPendudukID(req.PendudukID); err != nil {
 		return nil, customerror.NewInternalServiceError("gagal memvalidasi data bidan")
+	} else if bidanData != nil {
+		return nil, customerror.NewConflictError("penduduk sudah terdaftar sebagai bidan")
 	}
 
-	if _, err := u.kaderRepo.FindByPendudukID(req.PendudukID); err == nil {
-		return nil, customerror.NewConflictError("penduduk sudah terdaftar sebagai kader")
-	} else if !isNotFound(err) {
+	if kaderData, err := u.kaderRepo.FindByPendudukID(req.PendudukID); err != nil {
 		return nil, customerror.NewInternalServiceError("gagal memvalidasi data kader")
+	} else if kaderData != nil {
+		return nil, customerror.NewConflictError("penduduk sudah terdaftar sebagai kader")
 	}
 
 	if _, err := u.kependudukanRepo.FindByID(req.PendudukID); err != nil {
@@ -144,7 +144,7 @@ func (u *AdminTenagaKesehatanUsecase) CreateBidan(req *AdminCreateBidanRequest) 
 	}
 
 	if err := u.bidanRepo.Create(data); err != nil {
-		if _, findErr := u.bidanRepo.FindByPendudukID(req.PendudukID); findErr == nil {
+		if existing, findErr := u.bidanRepo.FindByPendudukID(req.PendudukID); findErr == nil && existing != nil {
 			return nil, customerror.NewConflictError("penduduk sudah terdaftar sebagai bidan")
 		}
 		return nil, customerror.NewInternalServiceError("gagal menyimpan data bidan: " + err.Error())
@@ -223,16 +223,16 @@ func (u *AdminTenagaKesehatanUsecase) CreateKader(req *AdminCreateKaderRequest) 
 		return nil, err
 	}
 
-	if _, err := u.kaderRepo.FindByPendudukID(req.PendudukID); err == nil {
-		return nil, customerror.NewConflictError("penduduk sudah terdaftar sebagai kader")
-	} else if !isNotFound(err) {
+	if kaderData, err := u.kaderRepo.FindByPendudukID(req.PendudukID); err != nil {
 		return nil, customerror.NewInternalServiceError("gagal memvalidasi data kader")
+	} else if kaderData != nil {
+		return nil, customerror.NewConflictError("penduduk sudah terdaftar sebagai kader")
 	}
 
-	if _, err := u.bidanRepo.FindByPendudukID(req.PendudukID); err == nil {
-		return nil, customerror.NewConflictError("penduduk sudah terdaftar sebagai bidan")
-	} else if !isNotFound(err) {
+	if bidanData, err := u.bidanRepo.FindByPendudukID(req.PendudukID); err != nil {
 		return nil, customerror.NewInternalServiceError("gagal memvalidasi data bidan")
+	} else if bidanData != nil {
+		return nil, customerror.NewConflictError("penduduk sudah terdaftar sebagai bidan")
 	}
 
 	if _, err := u.kependudukanRepo.FindByID(req.PendudukID); err != nil {
@@ -261,7 +261,7 @@ func (u *AdminTenagaKesehatanUsecase) CreateKader(req *AdminCreateKaderRequest) 
 	}
 
 	if err := u.kaderRepo.Create(data); err != nil {
-		if _, findErr := u.kaderRepo.FindByPendudukID(req.PendudukID); findErr == nil {
+		if existing, findErr := u.kaderRepo.FindByPendudukID(req.PendudukID); findErr == nil && existing != nil {
 			return nil, customerror.NewConflictError("penduduk sudah terdaftar sebagai kader")
 		}
 		return nil, customerror.NewInternalServiceError("gagal menyimpan data kader: " + err.Error())

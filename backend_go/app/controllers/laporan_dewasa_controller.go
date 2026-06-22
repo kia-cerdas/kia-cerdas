@@ -40,9 +40,13 @@ func (c *LaporanDewasaController) Preview(ctx echo.Context) error {
 		})
 	}
 
+	// Get dynamic headers
+	dynamicHeaders := c.usecase.GetDynamicHeaders(data)
+
 	return ctx.JSON(http.StatusOK, map[string]interface{}{
-		"message": "success",
-		"data":    data,
+		"message":         "success",
+		"data":            data,
+		"dynamic_headers": dynamicHeaders,
 	})
 }
 

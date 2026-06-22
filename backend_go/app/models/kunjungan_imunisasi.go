@@ -9,6 +9,8 @@ type KunjunganImunisasi struct {
 	StatusID          uint                 `gorm:"column:status;"json:"status"`
 	TanggalKunjungan  *time.Time           `gorm:"column:tanggal_kunjungan;" json:"tanggal_kunjungan"`
 	JadwalImunisasiID uint                 `gorm:"column:id_jadwal_imunisasi;" json:"id_jadwal_imunisasi"`
+	KaderID           uint                 `gorm:"column:kader_id;" json:"kader_id"`
+	Kader             *Kader               `json:"kader,omitempty" gorm:"foreignKey:KaderID;constraint:OnDelete:CASCADE"`
 	JadwalImunisasi   *JadwalImunisasiAnak `json:"jadwal_imunisasi,omitempty" gorm:"foreignKey:JadwalImunisasiID;constraint:OnDelete:CASCADE"`
 	StatusKunjungan   *StatusKunjungan     `json:"status_kunjungan,omitempty" gorm:"foreignKey:StatusID"`
 	CreatedAt         time.Time
@@ -58,4 +60,6 @@ type PostKunjunganImunisasiRequest struct {
 	IDStatusKunjungan uint   `json:"id_status_kunjungan" binding:"required"`
 	TanggalKunjungan  string `json:"tanggal_kunjungan" binding:"required"`
 	IDJadwalImunisasi uint   `json:"id_jadwal_imunisasi" binding:"required"`
+	// KaderID diisi otomatis dari JWT, tidak perlu dikirim client
+	KaderID uint `json:"-"`
 }

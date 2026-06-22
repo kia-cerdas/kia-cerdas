@@ -184,11 +184,15 @@ func (m *Main) CreateKunjunganImunisasi(
 	req *models.PostKunjunganImunisasiRequest,
 ) (uint, error) {
 
-	// Buat kunjungan imunisasi
+	if req.KaderID == 0 {
+		return 0, fmt.Errorf("kader_id tidak ditemukan, pastikan akun terdaftar sebagai kader")
+	}
+
 	kunjunganID, err := m.repository.CreateKunjunganImunisasi(
 		req.IDStatusKunjungan,
 		req.TanggalKunjungan,
 		req.IDJadwalImunisasi,
+		req.KaderID,
 	)
 
 	if err != nil {
@@ -196,6 +200,10 @@ func (m *Main) CreateKunjunganImunisasi(
 	}
 
 	return kunjunganID, nil
+}
+
+func (m *Main) GetKaderIDByUserID(userID int32) (uint, error) {
+	return m.repository.GetKaderIDByUserID(userID)
 }
 
 func (m *Main) ProcessOverdueKunjunganImunisasi() error {

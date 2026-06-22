@@ -4,6 +4,7 @@ import (
 	"monitoring-service/app/models"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 )
@@ -80,6 +81,16 @@ func (ctrl *PuskesmasController) Create(c echo.Context) error {
 		})
 	}
 
+	// Cek duplikasi nama puskesmas
+	var existingCount int64
+	ctrl.DB().Model(&models.Puskesmas{}).Where("LOWER(nama) = LOWER(?)", req.Nama).Count(&existingCount)
+	if existingCount > 0 {
+		return c.JSON(http.StatusBadRequest, map[string]interface{}{
+			"status":  "error",
+			"message": "Puskesmas dengan nama tersebut sudah ada",
+		})
+	}
+
 	puskesmas := models.Puskesmas{
 		Nama:        req.Nama,
 		Alamat:      req.Alamat,
@@ -88,10 +99,20 @@ func (ctrl *PuskesmasController) Create(c echo.Context) error {
 	}
 
 	if err := ctrl.DB().Create(&puskesmas).Error; err != nil {
+		// Handle specific PostgreSQL errors
+		errMsg := err.Error()
+		if strings.Contains(errMsg, "duplicate key") || strings.Contains(errMsg, "unique constraint") {
+			return c.JSON(http.StatusConflict, map[string]interface{}{
+				"status":  "error",
+				"message": "Data puskesmas sudah ada atau terjadi konflik ID. Silakan coba lagi atau hubungi administrator untuk memperbaiki database sequence.",
+				"error":   errMsg,
+			})
+		}
+		
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
 			"status":  "error",
 			"message": "Gagal menyimpan puskesmas",
-			"error":   err.Error(),
+			"error":   errMsg,
 		})
 	}
 

@@ -79,11 +79,11 @@ func (m *Main) startCronJob() {
 			log.Println("[CRON] reminder kontrol selesai")
 		}
 
-		// 5. Update overdue kunjungan imunisasi
-		if err := m.usecase.ProcessOverdueKunjunganImunisasi(); err != nil {
-			log.Printf("[CRON] overdue kunjungan imunisasi error: %v", err)
+		// 5. Update status & kirim notifikasi kunjungan imunisasi
+		if err := m.usecase.ProcessKunjunganImunisasiCron(); err != nil {
+			log.Printf("[CRON] kunjungan imunisasi cron error: %v", err)
 		} else {
-			log.Println("[CRON] overdue kunjungan imunisasi selesai")
+			log.Println("[CRON] kunjungan imunisasi cron selesai")
 		}
 
 		// 6. Reminder jadwal posyandu H-3

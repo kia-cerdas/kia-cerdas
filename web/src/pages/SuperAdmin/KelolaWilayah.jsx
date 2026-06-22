@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import MainLayout from "../../components/Layout/MainLayout";
+import Pagination from "../../components/Pagination/Pagination";
 import {
   listProvinsi, createProvinsi, updateProvinsi, deleteProvinsi,
   listKabupaten, createKabupaten, updateKabupaten, deleteKabupaten,
@@ -18,6 +19,10 @@ const TABS = [
 export default function KelolaWilayah() {
   const [activeTab, setActiveTab] = useState("provinsi");
   const [search, setSearch] = useState("");
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
 
   const [provinsi, setProvinsi] = useState([]);
   const [kabupaten, setKabupaten] = useState([]);
@@ -175,6 +180,18 @@ export default function KelolaWilayah() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allRows, search, activeTab, provinsi, kabupaten]);
 
+  // Paginated data
+  const paginatedRows = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return rows.slice(startIndex, endIndex);
+  }, [rows, currentPage, itemsPerPage]);
+
+  // Reset to page 1 when tab or search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, search]);
+
   return (
     <MainLayout>
       <div className="px-4 pb-6 pt-0 md:px-6">
@@ -207,6 +224,13 @@ export default function KelolaWilayah() {
                 className="w-full pl-10 pr-4 py-2 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
               />
             </div>
+            <button
+              type="button"
+              className="inline-flex items-center gap-2 rounded-2xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors"
+            >
+              <Search className="w-4 h-4" />
+              Cari
+            </button>
             <button
               onClick={openCreate}
               className="inline-flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-2xl hover:bg-indigo-700 transition text-sm font-semibold"
@@ -245,11 +269,11 @@ export default function KelolaWilayah() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {rows.map((item, index) => {
+                  {paginatedRows.map((item, index) => {
                     const kab = activeTab === "kecamatan" ? kabupaten.find((k) => String(k.id) === String(item.kabupaten_id)) : null;
                     return (
                       <tr key={item.id} className="hover:bg-slate-50/70">
-                        <td className="px-4 py-3 text-sm text-slate-700">{index + 1}</td>
+                        <td className="px-4 py-3 text-sm text-slate-700">{(currentPage - 1) * itemsPerPage + index + 1}</td>
                         <td className="px-4 py-3 text-sm font-medium text-slate-900">{item.nama}</td>
                         {activeTab === "kabupaten" && (
                           <td className="px-4 py-3 text-sm text-slate-600">{provinsiNama(item.provinsi_id)}</td>
@@ -276,6 +300,18 @@ export default function KelolaWilayah() {
                 </tbody>
               </table>
             </div>
+          )}
+
+          {/* Pagination */}
+          {!loading && rows.length > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={Math.ceil(rows.length / itemsPerPage)}
+              totalItems={rows.length}
+              itemsPerPage={itemsPerPage}
+              onPageChange={(page) => setCurrentPage(page)}
+              loading={loading}
+            />
           )}
         </div>
       </div>
