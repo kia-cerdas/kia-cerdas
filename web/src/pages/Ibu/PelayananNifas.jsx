@@ -16,13 +16,17 @@ const EmptyState = ({ title, message, onAdd, canEdit, isLocked }) => (
     <div className="flex flex-col items-center gap-4">
       <div className={`p-4 rounded-full ${isLocked ? "bg-gray-100" : "bg-indigo-50"}`}>
         {isLocked ? <Lock size={40} className="text-gray-400" /> : <Plus size={40} className="text-indigo-400" />}
+        {isLocked ? (
+          <span className="text-gray-400 text-sm font-medium">Terkunci</span>
+        ) : (
+          <Plus size={40} className="text-indigo-400" />
+        )}
       </div>
       <h3 className="text-xl font-semibold text-gray-800">{title}</h3>
       <p className="text-gray-500 max-w-md">{message}</p>
       {isLocked && (
-        <p className="text-sm text-gray-400 mt-2 flex items-center gap-2">
-          <Lock size={14} />
-          Tahapan ini terkunci dan akan dibuka saat waktunya tiba
+        <p className="text-sm text-gray-500 mt-2">
+          Data belum tersedia karena belum memasuki masa yang sesuai
         </p>
       )}
       {!isLocked && canEdit && (
@@ -196,18 +200,18 @@ export default function PelayananNifas() {
       return nifas.some(n => n.kunjungan_ke === kunjungan);
     };
 
+    // Cek apakah masih dalam masa nifas (maksimal 42 hari)
+    const isWithinNifasPeriod = diffDays <= 42;
+
     switch (kunjunganKe) {
-      case "KF1": // 6-48 Jam (0-2 hari)
-        return diffDays <= 2;
-      case "KF2": // 3-7 Hari
-        // Hanya bisa diisi jika KF1 sudah diisi dan masih dalam rentang 3-7 hari
-        return previousKunjunganFilled("KF1") && diffDays >= 3 && diffDays <= 7;
-      case "KF3": // 8-28 Hari
-        // Hanya bisa diisi jika KF2 sudah diisi dan masih dalam rentang 8-28 hari
-        return previousKunjunganFilled("KF2") && diffDays >= 8 && diffDays <= 28;
-      case "KF4": // 29-42 Hari
-        // Hanya bisa diisi jika KF3 sudah diisi dan masih dalam rentang 29-42 hari
-        return previousKunjunganFilled("KF3") && diffDays >= 29 && diffDays <= 42;
+      case "KF1": // 6-48 Jam (0-2 hari) - bisa diisi kapan saja selama masih dalam masa nifas
+        return isWithinNifasPeriod;
+      case "KF2": // 3-7 Hari - bisa diisi jika KF1 sudah diisi dan masih dalam masa nifas
+        return previousKunjunganFilled("KF1") && isWithinNifasPeriod;
+      case "KF3": // 8-28 Hari - bisa diisi jika KF2 sudah diisi dan masih dalam masa nifas
+        return previousKunjunganFilled("KF2") && isWithinNifasPeriod;
+      case "KF4": // 29-42 Hari - bisa diisi jika KF3 sudah diisi dan masih dalam masa nifas
+        return previousKunjunganFilled("KF3") && isWithinNifasPeriod;
       default:
         return true;
     }
@@ -228,43 +232,37 @@ export default function PelayananNifas() {
       return nifas.some(n => n.kunjungan_ke === kunjungan);
     };
 
+    // Cek apakah masih dalam masa nifas (maksimal 42 hari)
+    const isWithinNifasPeriod = diffDays <= 42;
+
     switch (kunjunganKe) {
       case "KF1":
-        if (diffDays > 2) {
-          return `Masa 6-48 jam telah terlewati (${diffDays} hari sejak melahirkan). Tidak dapat mengisi data untuk periode ini.`;
+        if (!isWithinNifasPeriod) {
+          return `Masa nifas telah selesai (${diffDays} hari sejak melahirkan). Tidak dapat mengisi data.`;
         }
         break;
       case "KF2":
         if (!previousKunjunganFilled("KF1")) {
-          return "Harap isi data kunjungan KF1 (6-48 Jam) terlebih dahulu.";
+          return "Harap isi data kunjungan KF1 (6-48 Jam) terlebih dahulu sebelum mengisi kunjungan ini.";
         }
-        if (diffDays < 3) {
-          return `Belum memasuki masa 3-7 hari (${diffDays} hari sejak melahirkan).`;
-        }
-        if (diffDays > 7) {
-          return `Masa 3-7 hari telah terlewati (${diffDays} hari sejak melahirkan). Tidak dapat mengisi data untuk periode ini.`;
+        if (!isWithinNifasPeriod) {
+          return `Masa nifas telah selesai (${diffDays} hari sejak melahirkan). Tidak dapat mengisi data.`;
         }
         break;
       case "KF3":
         if (!previousKunjunganFilled("KF2")) {
-          return "Harap isi data kunjungan KF2 (3-7 Hari) terlebih dahulu.";
+          return "Harap isi data kunjungan KF2 (3-7 Hari) terlebih dahulu sebelum mengisi kunjungan ini.";
         }
-        if (diffDays < 8) {
-          return `Belum memasuki masa 8-28 hari (${diffDays} hari sejak melahirkan).`;
-        }
-        if (diffDays > 28) {
-          return `Masa 8-28 hari telah terlewati (${diffDays} hari sejak melahirkan). Tidak dapat mengisi data untuk periode ini.`;
+        if (!isWithinNifasPeriod) {
+          return `Masa nifas telah selesai (${diffDays} hari sejak melahirkan). Tidak dapat mengisi data.`;
         }
         break;
       case "KF4":
         if (!previousKunjunganFilled("KF3")) {
-          return "Harap isi data kunjungan KF3 (8-28 Hari) terlebih dahulu.";
+          return "Harap isi data kunjungan KF3 (8-28 Hari) terlebih dahulu sebelum mengisi kunjungan ini.";
         }
-        if (diffDays < 29) {
-          return `Belum memasuki masa 29-42 hari (${diffDays} hari sejak melahirkan).`;
-        }
-        if (diffDays > 42) {
-          return `Masa 29-42 hari telah terlewati (${diffDays} hari sejak melahirkan). Tidak dapat mengisi data untuk periode ini.`;
+        if (!isWithinNifasPeriod) {
+          return `Masa nifas telah selesai (${diffDays} hari sejak melahirkan). Tidak dapat mengisi data.`;
         }
         break;
     }
@@ -786,8 +784,12 @@ if (selectedKunjungan === "KF4") {
         {/* <Breadcrumb /> */}
 
         <div className="flex items-center gap-4 mb-6">
-          <button onClick={() => navigate(-1)} className="p-2 rounded-full hover:bg-gray-100 transition-colors">
-            <ArrowLeft size={20} />
+          <button
+            onClick={() => navigate(-1)}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#185FA5] text-[#185FA5] text-sm font-semibold hover:bg-[#185FA5]/5 transition"
+          >
+            <ArrowLeft size={16} />
+            Kembali
           </button>
           <div>
             <h1 className="text-[28px] font-bold text-gray-900">Pelayanan Nifas</h1>
@@ -797,39 +799,42 @@ if (selectedKunjungan === "KF4") {
         
           {/* Banner Peringatan jika tidak dapat akses */}
       {!canAccessNifas && kehamilan && (
-        <div className="mb-6 bg-blue-50 border border-blue-200 p-3 rounded-lg text-blue-700 text-base flex items-center gap-2">
+        <div className="mb-6 bg-[#185FA5]/10 border border-[#185FA5]/20 p-3 rounded-lg text-[#185FA5] text-base flex items-center gap-2">
           <AlertCircle size={16} /> {accessMessage}
         </div>
       )}
        {/* Banner Info untuk status NIFAS */}
       {canAccessNifas && kehamilan && kehamilan.status_kehamilan === "NIFAS" && (
-        <div className="mb-6 bg-blue-50 border border-blue-200 p-3 rounded-lg text-blue-700 text-base flex items-center gap-2">
+        <div className="mb-6 bg-[#185FA5]/10 border border-[#185FA5]/20 p-3 rounded-lg text-[#185FA5] text-base flex items-center gap-2">
           <CheckCircle size={16} /> Status Kehamilan: NIFAS - Ibu sedang dalam masa nifas. Anda dapat melakukan pencatatan pelayanan nifas.
         </div>
       )}
        {/* Banner Info untuk status NON-AKTIF */}
       {canAccessNifas && kehamilan && kehamilan.status_kehamilan === "NON-AKTIF" && (
-        <div className="mb-6 bg-blue-50 border border-blue-200 p-3 rounded-lg text-blue-700 text-base flex items-center gap-2">
+        <div className="mb-6 bg-[#185FA5]/10 border border-[#185FA5]/20 p-3 rounded-lg text-[#185FA5] text-base flex items-center gap-2">
           <CheckCircle size={16} /> Status Kehamilan: NON-AKTIF (Selesai) - Masa nifas telah selesai. Anda masih dapat melihat data pelayanan nifas yang sudah tercatat.
         </div>
       )}
       
       {/* Banner Info untuk role Dokter (view-only) */}
       {canAccessNifas && isDokter && (
-        <div className="mb-6 bg-blue-50 border border-blue-200 p-3 rounded-lg text-blue-700 text-base flex items-center gap-2">
+        <div className="mb-6 bg-[#185FA5]/10 border border-[#185FA5]/20 p-3 rounded-lg text-[#185FA5] text-base flex items-center gap-2">
           <Eye size={16} /> Anda dalam mode baca (Dokter). Data hanya dapat dilihat, tidak dapat diubah.
         </div>
       )}
       
-        {/* Tampilan jika tidak dapat akses */}
+        {/* Tampilan jika belum dapat akses (belum mencapai tahap nifas) */}
       {!canAccessNifas && (
         <div className="bg-white rounded-xl shadow-sm p-12 text-center">
-          <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <EyeOff size={40} className="text-gray-400" />
+          <div className="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertCircle size={40} className="text-amber-500" />
           </div>
-          <h2 className="text-[22px] font-semibold text-[#185FA5] mb-2">Akses Tidak Diizinkan</h2>
+          <h2 className="text-[22px] font-semibold text-[#185FA5] mb-2">Pelayanan Nifas Belum Tersedia</h2>
           <p className="text-gray-500 max-w-md mx-auto">
             {accessMessage || "Pelayanan Nifas hanya dapat diakses setelah ibu melahirkan (status NIFAS)."}
+          </p>
+          <p className="text-sm text-gray-400 max-w-md mx-auto mt-3">
+            Halaman ini akan aktif secara otomatis setelah status kehamilan berubah menjadi NIFAS atau NON-AKTIF.
           </p>
           {/* <button
             onClick={() => navigate(`/data-ibu/${id}`)}
@@ -881,16 +886,16 @@ if (selectedKunjungan === "KF4") {
         
         {/* Banner info untuk stage saat ini */}
         {tanggalMelahirkan && (
-          <div className="mb-6 bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded-r-lg">
+          <div className="mb-6 bg-[#185FA5]/10 border-l-4 border-[#185FA5] p-4 rounded-r-lg">
             <div className="flex items-start gap-3">
               <div className="flex-shrink-0">
-                <AlertCircle size={20} className="text-indigo-600" />
+                <AlertCircle size={20} className="text-[#185FA5]" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-indigo-800">
+                <p className="text-sm font-semibold text-[#185FA5]">
                   Masa Nifas Saat Ini: {getCurrentNifasStage() === "KF1" ? "6-48 Jam" : getCurrentNifasStage() === "KF2" ? "3-7 Hari" : getCurrentNifasStage() === "KF3" ? "8-28 Hari" : getCurrentNifasStage() === "KF4" ? "29-42 Hari" : "Di luar masa nifas"}
                 </p>
-                <p className="text-sm text-indigo-700 mt-1">
+                <p className="text-sm text-[#185FA5]/80 mt-1">
                   Hanya tahapan yang sesuai dengan masa nifas saat ini yang dapat diisi. Tahapan lain akan terkunci hingga waktunya tiba.
                 </p>
               </div>

@@ -92,6 +92,7 @@
 package usecases
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"monitoring-service/app/models"
@@ -143,7 +144,13 @@ func (u *pemeriksaanKehamilanUsecase) Create(p *models.PemeriksaanKehamilan) err
 		p.DetailRisiko = generateProblemAndRecommendation(p)
 	}
 
-	return u.repo.Create(p)
+	fmt.Println("💾 [DEBUG] Saving to database...")
+	if err := u.repo.Create(p); err != nil {
+		fmt.Println("❌ [DEBUG] Database save error:", err)
+		return err
+	}
+	fmt.Println("✅ [DEBUG] Database save successful")
+	return nil
 }
 
 func (u *pemeriksaanKehamilanUsecase) GetByID(id int32) (*models.PemeriksaanKehamilan, error) {
@@ -216,53 +223,75 @@ func (u *pemeriksaanKehamilanUsecase) validate(p *models.PemeriksaanKehamilan) e
 }
 
 func (u *pemeriksaanKehamilanUsecase) fillPrediction(p *models.PemeriksaanKehamilan) error {
+	fmt.Println("🔍 [ML DEBUG] Starting fillPrediction for record ID:", p.IDPeriksa)
 	req, err := u.buildPredictionRequest(p)
 	if err != nil {
+		fmt.Println("❌ [ML DEBUG] Error building prediction request:", err)
 		return err
 	}
+	fmt.Println("📤 [ML DEBUG] Prediction request built successfully")
+
 	resp, err := u.prediksiUc.Predict(req)
 	if err != nil {
+		fmt.Println("❌ [ML DEBUG] Error calling ML API:", err)
 		return err
 	}
-	p.SkorRisiko = int32(resp.Prediction)
-	p.StatusRisiko = resp.Label
-	p.DetailRisiko = generateProblemAndRecommendation(p)
+	fmt.Println("✅ [ML DEBUG] ML API call successful")
+	fmt.Println("📊 [ML DEBUG] ML Response - OverallLabel:", resp.OverallLabel, "RiskScore:", resp.RiskScore, "ActiveRiskCount:", resp.ActiveRiskCount)
 
-	// Fallback: jika ML service tidak mengembalikan label yang valid, gunakan perhitungan manual
-	if p.StatusRisiko == "" || (p.StatusRisiko != "PERLU RUJUKAN" && p.StatusRisiko != "PERLU TINDAKAN" && p.StatusRisiko != "NORMAL") {
-		p.StatusRisiko = calculateManualRiskStatus(p)
-		p.DetailRisiko = generateProblemAndRecommendation(p)
+	// Use new ML API response structure
+	p.SkorRisiko = int32(resp.RiskScore)
+	p.StatusRisiko = resp.OverallLabel
+	p.OverallPrediction = int32(resp.OverallPrediction)
+	p.OverallLabel = resp.OverallLabel
+	p.ActiveRiskCount = int32(resp.ActiveRiskCount)
+
+	// Convert alasan_klinis array to JSON string
+	if len(resp.AlasanKlinis) > 0 {
+		alasanJSON, _ := json.Marshal(resp.AlasanKlinis)
+		p.AlasanKlinis = string(alasanJSON)
 	}
 
+	// Store rekomendasi utama
+	p.RekomendasiUtama = resp.RekomendasiUtama
+
+	// Store risk_types as JSON
+	if len(resp.RiskTypes) > 0 {
+		riskTypesJSON, _ := json.Marshal(resp.RiskTypes)
+		p.RiskTypes = string(riskTypesJSON)
+	}
+
+	// Generate detailed risk summary from risk types
+	p.DetailRisiko = generateRiskSummaryFromTypes(resp.RiskTypes)
+
+	fmt.Println("💾 [ML DEBUG] Prediction data saved to model")
 	return nil
 }
 
-func calculateManualRiskStatus(p *models.PemeriksaanKehamilan) string {
-	faktorTinggi := 0
-	faktorSedang := 0
+func generateRiskSummaryFromTypes(riskTypes []models.RiskTypeDetail) string {
+	var detectedRisks []string
+	var recommendations []string
 
-	// Faktor risiko tinggi
-	if p.Sistole >= 140 || p.Diastole >= 90 {
-		faktorTinggi++
-	}
-	if p.TesLabHb != nil && *p.TesLabHb < 8.0 {
-		faktorTinggi++
-	}
-	if p.LingkarLenganAtas != nil && *p.LingkarLenganAtas < 23.5 {
-		faktorSedang++
-	}
-	if p.Sistole >= 120 || p.Diastole >= 80 {
-		faktorSedang++
+	for _, risk := range riskTypes {
+		if risk.Detected {
+			detectedRisks = append(detectedRisks, risk.Name)
+			if len(risk.Tindakan) > 0 {
+				recommendations = append(recommendations, fmt.Sprintf("%s: %s", risk.Name, risk.Tindakan[0]))
+			}
+		}
 	}
 
-	if faktorTinggi >= 1 {
-		return "PERLU RUJUKAN"
+	if len(detectedRisks) == 0 {
+		return "Tidak ada risiko terdeteksi. Lanjutkan ANC rutin."
 	}
-	if faktorSedang >= 1 {
-		return "PERLU TINDAKAN"
+
+	summary := fmt.Sprintf("Risiko terdeteksi: %s. ", strings.Join(detectedRisks, ", "))
+	if len(recommendations) > 0 {
+		summary += fmt.Sprintf("Tindakan: %s", strings.Join(recommendations, "; "))
 	}
-	return "NORMAL"
+	return summary
 }
+
 func generateProblemAndRecommendation(p *models.PemeriksaanKehamilan) string {
 	var parts []string
 
