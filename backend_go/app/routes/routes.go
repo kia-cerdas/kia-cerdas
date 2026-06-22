@@ -47,6 +47,8 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	secured.Use(middlewares.JWTAuth(controller.JWTSecret()))
 	// secured.Use(middlewares.AuditTrail(controller.AuditTrail))
 	secured.GET("/me", controller.Me)
+	secured.PUT("/me", controller.UpdateMe)
+	secured.PUT("/me/password", controller.UpdateMePassword)
 	secured.POST("/logout", controller.Logout)
 
 	// ==================== INFORMASI UMUM ====================
@@ -126,7 +128,21 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	superadmin.POST("/desa", controller.Desa.Create)
 	superadmin.PUT("/desa/:id", controller.Desa.Update)
 	superadmin.PATCH("/desa/:id/nonaktif", controller.Desa.Deactivate)
-	superadmin.GET("/penduduk", controller.ListPenduduk)
+
+	// Master Wilayah (Provinsi -> Kabupaten -> Kecamatan)
+	superadmin.GET("/provinsi", controller.Wilayah.ListProvinsi)
+	superadmin.POST("/provinsi", controller.Wilayah.CreateProvinsi)
+	superadmin.PUT("/provinsi/:id", controller.Wilayah.UpdateProvinsi)
+	superadmin.DELETE("/provinsi/:id", controller.Wilayah.DeleteProvinsi)
+	superadmin.GET("/kabupaten", controller.Wilayah.ListKabupaten) // ?provinsi_id=
+	superadmin.POST("/kabupaten", controller.Wilayah.CreateKabupaten)
+	superadmin.PUT("/kabupaten/:id", controller.Wilayah.UpdateKabupaten)
+	superadmin.DELETE("/kabupaten/:id", controller.Wilayah.DeleteKabupaten)
+	superadmin.GET("/kecamatan", controller.Wilayah.ListKecamatan) // ?kabupaten_id=
+	superadmin.POST("/kecamatan", controller.Wilayah.CreateKecamatan)
+	superadmin.PUT("/kecamatan/:id", controller.Wilayah.UpdateKecamatan)
+	superadmin.DELETE("/kecamatan/:id", controller.Wilayah.DeleteKecamatan)
+	// REMOVED DUPLICATE: superadmin.GET("/penduduk", controller.ListPenduduk) - This was overriding AdminListKependudukan
 	superadmin.GET("/users", controller.ListUsers)
 	superadmin.GET("/users/:id", controller.GetUser)
 	superadmin.POST("/users/bidan", controller.CreateBidanUser)

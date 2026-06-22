@@ -94,8 +94,6 @@ const Breadcrumb = () => {
     "mpasi-resep": "MPASI",
 
     // Admin
-    "akun-keluarga": "Akun Keluarga",
-    "manajemen-keluarga": "Manajemen Keluarga",
     "kelola-desa": "Kelola Desa",
 
     // Actions
@@ -118,9 +116,10 @@ const Breadcrumb = () => {
     preview: "Preview",
     // "audit-trail": "Audit Trail",
     "kelola-user": "Kelola User",
-    "kelola-user-per-desa": "Kelola Akun User Per Desa",
+    "kelola-nakes": "Kelola Nakes",
     "kelola-puskesmas": "Kelola Puskesmas",
     "kelola-posyandu": "Kelola Posyandu",
+    "kelola-penduduk": "Kelola Penduduk",
     "form-versi": "Kelola Form Versi",
   };
 
@@ -137,8 +136,14 @@ const Breadcrumb = () => {
   // Build path incrementally
   let currentPath = "";
 
+  // Segments to skip entirely (role prefixes, not meaningful in breadcrumb)
+  const skipSegments = ["superadmin"];
+
   pathSegments.forEach((segment, index) => {
     currentPath += "/" + segment;
+
+    // Skip role-prefix segments
+    if (skipSegments.includes(segment)) return;
 
     // Check if segment is an ID (UUID or numeric ID)
     const isId = /^[0-9a-f-]{36}$|^\d+$/.test(segment);
@@ -166,6 +171,7 @@ const Breadcrumb = () => {
   if (
     breadcrumbItems.length <= 1 ||
     location.pathname === "/dashboard" ||
+    location.pathname === "/superadmin/dashboard" ||
     location.pathname === "/dashboard/bidan" ||
     location.pathname === "/dashboard/admin" ||
     location.pathname === "/dashboard/dokter"

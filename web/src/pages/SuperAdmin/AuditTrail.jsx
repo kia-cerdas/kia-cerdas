@@ -296,7 +296,7 @@ export default function AuditTrail() {
 							</button>
 							<button type="button" onClick={resetFilters} className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50">
 								<RefreshCcw size={16} />
-								Reset
+								Refresh
 							</button>
 						</div>
 					</form>

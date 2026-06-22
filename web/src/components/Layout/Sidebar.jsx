@@ -19,8 +19,6 @@ import {
   Calendar,
   BarChart3,
   Settings,
-  UserCheck,
-  UserPlus,
   BriefcaseMedical,
   ClipboardEdit,
   TableProperties,
@@ -31,6 +29,9 @@ import {
   History,
   Home,
   Building2,
+  MapPinned,
+  UsersRound,
+  FileStack,
   X,
 } from "lucide-react";
 import logo from "./LOGO.png";
@@ -178,15 +179,15 @@ const Sidebar = ({ isOpen, onClose }) => {
   const superadminMenuItems = useMemo(
     () => [
       { path: "/superadmin/dashboard", name: "Beranda", icon: LayoutGrid },
-      { path: "/superadmin/manajemen-keluarga", name: "Manajemen KK", icon: UserCheck },
-      { path: "/superadmin/akun-keluarga", name: "Buat Kartu Keluarga", icon: UserPlus },
-      { path: "/superadmin/kelola-user", name: "Kelola Bidan&Kader&Admin desa", icon: ShieldPlus },
-      { path: "/superadmin/kelola-user-per-desa", name: "Kelola Akun User Per Desa", icon: Users },
+      { path: "/superadmin/kelola-penduduk", name: "Kelola Penduduk", icon: UsersRound },
+      { path: "/superadmin/kelola-nakes", name: "Kelola Nakes", icon: ShieldPlus },
+      { path: "/superadmin/kelola-user", name: "Kelola User", icon: Users },
       { path: "/superadmin/kelola-desa", name: "Kelola Desa", icon: TableProperties },
-      { path: "/superadmin/kelola-puskesmas", name: "Kelola Puskesmas", icon: Building2 },
       { path: "/superadmin/kelola-posyandu", name: "Kelola Posyandu", icon: Home },
+      { path: "/superadmin/kelola-puskesmas", name: "Kelola Puskesmas", icon: Building2 },
+      { path: "/superadmin/kelola-wilayah", name: "Kelola Wilayah", icon: MapPinned },
       // { path: "/superadmin/audit-trail", name: "Audit Trail", icon: History },
-      { path: "/superadmin/form-versi", name: "Kelola Form Versi", icon: BriefcaseMedical },
+      { path: "/superadmin/form-versi", name: "Kelola Form Versi", icon: FileStack },
     ],
     []
   );

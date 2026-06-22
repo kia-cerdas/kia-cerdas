@@ -52,6 +52,7 @@ type Main struct {
 	RiwayatKehamilanLalu          *RiwayatKehamilanLaluController
 	KeteranganLahir               *KeteranganLahirController
 	Desa                          *DesaController
+	Wilayah                       *WilayahController
 	Kependudukan                  *KependudukanController
 	JenisPelayanan                *JenisPelayananController
 	KategoriUmur                  *KategoriUmurController
@@ -185,6 +186,7 @@ func Init(opts Options) *Main {
 	m.RiwayatKehamilanLalu = NewRiwayatKehamilanLaluController(opts.UseCases.RiwayatKehamilanLalu)
 	m.KeteranganLahir = NewKeteranganLahirController(opts.UseCases.KeteranganLahir)
 	m.Desa = NewDesaController(opts.UseCases.Desa)
+	m.Wilayah = NewWilayahController(opts.UseCases.Wilayah)
 	m.Kependudukan = NewKependudukanController(opts.UseCases.Kependudukan)
 	m.JenisPelayanan = NewJenisPelayananController(opts.UseCases.JenisPelayanan)
 	m.KategoriUmur = NewKategoriUmurController(opts.UseCases.KategoriUmur)

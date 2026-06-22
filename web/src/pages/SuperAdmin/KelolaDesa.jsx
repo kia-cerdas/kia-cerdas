@@ -7,6 +7,7 @@ import {
 	listDesa,
 	updateDesa,
 } from "../../services/desa";
+import { listProvinsi, listKabupaten, listKecamatan } from "../../services/wilayah";
 import {
 	AlertCircle,
 	CheckCircle2,
@@ -19,9 +20,9 @@ import {
 } from "lucide-react";
 
 const emptyForm = {
-	kecamatan: "",
-	kabupaten: "",
-	provinsi: "",
+	provinsi_id: "",
+	kabupaten_id: "",
+	kecamatan_id: "",
 	nama_desa: "",
 	kode_desa: "",
 	keterangan: "",
@@ -39,6 +40,11 @@ export default function KelolaDesa() {
 	const [error, setError] = useState("");
 	const [formError, setFormError] = useState("");
 
+	// Master wilayah untuk cascading dropdown
+	const [provinsiList, setProvinsiList] = useState([]);
+	const [kabupatenList, setKabupatenList] = useState([]);
+	const [kecamatanList, setKecamatanList] = useState([]);
+
 	const fetchData = async () => {
 		try {
 			setLoading(true);
@@ -51,9 +57,35 @@ export default function KelolaDesa() {
 		}
 	};
 
+	const fetchWilayah = async () => {
+		try {
+			const [prov, kab, kec] = await Promise.all([
+				listProvinsi(),
+				listKabupaten(),
+				listKecamatan(),
+			]);
+			setProvinsiList(prov);
+			setKabupatenList(kab);
+			setKecamatanList(kec);
+		} catch {
+			// abaikan; dropdown akan kosong, user bisa retry
+		}
+	};
+
 	useEffect(() => {
 		fetchData();
+		fetchWilayah();
 	}, []);
+
+	// Cascading: kabupaten ter-filter provinsi, kecamatan ter-filter kabupaten
+	const kabupatenOptions = useMemo(
+		() => (formData.provinsi_id ? kabupatenList.filter((k) => String(k.provinsi_id) === String(formData.provinsi_id)) : []),
+		[kabupatenList, formData.provinsi_id]
+	);
+	const kecamatanOptions = useMemo(
+		() => (formData.kabupaten_id ? kecamatanList.filter((k) => String(k.kabupaten_id) === String(formData.kabupaten_id)) : []),
+		[kecamatanList, formData.kabupaten_id]
+	);
 
 	const filteredDesa = useMemo(() => {
 		const keyword = search.trim().toLowerCase();
@@ -86,10 +118,14 @@ export default function KelolaDesa() {
 
 	const openEditModal = (desa) => {
 		setSelectedDesa(desa);
+		// Prefill id dari kecamatan_id; provinsi & kabupaten diturunkan dari master.
+		const kec = desa.kecamatan_id
+			? kecamatanList.find((k) => String(k.id) === String(desa.kecamatan_id))
+			: null;
 		setFormData({
-			kecamatan: desa.kecamatan || "",
-			kabupaten: desa.kabupaten || "",
-			provinsi: desa.provinsi || "",
+			provinsi_id: kec ? String(kec.kabupaten?.provinsi_id ?? kabupatenList.find((k) => String(k.id) === String(kec.kabupaten_id))?.provinsi_id ?? "") : "",
+			kabupaten_id: kec ? String(kec.kabupaten_id) : "",
+			kecamatan_id: desa.kecamatan_id ? String(desa.kecamatan_id) : "",
 			nama_desa: desa.nama_desa || "",
 			kode_desa: desa.kode_desa || "",
 			keterangan: desa.keterangan || "",
@@ -103,13 +139,11 @@ export default function KelolaDesa() {
 		event.preventDefault();
 
 		if (
-			!formData.kecamatan.trim() ||
-			!formData.kabupaten.trim() ||
-			!formData.provinsi.trim() ||
+			!formData.kecamatan_id ||
 			!formData.nama_desa.trim() ||
 			!formData.kode_desa.trim()
 		) {
-			setFormError("Semua field utama wajib diisi");
+			setFormError("Wilayah (kecamatan), nama desa, dan kode desa wajib diisi");
 			return;
 		}
 
@@ -117,10 +151,9 @@ export default function KelolaDesa() {
 			setIsSubmitting(true);
 			setFormError("");
 
+			// String kecamatan/kabupaten/provinsi diisi backend dari master (sinkron).
 			const payload = {
-				kecamatan: formData.kecamatan.trim(),
-				kabupaten: formData.kabupaten.trim(),
-				provinsi: formData.provinsi.trim(),
+				kecamatan_id: Number(formData.kecamatan_id),
 				nama_desa: formData.nama_desa.trim(),
 				kode_desa: formData.kode_desa.trim(),
 				keterangan: formData.keterangan.trim() || null,
@@ -162,31 +195,24 @@ export default function KelolaDesa() {
 	return (
 		<MainLayout>
 			<div className="p-4 md:p-6 lg:p-8 max-w-full overflow-hidden">
-				<div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
-					<div>
-						<h1 className="text-3xl font-bold text-gray-800">Kelola Desa</h1>
-						<p className="text-gray-600 mt-1">Fitur terpisah untuk tambah, ubah, dan nonaktifkan desa</p>
-					</div>
-					<button
-						onClick={openCreateModal}
-						className="inline-flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
-					>
-						<Plus size={18} />
-						Tambah Desa
-					</button>
-				</div>
-
-				<div className="bg-white rounded-xl border border-slate-200 p-4 mb-6 shadow-sm">
-					<div className="relative">
-						<Search className="absolute left-3 top-3 text-slate-400" size={18} />
+				<div className="flex flex-wrap items-center gap-3 mb-6">
+					<div className="flex-1 min-w-[200px] relative">
+						<Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
 						<input
 							type="text"
 							value={search}
 							onChange={(e) => setSearch(e.target.value)}
 							placeholder="Cari nama desa, kode, kecamatan, kabupaten, atau provinsi"
-							className="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
+							className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
 						/>
 					</div>
+					<button
+						onClick={openCreateModal}
+						className="inline-flex items-center gap-2 bg-indigo-600 text-white px-4 py-2.5 rounded-2xl hover:bg-indigo-700 transition text-sm font-semibold"
+					>
+						<Plus size={16} />
+						Tambah Desa
+					</button>
 				</div>
 
 				{error && (
@@ -310,11 +336,32 @@ export default function KelolaDesa() {
 							)}
 
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+								{/* Cascading wilayah: Provinsi -> Kabupaten -> Kecamatan */}
+								<SelectField
+									label="Provinsi"
+									value={formData.provinsi_id}
+									onChange={(value) => setFormData((prev) => ({ ...prev, provinsi_id: value, kabupaten_id: "", kecamatan_id: "" }))}
+									placeholder="Pilih Provinsi"
+									options={provinsiList.map((p) => ({ value: p.id, label: p.nama }))}
+								/>
+								<SelectField
+									label="Kabupaten"
+									value={formData.kabupaten_id}
+									onChange={(value) => setFormData((prev) => ({ ...prev, kabupaten_id: value, kecamatan_id: "" }))}
+									placeholder={formData.provinsi_id ? "Pilih Kabupaten" : "Pilih provinsi dulu"}
+									disabled={!formData.provinsi_id}
+									options={kabupatenOptions.map((k) => ({ value: k.id, label: k.nama }))}
+								/>
+								<SelectField
+									label="Kecamatan"
+									value={formData.kecamatan_id}
+									onChange={(value) => setFormData((prev) => ({ ...prev, kecamatan_id: value }))}
+									placeholder={formData.kabupaten_id ? "Pilih Kecamatan" : "Pilih kabupaten dulu"}
+									disabled={!formData.kabupaten_id}
+									options={kecamatanOptions.map((k) => ({ value: k.id, label: k.nama }))}
+								/>
 								<Field label="Nama Desa" value={formData.nama_desa} onChange={(value) => setFormData((prev) => ({ ...prev, nama_desa: value }))} />
 								<Field label="Kode Desa" value={formData.kode_desa} onChange={(value) => setFormData((prev) => ({ ...prev, kode_desa: value }))} />
-								<Field label="Kecamatan" value={formData.kecamatan} onChange={(value) => setFormData((prev) => ({ ...prev, kecamatan: value }))} />
-								<Field label="Kabupaten" value={formData.kabupaten} onChange={(value) => setFormData((prev) => ({ ...prev, kabupaten: value }))} />
-								<Field label="Provinsi" value={formData.provinsi} onChange={(value) => setFormData((prev) => ({ ...prev, provinsi: value }))} />
 								<div className="space-y-2 md:col-span-2">
 									<label className="block text-sm font-medium text-slate-700">Keterangan</label>
 									<textarea
@@ -366,6 +413,25 @@ function Field({ label, value, onChange }) {
 				onChange={(e) => onChange(e.target.value)}
 				className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-slate-900"
 			/>
+		</div>
+	);
+}
+
+function SelectField({ label, value, onChange, options, placeholder = "Pilih", disabled = false }) {
+	return (
+		<div className="space-y-2">
+			<label className="block text-sm font-medium text-slate-700">{label}</label>
+			<select
+				value={value}
+				onChange={(e) => onChange(e.target.value)}
+				disabled={disabled}
+				className="w-full rounded-lg border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-slate-900 disabled:bg-slate-100 disabled:text-slate-400"
+			>
+				<option value="">{placeholder}</option>
+				{options.map((opt) => (
+					<option key={opt.value} value={opt.value}>{opt.label}</option>
+				))}
+			</select>
 		</div>
 	);
 }

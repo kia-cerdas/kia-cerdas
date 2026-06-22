@@ -100,7 +100,18 @@ export const getPendudukWithFilters = async (options = {}) => {
   if (desa_id) params.desa_id = desa_id;
   if (posyandu_id) params.posyandu_id = posyandu_id;
 
+  console.log("🌐 [getPendudukWithFilters] Requesting with params:", params);
+  
   const res = await api.get(BASEADMIN, { params });
+  
+  console.log("🌐 [getPendudukWithFilters] Raw response:", res);
+  console.log("🌐 [getPendudukWithFilters] Response data:", res.data);
+  console.log("🌐 [getPendudukWithFilters] Response data.data:", res.data.data);
+  
+  if (res.data?.data?.items && res.data.data.items.length > 0) {
+    console.log("🌐 [getPendudukWithFilters] Sample item from API:", JSON.stringify(res.data.data.items[0], null, 2));
+  }
+  
   return res.data.data;
 };
 
