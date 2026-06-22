@@ -246,7 +246,7 @@ export default function LaporanBalitaPreview() {
 				<div className="flex flex-wrap items-center justify-between gap-3 mb-6">
 					<button
 						onClick={() => navigate(-1)}
-						className="inline-flex items-center gap-2 text-gray-600 hover:text-green-600 transition-colors"
+						className="inline-flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors"
 					>
 						<ArrowLeft size={18} /> Kembali
 					</button>
@@ -260,9 +260,9 @@ export default function LaporanBalitaPreview() {
 				<div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
 					<div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
 						<div className="flex flex-wrap items-center gap-3">
-							<div className="bg-green-100 p-2 rounded-full">
-								<Filter size={18} className="text-green-600" />
-							</div>
+						<div className="bg-blue-100 p-2 rounded-full">
+							<Filter size={18} className="text-blue-600" />
+						</div>
 							<div className="flex flex-wrap items-center gap-3">
 								<span className="text-sm font-medium text-gray-700">
 									Filter Tanggal:
@@ -272,27 +272,27 @@ export default function LaporanBalitaPreview() {
 										type="date"
 										value={startDate}
 										onChange={(e) => setStartDate(e.target.value)}
-										className="border rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-green-300 bg-white"
+										className="border rounded-lg px-5 py-2 text-sm focus:ring-2 focus:ring-blue-300 bg-white"
 									/>
 									<span className="text-gray-400 text-sm">s.d.</span>
 									<input
 										type="date"
 										value={endDate}
 										onChange={(e) => setEndDate(e.target.value)}
-										className="border rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-green-300 bg-white"
+										className="border rounded-lg px-5 py-2 text-sm focus:ring-2 focus:ring-blue-300 bg-white"
 									/>
 								</div>
 								<div className="flex gap-2">
 									<button
 										onClick={handleApplyFilter}
-										className="bg-green-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-green-700 transition shadow-sm"
+										className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg flex items-center justify-center gap-2 transition shadow-sm"
 									>
 										Terapkan Filter
 									</button>
 									{filterEnabled && (
 										<button
 											onClick={handleResetFilter}
-											className="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-200 transition"
+											className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2 rounded-lg flex items-center justify-center gap-2 transition"
 										>
 											Reset
 										</button>
@@ -304,15 +304,15 @@ export default function LaporanBalitaPreview() {
 						<button
 							onClick={handleExport}
 							disabled={exporting || (data.balita.length === 0 && data.pertumbuhan.length === 0 && data.imunisasi.length === 0)}
-							className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-sm w-full lg:w-auto"
+							className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-sm w-full lg:w-auto"
 						>
 							{exporting ? <Loader2 className="animate-spin" size={18} /> : <Download size={18} />}
-							{exporting ? "Mengekspor..." : "Download Excel (3 Sheet)"}
+							{exporting ? "Mengekspor..." : "Download Excel"}
 						</button>
 					</div>
 
 					{filterEnabled && startDate && endDate && (
-						<div className="mt-3 text-xs text-green-600 bg-green-50 p-2 rounded-lg inline-flex items-center gap-1">
+						<div className="mt-3 text-xs text-blue-600 bg-blue-50 p-2 rounded-lg inline-flex items-center gap-1">
 							<Calendar size={12} /> Memfilter data dari {new Date(startDate).toLocaleDateString("id-ID")} s.d. {new Date(endDate).toLocaleDateString("id-ID")}
 						</div>
 					)}
@@ -323,28 +323,31 @@ export default function LaporanBalitaPreview() {
 					<div className="flex border-b border-gray-200 mb-4 overflow-x-auto whitespace-nowrap">
 						<button
 							onClick={() => setActiveTab("balita")}
-							className={`py-2.5 px-4 font-medium text-sm border-b-2 transition-all ${activeTab === "balita"
-								? "border-green-600 text-green-600"
-								: "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-								}`}
+							className={`py-2.5 px-4 font-medium text-sm border-b-2 transition-all ${
+								activeTab === "balita"
+									? "border-blue-600 text-blue-600"
+									: "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+							}`}
 						>
 							Data Balita ({data.balita.length})
 						</button>
 						<button
 							onClick={() => setActiveTab("pertumbuhan")}
-							className={`py-2.5 px-4 font-medium text-sm border-b-2 transition-all ${activeTab === "pertumbuhan"
-								? "border-green-600 text-green-600"
-								: "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-								}`}
+							className={`py-2.5 px-4 font-medium text-sm border-b-2 transition-all ${
+								activeTab === "pertumbuhan"
+									? "border-blue-600 text-blue-600"
+									: "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+							}`}
 						>
 							Riwayat Pertumbuhan ({data.pertumbuhan.length})
 						</button>
 						<button
 							onClick={() => setActiveTab("imunisasi")}
-							className={`py-2.5 px-4 font-medium text-sm border-b-2 transition-all ${activeTab === "imunisasi"
-								? "border-green-600 text-green-600"
-								: "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-								}`}
+							className={`py-2.5 px-4 font-medium text-sm border-b-2 transition-all ${
+								activeTab === "imunisasi"
+									? "border-blue-600 text-blue-600"
+									: "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+							}`}
 						>
 							Riwayat Imunisasi ({data.imunisasi.length})
 						</button>
@@ -376,7 +379,7 @@ export default function LaporanBalitaPreview() {
 						<p className="text-red-700 font-medium">{error}</p>
 						<button
 							onClick={() => fetchPreview()}
-							className="mt-4 inline-flex items-center gap-2 text-green-600 text-sm hover:underline"
+							className="mt-4 inline-flex items-center gap-2 text-blue-600 text-sm hover:underline"
 						>
 							<RefreshCw size={14} /> Muat ulang
 						</button>

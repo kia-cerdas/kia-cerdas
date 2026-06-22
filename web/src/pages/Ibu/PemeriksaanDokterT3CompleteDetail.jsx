@@ -419,10 +419,10 @@ export default function PemeriksaanDokterT3CompleteDetail() {
           <DetailSection icon={Eye} title="USG Trimester 3" colorCls="bg-violet-50 text-violet-700 border-violet-100">
             <InfoRow label="USG Dilakukan?" value={d.usg_trimester_3_dilakukan === "Ya" ? "Ya" : (d.usg_trimester_3_dilakukan || "-")} />
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">
-              <InfoRow label="UK USG T1 (mg)" value={d.uk_berdasarkan_usg_trimester_1_minggu ? `${d.uk_berdasarkan_usg_trimester_1_minggu} mg` : null} />
-              <InfoRow label="UK HPHT (mg)" value={d.uk_berdasarkan_hpht_minggu ? `${d.uk_berdasarkan_hpht_minggu} mg` : null} />
-              <InfoRow label="UK Biometri T3 (mg)" value={d.uk_berdasarkan_biometri_usg_trimester_3_minggu ? `${d.uk_berdasarkan_biometri_usg_trimester_3_minggu} mg` : null} highlight />
-              <InfoRow label="Selisih ≥3 mg?" value={d.selisih_uk_3_minggu_atau_lebih || "-"} />
+              <InfoRow label="UK USG T1 (minggu)" value={d.uk_berdasarkan_usg_trimester_1_minggu ? `${d.uk_berdasarkan_usg_trimester_1_minggu} minggu` : null} />
+              <InfoRow label="UK HPHT (minggu)" value={d.uk_berdasarkan_hpht_minggu ? `${d.uk_berdasarkan_hpht_minggu} minggu` : null} />
+              <InfoRow label="UK Biometri T3 (minggu)" value={d.uk_berdasarkan_biometri_usg_trimester_3_minggu ? `${d.uk_berdasarkan_biometri_usg_trimester_3_minggu} minggu` : null} highlight />
+              <InfoRow label="Selisih ≥3 minggu?" value={d.selisih_uk_3_minggu_atau_lebih || "-"} />
               <InfoRow label="Jumlah Bayi" value={d.usg_jumlah_bayi || "-"} />
               <InfoRow label="Letak Bayi" value={d.usg_letak_bayi || "-"} />
               <InfoRow label="Presentasi Bayi" value={d.usg_presentasi_bayi || "-"} />
@@ -475,15 +475,15 @@ export default function PemeriksaanDokterT3CompleteDetail() {
           <DetailSection icon={Activity} title="Biometri Janin" colorCls="bg-blue-50 text-blue-700 border-blue-100">
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
               <InfoRow label="BPD (cm)" value={d.biometri_bpd_cm ? `${d.biometri_bpd_cm} cm` : null} />
-              <InfoRow label="BPD (mg)" value={d.biometri_bpd_minggu ? `${d.biometri_bpd_minggu} mg` : null} />
+              <InfoRow label="BPD (minggu)" value={d.biometri_bpd_minggu ? `${d.biometri_bpd_minggu} minggu` : null} />
               <InfoRow label="HC (cm)" value={d.biometri_hc_cm ? `${d.biometri_hc_cm} cm` : null} />
-              <InfoRow label="HC (mg)" value={d.biometri_hc_minggu ? `${d.biometri_hc_minggu} mg` : null} />
+              <InfoRow label="HC (minggu)" value={d.biometri_hc_minggu ? `${d.biometri_hc_minggu} minggu` : null} />
               <InfoRow label="AC (cm)" value={d.biometri_ac_cm ? `${d.biometri_ac_cm} cm` : null} />
-              <InfoRow label="AC (mg)" value={d.biometri_ac_minggu ? `${d.biometri_ac_minggu} mg` : null} />
+              <InfoRow label="AC (minggu)" value={d.biometri_ac_minggu ? `${d.biometri_ac_minggu} minggu` : null} />
               <InfoRow label="FL (cm)" value={d.biometri_fl_cm ? `${d.biometri_fl_cm} cm` : null} />
-              <InfoRow label="FL (mg)" value={d.biometri_fl_minggu ? `${d.biometri_fl_minggu} mg` : null} />
+              <InfoRow label="FL (minggu)" value={d.biometri_fl_minggu ? `${d.biometri_fl_minggu} minggu` : null} />
               <InfoRow label="EFW/TBJ (gram)" value={d.biometri_efw_tbj_gram ? `${d.biometri_efw_tbj_gram} gr` : null} />
-              <InfoRow label="EFW/TBJ (mg)" value={d.biometri_efw_tbj_minggu ? `${d.biometri_efw_tbj_minggu} mg` : null} />
+              <InfoRow label="EFW/TBJ (minggu)" value={d.biometri_efw_tbj_minggu ? `${d.biometri_efw_tbj_minggu} minggu` : null} />
             </div>
           </DetailSection>
 

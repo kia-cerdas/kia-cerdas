@@ -353,27 +353,27 @@ export default function LaporanDewasaPreview() {
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="border rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-300 bg-white"
+                    className="border rounded-lg px-5 py-2 text-sm focus:ring-2 focus:ring-blue-300 bg-white"
                   />
                   <span className="text-gray-400 text-sm">s.d.</span>
                   <input
                     type="date"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="border rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-300 bg-white"
+                    className="border rounded-lg px-5 py-2 text-sm focus:ring-2 focus:ring-blue-300 bg-white"
                   />
                 </div>
                 <div className="flex gap-2">
                   <button
                     onClick={handleApplyFilter}
-                    className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition shadow-sm"
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg flex items-center justify-center gap-2 transition shadow-sm"
                   >
                     Terapkan Filter
                   </button>
                   {filterEnabled && (
                     <button
                       onClick={handleResetFilter}
-                      className="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-200 transition"
+                      className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2 rounded-lg flex items-center justify-center gap-2 transition"
                     >
                       Reset
                     </button>
