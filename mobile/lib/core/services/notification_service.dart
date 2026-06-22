@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:io' show Platform;
+
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -122,6 +122,9 @@ class NotificationService {
     final isImunisasiReminder = data['type'] == 'reminder_imunisasi';
 
     final AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+      _androidChannel.id,
+      _androidChannel.name,
+      channelDescription: _androidChannel.description,
       priority: Priority.high,
       playSound: true,
       actions: isImunisasiReminder

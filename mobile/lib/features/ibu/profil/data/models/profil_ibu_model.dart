@@ -139,7 +139,7 @@ class ProfilIbuModel {
       email: json['email']?.toString() ?? '',
       nomorTelepon: json['nomor_telepon']?.toString() ?? '',
       nik: json['nik']?.toString() ?? '',
-      namaLengkap: json['nama_lengkap']?.toString() ?? '',
+      namaLengkap: json['nama_lengkap']?.toString() ?? json['nama_anggota_keluarga']?.toString() ?? '',
       tempatLahir: json['tempat_lahir']?.toString() ?? '',
       tanggalLahir: json['tanggal_lahir']?.toString() ?? '',
       golonganDarah: json['golongan_darah']?.toString() ?? '',

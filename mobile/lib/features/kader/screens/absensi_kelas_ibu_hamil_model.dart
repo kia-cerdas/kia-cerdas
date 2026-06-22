@@ -26,6 +26,7 @@ class AbsensiKelasIbuHamilModel {
         final kpd = ibu['kependudukan'];
         if (kpd != null) {
           namaIbu = kpd['nama_lengkap']?.toString() ??
+              kpd['nama_anggota_keluarga']?.toString() ??
               kpd['nama']?.toString() ??
               '';
         }
