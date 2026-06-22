@@ -167,33 +167,29 @@ func (m *Main) GenerateJadwalImunisasi(
 	return nil
 }
 
-// ========== FUNGSI BARU: Generate jadwal untuk 1 anak saat anak baru ditambahkan ==========
 func (m *Main) GenerateJadwalImunisasiByAnakID(anakID int32) error {
 
 	fmt.Println("========== GENERATE BY ANAK ID ==========")
 	fmt.Println("ANAK ID:", anakID)
 
-	// ✅ Fix error 1: cast int32 → uint
 	anak, err := m.repository.GetAnakByID(uint(anakID))
 	if err != nil {
 		fmt.Println("ERROR GetAnakByID:", err)
 		return err
 	}
 
-	// ✅ Fix error 2: TanggalLahir ada di Penduduk, bukan di Anak
 	if anak.Penduduk == nil || anak.Penduduk.TanggalLahir.IsZero() {
 		fmt.Println("SKIP: TanggalLahir nil atau Penduduk tidak ditemukan")
 		return nil
 	}
 
-	tanggalLahir := anak.Penduduk.TanggalLahir // ← ambil dari sini
+	tanggalLahir := anak.Penduduk.TanggalLahir
 
 	aturanList, err := m.repository.GetAturanVaksinAnak()
 	if err != nil {
+		fmt.Println("ERROR GetAturanVaksinAnak:", err)
 		return err
 	}
-
-	today := time.Now()
 
 	for _, rule := range aturanList {
 
@@ -202,37 +198,31 @@ func (m *Main) GenerateJadwalImunisasiByAnakID(anakID int32) error {
 			int64(rule.DosisVaksinID),
 		)
 		if err != nil {
+			fmt.Println("ERROR IsJadwalExist:", err)
 			return err
 		}
+
 		if alreadyExist {
-			fmt.Println("SKIP: jadwal sudah ada")
+			fmt.Println(
+				"SKIP: jadwal sudah ada",
+				"Anak:", anak.ID,
+				"Dosis:", rule.DosisVaksinID,
+			)
 			continue
 		}
 
-		var tanggalEstimasi time.Time
+		// ==============================
+		// TANPA CEK DOSIS SEBELUMNYA
+		// ==============================
+		tanggalEstimasi := tanggalLahir.AddDate(
+			0,
+			0,
+			int(rule.MinUsiaHari),
+		)
 
-		if rule.DosisSebelumID != nil {
-			riwayat, err := m.repository.GetRiwayatImunisasi(
-				anak.ID,
-				int64(*rule.DosisSebelumID),
-			)
-			if err != nil {
-				continue
-			}
-			if rule.MinIntervalHari == 0 {
-				continue
-			}
-			selisihHari := int(today.Sub(riwayat.TanggalDiberikan).Hours() / 24)
-			if selisihHari < int(rule.MinIntervalHari) {
-				continue
-			}
-			tanggalEstimasi = riwayat.TanggalDiberikan.AddDate(0, 0, int(rule.MinIntervalHari))
-		} else {
-			// ✅ gunakan tanggalLahir dari Penduduk
-			tanggalEstimasi = tanggalLahir.AddDate(0, 0, int(rule.MinUsiaHari))
-		}
-
-		statusID := calculateStatusID(tanggalEstimasi)
+		statusID := calculateStatusID(
+			tanggalEstimasi,
+		)
 
 		fmt.Println(
 			"CREATE JADWAL",
@@ -250,16 +240,30 @@ func (m *Main) GenerateJadwalImunisasiByAnakID(anakID int32) error {
 		}
 
 		if err := m.repository.CreateJadwalImunisasiAnak(jadwal); err != nil {
-			fmt.Println("ERROR INSERT:", err)
+			fmt.Println(
+				"ERROR INSERT:",
+				err,
+			)
 			return err
 		}
-		fmt.Println("SUCCESS INSERT jadwal, dosis:", rule.DosisVaksinID)
+
+		fmt.Println(
+			"SUCCESS INSERT jadwal, dosis:",
+			rule.DosisVaksinID,
+		)
 	}
 
-	_ = m.repository.UpdateJadwalStatus()
+	if err := m.repository.UpdateJadwalStatus(); err != nil {
+		fmt.Println(
+			"ERROR UpdateJadwalStatus:",
+			err,
+		)
+	}
+
+	fmt.Println("========== GENERATE SELESAI ==========")
+
 	return nil
 }
-
 func calculateStatusID(
 	tanggalEstimasi time.Time,
 ) int32 {
