@@ -56,7 +56,8 @@ func (ctrl *PosyanduController) GetAll(c echo.Context) error {
 		NamaDesa      string `json:"nama_desa,omitempty"`
 	}
 
-	var result []PosyanduWithRelations
+	// Initialize with empty slice to ensure JSON returns [] instead of null
+	result := make([]PosyanduWithRelations, 0)
 	for _, p := range posyandus {
 		var puskesmas models.Puskesmas
 		ctrl.DB().First(&puskesmas, p.IDPuskesmas)

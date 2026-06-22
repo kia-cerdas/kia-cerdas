@@ -150,6 +150,7 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	superadmin.POST("/users/admin-desa", controller.CreateAdminDesaUser)
 	superadmin.POST("/users/kader", controller.CreateKaderUser)
 	superadmin.PATCH("/users/:id/reset-password", controller.ResetPassword)
+	superadmin.PATCH("/users/:id", controller.UpdateUser)
 	superadmin.PATCH("/users/:id/role", controller.UpdateUserRole)
 	superadmin.PATCH("/users/:id/nonaktif", controller.DeactivateUser)
 	superadmin.PATCH("/users/:id/aktif", controller.ActivateUser)
@@ -161,6 +162,11 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	superadmin.POST("/puskesmas", controller.Puskesmas.Create)
 	superadmin.PUT("/puskesmas/:id", controller.Puskesmas.Update)
 	superadmin.DELETE("/puskesmas/:id", controller.Puskesmas.Delete)
+
+	// Fix Database Sequences (TEMPORARY - untuk maintenance)
+	superadmin.POST("/fix-sequence/puskesmas", controller.FixSequence.FixPuskesmasSequence)
+	superadmin.POST("/fix-sequence/posyandu", controller.FixSequence.FixPosyanduSequence)
+	superadmin.POST("/fix-sequence/all", controller.FixSequence.FixAllSequences)
 
 	// Kelola Posyandu
 	superadmin.GET("/posyandu-manage", controller.Posyandu.GetAll)

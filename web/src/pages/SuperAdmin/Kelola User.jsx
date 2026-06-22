@@ -1,15 +1,17 @@
 import React, { useEffect, useMemo, useState } from "react";
 import MainLayout from "../../components/Layout/MainLayout";
+import Pagination from "../../components/Pagination/Pagination";
 import SearchablePendudukSelect from "../../components/Form/SearchablePendudukSelect";
 import { listPendudukForDropdown } from "../../services/superadminPenduduk";
+import { listDesa } from "../../services/desa";
 import { formatNik } from "../../utils/format";
 import {
   activateSuperadminUser,
   deactivateSuperadminUser,
   createSuperadminUser,
   listSuperadminUsers,
-  resetSuperadminUserPassword,
   superadminUserErrorMessage,
+  updateSuperadminUser,
   updateSuperadminUserRole,
 } from "../../services/superadminUsers";
 import {
@@ -17,7 +19,6 @@ import {
   CheckCircle2,
   ChevronDown,
   Edit,
-  KeyRound,
   Loader2,
   Plus,
   Power,
@@ -43,7 +44,9 @@ const emptyRoleForm = {
 
 const normalizeRole = (role) => (role || "").toLowerCase().replace(/[\s_-]/g, "");
 
-const emptyResetForm = {
+const emptyEditForm = {
+  name: "",
+  email: "",
   password: "",
 };
 
@@ -61,6 +64,8 @@ export default function UserPerDesaManagement() {
   const [loadingPenduduk, setLoadingPenduduk] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [search, setSearch] = useState("");
+  const [selectedDesa, setSelectedDesa] = useState("");
+  const [desasList, setDesasList] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -69,11 +74,16 @@ export default function UserPerDesaManagement() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [roleForm, setRoleForm] = useState(emptyRoleForm);
-  const [resetUser, setResetUser] = useState(null);
-  const [showResetModal, setShowResetModal] = useState(false);
-  const [resetForm, setResetForm] = useState(emptyResetForm);
+  const [editUser, setEditUser] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editForm, setEditForm] = useState(emptyEditForm);
   const [statusActionUser, setStatusActionUser] = useState(null);
   const [statusActionType, setStatusActionType] = useState("");
+
+  // Pagination dan Filter state
+  const [filterRole, setFilterRole] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
 
   const loadUsers = async () => {
     try {
@@ -99,9 +109,19 @@ export default function UserPerDesaManagement() {
     }
   };
 
+  const loadDesa = async () => {
+    try {
+      const data = await listDesa();
+      setDesasList(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error("Failed to load desa:", error);
+    }
+  };
+
   useEffect(() => {
     loadUsers();
     loadPenduduk();
+    loadDesa();
   }, []);
 
   const pendudukLabel = (penduduk) => {
@@ -138,6 +158,25 @@ export default function UserPerDesaManagement() {
         return false;
       }
 
+      // Filter berdasarkan desa
+      if (selectedDesa) {
+        if (String(penduduk.desa_id) !== String(selectedDesa)) {
+          return false;
+        }
+      }
+
+      // Filter by Role (hanya filter yang punya akun)
+      if (filterRole && account) {
+        const accountRole = (account.role || "").toLowerCase();
+        const selectedFilterRole = filterRole.toLowerCase();
+        if (accountRole !== selectedFilterRole) {
+          return false;
+        }
+      } else if (filterRole && !account) {
+        // Jika ada filter role tapi penduduk belum punya akun, hide
+        return false;
+      }
+
       if (!keyword) {
         return true;
       }
@@ -147,7 +186,19 @@ export default function UserPerDesaManagement() {
         .filter(Boolean)
         .some((value) => String(value).toLowerCase().includes(keyword));
     });
-  }, [pendudukOptions, userByPendudukId, search]);
+  }, [pendudukOptions, userByPendudukId, search, selectedDesa, filterRole]);
+
+  // Paginated data
+  const paginatedPenduduk = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return visiblePenduduk.slice(startIndex, endIndex);
+  }, [visiblePenduduk, currentPage, itemsPerPage]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, selectedDesa, filterRole]);
 
   const stats = useMemo(() => {
     const total = visiblePenduduk.length;
@@ -233,10 +284,15 @@ export default function UserPerDesaManagement() {
     setShowRoleModal(true);
   };
 
-  const openResetModal = (user) => {
-    setResetUser(user);
-    setResetForm(emptyResetForm);
-    setShowResetModal(true);
+  const openEditModal = (user) => {
+    setEditUser(user);
+    setEditForm({
+      ...emptyEditForm,
+      name: user.name || "",
+      email: user.email || "",
+      password: "",
+    });
+    setShowEditModal(true);
   };
 
   const openStatusActionModal = (user, actionType) => {
@@ -298,25 +354,41 @@ export default function UserPerDesaManagement() {
     }
   };
 
-  const submitResetPassword = async (event) => {
+  const submitEditUser = async (event) => {
     event.preventDefault();
-    if (!resetUser) return;
+    if (!editUser) return;
 
-    if (!resetForm.password.trim() || resetForm.password.trim().length < 8) {
-      setErrorMessage("Password baru minimal 8 karakter");
+    if (!editForm.name.trim()) {
+      setErrorMessage("Nama wajib diisi");
+      return;
+    }
+    if (!editForm.email.trim()) {
+      setErrorMessage("Email wajib diisi");
+      return;
+    }
+    if (editForm.password && editForm.password.trim().length < 8) {
+      setErrorMessage("Password minimal 8 karakter");
       return;
     }
 
     clearMessages();
     try {
       setSubmitting(true);
-      await resetSuperadminUserPassword(resetUser.id, { password: resetForm.password.trim() });
-      setShowResetModal(false);
-      setResetUser(null);
-      setResetForm(emptyResetForm);
-      setSuccessMessage("Password user berhasil direset");
+      const payload = {
+        name: editForm.name.trim(),
+        email: editForm.email.trim(),
+      };
+      if (editForm.password.trim()) {
+        payload.password = editForm.password.trim();
+      }
+      await updateSuperadminUser(editUser.id, payload);
+      setShowEditModal(false);
+      setEditUser(null);
+      setEditForm(emptyEditForm);
+      setSuccessMessage("Data user berhasil diperbarui");
+      await Promise.all([loadUsers(), loadPenduduk()]);
     } catch (error) {
-      setErrorMessage(superadminUserErrorMessage(error, "Gagal reset password"));
+      setErrorMessage(superadminUserErrorMessage(error, "Gagal memperbarui data user"));
     } finally {
       setSubmitting(false);
     }
@@ -356,6 +428,33 @@ export default function UserPerDesaManagement() {
                 className="w-full rounded-2xl border border-slate-200 py-2.5 pl-10 pr-4"
               />
             </div>
+            <button
+              type="button"
+              className="inline-flex items-center gap-2 rounded-2xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors"
+            >
+              <Search size={16} />
+              Cari
+            </button>
+            <select
+              value={selectedDesa}
+              onChange={(e) => setSelectedDesa(e.target.value)}
+              className="rounded-2xl border border-slate-200 px-3 py-2.5 text-sm text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+            >
+              <option value="">Semua Desa</option>
+              {desasList.map((d) => (
+                <option key={d.id} value={d.id}>{d.nama_desa}</option>
+              ))}
+            </select>
+            <select
+              value={filterRole}
+              onChange={(e) => setFilterRole(e.target.value)}
+              className="rounded-2xl border border-slate-200 px-3 py-2.5 text-sm text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+            >
+              <option value="">Semua Role</option>
+              {editableRoles.map((role) => (
+                <option key={role.value} value={role.value}>{role.label}</option>
+              ))}
+            </select>
             <button onClick={() => { loadUsers(); loadPenduduk(); }} className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50">
               <Loader2 size={16} />
               Refresh
@@ -383,7 +482,7 @@ export default function UserPerDesaManagement() {
                       <td colSpan={4} className="px-4 py-10 text-center text-slate-500">Belum ada penduduk yang sesuai filter</td>
                     </tr>
                   ) : (
-                    visiblePenduduk.map((penduduk) => {
+                    paginatedPenduduk.map((penduduk) => {
                       const account = userByPendudukId.get(String(penduduk.id));
                       const namaPenduduk = penduduk.nama_anggota_keluarga || penduduk.nama_lengkap || "-";
                       return (
@@ -414,9 +513,9 @@ export default function UserPerDesaManagement() {
                             <div className="flex flex-wrap items-center justify-center gap-2">
                               {account ? (
                                 <>
-                                  <button type="button" onClick={() => openResetModal(account)} title="Reset Password" className="inline-flex items-center gap-2 rounded-xl bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-700 hover:bg-amber-100">
-                                    <KeyRound size={16} />
-                                    <span className="hidden sm:inline">Reset Password</span>
+                                  <button type="button" onClick={() => openEditModal(account)} title="Edit" className="inline-flex items-center gap-2 rounded-xl bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-700 hover:bg-amber-100">
+                                    <Edit size={16} />
+                                    <span className="hidden sm:inline">Edit</span>
                                   </button>
                                   <button
                                     type="button"
@@ -444,6 +543,18 @@ export default function UserPerDesaManagement() {
               </table>
             </div>
           </div>
+
+          {/* Pagination */}
+          {!loadingUsers && !loadingPenduduk && visiblePenduduk.length > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={Math.ceil(visiblePenduduk.length / itemsPerPage)}
+              totalItems={visiblePenduduk.length}
+              itemsPerPage={itemsPerPage}
+              onPageChange={(page) => setCurrentPage(page)}
+              loading={loadingUsers || loadingPenduduk}
+            />
+          )}
         </div>
       </div>
 
@@ -563,33 +674,91 @@ export default function UserPerDesaManagement() {
         </div>
       )}
 
-      {showResetModal && resetUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 px-4">
-          <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl">
-            <div className="flex items-start justify-between gap-4">
+      {showEditModal && editUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 px-4 py-6 overflow-y-auto">
+          <div className="w-full max-w-xl rounded-2xl bg-white shadow-2xl overflow-hidden my-auto">
+
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
               <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">Reset Password</p>
-                <h3 className="mt-1 text-2xl font-bold text-slate-900">{resetUser.name}</h3>
-                <p className="mt-1 text-sm text-slate-500">Masukkan password baru untuk akun ini.</p>
+                <h2 className="text-lg font-bold text-slate-800">Edit Akun</h2>
+                <p className="text-xs text-slate-500 mt-0.5">Ubah data akun pengguna</p>
               </div>
-              <button type="button" onClick={() => setShowResetModal(false)} className="rounded-full bg-slate-100 p-2 text-slate-500 hover:bg-slate-200">
+              <button type="button" onClick={() => setShowEditModal(false)} className="p-2 rounded-lg hover:bg-slate-100 text-slate-500">
                 <X size={18} />
               </button>
             </div>
 
-            <form onSubmit={submitResetPassword} className="mt-5 space-y-4">
+            <form onSubmit={submitEditUser} className="p-6 space-y-5">
+
+              {/* Data Akun */}
               <div>
-                <label className="text-sm text-slate-600">Password Baru</label>
-                <input type="password" value={resetForm.password} onChange={(e) => setResetForm({ password: e.target.value })} className="mt-1 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 shadow-sm outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-900/10" placeholder="Minimal 8 karakter" />
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Data Akun</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+
+                  {/* Nama */}
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                      Nama Lengkap <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={editForm.name}
+                      onChange={(e) => setEditForm((prev) => ({ ...prev, name: e.target.value }))}
+                      placeholder="Nama yang ditampilkan di akun"
+                      className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      required
+                    />
+                  </div>
+
+                  {/* Email */}
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                      Email <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="email"
+                      value={editForm.email}
+                      onChange={(e) => setEditForm((prev) => ({ ...prev, email: e.target.value }))}
+                      placeholder="contoh@email.com"
+                      className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      required
+                    />
+                  </div>
+
+                  {/* Password */}
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                      Password Baru
+                    </label>
+                    <input
+                      type="password"
+                      value={editForm.password}
+                      onChange={(e) => setEditForm((prev) => ({ ...prev, password: e.target.value }))}
+                      placeholder="Kosongkan jika tidak ingin mengubah password"
+                      className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                    <p className="text-xs text-slate-400 mt-1">Kosongkan jika tidak ingin mengubah password</p>
+                  </div>
+                </div>
               </div>
 
-              <div className="flex items-center justify-end gap-3">
-                <button type="button" onClick={() => setShowResetModal(false)} className="rounded-2xl bg-slate-100 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-200">
+              {/* Action Buttons */}
+              <div className="flex items-center justify-end gap-3 pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowEditModal(false)}
+                  className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
+                >
                   Batal
                 </button>
-                <button type="submit" disabled={submitting} className="inline-flex items-center gap-2 rounded-2xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60">
-                  {submitting ? <Loader2 size={16} className="animate-spin" /> : <KeyRound size={16} />}
-                  Simpan Password
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60 transition-colors"
+                >
+                  {submitting ? <Loader2 size={15} className="animate-spin" /> : <Edit size={15} />}
+                  {submitting ? "Menyimpan..." : "Simpan Perubahan"}
                 </button>
               </div>
             </form>

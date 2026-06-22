@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import MainLayout from "../../components/Layout/MainLayout";
+import Pagination from "../../components/Pagination/Pagination";
 import SearchablePendudukSelect from "../../components/Form/SearchablePendudukSelect";
 import { listPendudukForDropdown } from "../../services/superadminPenduduk";
 import {
@@ -97,6 +98,10 @@ const UserManagement = () => {
   const [statusActionUser, setStatusActionUser] = useState(null);
   const [statusActionType, setStatusActionType] = useState("");
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+
   const loadUsers = async (override = {}) => {
     try {
       setLoadingUsers(true);
@@ -153,22 +158,46 @@ const UserManagement = () => {
     });
   }, [users]);
 
+  // Filtered users with search by name, email, phone, and role
+  const filteredUsers = useMemo(() => {
+    const keyword = search.trim().toLowerCase();
+    if (!keyword) return managedUsers;
+    
+    return managedUsers.filter((user) => {
+      return [user.name, user.email, user.phone_number, user.role]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(keyword));
+    });
+  }, [managedUsers, search]);
+
+  // Paginated data
+  const paginatedUsers = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredUsers.slice(startIndex, endIndex);
+  }, [filteredUsers, currentPage, itemsPerPage]);
+
+  // Reset to page 1 when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
+
   const activeStats = useMemo(() => {
-    const activeUsers = managedUsers.filter((user) => user.is_active).length;
-    const inactiveUsers = managedUsers.length - activeUsers;
-    const bidanCount = managedUsers.filter((user) => (user.role || "").toLowerCase() === "bidan").length;
-    const kaderCount = managedUsers.filter((user) => (user.role || "").toLowerCase() === "kader").length;
-    const adminCount = managedUsers.filter((user) => (user.role || "").toLowerCase() === "admin").length;
+    const activeUsers = filteredUsers.filter((user) => user.is_active).length;
+    const inactiveUsers = filteredUsers.length - activeUsers;
+    const bidanCount = filteredUsers.filter((user) => (user.role || "").toLowerCase() === "bidan").length;
+    const kaderCount = filteredUsers.filter((user) => (user.role || "").toLowerCase() === "kader").length;
+    const adminCount = filteredUsers.filter((user) => (user.role || "").toLowerCase() === "admin").length;
 
     return [
-      { label: "Total User", value: managedUsers.length, icon: Users, tone: "bg-cyan-50 text-cyan-700" },
+      { label: "Total User", value: filteredUsers.length, icon: Users, tone: "bg-cyan-50 text-cyan-700" },
       { label: "Aktif", value: activeUsers, icon: CheckCircle2, tone: "bg-emerald-50 text-emerald-700" },
       { label: "Bidan", value: bidanCount, icon: ShieldPlus, tone: "bg-violet-50 text-violet-700" },
       { label: "Kader", value: kaderCount, icon: UserPlus, tone: "bg-sky-50 text-sky-700" },
       { label: "Admin Desa", value: adminCount, icon: ShieldCheck, tone: "bg-amber-50 text-amber-700" },
       { label: "Nonaktif", value: inactiveUsers, icon: Power, tone: "bg-rose-50 text-rose-700" },
     ];
-  }, [managedUsers]);
+  }, [filteredUsers]);
 
   const clearMessages = () => {
     setErrorMessage("");
@@ -505,12 +534,12 @@ const UserManagement = () => {
                     <tr>
                       <td colSpan={5} className="px-4 py-10 text-center text-slate-500">Memuat data user...</td>
                     </tr>
-                  ) : managedUsers.length === 0 ? (
+                  ) : filteredUsers.length === 0 ? (
                     <tr>
                       <td colSpan={5} className="px-4 py-10 text-center text-slate-500">Belum ada user yang sesuai filter</td>
                     </tr>
                   ) : (
-                    managedUsers.map((user) => {
+                    paginatedUsers.map((user) => {
                       const isSuperadmin = (user.role || "").toLowerCase() === "superadmin";
                       return (
                         <tr key={user.id} className="border-t border-slate-100 align-top hover:bg-slate-50/70">
@@ -554,6 +583,18 @@ const UserManagement = () => {
                 </tbody>
               </table>
             </div>
+
+            {/* Pagination */}
+            {!loadingUsers && filteredUsers.length > 0 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={Math.ceil(filteredUsers.length / itemsPerPage)}
+                totalItems={filteredUsers.length}
+                itemsPerPage={itemsPerPage}
+                onPageChange={(page) => setCurrentPage(page)}
+                loading={loadingUsers}
+              />
+            )}
           </div>
         </section>
       </div>

@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import MainLayout from "../../components/Layout/MainLayout";
+import Swal from "sweetalert2";
+import Pagination from "../../components/Pagination/Pagination";
 import {
 	createDesa,
 	deactivateDesa,
@@ -39,6 +41,10 @@ export default function KelolaDesa() {
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [error, setError] = useState("");
 	const [formError, setFormError] = useState("");
+
+	// Pagination state
+	const [currentPage, setCurrentPage] = useState(1);
+	const [itemsPerPage] = useState(10);
 
 	// Master wilayah untuk cascading dropdown
 	const [provinsiList, setProvinsiList] = useState([]);
@@ -104,6 +110,18 @@ export default function KelolaDesa() {
 		});
 	}, [desaList, search]);
 
+	// Paginated data
+	const paginatedDesa = useMemo(() => {
+		const startIndex = (currentPage - 1) * itemsPerPage;
+		const endIndex = startIndex + itemsPerPage;
+		return filteredDesa.slice(startIndex, endIndex);
+	}, [filteredDesa, currentPage, itemsPerPage]);
+
+	// Reset to page 1 when search changes
+	useEffect(() => {
+		setCurrentPage(1);
+	}, [search]);
+
 	const resetForm = () => {
 		setFormData(emptyForm);
 		setFormError("");
@@ -161,8 +179,10 @@ export default function KelolaDesa() {
 
 			if (showCreateModal) {
 				await createDesa(payload);
+				Swal.fire("Berhasil", "Desa berhasil ditambahkan", "success");
 			} else if (selectedDesa) {
 				await updateDesa(selectedDesa.id, payload);
+				Swal.fire("Berhasil", "Desa berhasil diupdate", "success");
 			}
 
 			setShowCreateModal(false);
@@ -171,22 +191,32 @@ export default function KelolaDesa() {
 			resetForm();
 			await fetchData();
 		} catch (err) {
-			setFormError(desaErrorMessage(err, "Gagal menyimpan data desa"));
+			Swal.fire("Error", desaErrorMessage(err, "Gagal menyimpan data desa"), "error");
 		} finally {
 			setIsSubmitting(false);
 		}
 	};
 
 	const handleDeactivate = async (desa) => {
-		const confirmed = window.confirm(`Nonaktifkan desa ${desa.nama_desa}?`);
-		if (!confirmed) return;
+		const result = await Swal.fire({
+			title: "Nonaktifkan Desa?",
+			text: `Apakah Anda yakin ingin menonaktifkan desa ${desa.nama_desa}?`,
+			icon: "warning",
+			showCancelButton: true,
+			confirmButtonColor: "#ef4444",
+			confirmButtonText: "Nonaktifkan",
+			cancelButtonText: "Batal",
+		});
+		
+		if (!result.isConfirmed) return;
 
 		try {
 			setIsSubmitting(true);
 			await deactivateDesa(desa.id);
 			await fetchData();
+			Swal.fire("Berhasil", "Desa berhasil dinonaktifkan", "success");
 		} catch (err) {
-			setError(desaErrorMessage(err, "Gagal menonaktifkan desa"));
+			Swal.fire("Error", desaErrorMessage(err, "Gagal menonaktifkan desa"), "error");
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -206,6 +236,13 @@ export default function KelolaDesa() {
 							className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
 						/>
 					</div>
+					<button
+						type="button"
+						className="inline-flex items-center gap-2 rounded-2xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors"
+					>
+						<Search size={16} />
+						Cari
+					</button>
 					<button
 						onClick={openCreateModal}
 						className="inline-flex items-center gap-2 bg-indigo-600 text-white px-4 py-2.5 rounded-2xl hover:bg-indigo-700 transition text-sm font-semibold"
@@ -243,7 +280,7 @@ export default function KelolaDesa() {
 									</tr>
 								</thead>
 								<tbody>
-									{filteredDesa.map((desa) => (
+									{paginatedDesa.map((desa) => (
 										<tr key={desa.id} className="border-b border-slate-100 hover:bg-slate-50/70">
 											<td className="px-4 py-3">
 												<div className="flex items-center gap-2">
@@ -301,6 +338,18 @@ export default function KelolaDesa() {
 								</tbody>
 							</table>
 						</div>
+					)}
+
+					{/* Pagination */}
+					{!loading && filteredDesa.length > 0 && (
+						<Pagination
+							currentPage={currentPage}
+							totalPages={Math.ceil(filteredDesa.length / itemsPerPage)}
+							totalItems={filteredDesa.length}
+							itemsPerPage={itemsPerPage}
+							onPageChange={(page) => setCurrentPage(page)}
+							loading={loading}
+						/>
 					)}
 				</div>
 			</div>

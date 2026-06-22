@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Plus, Pencil, Trash2, Building2, X, Search } from "lucide-react";
 import MainLayout from "../../components/Layout/MainLayout";
 import Swal from "sweetalert2";
+import Pagination from "../../components/Pagination/Pagination";
 import {
 	getAllPuskesmas,
 	createPuskesmas,
@@ -25,6 +26,10 @@ export default function KelolaPuskesmas() {
 		kabupaten_id: "",
 		kecamatan_id: "",
 	});
+
+	// Pagination state
+	const [currentPage, setCurrentPage] = useState(1);
+	const [itemsPerPage] = useState(10);
 
 	// Master wilayah untuk cascading dropdown
 	const [provinsiList, setProvinsiList] = useState([]);
@@ -81,6 +86,18 @@ export default function KelolaPuskesmas() {
 		});
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [puskesmas, search, kecamatanList]);
+
+	// Paginated data
+	const paginatedPuskesmas = useMemo(() => {
+		const startIndex = (currentPage - 1) * itemsPerPage;
+		const endIndex = startIndex + itemsPerPage;
+		return filteredPuskesmas.slice(startIndex, endIndex);
+	}, [filteredPuskesmas, currentPage, itemsPerPage]);
+
+	// Reset to page 1 when search changes
+	useEffect(() => {
+		setCurrentPage(1);
+	}, [search]);
 
 	const fetchPuskesmas = async () => {
 		try {
@@ -228,6 +245,13 @@ export default function KelolaPuskesmas() {
 							/>
 						</div>
 						<button
+							type="button"
+							className="inline-flex items-center gap-2 rounded-2xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors"
+						>
+							<Search className="w-4 h-4" />
+							Cari
+						</button>
+						<button
 							onClick={() => handleOpenModal()}
 							className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-2xl font-medium transition-colors shadow-sm text-sm"
 						>
@@ -272,7 +296,7 @@ export default function KelolaPuskesmas() {
 										</tr>
 									</thead>
 									<tbody className="divide-y divide-gray-200">
-										{filteredPuskesmas.map((item, index) => (
+										{paginatedPuskesmas.map((item, index) => (
 											<tr
 												key={item.id}
 												className="hover:bg-gray-50 transition-colors"
@@ -336,6 +360,18 @@ export default function KelolaPuskesmas() {
 									</tbody>
 								</table>
 							</div>
+						)}
+
+						{/* Pagination */}
+						{!loading && filteredPuskesmas.length > 0 && (
+							<Pagination
+								currentPage={currentPage}
+								totalPages={Math.ceil(filteredPuskesmas.length / itemsPerPage)}
+								totalItems={filteredPuskesmas.length}
+								itemsPerPage={itemsPerPage}
+								onPageChange={(page) => setCurrentPage(page)}
+								loading={loading}
+							/>
 						)}
 					</div>
 				</div>

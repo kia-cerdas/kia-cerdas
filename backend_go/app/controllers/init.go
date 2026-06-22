@@ -100,6 +100,7 @@ type Main struct {
 	DosisVaksin              *DosisVaksinController // ← TAMBAHKAN
 	Puskesmas                *PuskesmasController   // Kelola Puskesmas
 	Posyandu                 *PosyanduController    // Kelola Posyandu
+	FixSequence              *FixSequenceController // Fix database sequences
 	LaporanAnak              *LaporanAnakController
 	LaporanBalita			*LaporanBalitaController
 	LaporanRemaja            *LaporanRemajaController
@@ -234,6 +235,7 @@ func Init(opts Options) *Main {
 	m.DosisVaksin = NewDosisVaksinController(opts.UseCases.DosisVaksin, opts.UseCases.Vaksin)
 	m.Puskesmas = &PuskesmasController{Main: m}
 	m.Posyandu = &PosyanduController{Main: m}
+	m.FixSequence = &FixSequenceController{Main: m}
 
 	dashboardUsecase := usecases.NewDashboardUsecase(
 		opts.UseCases.Kependudukan,
