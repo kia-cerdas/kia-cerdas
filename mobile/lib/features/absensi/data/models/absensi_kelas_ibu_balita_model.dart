@@ -26,6 +26,7 @@ class AbsensiKelasIbuBalitaModel {
     if (json['ibu'] != null) {
       if (json['ibu']['kependudukan'] != null) {
         namaIbu = json['ibu']['kependudukan']['nama_lengkap']?.toString() ??
+            json['ibu']['kependudukan']['nama_anggota_keluarga']?.toString() ??
             json['ibu']['kependudukan']['nama']?.toString() ?? '';
       }
       
@@ -35,6 +36,8 @@ class AbsensiKelasIbuBalitaModel {
         for (var anakItem in anakList) {
           if (anakItem['penduduk'] != null && anakItem['penduduk']['nama_lengkap'] != null) {
             names.add(anakItem['penduduk']['nama_lengkap'].toString());
+          } else if (anakItem['penduduk'] != null && anakItem['penduduk']['nama_anggota_keluarga'] != null) {
+            names.add(anakItem['penduduk']['nama_anggota_keluarga'].toString());
           } else if (anakItem['penduduk'] != null && anakItem['penduduk']['nama'] != null) {
             names.add(anakItem['penduduk']['nama'].toString());
           } else if (anakItem['nama_anak'] != null) {
