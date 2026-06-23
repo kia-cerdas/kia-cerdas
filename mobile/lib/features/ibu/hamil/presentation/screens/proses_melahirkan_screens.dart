@@ -12,7 +12,7 @@ class RingkasanPelayananProsesMelahirkanScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => _DataScreen(
-        title: 'keterangan Lahir',
+        title: 'Ringkasan Pelayanan',
         subtitle: 'Ringkasan ibu bersalin, nifas, dan kondisi bayi saat lahir',
         icon: Icons.summarize_outlined,
         builder: (data) {
@@ -303,59 +303,81 @@ class _BaseBirthScreen extends StatelessWidget {
   Widget build(BuildContext context) => Scaffold(
         backgroundColor: TrimesterTheme.background,
         appBar: AppBar(
-          title: const Text('Catatan Persalinan',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          backgroundColor: AppColors.primary,
+          backgroundColor: Colors.white,
+          foregroundColor: const Color(0xFF1E293B),
           elevation: 0,
+          centerTitle: false,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+            icon: const Icon(Icons.arrow_back, color: Color(0xFF1E293B)),
             onPressed: () => Navigator.pop(context),
+          ),
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+              const Text(
+                'Catatan Persalinan',
+                style: TextStyle(
+                  color: Color(0xFF64748B),
+                  fontWeight: FontWeight.normal,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(1.0),
+            child: Container(color: Colors.grey.shade200, height: 1.0),
           ),
         ),
         body: RefreshIndicator(
           onRefresh: () async {},
           child: ListView(padding: EdgeInsets.zero, children: [
             Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(24, 8, 24, 28),
-              decoration: const BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(30),
-                  bottomRight: Radius.circular(30),
-                ),
+              margin: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEFF6FF),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: const Color(0xFFBFDBFE)),
+                boxShadow: [
+                  BoxShadow(
+                      color: AppColors.primary.withOpacity(0.06),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4))
+                ],
               ),
-              child: Container(
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.16),
-                  borderRadius: BorderRadius.circular(22),
+              child: Row(children: [
+                Container(
+                  width: 50, height: 50,
+                  decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      borderRadius: BorderRadius.circular(14)),
+                  child: Icon(icon, color: Colors.white, size: 26),
                 ),
-                child: Row(children: [
+                const SizedBox(width: 14),
+                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(title, style: const TextStyle(color: Color(0xFF1E3A5F), fontSize: 15, fontWeight: FontWeight.w800)),
+                  const SizedBox(height: 4),
+                  Text(subtitle, style: const TextStyle(color: Color(0xFF4A6FA5), fontSize: 11.5, height: 1.35)),
+                  const SizedBox(height: 8),
                   Container(
-                    width: 54, height: 54,
-                    decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.22),
-                        shape: BoxShape.circle),
-                    child: Icon(icon, color: Colors.white, size: 30),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(color: _green, borderRadius: BorderRadius.circular(20)),
+                    child: const Text('Diisi oleh Tenaga Kesehatan',
+                        style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
                   ),
-                  const SizedBox(width: 14),
-                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(title, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900)),
-                    const SizedBox(height: 8),
-                    Text(subtitle, style: const TextStyle(color: Colors.white70, fontSize: 12, height: 1.35)),
-                    const SizedBox(height: 10),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      decoration: BoxDecoration(color: _green, borderRadius: BorderRadius.circular(20)),
-                      child: const Text('Diisi oleh Tenaga Kesehatan',
-                          style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
-                    ),
-                  ])),
-                ]),
-              ),
+                ])),
+              ]),
             ),
-            Padding(padding: const EdgeInsets.all(20), child: child),
+            Padding(padding: const EdgeInsets.fromLTRB(20, 16, 20, 20), child: child),
           ]),
         ),
       );

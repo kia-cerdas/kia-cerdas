@@ -577,15 +577,38 @@ class _RiwayatProsesMelahirkanScreenState
     return Scaffold(
       backgroundColor: _bg,
       appBar: AppBar(
-        title: const Text(
-          'Riwayat Proses Melahirkan',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: _primary,
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF1E293B),
         elevation: 0,
+        centerTitle: false,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF1E293B)),
           onPressed: () => Navigator.pop(context),
+        ),
+        title: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Riwayat Proses Melahirkan',
+              style: TextStyle(
+                color: AppColors.primary,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+            Text(
+              'Catatan proses persalinan oleh tenaga kesehatan',
+              style: TextStyle(
+                color: Color(0xFF64748B),
+                fontWeight: FontWeight.normal,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1.0),
+          child: Container(color: Colors.grey.shade200, height: 1.0),
         ),
       ),
       body: RefreshIndicator(
@@ -597,7 +620,7 @@ class _RiwayatProsesMelahirkanScreenState
           children: [
             _buildHeader(),
             Padding(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
               child: FutureBuilder<RiwayatProsesMelahirkanModel>(
                 future: _future,
                 builder: (context, snap) {
@@ -627,71 +650,68 @@ class _RiwayatProsesMelahirkanScreenState
 
   Widget _buildHeader() {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(24, 8, 24, 28),
-      decoration: const BoxDecoration(
-        color: _primary,
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(30),
-          bottomRight: Radius.circular(30),
-        ),
+      margin: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEFF6FF),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFBFDBFE)),
+        boxShadow: [
+          BoxShadow(
+              color: _primary.withOpacity(0.06),
+              blurRadius: 12,
+              offset: const Offset(0, 4))
+        ],
       ),
-      child: Container(
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.16),
-          borderRadius: BorderRadius.circular(22),
-        ),
-        child: Row(children: [
-          Container(
-            width: 54,
-            height: 54,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.22),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.history_edu_outlined,
-                color: Colors.white, size: 30),
+      child: Row(children: [
+        Container(
+          width: 50,
+          height: 50,
+          decoration: BoxDecoration(
+            color: _primary,
+            borderRadius: BorderRadius.circular(14),
           ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Riwayat Proses Melahirkan',
+          child: const Icon(Icons.history_edu_outlined,
+              color: Colors.white, size: 26),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Riwayat Proses Melahirkan',
+                style: TextStyle(
+                    color: Color(0xFF1E3A5F),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                'Catatan proses persalinan yang diisi oleh tenaga kesehatan',
+                style: TextStyle(
+                    color: Color(0xFF4A6FA5), fontSize: 11.5, height: 1.35),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2FA84F),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Text(
+                  'Diisi oleh Tenaga Kesehatan',
                   style: TextStyle(
                       color: Colors.white,
-                      fontSize: 17,
-                      fontWeight: FontWeight.w900),
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 6),
-                const Text(
-                  'Catatan proses persalinan yang diisi oleh tenaga kesehatan',
-                  style: TextStyle(
-                      color: Colors.white70, fontSize: 11, height: 1.35),
-                ),
-                const SizedBox(height: 10),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF2FA84F),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Text(
-                    'Diisi oleh Tenaga Kesehatan',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ]),
-      ),
+        ),
+      ]),
     );
   }
 

@@ -88,10 +88,518 @@ class _AbsensiKelasIbuHamilScreenState
   // BOTTOM SHEET: form "Isi Absensi Baru"
   // Muncul dari bawah saat tombol "Tambah Absensi" ditekan.
   // =============================================================
+  // void _showTambahAbsensi() {
+  //   DateTime? selectedDate;
+  //   final dateController = TextEditingController();
+  //   bool isSaving = false;
+
+  //   showModalBottomSheet(
+  //     context: context,
+  //     isScrollControlled: true,
+  //     backgroundColor: Colors.white,
+  //     shape: const RoundedRectangleBorder(
+  //       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+  //     ),
+  //     builder: (ctx) {
+  //       // StatefulBuilder dipakai supaya isi bottom sheet bisa
+  //       // berubah sendiri (misal teks tanggal) tanpa menutup sheet.
+  //       return StatefulBuilder(
+  //         builder: (ctx, setModalState) {
+  //           return Padding(
+  //             padding: EdgeInsets.only(
+  //               left: 20,
+  //               right: 20,
+  //               top: 20,
+  //               bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+  //             ),
+  //             child: Column(
+  //               mainAxisSize: MainAxisSize.min,
+  //               crossAxisAlignment: CrossAxisAlignment.start,
+  //               children: [
+  //                 // ── Header bottom sheet ──
+  //                 Row(
+  //                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //                   children: [
+  //                     const Text(
+  //                       'Isi Absensi Baru',
+  //                       style: TextStyle(
+  //                         fontSize: 16,
+  //                         fontWeight: FontWeight.w700,
+  //                         color: Color(0xFF1A1A2E),
+  //                       ),
+  //                     ),
+  //                     IconButton(
+  //                       icon: const Icon(Icons.close),
+  //                       onPressed: () => Navigator.pop(ctx),
+  //                       padding: EdgeInsets.zero,
+  //                       constraints: const BoxConstraints(),
+  //                     ),
+  //                   ],
+  //                 ),
+  //                 const SizedBox(height: 20),
+
+  //                 // ── Label + kotak pemilih tanggal ──
+  //                 const Text(
+  //                   'Pilih Tanggal Hadir',
+  //                   style: TextStyle(
+  //                     fontSize: 13,
+  //                     fontWeight: FontWeight.w600,
+  //                     color: Color(0xFF374151),
+  //                   ),
+  //                 ),
+  //                 const SizedBox(height: 8),
+  //                 GestureDetector(
+  //                   onTap: () async {
+  //                     final now = DateTime.now();
+  //                     final picked = await showDatePicker(
+  //                       context: ctx,
+  //                       initialDate: selectedDate ?? now,
+  //                       firstDate: DateTime(now.year - 2),
+  //                       lastDate: now,
+  //                       helpText: 'Pilih tanggal hadir',
+  //                       cancelText: 'Batal',
+  //                       confirmText: 'Pilih',
+  //                     );
+  //                     if (picked != null) {
+  //                       setModalState(() {
+  //                         selectedDate = picked;
+  //                         dateController.text =
+  //                             '${picked.day.toString().padLeft(2, '0')}/${picked.month.toString().padLeft(2, '0')}/${picked.year}';
+  //                       });
+  //                     }
+  //                   },
+  //                   child: Container(
+  //                     padding: const EdgeInsets.symmetric(
+  //                         horizontal: 14, vertical: 14),
+  //                     decoration: BoxDecoration(
+  //                       border: Border.all(color: const Color(0xFFD1D5DB)),
+  //                       borderRadius: BorderRadius.circular(10),
+  //                     ),
+  //                     child: Row(
+  //                       children: [
+  //                         Expanded(
+  //                           child: Text(
+  //                             dateController.text.isEmpty
+  //                                 ? 'DD/MM/YYYY'
+  //                                 : dateController.text,
+  //                             style: TextStyle(
+  //                               fontSize: 14,
+  //                               color: dateController.text.isEmpty
+  //                                   ? const Color(0xFF9CA3AF)
+  //                                   : const Color(0xFF1A1A2E),
+  //                             ),
+  //                           ),
+  //                         ),
+  //                         const Icon(Icons.calendar_today_outlined,
+  //                             size: 20, color: Color(0xFF6B7280)),
+  //                       ],
+  //                     ),
+  //                   ),
+  //                 ),
+  //                 const SizedBox(height: 16),
+
+  //                 // ── Kotak info kuning (identitas Ibu Hamil) ──
+  //                 Container(
+  //                   padding: const EdgeInsets.all(14),
+  //                   decoration: BoxDecoration(
+  //                     color: const Color(0xFFFEF3C7),
+  //                     borderRadius: BorderRadius.circular(10),
+  //                     border: Border.all(color: const Color(0xFFFBBF24)),
+  //                   ),
+  //                   child: Row(
+  //                     crossAxisAlignment: CrossAxisAlignment.start,
+  //                     children: const [
+  //                       Icon(Icons.info_outline,
+  //                           size: 18, color: Color(0xFFD97706)),
+  //                       SizedBox(width: 10),
+  //                       Expanded(
+  //                         child: Text(
+  //                           'Data kehadiran yang Anda kirim akan diverifikasi oleh kader. Anda dapat menambah absensi baru setelah absensi sebelumnya diverifikasi.',
+  //                           style: TextStyle(
+  //                             fontSize: 12,
+  //                             color: Color(0xFF92400E),
+  //                             height: 1.4,
+  //                           ),
+  //                         ),
+  //                       ),
+  //                     ],
+  //                   ),
+  //                 ),
+  //                 const SizedBox(height: 20),
+
+  //                 // ── Tombol Kirim Absensi ──
+  //                 SizedBox(
+  //                   width: double.infinity,
+  //                   height: 50,
+  //                   child: ElevatedButton.icon(
+  //                     onPressed: isSaving || selectedDate == null
+  //                         ? null
+  //                         : () async {
+  //                             // ──────────────────────────────────────────────
+  //                             // VALIDASI KONFIRMASI SAAT MENGIRIM ABSENSI
+  //                             // (ini TETAP ada — beda dengan validasi keluar)
+  //                             // ──────────────────────────────────────────────
+  //                             final tanggalFormatted = dateController.text;
+
+  //                             final confirmed = await context.showConfirm(
+  //                               title: 'Konfirmasi Absensi',
+  //                               message:
+  //                                   'Apakah ibu benar-benar hadir di kelas ibu hamil pada tanggal $tanggalFormatted? Data yang sudah dikirim tidak dapat diubah.',
+  //                               confirmText: 'Ya, Hadir',
+  //                               cancelText: 'Batal',
+  //                             );
+
+  //                             if (!confirmed) return;
+  //                             // ──────────────────────────────────────────────
+
+  //                             setModalState(() => isSaving = true);
+  //                             try {
+  //                               final newItem = await _apiService.save(
+  //                                 AbsensiKelasIbuHamilModel(
+  //                                   pertemuanKe: 0,
+  //                                   tanggal:
+  //                                       '${selectedDate!.year}-${selectedDate!.month.toString().padLeft(2, '0')}-${selectedDate!.day.toString().padLeft(2, '0')}',
+  //                                   namaKader: '',
+  //                                   tanggalParaf: '',
+  //                                 ),
+  //                               );
+  //                               if (!mounted) return;
+  //                               Navigator.pop(ctx); // tutup bottom sheet
+  //                               setState(() => _absensiList.add(newItem));
+  //                               ScaffoldMessenger.of(context).showSnackBar(
+  //                                 const SnackBar(
+  //                                   content: Text('Absensi berhasil dikirim'),
+  //                                   behavior: SnackBarBehavior.floating,
+  //                                 ),
+  //                               );
+  //                             } catch (e) {
+  //                               setModalState(() => isSaving = false);
+  //                               if (!mounted) return;
+  //                               ScaffoldMessenger.of(context).showSnackBar(
+  //                                 SnackBar(
+  //                                   content: Text(e.toString()),
+  //                                   behavior: SnackBarBehavior.floating,
+  //                                 ),
+  //                               );
+  //                             }
+  //                           },
+  //                     icon: isSaving
+  //                         ? const SizedBox(
+  //                             width: 18,
+  //                             height: 18,
+  //                             child: CircularProgressIndicator(
+  //                                 strokeWidth: 2, color: Colors.white),
+  //                           )
+  //                         : const Icon(Icons.send_rounded, size: 18),
+  //                     label: Text(
+  //                       isSaving ? 'Mengirim...' : 'Kirim Absensi',
+  //                       style: const TextStyle(
+  //                           fontWeight: FontWeight.w700, fontSize: 15),
+  //                     ),
+  //                     style: ElevatedButton.styleFrom(
+  //                       backgroundColor: AppColors.primary,
+  //                       foregroundColor: Colors.white,
+  //                       disabledBackgroundColor: Colors.grey.shade300,
+  //                       shape: RoundedRectangleBorder(
+  //                           borderRadius: BorderRadius.circular(12)),
+  //                     ),
+  //                   ),
+  //                 ),
+  //               ],
+  //             ),
+  //           );
+  //         },
+  //       );
+  //     },
+  //   );
+  // }
+
+    // =============================================================
+  // BOTTOM SHEET: form "Isi Absensi Baru"
+  // Muncul dari bawah saat tombol "Tambah Absensi" ditekan.
+  // =============================================================
+  // void _showTambahAbsensi() {
+  //   DateTime? selectedDate;
+  //   final dateController = TextEditingController();
+  //   bool isSaving = false;
+
+  //   showModalBottomSheet(
+  //     context: context,
+  //     isScrollControlled: true,
+  //     backgroundColor: Colors.white,
+  //     shape: const RoundedRectangleBorder(
+  //       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+  //     ),
+  //     builder: (ctx) {
+  //       // StatefulBuilder dipakai supaya isi bottom sheet bisa
+  //       // berubah sendiri (misal teks tanggal) tanpa menutup sheet.
+  //       return StatefulBuilder(
+  //         builder: (ctx, setModalState) {
+  //           return Padding(
+  //             padding: EdgeInsets.only(
+  //               left: 20,
+  //               right: 20,
+  //               top: 20,
+  //               bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+  //             ),
+  //             child: Column(
+  //               mainAxisSize: MainAxisSize.min,
+  //               crossAxisAlignment: CrossAxisAlignment.start,
+  //               children: [
+  //                 // ── Header bottom sheet ──
+  //                 Row(
+  //                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //                   children: [
+  //                     const Text(
+  //                       'Isi Absensi Baru',
+  //                       style: TextStyle(
+  //                         fontSize: 16,
+  //                         fontWeight: FontWeight.w700,
+  //                         color: Color(0xFF1A1A2E),
+  //                       ),
+  //                     ),
+  //                     IconButton(
+  //                       icon: const Icon(Icons.close),
+  //                       onPressed: () => Navigator.pop(ctx),
+  //                       padding: EdgeInsets.zero,
+  //                       constraints: const BoxConstraints(),
+  //                     ),
+  //                   ],
+  //                 ),
+  //                 const SizedBox(height: 8),
+                  
+  //                 // INFO BATASAN TANGGAL
+  //                 const Text(
+  //                   'Catatan: Anda hanya dapat mencatat kehadiran maksimal 2 hari yang lalu.',
+  //                   style: TextStyle(
+  //                     fontSize: 12,
+  //                     color: Color(0xFF6B7280),
+  //                   ),
+  //                 ),
+  //                 const SizedBox(height: 20),
+
+  //                 // ── Label + kotak pemilih tanggal ──
+  //                 const Text(
+  //                   'Pilih Tanggal Hadir',
+  //                   style: TextStyle(
+  //                     fontSize: 13,
+  //                     fontWeight: FontWeight.w600,
+  //                     color: Color(0xFF374151),
+  //                   ),
+  //                 ),
+  //                 const SizedBox(height: 8),
+  //                 GestureDetector(
+  //                   onTap: () async {
+  //                     final now = DateTime.now();
+  //                     // Batasi tanggal: maksimal 2 hari ke belakang
+  //                     final firstDate = now.subtract(const Duration(days: 2));
+
+  //                     final picked = await showDatePicker(
+  //                       context: ctx,
+  //                       initialDate: selectedDate ?? now, // Default hari ini
+  //                       firstDate: firstDate, // Tidak bisa pilih sebelum H-2
+  //                       lastDate: now, // Tidak bisa pilih masa depan
+  //                       helpText: 'Pilih tanggal hadir',
+  //                       cancelText: 'Batal',
+  //                       confirmText: 'Pilih',
+  //                     );
+  //                     if (picked != null) {
+  //                       // Cek duplikat langsung setelah ibu memilih tanggal
+  //                       final pickedStr =
+  //                           '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
+  //                       final sudahAda =
+  //                           _absensiList.any((a) => a.tanggal == pickedStr);
+
+  //                       if (sudahAda) {
+  //                         // Reset pilihan — kotak tanggal tetap kosong/tidak berubah
+  //                         setModalState(() {
+  //                           selectedDate = null;
+  //                           dateController.text = '';
+  //                         });
+  //                         if (!ctx.mounted) return;
+  //                         ScaffoldMessenger.of(ctx).showSnackBar(
+  //                           SnackBar(
+  //                             content: Row(
+  //                               children: const [
+  //                                 Icon(Icons.error_outline,
+  //                                     color: Colors.white, size: 18),
+  //                                 SizedBox(width: 8),
+  //                                 Expanded(
+  //                                   child: Text(
+  //                                     'Absensi untuk tanggal ini sudah pernah dicatat',
+  //                                     style: TextStyle(fontSize: 13),
+  //                                   ),
+  //                                 ),
+  //                               ],
+  //                             ),
+  //                             backgroundColor: const Color(0xFFEF4444),
+  //                             behavior: SnackBarBehavior.floating,
+  //                           ),
+  //                         );
+  //                       } else {
+  //                         setModalState(() {
+  //                           selectedDate = picked;
+  //                           dateController.text =
+  //                               '${picked.day.toString().padLeft(2, '0')}/${picked.month.toString().padLeft(2, '0')}/${picked.year}';
+  //                         });
+  //                       }
+  //                     }
+  //                   },
+  //                   child: Container(
+  //                     padding: const EdgeInsets.symmetric(
+  //                         horizontal: 14, vertical: 14),
+  //                     decoration: BoxDecoration(
+  //                       border: Border.all(color: const Color(0xFFD1D5DB)),
+  //                       borderRadius: BorderRadius.circular(10),
+  //                     ),
+  //                     child: Row(
+  //                       children: [
+  //                         Expanded(
+  //                           child: Text(
+  //                             dateController.text.isEmpty
+  //                                 ? 'DD/MM/YYYY'
+  //                                 : dateController.text,
+  //                             style: TextStyle(
+  //                               fontSize: 14,
+  //                               color: dateController.text.isEmpty
+  //                                   ? const Color(0xFF9CA3AF)
+  //                                   : const Color(0xFF1A1A2E),
+  //                             ),
+  //                           ),
+  //                         ),
+  //                         const Icon(Icons.calendar_today_outlined,
+  //                             size: 20, color: Color(0xFF6B7280)),
+  //                       ],
+  //                     ),
+  //                   ),
+  //                 ),
+  //                 const SizedBox(height: 16),
+
+  //                 // ── Kotak info kuning (identitas Ibu Hamil) ──
+  //                 Container(
+  //                   padding: const EdgeInsets.all(14),
+  //                   decoration: BoxDecoration(
+  //                     color: const Color(0xFFFEF3C7),
+  //                     borderRadius: BorderRadius.circular(10),
+  //                     border: Border.all(color: const Color(0xFFFBBF24)),
+  //                   ),
+  //                   child: Row(
+  //                     crossAxisAlignment: CrossAxisAlignment.start,
+  //                     children: const [
+  //                       Icon(Icons.info_outline,
+  //                           size: 18, color: Color(0xFFD97706)),
+  //                       SizedBox(width: 10),
+  //                       Expanded(
+  //                         child: Text(
+  //                           'Data kehadiran yang Anda kirim akan diverifikasi oleh kader. Anda dapat menambah absensi baru setelah absensi sebelumnya diverifikasi.',
+  //                           style: TextStyle(
+  //                             fontSize: 12,
+  //                             color: Color(0xFF92400E),
+  //                             height: 1.4,
+  //                           ),
+  //                         ),
+  //                       ),
+  //                     ],
+  //                   ),
+  //                 ),
+  //                 const SizedBox(height: 20),
+
+  //                 // ── Tombol Kirim Absensi ──
+  //                 SizedBox(
+  //                   width: double.infinity,
+  //                   height: 50,
+  //                   child: ElevatedButton.icon(
+  //                     onPressed: isSaving || selectedDate == null
+  //                         ? null
+  //                         : () async {
+  //                             // ──────────────────────────────────────────────
+  //                             // VALIDASI KONFIRMASI SAAT MENGIRIM ABSENSI
+  //                             // (ini TETAP ada — beda dengan validasi keluar)
+  //                             // ──────────────────────────────────────────────
+  //                             final tanggalFormatted = dateController.text;
+
+  //                             final confirmed = await context.showConfirm(
+  //                               title: 'Konfirmasi Absensi',
+  //                               message:
+  //                                   'Apakah ibu benar-benar hadir di kelas ibu hamil pada tanggal $tanggalFormatted? Data yang sudah dikirim tidak dapat diubah.',
+  //                               confirmText: 'Ya, Hadir',
+  //                               cancelText: 'Batal',
+  //                             );
+
+  //                             if (!confirmed) return;
+  //                             // ──────────────────────────────────────────────
+
+  //                             setModalState(() => isSaving = true);
+  //                             try {
+  //                               final newItem = await _apiService.save(
+  //                                 AbsensiKelasIbuHamilModel(
+  //                                   pertemuanKe: 0,
+  //                                   tanggal:
+  //                                       '${selectedDate!.year}-${selectedDate!.month.toString().padLeft(2, '0')}-${selectedDate!.day.toString().padLeft(2, '0')}',
+  //                                   namaKader: '',
+  //                                   tanggalParaf: '',
+  //                                 ),
+  //                               );
+  //                               if (!mounted) return;
+  //                               Navigator.pop(ctx); // tutup bottom sheet
+  //                               setState(() => _absensiList.add(newItem));
+  //                               ScaffoldMessenger.of(context).showSnackBar(
+  //                                 const SnackBar(
+  //                                   content: Text('Absensi berhasil dikirim'),
+  //                                   behavior: SnackBarBehavior.floating,
+  //                                 ),
+  //                               );
+  //                             } catch (e) {
+  //                               setModalState(() => isSaving = false);
+  //                               if (!mounted) return;
+  //                               ScaffoldMessenger.of(context).showSnackBar(
+  //                                 SnackBar(
+  //                                   content: Text(e.toString()),
+  //                                   behavior: SnackBarBehavior.floating,
+  //                                 ),
+  //                               );
+  //                             }
+  //                           },
+  //                     icon: isSaving
+  //                         ? const SizedBox(
+  //                             width: 18,
+  //                             height: 18,
+  //                             child: CircularProgressIndicator(
+  //                                 strokeWidth: 2, color: Colors.white),
+  //                           )
+  //                         : const Icon(Icons.send_rounded, size: 18),
+  //                     label: Text(
+  //                       isSaving ? 'Mengirim...' : 'Kirim Absensi',
+  //                       style: const TextStyle(
+  //                           fontWeight: FontWeight.w700, fontSize: 15),
+  //                     ),
+  //                     style: ElevatedButton.styleFrom(
+  //                       backgroundColor: AppColors.primary,
+  //                       foregroundColor: Colors.white,
+  //                       disabledBackgroundColor: Colors.grey.shade300,
+  //                       shape: RoundedRectangleBorder(
+  //                           borderRadius: BorderRadius.circular(12)),
+  //                     ),
+  //                   ),
+  //                 ),
+  //               ],
+  //             ),
+  //           );
+  //         },
+  //       );
+  //     },
+  //   );
+  // }
+
+    // =============================================================
+  // BOTTOM SHEET: form "Isi Absensi Baru"
+  // Muncul dari bawah saat tombol "Tambah Absensi" ditekan.
+  // =============================================================
   void _showTambahAbsensi() {
     DateTime? selectedDate;
     final dateController = TextEditingController();
     bool isSaving = false;
+    String? errorMessage; // Variabel untuk menyimpan pesan error di form
 
     showModalBottomSheet(
       context: context,
@@ -136,6 +644,16 @@ class _AbsensiKelasIbuHamilScreenState
                       ),
                     ],
                   ),
+                  const SizedBox(height: 8),
+                  
+                  // INFO BATASAN TANGGAL
+                  const Text(
+                    'Catatan: Anda hanya dapat mencatat kehadiran maksimal 2 hari yang lalu.',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF6B7280),
+                    ),
+                  ),
                   const SizedBox(height: 20),
 
                   // ── Label + kotak pemilih tanggal ──
@@ -151,28 +669,48 @@ class _AbsensiKelasIbuHamilScreenState
                   GestureDetector(
                     onTap: () async {
                       final now = DateTime.now();
+                      // Batasi tanggal: maksimal 2 hari ke belakang
+                      final firstDate = now.subtract(const Duration(days: 2));
+
                       final picked = await showDatePicker(
                         context: ctx,
-                        initialDate: selectedDate ?? now,
-                        firstDate: DateTime(now.year - 2),
-                        lastDate: now,
+                        initialDate: selectedDate ?? now, // Default hari ini
+                        firstDate: firstDate, // Tidak bisa pilih sebelum H-2
+                        lastDate: now, // Tidak bisa pilih masa depan
                         helpText: 'Pilih tanggal hadir',
                         cancelText: 'Batal',
                         confirmText: 'Pilih',
                       );
+                      
                       if (picked != null) {
-                        setModalState(() {
-                          selectedDate = picked;
-                          dateController.text =
-                              '${picked.day.toString().padLeft(2, '0')}/${picked.month.toString().padLeft(2, '0')}/${picked.year}';
-                        });
+                        // Cek duplikat langsung setelah ibu memilih tanggal
+                        final pickedStr =
+                            '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
+                        final sudahAda =
+                            _absensiList.any((a) => a.tanggal == pickedStr);
+
+                        if (sudahAda) {
+                          // Tampilkan error di dalam form, bukan SnackBar
+                          setModalState(() {
+                            selectedDate = null;
+                            dateController.text = '';
+                            errorMessage = 'Absensi untuk tanggal ini sudah pernah dicatat. Pilih tanggal lain.';
+                          });
+                        } else {
+                          setModalState(() {
+                            selectedDate = picked;
+                            dateController.text =
+                                '${picked.day.toString().padLeft(2, '0')}/${picked.month.toString().padLeft(2, '0')}/${picked.year}';
+                            errorMessage = null; // Hapus error jika tanggal valid
+                          });
+                        }
                       }
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 14, vertical: 14),
                       decoration: BoxDecoration(
-                        border: Border.all(color: const Color(0xFFD1D5DB)),
+                        border: Border.all(color: errorMessage != null ? Colors.red : const Color(0xFFD1D5DB)),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Row(
@@ -196,6 +734,19 @@ class _AbsensiKelasIbuHamilScreenState
                       ),
                     ),
                   ),
+                  
+                  // TAMPILKAN PESAN ERROR DI BAWAH KOTAK TANGGAL
+                  if (errorMessage != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      errorMessage!,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.red,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 16),
 
                   // ── Kotak info kuning (identitas Ibu Hamil) ──
@@ -330,19 +881,68 @@ class _AbsensiKelasIbuHamilScreenState
   }
 
   // Badge status: hanya 2 kemungkinan (Menunggu / Terverifikasi).
+  // Widget _buildStatusBadge(String status) {
+  //   final isVerified = status == 'Terverifikasi';
+
+  //   final Color bgColor =
+  //       isVerified ? const Color(0xFFD1FAE5) : const Color(0xFFFEF3C7);
+  //   final Color borderColor =
+  //       isVerified ? const Color(0xFF10B981) : const Color(0xFFF59E0B);
+  //   final Color textColor =
+  //       isVerified ? const Color(0xFF059669) : const Color(0xFFD97706);
+  //   final IconData iconData = isVerified
+  //       ? Icons.verified_rounded
+  //       : Icons.hourglass_top_rounded;
+  //   final String textLabel = isVerified ? 'Terverifikasi' : 'Menunggu';
+
+  //   return Container(
+  //     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+  //     decoration: BoxDecoration(
+  //       color: bgColor,
+  //       borderRadius: BorderRadius.circular(20),
+  //       border: Border.all(color: borderColor),
+  //     ),
+  //     child: Row(
+  //       mainAxisSize: MainAxisSize.min,
+  //       children: [
+  //         Icon(iconData, size: 11, color: textColor),
+  //         const SizedBox(width: 4),
+  //         Text(
+  //           textLabel,
+  //           style: TextStyle(
+  //             fontSize: 10,
+  //             fontWeight: FontWeight.w600,
+  //             color: textColor,
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
+
   Widget _buildStatusBadge(String status) {
     final isVerified = status == 'Terverifikasi';
+    final isRejected = status == 'Ditolak';
 
-    final Color bgColor =
-        isVerified ? const Color(0xFFD1FAE5) : const Color(0xFFFEF3C7);
-    final Color borderColor =
-        isVerified ? const Color(0xFF10B981) : const Color(0xFFF59E0B);
-    final Color textColor =
-        isVerified ? const Color(0xFF059669) : const Color(0xFFD97706);
-    final IconData iconData = isVerified
-        ? Icons.verified_rounded
-        : Icons.hourglass_top_rounded;
-    final String textLabel = isVerified ? 'Terverifikasi' : 'Menunggu';
+    Color bgColor = const Color(0xFFFEF3C7); // Kuning (Menunggu)
+    Color borderColor = const Color(0xFFF59E0B);
+    Color textColor = const Color(0xFFD97706);
+    IconData iconData = Icons.hourglass_top_rounded;
+    String textLabel = 'Menunggu';
+
+    if (isVerified) {
+      bgColor = const Color(0xFFD1FAE5); // Hijau (Verifikasi)
+      borderColor = const Color(0xFF10B981);
+      textColor = const Color(0xFF059669);
+      iconData = Icons.verified_rounded;
+      textLabel = 'Terverifikasi';
+    } else if (isRejected) {
+      bgColor = const Color(0xFFFEE2E2); // Merah (Ditolak)
+      borderColor = const Color(0xFFEF4444);
+      textColor = const Color(0xFFB91C1C);
+      iconData = Icons.cancel_rounded;
+      textLabel = 'Ditolak';
+    }
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -374,25 +974,39 @@ class _AbsensiKelasIbuHamilScreenState
     return Scaffold(
       backgroundColor: const Color(0xFFF6F8FC),
       appBar: AppBar(
-        backgroundColor: AppColors.primary,
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF1E293B),
         elevation: 0,
-        centerTitle: true,
+        centerTitle: false,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF1E293B)),
           // Keluar langsung tanpa popup konfirmasi.
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Absensi Kelas Ibu Hamil',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-          ),
+        title: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Absensi Kelas Ibu Hamil',
+              style: TextStyle(
+                color: AppColors.primary,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+            Text(
+              'Catatan kehadiran kelas ibu hamil',
+              style: TextStyle(
+                color: Color(0xFF64748B),
+                fontWeight: FontWeight.normal,
+                fontSize: 12,
+              ),
+            ),
+          ],
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1.0),
-          child: Container(color: Colors.white24, height: 1.0),
+          child: Container(color: Colors.grey.shade200, height: 1.0),
         ),
       ),
       // PopScope dihapus: tombol back HP juga langsung keluar tanpa konfirmasi.

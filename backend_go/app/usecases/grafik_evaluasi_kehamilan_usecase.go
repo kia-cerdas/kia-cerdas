@@ -661,25 +661,13 @@ func (u *grafikEvaluasiKehamilanUsecase) GetGrafikOnTheFlyForOrangtua(userID int
 	hpht := kehamilan.HPHT
 
 	// 2. Ambil semua data sumber
-	pemeriksaanList, err := u.repo.FindPemeriksaanForGrafik(kehamilanID)
-	if err != nil {
-		return nil, err
-	}
+	// Masing-masing query bersifat independen — error satu tidak menghentikan yang lain
+	pemeriksaanList, _ := u.repo.FindPemeriksaanForGrafik(kehamilanID)
+	djjList, _ := u.repo.FindDJJForGrafik(kehamilanID)
+	gerakanBayiList, _ := u.repo.FindGerakanBayiForGrafik(kehamilanID)
 
-	djjList, err := u.repo.FindDJJForGrafik(kehamilanID)
-	if err != nil {
-		return nil, err
-	}
-
-	gerakanBayiList, err := u.repo.FindGerakanBayiForGrafik(kehamilanID)
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = u.repo.FindUrinReduksiForGrafik(kehamilanID)
-	if err != nil {
-		return nil, err
-	}
+	// FindUrinReduksiForGrafik bersifat opsional — error tidak menghentikan proses
+	_, _ = u.repo.FindUrinReduksiForGrafik(kehamilanID)
 
 	penjelasan, _ := u.repo.FindPenjelasanForGrafik(kehamilanID)
 

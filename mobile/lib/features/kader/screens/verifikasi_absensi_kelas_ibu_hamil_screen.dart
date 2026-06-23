@@ -50,11 +50,20 @@ class _VerifikasiAbsensiKelasIbuHamilScreenState
     }
   }
 
+  // List<AbsensiKelasIbuHamilModel> get _filtered {
+  //   if (_filterVerified == null) return _list;
+  //   return _list.where((item) {
+  //     final isVerified =
+  //         item.namaKader.isNotEmpty && item.tanggalParaf.isNotEmpty;
+  //     return isVerified == _filterVerified;
+  //   }).toList();
+  // }
+
   List<AbsensiKelasIbuHamilModel> get _filtered {
-    if (_filterVerified == null) return _list;
+  if (_filterVerified == null) return _list;
     return _list.where((item) {
-      final isVerified =
-          item.namaKader.isNotEmpty && item.tanggalParaf.isNotEmpty;
+      // Anggap "Terverifikasi" true, sisanya (Menunggu/Ditolak) false
+      final isVerified = item.status == 'Terverifikasi';
       return isVerified == _filterVerified;
     }).toList();
   }
@@ -91,6 +100,55 @@ class _VerifikasiAbsensiKelasIbuHamilScreenState
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Gagal verifikasi: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _reject(AbsensiKelasIbuHamilModel item) async {
+    // Konfirmasi sebelum menolak
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Konfirmasi Tolak'),
+        content: const Text('Apakah Anda yakin ingin MENOLAK absensi ini? Ibu akan diminta untuk mengirim absensi baru.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Batal')),
+          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Ya, Tolak', style: TextStyle(color: Colors.red))),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    // FIX: setelah await dialog konfirmasi, pastikan widget masih aktif
+    // sebelum memakai context lagi (memperbaiki use_build_context_synchronously).
+    if (!mounted) return;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      await _apiService.reject(item.id!);
+      if (!mounted) return;
+      Navigator.pop(context); // tutup loading
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Absensi berhasil ditolak'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      _fetchData(); // refresh list
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal menolak: ${e.toString()}'),
           backgroundColor: Colors.red,
         ),
       );
@@ -209,12 +267,152 @@ class _VerifikasiAbsensiKelasIbuHamilScreenState
     );
   }
 
+  // Widget _buildCard(AbsensiKelasIbuHamilModel item) {
+  //   final isVerified = item.namaKader.isNotEmpty && item.tanggalParaf.isNotEmpty;
+  //   final Color borderColor = isVerified ? Colors.green.shade200 : Colors.orange.shade200;
+  //   final Color badgeColor = isVerified ? Colors.green.shade50 : Colors.orange.shade50;
+  //   final Color badgeTextColor = isVerified ? Colors.green.shade700 : Colors.orange.shade700;
+  //   final String badgeLabel = isVerified ? 'Terverifikasi' : 'Belum Verifikasi';
+
+  //   return Container(
+  //     margin: const EdgeInsets.only(bottom: 12),
+  //     padding: const EdgeInsets.all(16),
+  //     decoration: BoxDecoration(
+  //       color: Colors.white,
+  //       borderRadius: BorderRadius.circular(14),
+  //       border: Border.all(color: borderColor),
+  //       boxShadow: [
+  //         BoxShadow(
+  //           color: Colors.black.withValues(alpha: 0.04),
+  //           blurRadius: 8,
+  //           offset: const Offset(0, 2),
+  //         ),
+  //       ],
+  //     ),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         Row(
+  //           children: [
+  //             Container(
+  //               width: 40,
+  //               height: 40,
+  //               decoration: BoxDecoration(color: badgeColor, shape: BoxShape.circle),
+  //               alignment: Alignment.center,
+  //               child: Text(
+  //                 _initials(item.namaIbu),
+  //                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: badgeTextColor),
+  //               ),
+  //             ),
+  //             const SizedBox(width: 10),
+  //             Expanded(
+  //               child: Column(
+  //                 crossAxisAlignment: CrossAxisAlignment.start,
+  //                 children: [
+  //                   Text(
+  //                     item.namaIbu.isNotEmpty ? 'Ibu ${item.namaIbu}' : 'Data tidak lengkap',
+  //                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+  //                   ),
+  //                   const SizedBox(height: 2),
+  //                   Text(
+  //                     'Pertemuan ke-${item.pertemuanKe}',
+  //                     style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+  //                   ),
+  //                 ],
+  //               ),
+  //             ),
+  //             Container(
+  //               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+  //               decoration: BoxDecoration(
+  //                 color: badgeColor,
+  //                 borderRadius: BorderRadius.circular(8),
+  //               ),
+  //               child: Text(
+  //                 badgeLabel,
+  //                 style: TextStyle(color: badgeTextColor, fontSize: 11, fontWeight: FontWeight.bold),
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //         const SizedBox(height: 10),
+  //         const Divider(height: 1),
+  //         const SizedBox(height: 10),
+  //         Row(
+  //           children: [
+  //             const Icon(Icons.calendar_today_outlined, size: 14, color: Colors.grey),
+  //             const SizedBox(width: 6),
+  //             Text(
+  //               'Tanggal hadir: ${item.tanggal.isNotEmpty ? item.tanggal : "-"}',
+  //               style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
+  //             ),
+  //           ],
+  //         ),
+  //         if (isVerified) ...[
+  //           const SizedBox(height: 6),
+  //           Row(
+  //             children: [
+  //               const Icon(Icons.verified_user_outlined, size: 14, color: Colors.green),
+  //               const SizedBox(width: 6),
+  //               Text(
+  //                 'Diverifikasi oleh: ${item.namaKader}',
+  //                 style: const TextStyle(fontSize: 13, color: Colors.green),
+  //               ),
+  //             ],
+  //           ),
+  //           const SizedBox(height: 4),
+  //           Row(
+  //             children: [
+  //               const Icon(Icons.event_available_outlined, size: 14, color: Colors.green),
+  //               const SizedBox(width: 6),
+  //               Text(
+  //                 'Tanggal paraf: ${item.tanggalParaf}',
+  //                 style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+  //               ),
+  //             ],
+  //           ),
+  //         ],
+  //         if (!isVerified) ...[
+  //           const SizedBox(height: 14),
+  //           SizedBox(
+  //             width: double.infinity,
+  //             child: ElevatedButton.icon(
+  //               onPressed: () => _verify(item),
+  //               icon: const Icon(Icons.check_circle_outline, size: 18),
+  //               label: const Text('Verifikasi Kehadiran'),
+  //               style: ElevatedButton.styleFrom(
+  //                 backgroundColor: Colors.pink.shade600,
+  //                 foregroundColor: Colors.white,
+  //                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+  //                 padding: const EdgeInsets.symmetric(vertical: 12),
+  //               ),
+  //             ),
+  //           ),
+  //         ],
+  //       ],
+  //     ),
+  //   );
+  // }
+
   Widget _buildCard(AbsensiKelasIbuHamilModel item) {
-    final isVerified = item.namaKader.isNotEmpty && item.tanggalParaf.isNotEmpty;
-    final Color borderColor = isVerified ? Colors.green.shade200 : Colors.orange.shade200;
-    final Color badgeColor = isVerified ? Colors.green.shade50 : Colors.orange.shade50;
-    final Color badgeTextColor = isVerified ? Colors.green.shade700 : Colors.orange.shade700;
-    final String badgeLabel = isVerified ? 'Terverifikasi' : 'Belum Verifikasi';
+    final isVerified = item.status == 'Terverifikasi';
+    final isRejected = item.status == 'Ditolak';
+    
+    Color borderColor = Colors.orange.shade200;
+    Color badgeColor = Colors.orange.shade50;
+    Color badgeTextColor = Colors.orange.shade700;
+    String badgeLabel = 'Menunggu Verifikasi';
+
+    if (isVerified) {
+      borderColor = Colors.green.shade200;
+      badgeColor = Colors.green.shade50;
+      badgeTextColor = Colors.green.shade700;
+      badgeLabel = 'Terverifikasi';
+    } else if (isRejected) {
+      borderColor = Colors.red.shade200;
+      badgeColor = Colors.red.shade50;
+      badgeTextColor = Colors.red.shade700;
+      badgeLabel = 'Ditolak';
+    }
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -313,21 +511,39 @@ class _VerifikasiAbsensiKelasIbuHamilScreenState
               ],
             ),
           ],
-          if (!isVerified) ...[
+          // Tampilkan tombol HANYA jika statusnya Menunggu Verifikasi
+          if (!isVerified && !isRejected) ...[
             const SizedBox(height: 14),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () => _verify(item),
-                icon: const Icon(Icons.check_circle_outline, size: 18),
-                label: const Text('Verifikasi Kehadiran'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.pink.shade600,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => _reject(item),
+                    icon: const Icon(Icons.cancel_outlined, size: 18),
+                    label: const Text('Tolak'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.red,
+                      side: BorderSide(color: Colors.red.shade300),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
                 ),
-              ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () => _verify(item),
+                    icon: const Icon(Icons.check_circle_outline, size: 18),
+                    label: const Text('Verifikasi'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.pink.shade600,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ],
