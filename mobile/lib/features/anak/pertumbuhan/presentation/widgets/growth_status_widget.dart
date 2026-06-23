@@ -20,14 +20,14 @@ class GrowthStatusCard extends StatelessWidget {
 
     // Hijau - Gizi Baik
     if (lower.contains('baik') || lower.contains('normal')) {
-      return const Color(0xFF10b981);
+      return const Color(0xFF0F6E56);
     }
 
     // Kuning/Oranye - Gizi Kurang atau Risiko
     if (lower.contains('kurang') ||
         lower.contains('risiko') ||
         lower.contains('pendek')) {
-      return const Color(0xFFf59e0b);
+      return const Color(0xFFBA7517);
     }
 
     // Merah - Gizi Buruk atau Sangat Kurang
@@ -35,11 +35,11 @@ class GrowthStatusCard extends StatelessWidget {
         lower.contains('sangat') ||
         lower.contains('stunting') ||
         lower.contains('obesitas')) {
-      return const Color(0xFFef4444);
+      return const Color(0xFFA32D2D);
     }
 
     // Biru - Default
-    return const Color(0xFF3b82f6);
+    return const Color(0xFF185FA5);
   }
 
   IconData _getStatusIcon() {
@@ -209,7 +209,7 @@ class GrowthStatusCard extends StatelessWidget {
                     flex: 20,
                     child: Container(
                       decoration: const BoxDecoration(
-                        color: Color(0xFFef4444),
+                        color: Color(0xFFA32D2D),
                         borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(4),
                           bottomLeft: Radius.circular(4),
@@ -220,19 +220,19 @@ class GrowthStatusCard extends StatelessWidget {
                   // Amber zone (-2 to 0)
                   Expanded(
                     flex: 30,
-                    child: Container(color: const Color(0xFFf59e0b)),
+                    child: Container(color: const Color(0xFFBA7517)),
                   ),
                   // Green zone (0 to 2)
                   Expanded(
                     flex: 30,
-                    child: Container(color: const Color(0xFF10b981)),
+                    child: Container(color: const Color(0xFF0F6E56)),
                   ),
                   // Amber zone (2 to 3)
                   Expanded(
                     flex: 20,
                     child: Container(
                       decoration: const BoxDecoration(
-                        color: Color(0xFFf59e0b),
+                        color: Color(0xFFBA7517),
                         borderRadius: BorderRadius.only(
                           topRight: Radius.circular(4),
                           bottomRight: Radius.circular(4),
@@ -297,14 +297,14 @@ class GrowthSummaryWidget extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF2563EB), Color(0xFF1e40af)],
+          colors: [Color(0xFF185FA5), Color(0xFF185FA5)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF2563EB).withOpacity(0.3),
+            color: const Color(0xFF185FA5).withOpacity(0.3),
             blurRadius: 12,
             spreadRadius: 2,
           ),
@@ -397,13 +397,13 @@ class GrowthSummaryWidget extends StatelessWidget {
     if (status != null) {
       final lower = status.toLowerCase();
       if (lower.contains('baik') || lower.contains('normal')) {
-        badgeColor = const Color(0xFF10B981).withOpacity(0.7);
+        badgeColor = const Color(0xFF0F6E56).withOpacity(0.7);
       } else if (lower.contains('buruk') || lower.contains('sangat') ||
           lower.contains('stunting') || lower.contains('obesitas')) {
-        badgeColor = const Color(0xFFEF4444).withOpacity(0.7);
+        badgeColor = const Color(0xFFA32D2D).withOpacity(0.7);
       } else if (lower.contains('kurang') || lower.contains('lebih') ||
           lower.contains('risiko') || lower.contains('pendek')) {
-        badgeColor = const Color(0xFFF59E0B).withOpacity(0.7);
+        badgeColor = const Color(0xFFBA7517).withOpacity(0.7);
       }
     }
     return Row(

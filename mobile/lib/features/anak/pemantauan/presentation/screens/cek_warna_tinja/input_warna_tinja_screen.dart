@@ -36,7 +36,7 @@ class _InputWarnaTinjaScreenState extends State<InputWarnaTinjaScreen> {
     },
     {
       'nama': 'Hijau',
-      'color': const Color(0xFF22C55E),
+      'color': const Color(0xFF0F6E56),
       'status': 'Perhatian',
       'desc':
           'Tinja hijau bisa terjadi karena konsumsi ASI foremilk yang berlebihan.'
@@ -50,7 +50,7 @@ class _InputWarnaTinjaScreenState extends State<InputWarnaTinjaScreen> {
     },
     {
       'nama': 'Merah/Pink',
-      'color': const Color(0xFFEF4444),
+      'color': const Color(0xFFA32D2D),
       'status': 'Bahaya',
       'desc':
           'Tinja merah atau pink menandakan adanya darah. Segera ke puskesmas!'
@@ -76,7 +76,7 @@ class _InputWarnaTinjaScreenState extends State<InputWarnaTinjaScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Pilih umur dan warna tinja terlebih dahulu'),
-          backgroundColor: Color(0xFFEF4444),
+          backgroundColor: Color(0xFFA32D2D),
         ),
       );
       return;
@@ -112,10 +112,10 @@ class _InputWarnaTinjaScreenState extends State<InputWarnaTinjaScreen> {
                         ? Icons.info
                         : Icons.check_circle,
                 color: isBahaya
-                    ? const Color(0xFFDC2626)
+                    ? const Color(0xFFA32D2D)
                     : isPerhatian
-                        ? const Color(0xFFD97706)
-                        : const Color(0xFF16A34A),
+                        ? const Color(0xFFBA7517)
+                        : const Color(0xFF0F6E56),
               ),
             ),
             const SizedBox(width: 12),
@@ -123,10 +123,10 @@ class _InputWarnaTinjaScreenState extends State<InputWarnaTinjaScreen> {
               selectedData['status'],
               style: TextStyle(
                 color: isBahaya
-                    ? const Color(0xFFDC2626)
+                    ? const Color(0xFFA32D2D)
                     : isPerhatian
-                        ? const Color(0xFFD97706)
-                        : const Color(0xFF16A34A),
+                        ? const Color(0xFFBA7517)
+                        : const Color(0xFF0F6E56),
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -171,14 +171,14 @@ class _InputWarnaTinjaScreenState extends State<InputWarnaTinjaScreen> {
                 ),
                 child: const Row(
                   children: [
-                    Icon(Icons.local_hospital, color: Color(0xFFDC2626)),
+                    Icon(Icons.local_hospital, color: Color(0xFFA32D2D)),
                     SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         '⚠️ PERLU KE PUSKESMAS SEGERA!',
                         style: TextStyle(
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFFDC2626),
+                          color: Color(0xFFA32D2D),
                         ),
                       ),
                     ),
@@ -200,7 +200,7 @@ class _InputWarnaTinjaScreenState extends State<InputWarnaTinjaScreen> {
                 _showAlertPuskesmas();
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFDC2626),
+                backgroundColor: const Color(0xFFA32D2D),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -231,7 +231,7 @@ class _InputWarnaTinjaScreenState extends State<InputWarnaTinjaScreen> {
               child: const Icon(
                 Icons.local_hospital,
                 size: 48,
-                color: Color(0xFFDC2626),
+                color: Color(0xFFA32D2D),
               ),
             ),
             const SizedBox(height: 20),
@@ -240,7 +240,7 @@ class _InputWarnaTinjaScreenState extends State<InputWarnaTinjaScreen> {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFFDC2626),
+                color: Color(0xFFA32D2D),
               ),
               textAlign: TextAlign.center,
             ),
@@ -259,7 +259,7 @@ class _InputWarnaTinjaScreenState extends State<InputWarnaTinjaScreen> {
               child: ElevatedButton(
                 onPressed: () => Navigator.pop(context),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFDC2626),
+                  backgroundColor: const Color(0xFFA32D2D),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -441,10 +441,10 @@ class _InputWarnaTinjaScreenState extends State<InputWarnaTinjaScreen> {
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: warna['status'] == 'Bahaya'
-                                      ? const Color(0xFFDC2626)
+                                      ? const Color(0xFFA32D2D)
                                       : warna['status'] == 'Perhatian'
-                                          ? const Color(0xFFD97706)
-                                          : const Color(0xFF16A34A),
+                                          ? const Color(0xFFBA7517)
+                                          : const Color(0xFF0F6E56),
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),

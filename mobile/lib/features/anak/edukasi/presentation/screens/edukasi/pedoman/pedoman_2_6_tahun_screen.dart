@@ -23,7 +23,7 @@ class _Pedoman26TahunScreenState extends State<Pedoman26TahunScreen> {
             "2 - 6 Tahun: Pastikan Si Kecil Memiliki Tanda Anak Sehat",
             style: TextStyle(
               fontSize: 14,
-              color: Color(0xFF2563EB),
+              color: Color(0xFF185FA5),
               fontWeight: FontWeight.w600,
               height: 1.4,
             ),
