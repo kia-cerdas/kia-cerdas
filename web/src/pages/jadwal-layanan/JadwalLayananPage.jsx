@@ -142,6 +142,21 @@ const TABS = [
     emptyTitle: "Belum ada jadwal hari ini",
     emptySub: "Tambahkan jadwal untuk sesi imunisasi hari ini.",
     showAddBtn: true,
+    colors: {
+      activeBg: "bg-blue-50",
+      activeBorder: "border-blue-400",
+      activeRing: "ring-blue-200",
+      iconText: "text-blue-600",
+      labelText: "text-blue-800",
+      badgeBg: "bg-blue-600",
+      badgeText: "text-blue-50",
+      inactiveBg: "bg-blue-50/40",
+      inactiveBorder: "border-blue-200",
+      inactiveIcon: "text-blue-400",
+      inactiveLabel: "text-blue-600",
+      inactiveBadgeBg: "bg-blue-100",
+      inactiveBadgeText: "text-blue-500",
+    },
   },
   {
     key: "upcoming",
@@ -151,6 +166,21 @@ const TABS = [
     emptyTitle: "Tidak ada jadwal mendatang",
     emptySub: "Jadwal baru yang ditambahkan akan muncul di sini.",
     showAddBtn: true,
+    colors: {
+      activeBg: "bg-amber-50",
+      activeBorder: "border-amber-400",
+      activeRing: "ring-amber-200",
+      iconText: "text-amber-600",
+      labelText: "text-amber-800",
+      badgeBg: "bg-amber-500",
+      badgeText: "text-amber-50",
+      inactiveBg: "bg-amber-50/40",
+      inactiveBorder: "border-amber-200",
+      inactiveIcon: "text-amber-400",
+      inactiveLabel: "text-amber-600",
+      inactiveBadgeBg: "bg-amber-100",
+      inactiveBadgeText: "text-amber-500",
+    },
   },
   {
     key: "done",
@@ -160,30 +190,45 @@ const TABS = [
     emptyTitle: "Belum ada riwayat layanan",
     emptySub: "Jadwal yang sudah lewat akan tercatat di sini.",
     showAddBtn: false,
+    colors: {
+      activeBg: "bg-emerald-50",
+      activeBorder: "border-emerald-400",
+      activeRing: "ring-emerald-200",
+      iconText: "text-emerald-600",
+      labelText: "text-emerald-800",
+      badgeBg: "bg-emerald-600",
+      badgeText: "text-emerald-50",
+      inactiveBg: "bg-emerald-50/40",
+      inactiveBorder: "border-emerald-200",
+      inactiveIcon: "text-emerald-400",
+      inactiveLabel: "text-emerald-600",
+      inactiveBadgeBg: "bg-emerald-100",
+      inactiveBadgeText: "text-emerald-500",
+    },
   },
 ];
 
 // ─── sub-components ─────────────────────────────────────────────────────────
 
 function TabButton({ tab, active, count, onClick }) {
-  const { label, sub, Icon } = tab;
+  const { label, sub, Icon, colors } = tab;
   return (
     <button
       onClick={onClick}
-      className={`flex flex-col items-start px-3 py-2 sm:px-4 sm:py-3 rounded-2xl border transition-all text-left flex-1 sm:flex-initial ${
+      className={`flex flex-col items-start px-3 py-2 sm:px-4 sm:py-3 rounded-2xl border transition-all text-left flex-1 basis-0 min-w-0 ${
         active
-          ? "border-[#185FA5] bg-[#E6F1FB]"
-          : "border-slate-200 bg-white hover:bg-slate-50"
+          ? `${colors.activeBorder} ${colors.activeBg} ring-2 ring-offset-1 ${colors.activeRing}`
+          : `${colors.inactiveBorder} ${colors.inactiveBg}`
       }`}
     >
       <div className="flex items-center gap-1.5 sm:gap-2">
         <Icon
           size={14}
-          className={`flex-shrink-0 sm:w-4 sm:h-4 ${active ? "text-[#185FA5]" : "text-slate-400"}`}
+          className={`flex-shrink-0 sm:w-4 sm:h-4 ${active ? colors.iconText : colors.inactiveIcon}`}
         />
         <span
           className={`text-xs sm:text-sm font-semibold ${
-            active ? "text-[#0C447C]" : "text-slate-700"
+            active ? colors.labelText : colors.inactiveLabel
           }`}
         >
           {label}
@@ -191,14 +236,14 @@ function TabButton({ tab, active, count, onClick }) {
         <span
           className={`inline-flex items-center justify-center min-w-[18px] h-[18px] sm:min-w-[20px] sm:h-5 px-1 sm:px-1.5 rounded-full text-[10px] sm:text-xs font-semibold ${
             active
-              ? "bg-[#185FA5] text-[#E6F1FB]"
-              : "bg-slate-100 text-slate-500"
+              ? `${colors.badgeBg} ${colors.badgeText}`
+              : `${colors.inactiveBadgeBg} ${colors.inactiveBadgeText}`
           }`}
         >
           {count}
         </span>
       </div>
-      <span className="text-[10px] sm:text-xs text-slate-400 mt-0.5 sm:mt-1 pl-[22px] sm:pl-6">{sub}</span>
+      <span className={`text-[10px] sm:text-xs mt-0.5 sm:mt-1 pl-[22px] sm:pl-6 ${active ? "text-slate-500" : "text-slate-400"}`}>{sub}</span>
     </button>
   );
 }
@@ -250,8 +295,23 @@ function ScheduleRow({ r, onEdit, onDelete, deleting }) {
   const waktuSelesai = normalizeTimeValue(r.waktu_selesai);
   const dosisVaksins = r.dosis_vaksins || [];
 
+  // Determine card styling based on status
+  let cardBg = "bg-white";
+  let cardBorder = "border-slate-200";
+  
+  if (today) {
+    cardBg = "bg-blue-50";
+    cardBorder = "border-blue-200";
+  } else if (done) {
+    cardBg = "bg-emerald-50";
+    cardBorder = "border-emerald-200";
+  } else if (upcoming) {
+    cardBg = "bg-amber-50";
+    cardBorder = "border-amber-200";
+  }
+
   return (
-    <div className="flex items-start sm:items-center gap-2 sm:gap-3 px-3 sm:px-5 py-3 sm:py-4 border-b border-slate-50 last:border-0 hover:bg-slate-50/60 transition-colors">
+    <div className={`flex items-start sm:items-center gap-2 sm:gap-3 px-3 sm:px-5 py-3 sm:py-4 rounded-xl border ${cardBorder} ${cardBg} shadow-sm mb-3 last:mb-0 transition-all hover:shadow-md`}>
       {/* Date box */}
       <div className="min-w-[48px] sm:min-w-[60px] text-center bg-slate-50 rounded-xl py-1.5 sm:py-2 px-1 border border-slate-100 shrink-0">
         <p className="text-[9px] sm:text-[10px] text-slate-400 capitalize">{day}</p>
@@ -498,62 +558,29 @@ export default function JadwalLayananPage() {
   return (
     <MainLayout>
       <div className="space-y-4 sm:space-y-5">
-        {/* Header */}
-        <section className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 sm:px-6 py-4 sm:py-5 gap-3">
-            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#185FA5]/10 flex items-center justify-center flex-shrink-0">
-                <CalendarDays size={18} className="text-[#185FA5] sm:hidden" />
-                <CalendarDays size={20} className="text-[#185FA5] hidden sm:block" />
-              </div>
-              <div className="min-w-0">
-                <h1 className="text-base sm:text-xl font-bold text-slate-800 leading-tight truncate">
-                  Jadwal Layanan Imunisasi
-                </h1>
-                <p className="text-xs sm:text-sm text-slate-400 mt-0.5 truncate">
-                  Kelola sesi posyandu — Dashboard Bidan
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => navigate("/jadwal-layanan/form")}
-              className="flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 bg-[#185FA5] hover:bg-[#0e4a84] text-white text-xs sm:text-sm font-semibold rounded-xl transition-colors w-full sm:w-auto justify-center"
-            >
-              <Plus size={14} />
-              Tambah Jadwal
-            </button>
+        {/* Tabs & Tombol Tambah Jadwal dalam satu baris */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+          {/* Tab Buttons */}
+          <div className="flex gap-2 sm:gap-3 flex-1">
+            {TABS.map((tab) => (
+              <TabButton
+                key={tab.key}
+                tab={tab}
+                active={activeTab === tab.key}
+                count={tabCounts[tab.key]}
+                onClick={() => handleTabChange(tab.key)}
+              />
+            ))}
           </div>
 
-          {/* Stats bar */}
-          {!loading && allRows.length > 0 && (
-            <div className="grid grid-cols-3 divide-x divide-slate-100 border-t border-slate-100">
-              <div className="px-3 sm:px-6 py-2 sm:py-3 text-center">
-                <p className="text-lg sm:text-2xl font-bold text-slate-800">{allRows.length}</p>
-                <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5">Total jadwal</p>
-              </div>
-              <div className="px-3 sm:px-6 py-2 sm:py-3 text-center">
-                <p className="text-lg sm:text-2xl font-bold text-[#185FA5]">{tabCounts.today}</p>
-                <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5">Jadwal hari ini</p>
-              </div>
-              <div className="px-3 sm:px-6 py-2 sm:py-3 text-center">
-                <p className="text-lg sm:text-2xl font-bold text-slate-500">{tabCounts.upcoming}</p>
-                <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5">Akan datang</p>
-              </div>
-            </div>
-          )}
-        </section>
-
-        {/* Tabs */}
-        <div className="flex gap-2 sm:gap-3">
-          {TABS.map((tab) => (
-            <TabButton
-              key={tab.key}
-              tab={tab}
-              active={activeTab === tab.key}
-              count={tabCounts[tab.key]}
-              onClick={() => handleTabChange(tab.key)}
-            />
-          ))}
+          {/* Tombol Tambah Jadwal */}
+          <button
+            onClick={() => navigate("/jadwal-layanan/form")}
+            className="flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 bg-[#185FA5] hover:bg-[#0e4a84] text-white text-xs sm:text-sm font-semibold rounded-xl transition-colors shadow-sm justify-center whitespace-nowrap"
+          >
+            <Plus size={14} />
+            Tambah Jadwal
+          </button>
         </div>
 
         {/* Daftar jadwal */}
@@ -581,7 +608,7 @@ export default function JadwalLayananPage() {
             />
           ) : (
             <>
-              <div>
+              <div className="p-3 sm:p-4">
                 {filteredRows.map((r) => (
                   <ScheduleRow
                     key={r.id}

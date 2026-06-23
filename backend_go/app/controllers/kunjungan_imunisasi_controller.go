@@ -74,9 +74,20 @@ func (m *Main) GetAllKunjunganImunisasi(
 	c echo.Context,
 ) error {
 
+	claims := c.Get("auth_claims").(*models.AuthClaims)
+
+	kaderID, err := m.usecases.GetKaderIDByUserID(claims.UserID)
+	if err != nil || kaderID == 0 {
+		return helpers.Response(
+			c,
+			http.StatusForbidden,
+			[]string{"akun tidak terdaftar sebagai kader aktif"},
+		)
+	}
+
 	data, err :=
 		m.usecases.
-			GetAllKunjunganImunisasi()
+			GetAllKunjunganImunisasi(kaderID)
 
 	if err != nil {
 
@@ -270,10 +281,22 @@ func (m *Main) GetKunjunganImunisasiByStatus(
 		)
 	}
 
+	claims := c.Get("auth_claims").(*models.AuthClaims)
+
+	kaderID, err := m.usecases.GetKaderIDByUserID(claims.UserID)
+	if err != nil || kaderID == 0 {
+		return helpers.Response(
+			c,
+			http.StatusForbidden,
+			[]string{"akun tidak terdaftar sebagai kader aktif"},
+		)
+	}
+
 	data, err :=
 		m.usecases.
 			GetKunjunganImunisasiByStatus(
 				uint(statusID),
+				kaderID,
 			)
 
 	if err != nil {

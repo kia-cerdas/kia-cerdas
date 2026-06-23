@@ -306,7 +306,7 @@ func (m *Main) GetJadwalImunisasiByJadwalIDBidan(jadwalID uint) (*models.JadwalI
 		Table("anak a").
 		Select(`
 			a.id as anak_id,
-			pd_anak.nama_lengkap as nama_anak,
+			pd_anak.nama_anggota_keluarga as nama_anak,
 			pd_anak.tanggal_lahir,
 
 			j.id as jadwal_id,
@@ -409,16 +409,13 @@ func (m *Main) GetJadwalImunisasiTerlewatByKaderID(
 		Where("p_anak.posyandu_id = k.posyandu_id").
 		Where("jia.tanggal_estimasi < CURRENT_DATE").
 		Where(`
-		(
-				SELECT 1
-			OR EXISTS (
-				SELECT 1
-				FROM kunjungan_imunisasi ki
-				WHERE ki.id_jadwal_imunisasi = jia.id
-				AND ki.id_status_kunjungan = 4
-			)
-		)
-	`).
+    NOT EXISTS (
+        SELECT 1
+        FROM kunjungan_imunisasi ki
+        WHERE ki.id_jadwal_imunisasi = jia.id
+        AND ki.id_status_kunjungan = 4
+    )
+`).
 		Order("jia.tanggal_estimasi ASC").
 		Scan(&result).Error
 
@@ -442,14 +439,14 @@ func (m *Main) GetJadwalImunisasiTerlewatByID(
 			jia.id AS jadwal_id,
 			a.id AS anak_id,
 
-			p_anak.nama_lengkap AS nama_anak,
+			p_anak.nama_anggota_keluarga AS nama_anak,
 			p_anak.tanggal_lahir,
 			p_anak.dusun,
 
-			p_ibu.nama_lengkap AS nama_ibu,
+			p_ibu.nama_anggota_keluarga AS nama_ibu,
 			p_ibu.telepon AS nomor_telepon_ibu,
 
-			p_ayah.nama_lengkap AS nama_ayah,
+			p_ayah.nama_anggota_keluarga AS nama_ayah,
 			p_ayah.telepon AS nomor_telepon_ayah,
 
 			dv.nama_dosis,

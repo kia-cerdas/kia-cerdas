@@ -26,6 +26,7 @@ class _GrafikPertumbuhanScreenState
   String? _error;
   String _tab = 'BB/U';
   bool _showAll = false;
+  bool _isPreloading = false;
 
   static const _tabs = ['BB/U', 'BB/PB', 'PB/U', 'LK/U', 'IMT/U'];
 
@@ -68,39 +69,85 @@ class _GrafikPertumbuhanScreenState
   void initState() {
     super.initState();
     _repo = PertumbuhanRepository(apiService: PertumbuhanApiService());
-    _loadAll();
+    _loadTabData(_tab);
   }
 
-  Future<void> _loadAll() async {
+  String _getParameterName(String tab) {
+    switch (tab) {
+      case 'PB/U': return 'tb_u';
+      case 'BB/PB': return 'bb_tb';
+      case 'LK/U': return 'lk_u';
+      case 'IMT/U': return 'imt_u';
+      default: return 'bb_u';
+    }
+  }
+
+  Future<void> _loadTabData(String targetTab) async {
     setState(() { _isLoading = true; _error = null; });
     try {
       final jk = widget.anak.jenisKelamin;
-      final results = await Future.wait([
-        _repo.getRiwayatPertumbuhanByAnakId(widget.anak.id),
-        _repo.getMasterStandar(parameter: 'bb_u', jenisKelamin: jk),
-        _repo.getMasterStandar(parameter: 'bb_tb', jenisKelamin: jk),
-        _repo.getMasterStandar(parameter: 'tb_u', jenisKelamin: jk),
-        _repo.getMasterStandar(parameter: 'lk_u', jenisKelamin: jk),
-        _repo.getMasterStandar(parameter: 'imt_u', jenisKelamin: jk),
-      ]);
-      final riwayat = (results[0] as List<PertumbuhanModel>)
-        ..sort((a, b) => a.tglUkur.compareTo(b.tglUkur));
+      
+      Future<List<PertumbuhanModel>>? riwayatFuture;
+      Future<List<MasterStandarModel>>? masterFuture;
+
+      if (_riwayat.isEmpty) {
+        riwayatFuture = _repo.getRiwayatPertumbuhanByAnakId(widget.anak.id);
+      }
+
+      if (_master[targetTab] == null || _master[targetTab]!.isEmpty) {
+        final parameterName = _getParameterName(targetTab);
+        masterFuture = _repo.getMasterStandar(parameter: parameterName, jenisKelamin: jk);
+      }
+
+      if (riwayatFuture != null && masterFuture != null) {
+        final results = await Future.wait([riwayatFuture, masterFuture]);
+        final riwayat = results[0] as List<PertumbuhanModel>;
+        riwayat.sort((a, b) => a.tglUkur.compareTo(b.tglUkur));
+        _riwayat = riwayat;
+        _master[targetTab] = results[1] as List<MasterStandarModel>;
+      } else {
+        if (riwayatFuture != null) {
+          final riwayat = await riwayatFuture;
+          riwayat.sort((a, b) => a.tglUkur.compareTo(b.tglUkur));
+          _riwayat = riwayat;
+        }
+        if (masterFuture != null) {
+          _master[targetTab] = await masterFuture;
+        }
+      }
+
       if (mounted) {
         setState(() {
-          _riwayat = riwayat;
-          _master = {
-            'BB/U': results[1] as List<MasterStandarModel>,
-            'BB/PB': results[2] as List<MasterStandarModel>,
-            'PB/U': results[3] as List<MasterStandarModel>,
-            'LK/U': results[4] as List<MasterStandarModel>,
-            'IMT/U': results[5] as List<MasterStandarModel>,
-          };
           _isLoading = false;
         });
+        _preloadOtherTabs();
       }
     } catch (e) {
       if (mounted) setState(() { _error = e.toString(); _isLoading = false; });
     }
+  }
+
+  Future<void> _preloadOtherTabs() async {
+    if (_isPreloading) return;
+    _isPreloading = true;
+
+    final jk = widget.anak.jenisKelamin;
+    for (final t in _tabs) {
+      if (_master[t] == null || _master[t]!.isEmpty) {
+        try {
+          final param = _getParameterName(t);
+          final std = await _repo.getMasterStandar(parameter: param, jenisKelamin: jk);
+          if (mounted) {
+            setState(() {
+              _master[t] = std;
+            });
+          }
+        } catch (_) {
+          // Abaikan error di background
+        }
+      }
+    }
+    _isPreloading = false;
   }
 
   String _hitungUmur() {
@@ -217,7 +264,7 @@ class _GrafikPertumbuhanScreenState
           Text(_error!, textAlign: TextAlign.center,
               style: const TextStyle(color: Colors.black54)),
           const SizedBox(height: 16),
-          FilledButton(onPressed: _loadAll, child: const Text('Coba Lagi')),
+          FilledButton(onPressed: () => _loadTabData(_tab), child: const Text('Coba Lagi')),
         ],
       ),
     ),
@@ -240,7 +287,14 @@ class _GrafikPertumbuhanScreenState
               children: _tabs.map((t) {
                 final active = _tab == t;
                 return GestureDetector(
-                  onTap: () => setState(() => _tab = t),
+                  onTap: () {
+                    if (_tab != t) {
+                      setState(() => _tab = t);
+                      if (_master[t] == null || _master[t]!.isEmpty) {
+                        _loadTabData(t);
+                      }
+                    }
+                  },
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
                     margin: const EdgeInsets.only(right: 8),

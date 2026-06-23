@@ -842,7 +842,7 @@ export default function PencatatanKesehatanKategori() {
                 <List className="text-blue-600" size={24} />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Daftar {cat.name}</h1>
+                <h1 className="text-lg sm:text-2xl md:text-[28px] font-bold text-gray-900">Daftar {cat.name}</h1>
                 <p className="text-gray-500 text-sm">Rentang usia: {cat.range}</p>
               </div>
             </div>

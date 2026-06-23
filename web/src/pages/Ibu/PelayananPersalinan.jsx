@@ -33,7 +33,7 @@ import { getCurrentUser, isBidanUser, isDokterUser } from "../../services/auth";
 const DetailItem = ({ label, value }) => (
   <div className="flex flex-col">
     <span className="text-xs text-gray-500 font-medium uppercase tracking-wide">{label}</span>
-    <span className="text-sm text-gray-800 font-semibold mt-0.5">{value ?? "-"}</span>
+    <span className="text-sm text-gray-800 font-semibold mt-0.5 break-all">{value ?? "-"}</span>
   </div>
 );
 
@@ -61,6 +61,9 @@ const validateNomorSuratFormat = (nomorSurat) => {
   return pattern.test(nomorSurat);
 };
 
+// Helper: tanggal hari ini dalam format YYYY-MM-DD (untuk batas max input date)
+const getTodayStr = () => new Date().toISOString().split("T")[0];
+
 const emptyRingkasan = (ibuData) => ({
   tanggal_melahirkan: "", umur_kehamilan_minggu: "",
   penolong_proses_melahirkan: "", cara_melahirkan: "",
@@ -81,7 +84,7 @@ const emptyRingkasan = (ibuData) => ({
   asuhan_salep_mata_antibiotika: false,
   asuhan_imunisasi_hb0: false,
   keterangan_tambahan_bayi: "",
-  bayi_anak_ke: "", bayi_berat_lahir_gram: "",
+  bayi_anak_ke: "", bayi_berat_lahir_kg: "",
   bayi_panjang_badan_cm: "", bayi_lingkar_kepala_cm: "",
   nama_anak: "", anak_tanggal_lahir: "", anak_jenis_kelamin: "",
   anak_nama_ibu: ibuData?.kependudukan?.nama_lengkap || "",
@@ -194,9 +197,9 @@ function KelahiranCard({ index, ringkasan, anakList, kehamilanId, ibuId, onEdit,
             <p className="font-bold text-gray-800 text-sm md:text-base">
               Kelahiran ke-{index + 1}
             </p>
-            <p className="text-xs text-gray-500">
-              {ringkasan.tanggal_melahirkan || "-"} &bull; {ringkasan.cara_melahirkan || "-"} &bull; {anakList.length} anak
-            </p>
+            <p className="text-xs text-gray-500 break-all">
+  {ringkasan.tanggal_melahirkan || "-"} &bull; {ringkasan.cara_melahirkan || "-"} &bull; {anakList.length} anak
+</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -269,15 +272,13 @@ function KelahiranCard({ index, ringkasan, anakList, kehamilanId, ibuId, onEdit,
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {anakList.map((anak) => (
                   <div key={anak.id} className="rounded-xl border border-indigo-100 bg-indigo-50/40 p-4">
-                    <div className="flex justify-between items-start gap-2">
-                      <div>
-                        <p className="font-bold text-gray-800">{anak.nama || "Tanpa Nama"}</p>
-                        <p className="text-xs text-gray-500 mt-0.5">
-                          Anak ke-{anak.anak_ke ?? "-"} &bull; {anak.jenis_kelamin || "-"}
-                        </p>
-                      </div>
-                      <p className="text-xs text-gray-400 whitespace-nowrap">Lahir: {anak.tanggal_lahir || "-"}</p>
-                    </div>
+                    <div className="flex flex-col gap-1">
+  <p className="font-bold text-gray-800">{anak.nama || "Tanpa Nama"}</p>
+  <p className="text-xs text-gray-500">
+    Anak ke-{anak.anak_ke ?? "-"} &bull; {anak.jenis_kelamin || "-"}
+  </p>
+  <p className="text-xs text-gray-400">Lahir: {anak.tanggal_lahir || "-"}</p>
+</div>
                     <div className="mt-3 grid grid-cols-3 gap-2 text-xs text-gray-600">
                       <div className="rounded-lg bg-white px-2 py-1.5 border text-center">
                         <p className="text-gray-400 text-[10px]">BB</p>
@@ -308,10 +309,11 @@ function KelahiranCard({ index, ringkasan, anakList, kehamilanId, ibuId, onEdit,
 function RingkasanForm({ initial, onSubmit, onCancel, saving, title }) {
   const [form, setForm] = useState(initial || emptyRingkasan());
   const [errors, setErrors] = useState({});
+  const todayStr = getTodayStr();
 
-  // Auto-fill anak_tanggal_lahir when tanggal_melahirkan changes
+  // Auto-fill anak_tanggal_lahir when tanggal_melahirkan changes (selalu ikut tanggal_melahirkan, tidak bisa diedit manual)
   useEffect(() => {
-    if (form.tanggal_melahirkan && form.tanggal_melahirkan !== form.anak_tanggal_lahir) {
+    if (form.tanggal_melahirkan !== form.anak_tanggal_lahir) {
       setForm(prev => ({ ...prev, anak_tanggal_lahir: prev.tanggal_melahirkan }));
     }
   }, [form.tanggal_melahirkan]);
@@ -330,6 +332,8 @@ function RingkasanForm({ initial, onSubmit, onCancel, saving, title }) {
 
     if (!form.tanggal_melahirkan) {
       newErrors.tanggal_melahirkan = "Tanggal melahirkan wajib diisi";
+    } else if (form.tanggal_melahirkan > todayStr) {
+      newErrors.tanggal_melahirkan = "Tanggal melahirkan tidak boleh lebih dari hari ini";
     }
     if (!form.penolong_proses_melahirkan || !form.penolong_proses_melahirkan.trim()) {
       newErrors.penolong_proses_melahirkan = "Penolong proses melahirkan wajib diisi";
@@ -369,7 +373,7 @@ function RingkasanForm({ initial, onSubmit, onCancel, saving, title }) {
         <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Info Persalinan</p>
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3">
           <div><label className="block text-xs font-medium mb-1">Tanggal Melahirkan <span className="text-red-500">*</span></label>
-            <input type="date" name="tanggal_melahirkan" value={form.tanggal_melahirkan} onChange={handleChange} className={`w-full border rounded-lg px-2 py-1.5 text-sm ${errors.tanggal_melahirkan ? "border-red-500 bg-red-50" : ""}`} />
+            <input type="date" name="tanggal_melahirkan" value={form.tanggal_melahirkan} max={todayStr} onChange={handleChange} className={`w-full border rounded-lg px-2 py-1.5 text-sm ${errors.tanggal_melahirkan ? "border-red-500 bg-red-50" : ""}`} />
             {errors.tanggal_melahirkan && <p className="text-red-500 text-xs mt-1">{errors.tanggal_melahirkan}</p>}
           </div>
           <div><label className="block text-xs font-medium mb-1">Umur Kehamilan (Mgg)</label>
@@ -404,20 +408,32 @@ function RingkasanForm({ initial, onSubmit, onCancel, saving, title }) {
           <input type="number" name="abortus" value={form.abortus} onChange={handleChange} className="w-full border rounded-lg px-2 py-1.5 text-sm" /></div>
       </div>
 
-      {/* Data Bayi */}
+      {/* Data Bayi & Anak (digabung) */}
+      {/* Data Bayi & Anak (digabung) */}
       <div>
-        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Data Bayi</p>
+        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Data Bayi / Anak Lahir</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div><label className="block text-xs font-medium mb-1">Nama Anak</label>
+            <input name="nama_anak" value={form.nama_anak} onChange={handleChange} className="w-full border rounded-lg px-2 py-1.5 text-sm" /></div>
+                      <div><label className="block text-xs font-medium mb-1">Tanggal Lahir Anak</label>
+            <input type="date" name="anak_tanggal_lahir" value={form.anak_tanggal_lahir} readOnly disabled title="Otomatis mengikuti Tanggal Melahirkan" className="w-full bg-gray-100 border border-gray-200 text-gray-500 rounded-lg px-2 py-1.5 text-sm cursor-not-allowed" /></div>
+            
+          <div><label className="block text-xs font-medium mb-1">Jenis Kelamin</label>
+            <select name="anak_jenis_kelamin" value={form.anak_jenis_kelamin} onChange={handleChange} className="w-full border rounded-lg px-2 py-1.5 text-sm">
+              <option value="">-- Pilih --</option>
+              <option value="Laki-laki">Laki-laki</option>
+              <option value="Perempuan">Perempuan</option>
+            </select></div>
           <div><label className="block text-xs font-medium mb-1">Anak Ke</label>
             <input type="number" name="bayi_anak_ke" value={form.bayi_anak_ke} onChange={handleChange} className="w-full border rounded-lg px-2 py-1.5 text-sm" /></div>
-          <div><label className="block text-xs font-medium mb-1">Berat (gram)</label>
-            <input type="number" name="bayi_berat_lahir_gram" value={form.bayi_berat_lahir_gram} onChange={handleChange} className="w-full border rounded-lg px-2 py-1.5 text-sm" /></div>
+          <div><label className="block text-xs font-medium mb-1">Berat (kg)</label>
+            <input type="number" step="0.01" name="bayi_berat_lahir_kg" value={form.bayi_berat_lahir_kg} onChange={handleChange} className="w-full border rounded-lg px-2 py-1.5 text-sm" /></div>
           <div><label className="block text-xs font-medium mb-1">Panjang (cm)</label>
             <input type="number" name="bayi_panjang_badan_cm" value={form.bayi_panjang_badan_cm} onChange={handleChange} className="w-full border rounded-lg px-2 py-1.5 text-sm" /></div>
           <div><label className="block text-xs font-medium mb-1">Lingkar Kepala (cm)</label>
             <input type="number" name="bayi_lingkar_kepala_cm" value={form.bayi_lingkar_kepala_cm} onChange={handleChange} className="w-full border rounded-lg px-2 py-1.5 text-sm" /></div>
         </div>
-      </div>
+      </div>	
 
       {/* Kondisi Bayi */}
       <div className="bg-gray-50 rounded-xl p-4 space-y-3">
@@ -463,31 +479,6 @@ function RingkasanForm({ initial, onSubmit, onCancel, saving, title }) {
         </div>
         <div><label className="block text-xs font-medium mb-1">Keterangan Tambahan Bayi</label>
           <textarea name="keterangan_tambahan_bayi" value={form.keterangan_tambahan_bayi} onChange={handleChange} rows={2} className="w-full border rounded-lg px-2 py-1.5 text-sm" /></div>
-      </div>
-
-      {/* Data Anak (opsional) */}
-      <div>
-        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Data Anak Lahir <span className="normal-case font-normal text-gray-400">(opsional)</span></p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <div><label className="block text-xs font-medium mb-1">Nama Anak</label>
-            <input name="nama_anak" value={form.nama_anak} onChange={handleChange} className="w-full border rounded-lg px-2 py-1.5 text-sm" /></div>
-          <div><label className="block text-xs font-medium mb-1">Tanggal Lahir Anak</label>
-            <input type="date" name="anak_tanggal_lahir" value={form.anak_tanggal_lahir} onChange={handleChange} className="w-full border rounded-lg px-2 py-1.5 text-sm" /></div>
-          <div><label className="block text-xs font-medium mb-1">Jenis Kelamin</label>
-            <select name="anak_jenis_kelamin" value={form.anak_jenis_kelamin} onChange={handleChange} className="w-full border rounded-lg px-2 py-1.5 text-sm">
-              <option value="">-- Pilih --</option>
-              <option value="Laki-laki">Laki-laki</option>
-              <option value="Perempuan">Perempuan</option>
-            </select></div>
-          <div>
-            <label className="block text-xs font-medium mb-1">Nama Ibu</label>
-            <input name="anak_nama_ibu" value={form.anak_nama_ibu} onChange={handleChange} disabled className="w-full bg-gray-100 border border-gray-200 text-gray-500 rounded-lg px-2 py-1.5 text-sm cursor-not-allowed" />
-          </div>
-          <div>
-            <label className="block text-xs font-medium mb-1">Nama Ayah</label>
-            <input name="anak_nama_ayah" value={form.anak_nama_ayah} onChange={handleChange} disabled className="w-full bg-gray-100 border border-gray-200 text-gray-500 rounded-lg px-2 py-1.5 text-sm cursor-not-allowed" />
-          </div>
-        </div>
       </div>
 
       <div className="flex gap-2 pt-2">
@@ -842,7 +833,8 @@ export default function PelayananPersalinan() {
       asuhan_imunisasi_hb0: form.asuhan_imunisasi_hb0,
       keterangan_tambahan_bayi: form.keterangan_tambahan_bayi,
       bayi_anak_ke: parseInt(form.bayi_anak_ke) || 0,
-      bayi_berat_lahir_gram: parseFloat(form.bayi_berat_lahir_gram) || 0,
+      // Disimpan dalam gram di database, input form dalam kg
+      bayi_berat_lahir_gram: (parseFloat(form.bayi_berat_lahir_kg) || 0) * 1000,
       bayi_panjang_badan_cm: parseFloat(form.bayi_panjang_badan_cm) || 0,
       bayi_lingkar_kepala_cm: parseFloat(form.bayi_lingkar_kepala_cm) || 0,
       bayi_jenis_kelamin: form.anak_jenis_kelamin || "",
@@ -897,11 +889,12 @@ export default function PelayananPersalinan() {
           jenis_kelamin: form.anak_jenis_kelamin || "",
           tanggal_lahir: form.anak_tanggal_lahir || "",
           anak_ke: parseInt(form.bayi_anak_ke) || 0,
-          berat_lahir_kg: form.bayi_berat_lahir_gram ? parseFloat(form.bayi_berat_lahir_gram) / 1000 : null,
+          berat_lahir_kg: form.bayi_berat_lahir_kg ? parseFloat(form.bayi_berat_lahir_kg) : null,
           tinggi_lahir_cm: form.bayi_panjang_badan_cm ? parseFloat(form.bayi_panjang_badan_cm) : null,
           lingkar_kepala_cm: form.bayi_lingkar_kepala_cm ? parseFloat(form.bayi_lingkar_kepala_cm) : null,
-          nama_ibu: form.anak_nama_ibu || "",
-          nama_ayah: form.anak_nama_ayah || "",
+          // Ambil langsung dari ibuData (state terbaru), bukan dari snapshot form, agar tidak pernah kosong
+          nama_ibu: ibuData?.kependudukan?.nama_lengkap || ibuData?.nama_ibu || ibuData?.nama_lengkap || "",
+          nama_ayah: ibuData?.suami?.nama_lengkap || ibuData?.nama_suami || ibuData?.nama_ayah || "",
         });
       }
 
@@ -965,11 +958,12 @@ export default function PelayananPersalinan() {
             jenis_kelamin: form.anak_jenis_kelamin || "",
             tanggal_lahir: form.anak_tanggal_lahir || "",
             anak_ke: parseInt(form.bayi_anak_ke) || 0,
-            berat_lahir_kg: form.bayi_berat_lahir_gram ? parseFloat(form.bayi_berat_lahir_gram) / 1000 : null,
+            berat_lahir_kg: form.bayi_berat_lahir_kg ? parseFloat(form.bayi_berat_lahir_kg) : null,
             tinggi_lahir_cm: form.bayi_panjang_badan_cm ? parseFloat(form.bayi_panjang_badan_cm) : null,
             lingkar_kepala_cm: form.bayi_lingkar_kepala_cm ? parseFloat(form.bayi_lingkar_kepala_cm) : null,
-            nama_ibu: form.anak_nama_ibu || "",
-            nama_ayah: form.anak_nama_ayah || "",
+            // Ambil langsung dari ibuData (state terbaru), bukan dari snapshot form, agar tidak pernah kosong
+            nama_ibu: ibuData?.kependudukan?.nama_lengkap || ibuData?.nama_ibu || ibuData?.nama_lengkap || "",
+            nama_ayah: ibuData?.suami?.nama_lengkap || ibuData?.nama_suami || ibuData?.nama_ayah || "",
           });
         }
       }
@@ -1253,8 +1247,20 @@ export default function PelayananPersalinan() {
                   key={editTarget.id}
                   initial={{
                     ...editTarget,
+                    // Field tanggal harus diformat YYYY-MM-DD agar terbaca oleh <input type="date">
+                    tanggal_melahirkan: editTarget.tanggal_melahirkan ? String(editTarget.tanggal_melahirkan).split("T")[0] : "",
+                    umur_kehamilan_minggu: editTarget.umur_kehamilan_minggu ?? "",
+                    penolong_proses_melahirkan: editTarget.penolong_proses_melahirkan ?? "",
+                    cara_melahirkan: editTarget.cara_melahirkan ?? "",
+                    keadaan_ibu: editTarget.keadaan_ibu ?? "",
+                    keadaan_ibu_detail_sakit: editTarget.keadaan_ibu_detail_sakit ?? "",
+                    keterangan_tambahan_ibu: editTarget.keterangan_tambahan_ibu ?? "",
+                    kb_pasca_melahirkan: editTarget.kb_pasca_melahirkan ?? "",
+                    gravida: editTarget.gravida ?? "",
+                    paritas: editTarget.paritas ?? "",
+                    abortus: editTarget.abortus ?? "",
                     bayi_anak_ke: editTarget.bayi_anak_ke ?? "",
-                    bayi_berat_lahir_gram: editTarget.bayi_berat_lahir_gram ?? "",
+                    bayi_berat_lahir_kg: editTarget.bayi_berat_lahir_gram ? (parseFloat(editTarget.bayi_berat_lahir_gram) / 1000) : "",
                     bayi_panjang_badan_cm: editTarget.bayi_panjang_badan_cm ?? "",
                     bayi_lingkar_kepala_cm: editTarget.bayi_lingkar_kepala_cm ?? "",
                     nama_anak: "", anak_tanggal_lahir: "", anak_jenis_kelamin: "",

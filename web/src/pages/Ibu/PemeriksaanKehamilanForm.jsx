@@ -418,7 +418,7 @@ export default function PemeriksaanKehamilanForm() {
         icon: "warning",
         title: "Data Belum Lengkap",
         html: `<div class="text-left" style="white-space: pre-line;">${errorList}</div>`,
-        confirmButtonColor: "#4f46e5",
+        confirmButtonColor: "#185FA5",
       });
 
       // Scroll to first error field
@@ -491,7 +491,7 @@ export default function PemeriksaanKehamilanForm() {
         icon: "warning",
         title: "Data Belum Lengkap",
         html: `<div class="text-left" style="white-space: pre-line;">${errorList}</div>`,
-        confirmButtonColor: "#4f46e5",
+        confirmButtonColor: "#185FA5",
       });
       
       if (!step1Valid) setStep(1);
@@ -557,8 +557,8 @@ export default function PemeriksaanKehamilanForm() {
   if (loading || loadingKehamilan) {
     return (
       <MainLayout>
-        <div className="min-h-screen flex items-center justify-center bg-[#F7FAFB]">
-          <Loader2 className="animate-spin text-indigo-600" size={32} />
+          <div className="min-h-screen flex items-center justify-center bg-background">
+            <Loader2 className="animate-spin text-primary" size={32} />
           <span className="ml-2 text-gray-500">Memuat data...</span>
         </div>
       </MainLayout>
@@ -579,17 +579,17 @@ export default function PemeriksaanKehamilanForm() {
 
   return (
     <MainLayout>
-      <div className="min-h-screen bg-[#F7FAFB] p-4 md:p-6">
+      <div className="min-h-screen bg-background p-4 md:p-6">
         <div className="max-w-7xl mx-auto">
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 text-sm text-gray-500 mb-4 flex-wrap">
-            <Link to="/dashboard" className="hover:text-indigo-600 flex items-center gap-1">
+            <Link to="/dashboard" className="hover:text-primary flex items-center gap-1">
               <Home size={14} /> Beranda
             </Link>
             <span>/</span>
-            <Link to="/data-ibu" className="hover:text-indigo-600">Data Ibu</Link>
+            <Link to="/data-ibu" className="hover:text-primary">Data Ibu</Link>
             <span>/</span>
-            <Link to={`/data-ibu/${ibuId}?kehamilan_id=${kehamilanId}`} className="hover:text-indigo-600">
+            <Link to={`/data-ibu/${ibuId}?kehamilan_id=${kehamilanId}`} className="hover:text-primary">
               Detail Ibu
             </Link>
             <span>/</span>
@@ -600,15 +600,15 @@ export default function PemeriksaanKehamilanForm() {
 
           {/* Informasi HPHT Card - Auto-fill utama */}
           {kehamilanDetail?.hpht && (
-            <div className="mb-6 p-4 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl border border-indigo-200 shadow-sm">
+            <div className="mb-6 p-4 bg-gradient-to-r from-primary-50 to-blue-50 rounded-xl border border-primary/20 shadow-sm">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
-                    <Calendar size={24} className="text-indigo-600" />
+                  <div className="w-12 h-12 bg-primary-50 rounded-full flex items-center justify-center">
+                    <Calendar size={24} className="text-primary" />
                   </div>
                   <div>
                     <p className="text-xs text-gray-500 uppercase tracking-wide">Hari Pertama Haid Terakhir (HPHT)</p>
-                    <p className="font-bold text-lg text-indigo-700">{formatTanggalIndo(kehamilanDetail.hpht)}</p>
+                     <p className="font-bold text-lg text-primary">{formatTanggalIndo(kehamilanDetail.hpht)}</p>
                     <p className="text-xs text-gray-500">
                       Taksiran Persalinan: {formatTanggalIndo(kehamilanDetail.taksiran_persalinan)}
                     </p>
@@ -620,7 +620,7 @@ export default function PemeriksaanKehamilanForm() {
                     <Baby size={24} className="text-pink-500" />
                     <div>
                       <p className="text-xs text-gray-500">Usia Kehamilan (Per Tanggal Periksa)</p>
-                      <p className="font-bold text-xl text-indigo-700">{currentUsiaKehamilan.display}</p>
+                      <p className="font-bold text-xl text-primary">{currentUsiaKehamilan.display}</p>
                       <p className="text-xs text-gray-400">{currentUsiaKehamilan.totalHari} hari</p>
                     </div>
                   </div>
@@ -657,7 +657,7 @@ export default function PemeriksaanKehamilanForm() {
                         }
                       }
                     }}
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700 transition flex items-center gap-2"
+                    className="px-4 py-2 bg-primary text-white rounded-lg text-sm hover:bg-primary/90 transition flex items-center gap-2"
                   >
                     <RefreshCw size={14} />
                     Isi Otomatis Usia Kehamilan
@@ -667,13 +667,13 @@ export default function PemeriksaanKehamilanForm() {
               
               {/* Toggle mode */}
               {!isReadOnly && (
-                <div className="mt-3 flex items-center justify-end gap-4 border-t border-indigo-100 pt-3">
+                <div className="mt-3 flex items-center justify-end gap-4 border-t border-primary/10 pt-3">
                   <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={autoCalculate}
                       onChange={(e) => setAutoCalculate(e.target.checked)}
-                      className="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4"
+                      className="rounded text-primary focus:ring-primary w-4 h-4"
                     />
                     <span className="flex items-center gap-1">
                       <RefreshCw size={12} />
@@ -681,7 +681,7 @@ export default function PemeriksaanKehamilanForm() {
                     </span>
                   </label>
                   {autoCalculate && (
-                    <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                    <span className="text-xs text-success bg-success/10 px-2 py-1 rounded-full">
                       Aktif - Usia kehamilan akan terisi otomatis
                     </span>
                   )}
@@ -786,7 +786,7 @@ export default function PemeriksaanKehamilanForm() {
 
           {/* Info awal jika belum ada data */}
           {!mlPrediction && (
-            <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200 text-blue-800 flex items-center gap-2">
+            <div className="mb-6 p-4 bg-primary/10 rounded-lg border border-primary/20 text-primary flex items-center gap-2">
               <Info size={20} />
               <span>Sistem Machine Learning akan menghitung tingkat risiko kehamilan secara otomatis setelah data disimpan.</span>
             </div>
@@ -813,7 +813,7 @@ export default function PemeriksaanKehamilanForm() {
 
           {/* Warning banner for read-only mode */}
           {isReadOnly && (
-            <div className="mb-6 bg-blue-50 border border-blue-200 p-4 rounded-lg text-blue-800 flex items-center gap-3">
+            <div className="mb-6 bg-secondary/10 border border-secondary/30 text-secondary p-4 rounded-lg flex items-center gap-3">
               <Eye size={20} className="flex-shrink-0" />
               <div>
                 <p className="font-semibold">Mode Baca Saja (Dokter)</p>
@@ -828,9 +828,9 @@ export default function PemeriksaanKehamilanForm() {
               <div className="flex items-center gap-2">
                 {[Activity, Beaker, MessageCircle].map((Icon, i) => (
                   <React.Fragment key={i}>
-                    {i > 0 && <div className={`w-16 h-0.5 ${step > i ? "bg-indigo-600" : "bg-gray-200"}`} />}
+                    {i > 0 && <div className={`w-16 h-0.5 ${step > i ? "bg-primary" : "bg-gray-200"}`} />}
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
-                      step >= i + 1 ? "bg-indigo-600 text-white shadow-md" : "bg-gray-200 text-gray-500"
+                      step >= i + 1 ? "bg-primary text-white shadow-md" : "bg-gray-200 text-gray-500"
                     }`}>
                       <Icon size={20} />
                     </div>
@@ -943,7 +943,7 @@ export default function PemeriksaanKehamilanForm() {
                               setForm(prev => ({ ...prev, minggu_kehamilan: usia.minggu.toString() }));
                             }
                           }}
-                          className="mt-1 px-3 py-2 bg-indigo-100 text-indigo-700 rounded-lg text-sm hover:bg-indigo-200 transition flex items-center gap-1"
+                          className="mt-1 px-3 py-2 bg-primary-50 text-primary rounded-lg text-sm hover:bg-primary/10 transition flex items-center gap-1"
                         >
                           <RefreshCw size={14} />
                           Hitung dari HPHT
@@ -952,7 +952,7 @@ export default function PemeriksaanKehamilanForm() {
                     </div>
                     <ErrorMsg field="minggu_kehamilan" />
                     {currentUsiaKehamilan && currentUsiaKehamilan.minggu > 0 && autoCalculate && (
-                      <p className="text-xs text-green-600 mt-1">
+                      <p className="text-xs text-success mt-1">
                         ✓ Usia kehamilan: {currentUsiaKehamilan.display} (dihitung otomatis dari HPHT)
                       </p>
                     )}
@@ -1096,7 +1096,7 @@ export default function PemeriksaanKehamilanForm() {
             {/* Step 2: Laboratorium - sama seperti sebelumnya */}
             {(step === 2 || isReadOnly) && (
               <div className="bg-white rounded-xl shadow-sm p-6 space-y-6 border border-gray-100">
-                <h2 className="text-lg font-semibold flex items-center gap-2 text-indigo-800 border-b pb-2">
+                <h2 className="text-lg font-semibold flex items-center gap-2 text-primary border-b pb-2">
                   <Beaker size={20} /> Laboratorium & Penunjang
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1253,7 +1253,7 @@ export default function PemeriksaanKehamilanForm() {
             {/* Step 3: Konseling */}
             {(step === 3 || isReadOnly) && (
               <div className="bg-white rounded-xl shadow-sm p-6 space-y-6 border border-gray-100">
-                <h2 className="text-lg font-semibold flex items-center gap-2 text-indigo-800 border-b pb-2">
+                <h2 className="text-lg font-semibold flex items-center gap-2 text-primary border-b pb-2">
                   <MessageCircle size={20} /> Konseling & Tindak Lanjut
                 </h2>
                 <div className="grid grid-cols-1 gap-4">
@@ -1319,7 +1319,7 @@ export default function PemeriksaanKehamilanForm() {
                   <button
                     type="button"
                     onClick={handleNext}
-                    className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg shadow transition"
+                    className="flex-1 bg-primary hover:bg-primary/90 text-white font-semibold py-3 rounded-lg shadow transition"
                   >
                     Selanjutnya →
                   </button>

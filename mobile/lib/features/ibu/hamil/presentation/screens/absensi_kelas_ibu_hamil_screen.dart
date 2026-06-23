@@ -22,6 +22,7 @@ class _AbsensiKelasIbuHamilScreenState
   // (bisa 0, 5, 12, ... tak terbatas) — inilah inti "buku tamu".
   List<AbsensiKelasIbuHamilModel> _absensiList = [];
   bool _isLoading = false;
+  bool _isBottomSheetOpen = false;
 
   @override
   void initState() {
@@ -601,6 +602,8 @@ class _AbsensiKelasIbuHamilScreenState
     bool isSaving = false;
     String? errorMessage; // Variabel untuk menyimpan pesan error di form
 
+    setState(() => _isBottomSheetOpen = true);
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -862,7 +865,11 @@ class _AbsensiKelasIbuHamilScreenState
           },
         );
       },
-    );
+    ).whenComplete(() {
+      if (mounted) {
+        setState(() => _isBottomSheetOpen = false);
+      }
+    });
   }
 
   // Ubah "2025-06-16" -> "16 Jun 2025" untuk ditampilkan.
@@ -949,7 +956,6 @@ class _AbsensiKelasIbuHamilScreenState
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: borderColor),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1012,10 +1018,13 @@ class _AbsensiKelasIbuHamilScreenState
       // PopScope dihapus: tombol back HP juga langsung keluar tanpa konfirmasi.
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
-              onRefresh: _loadAbsensi,
-              child: ListView(
-                padding: const EdgeInsets.all(16),
+          : ExcludeSemantics(
+              excluding: _isBottomSheetOpen,
+              child: RepaintBoundary(
+                child: RefreshIndicator(
+                  onRefresh: _loadAbsensi,
+                child: ListView(
+                  padding: const EdgeInsets.all(16),
                 children: [
                   // ── Banner info kuning di atas ──
                   Container(
@@ -1225,7 +1234,7 @@ class _AbsensiKelasIbuHamilScreenState
                       ),
                       child: Row(
                         children: const [
-                          Icon(Icons.lock_clock_rounded,
+                          Icon(Icons.hourglass_top_rounded,
                               size: 16, color: Color(0xFFEA580C)),
                           SizedBox(width: 8),
                           Expanded(
@@ -1274,6 +1283,8 @@ class _AbsensiKelasIbuHamilScreenState
                 ],
               ),
             ),
+          ),
+          ),
     );
   }
 }

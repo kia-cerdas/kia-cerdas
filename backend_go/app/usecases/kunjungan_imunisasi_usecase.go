@@ -47,11 +47,11 @@ func (m *Main) GetKunjunganImunisasiByID(
 	return result, nil
 }
 
-func (m *Main) GetAllKunjunganImunisasi() ([]models.KunjunganImunisasiResponse, error) {
+func (m *Main) GetAllKunjunganImunisasi(kaderID uint) ([]models.KunjunganImunisasiResponse, error) {
 
 	rows, err :=
 		m.repository.
-			GetAllKunjunganImunisasi()
+			GetAllKunjunganImunisasi(kaderID)
 
 	if err != nil {
 		return nil, err
@@ -145,6 +145,7 @@ func (m *Main) UpdateTanggalKunjungan(
 
 func (m *Main) GetKunjunganImunisasiByStatus(
 	statusID uint,
+	kaderID uint,
 ) (
 	[]models.KunjunganImunisasiResponse,
 	error,
@@ -154,6 +155,7 @@ func (m *Main) GetKunjunganImunisasiByStatus(
 		m.repository.
 			GetKunjunganImunisasiByStatus(
 				statusID,
+				kaderID,
 			)
 
 	if err != nil {
