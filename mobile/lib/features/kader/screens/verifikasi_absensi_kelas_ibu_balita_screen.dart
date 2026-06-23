@@ -170,7 +170,7 @@ class _VerifikasiAbsensiKelasIbuBalitaScreenState extends State<VerifikasiAbsens
 
   Widget _filterChip({required String label, required String? value, Color? color}) {
     final isSelected = _filterStatus == value;
-    final activeColor = color ?? Colors.teal;
+    final activeColor = color ?? const Color(0xFF185FA5);
     return GestureDetector(
       onTap: () => setState(() => _filterStatus = value),
       child: Container(
@@ -276,7 +276,7 @@ class _VerifikasiAbsensiKelasIbuBalitaScreenState extends State<VerifikasiAbsens
     return Scaffold(
       appBar: AppBar(
         title: const Text('Verifikasi Kelas Ibu Balita'),
-        backgroundColor: Colors.teal,
+        backgroundColor: const Color(0xFF185FA5),
         foregroundColor: Colors.white,
         elevation: 0,
       ),
@@ -306,10 +306,6 @@ class _VerifikasiAbsensiKelasIbuBalitaScreenState extends State<VerifikasiAbsens
                     ),
                     const SizedBox(height: 12),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: _buildFilterChips(),
-                    ),
-                    Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: TextField(
                         controller: _searchController,
@@ -330,6 +326,10 @@ class _VerifikasiAbsensiKelasIbuBalitaScreenState extends State<VerifikasiAbsens
                               : null,
                         ),
                       ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: _buildFilterChips(),
                     ),
                     Expanded(
                       child: Builder(
@@ -394,8 +394,8 @@ class _VerifikasiAbsensiKelasIbuBalitaScreenState extends State<VerifikasiAbsens
                                               children: [
                                                 Text(
                                                   item.namaIbu.isNotEmpty 
-                                                    ? '${item.namaIbu}' 
-                                                    : '(Data tidak lengkap)',
+                                                    ? 'Ibu ${item.namaIbu}' 
+                                                    : '(Data ibu tidak lengkap)',
                                                   style: const TextStyle(
                                                     fontWeight: FontWeight.bold, 
                                                     fontSize: 16,
@@ -403,12 +403,20 @@ class _VerifikasiAbsensiKelasIbuBalitaScreenState extends State<VerifikasiAbsens
                                                 ),
                                                 if (item.namaAnak.isNotEmpty) ...[
                                                   const SizedBox(height: 4),
-                                                  Text(
-                                                    'Anak: ${item.namaAnak}',
-                                                    style: const TextStyle(
-                                                      fontSize: 14, 
-                                                      color: Colors.black87,
-                                                    ),
+                                                  Row(
+                                                    children: [
+                                                      const Icon(Icons.child_care, size: 16, color: Colors.grey),
+                                                      const SizedBox(width: 4),
+                                                      Expanded(
+                                                        child: Text(
+                                                          'Ibu dari anak ${item.namaAnak}',
+                                                          style: const TextStyle(
+                                                            fontSize: 14, 
+                                                            color: Colors.black87,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
                                                   ),
                                                 ],
                                               ],
@@ -437,15 +445,27 @@ class _VerifikasiAbsensiKelasIbuBalitaScreenState extends State<VerifikasiAbsens
                                           ),
                                         ],
                                       ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        'Pertemuan ke: ${item.pertemuanKe}',
-                                        style: const TextStyle(fontSize: 14),
+                                      const SizedBox(height: 12),
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.meeting_room, size: 16, color: Colors.grey),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            'Pertemuan ke-${item.pertemuanKe}',
+                                            style: const TextStyle(fontSize: 14),
+                                          ),
+                                        ],
                                       ),
                                       const SizedBox(height: 4),
-                                      Text(
-                                        'Tanggal Hadir: ${item.tanggal}',
-                                        style: const TextStyle(fontSize: 14),
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            'Hadir pada: ${item.tanggal}',
+                                            style: const TextStyle(fontSize: 14),
+                                          ),
+                                        ],
                                       ),
                                       if (isVerified || isRejected) ...[
                                         const SizedBox(height: 8),
