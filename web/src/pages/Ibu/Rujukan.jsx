@@ -517,25 +517,25 @@ export default function Rujukan() {
         <div className="max-w-4xl mx-auto p-5 space-y-5">
 
           {/* Header */}
-          <div className="flex items-center gap-3">
-            <Link
-              to={`/data-ibu/${ibuId}?kehamilan_id=${kehamilanIdParam || (kehamilan?.id || "")}`}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#185FA5] text-[#185FA5] text-sm font-semibold hover:bg-[#185FA5]/5 transition"
-            >
-              <ArrowLeft size={16} />
-              <span>Kembali</span>
-            </Link>
-              <div className="flex-1">
-                <div className="flex items-center gap-3 flex-wrap">
-                  <h1 className="text-2xl font-bold text-gray-900">Rujukan Medis</h1>
-                  <RisikoBadge />
-                </div>
-                <p className="text-gray-500 text-sm mt-1">
-                  <span className="font-medium text-gray-700">Cara kerja:</span> 
-                  Bidan membuat permintaan rujukan → Dokter meninjau dan memberikan respon → Bidan melihat hasil rujukan balik
-                </p>
-              </div>
-          </div>
+          <div className="flex flex-col gap-3">
+  <div className="flex items-center gap-3">
+    <Link
+      to={`/data-ibu/${ibuId}?kehamilan_id=${kehamilanIdParam || (kehamilan?.id || "")}`}
+      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#185FA5] text-[#185FA5] text-sm font-semibold hover:bg-[#185FA5]/5 transition"
+    >
+      <ArrowLeft size={16} />
+    <span>Kembali</span>
+  </Link>
+  <div className="flex flex-wrap items-center gap-2 min-w-0">
+    <h1 className="text-lg sm:text-2xl font-bold text-gray-900 break-words">Rujukan Medis</h1>
+    <RisikoBadge />
+  </div>
+</div>
+  <p className="text-gray-500 text-sm">
+    <span className="font-medium text-gray-700">Cara kerja:</span>{" "}
+    Bidan membuat permintaan rujukan → Dokter meninjau dan memberikan respon → Bidan melihat hasil rujukan balik
+  </p>
+</div>
 
           {/* Banner kehamilan non-aktif */}
           {!isActive && (
@@ -608,9 +608,9 @@ export default function Rujukan() {
 
               {/* ─── Bagian Dokter: Respon ─── */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="bg-blue-50 px-5 py-3 flex justify-between items-center border-b border-blue-100">
-                  <div className="flex items-center gap-2 text-blue-700 font-semibold">
-                    <Stethoscope size={16} /> Respon Dokter
+                <div className="bg-blue-50 px-5 py-3 flex justify-between items-start gap-2 border-b border-blue-100">
+  <div className="flex items-center gap-2 text-blue-700 font-semibold flex-wrap">
+    <Stethoscope size={16} /> Respon Dokter
                     {!data.rujukan_resume_pemeriksaan_tatalaksana && (
                       <span className="text-xs font-normal text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full flex items-center gap-1">
                         <Clock size={11} /> Menunggu respon dokter

@@ -1346,7 +1346,7 @@ export default function EvaluasiKesehatanIbu() {
               <ArrowLeft size={16} />
               <span>Kembali</span>
             </button>
-            <h1 className="text-[28px] font-bold text-gray-900">
+            <h1 className="text-lg sm:text-2xl md:text-[28px] font-bold text-gray-900">
               Evaluasi Kesehatan Ibu
             </h1>
           </div>
