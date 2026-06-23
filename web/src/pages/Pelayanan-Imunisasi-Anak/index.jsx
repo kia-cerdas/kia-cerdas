@@ -704,6 +704,7 @@ const PelayananImunisasi = () => {
                       <th
                         key={i}
                         className="border border-gray-500 p-1 text-center font-bold text-[9px]"
+                        style={{ width: `${Math.floor(100 / MONTHS.length)}%` }}
                       >
                         {m}
                       </th>
@@ -767,15 +768,15 @@ const PelayananImunisasi = () => {
                           return (
                             <td
                               key={mIdx}
-                              className={`border border-gray-300 text-center p-0.5 ${colorClass}`}
+                              className={`border border-gray-300 text-center p-0 overflow-hidden ${colorClass}`}
                               style={colorStyle}
                             >
                               {cell.show === 'done' ? (
-                                <div className="flex flex-col items-center justify-center py-0.5">
-                                  <span className="text-green-700 font-bold text-sm leading-none">
+                                <div className="flex flex-col items-center justify-center py-0.5 px-0.5 w-full">
+                                  <span className="text-green-700 font-bold text-xs leading-none">
                                     ✓
                                   </span>
-                                  <span className="text-green-600 font-medium text-[7px] leading-none mt-0.5">
+                                  <span className="text-green-600 font-medium text-[7px] leading-none mt-0.5 truncate w-full text-center">
                                     {cell.date}
                                   </span>
                                 </div>
