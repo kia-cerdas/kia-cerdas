@@ -384,9 +384,9 @@ export default function RencanaPersalinan() {
 
   // ── Derive auto-filled values dari ibuData ──────────────────────────────
   // Nilai-nilai ini SELALU diambil dari data ibu (tidak dari form state)
-  const autoNamaIbu     = ibuData?.kependudukan?.nama_lengkap || "";
+  const autoNamaIbu     = ibuData?.kependudukan?.nama_anggota_keluarga || "";
   const autoAlamat      = ibuData ? buildAlamat(ibuData.kependudukan) : "";
-  const autoNamaSuami   = ibuData?.suami?.nama_lengkap || "";
+  const autoNamaSuami   = ibuData?.suami?.nama_anggota_keluarga || "";
   const autoGolDarah    = ibuData?.kependudukan?.golongan_darah || "";
 
   // ── mapDataToForm — hanya field manual ──────────────────────────────────

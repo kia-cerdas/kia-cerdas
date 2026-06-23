@@ -157,6 +157,9 @@ const Breadcrumb = () => {
     if (!isId) {
       // Kontekstual: "form" tampilkan sebagai "Tambah" atau "Ubah" tergantung apakah ada ID setelahnya
       let label;
+       const nextSegment = pathSegments[index + 1];
+    const hasId = nextSegment && /^[0-9a-f-]{36}$|^\d+$/.test(nextSegment);
+    
       if (segment === "form") {
         const nextSegment = pathSegments[index + 1];
         const hasId = nextSegment && /^[0-9a-f-]{36}$|^\d+$/.test(nextSegment);

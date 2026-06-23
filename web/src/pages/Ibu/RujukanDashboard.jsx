@@ -117,7 +117,7 @@ export default function RujukanDashboard() {
   const filteredList = ibuList
     .filter(ibu => {
       const matchesSearch =
-        (ibu.kependudukan?.nama_lengkap || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (ibu.kependudukan?.nama_anggota_keluarga || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
         ibu.kependudukan?.nik?.includes(searchTerm);
 
       const referralStatus = getReferralStatus(ibu.rujukan).status;
@@ -142,7 +142,7 @@ export default function RujukanDashboard() {
       } else if (sortBy === "terlama") {
         return new Date(a.rujukan?.created_at || 0) - new Date(b.rujukan?.created_at || 0);
       } else if (sortBy === "nama") {
-        return a.kependudukan?.nama_lengkap.localeCompare(b.kependudukan?.nama_lengkap);
+        return a.kependudukan?.nama_anggota_keluarga.localeCompare(b.kependudukan?.nama_anggota_keluarga);
       }
       return 0;
     });
@@ -318,7 +318,7 @@ export default function RujukanDashboard() {
                   {/* Name and NIK */}
                   <div className="mb-4">
                     <h3 className="text-lg font-bold text-gray-900 group-hover:text-indigo-600 transition-colors line-clamp-1">
-                      {ibu.kependudukan?.nama_lengkap || "Tanpa Nama"}
+                      {ibu.kependudukan?.nama_anggota_keluarga || "Tanpa Nama"}
                     </h3>
                     <p className="text-sm text-gray-400 font-medium tracking-wide">NIK: {formatNIK(ibu.kependudukan?.nik)}</p>
                   </div>
