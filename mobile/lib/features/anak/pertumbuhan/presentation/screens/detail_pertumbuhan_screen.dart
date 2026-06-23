@@ -9,6 +9,7 @@ import 'package:ta_pa2_pa3_project/features/anak/pemantauan/presentation/screens
 import 'package:ta_pa2_pa3_project/features/auth/presentation/screens/login_screen.dart';
 import 'package:ta_pa2_pa3_project/core/services/auth_session.dart';
 import 'package:ta_pa2_pa3_project/features/anak/pertumbuhan/presentation/widgets/growth_status_widget.dart';
+import 'package:ta_pa2_pa3_project/core/widgets/child_profile_card.dart';
 
 class DetailPertumbuhanScreen extends StatefulWidget {
   final AnakSearchModel anak;
@@ -219,38 +220,44 @@ class _DetailPertumbuhanScreenState extends State<DetailPertumbuhanScreen> {
         backgroundColor: const Color(0xFFF1F5F9),
         appBar: AppBar(
           backgroundColor: Colors.white,
+          foregroundColor: const Color(0xFF1E293B),
           elevation: 0,
+          centerTitle: false,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.black87),
+            icon: const Icon(Icons.arrow_back, color: Color(0xFF1E293B)),
             onPressed: () =>
                 Navigator.pop(context, _riwayatPertumbuhan.isNotEmpty),
           ),
-          title: Column(
+          title: const Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                widget.anak.namaAnak,
-                style: const TextStyle(
-                  fontSize: 16,
+                'Detail Pertumbuhan',
+                style: TextStyle(
+                  color: Color(0xFF1E293B),
                   fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+                  fontSize: 18,
                 ),
               ),
               Text(
-                '${_hitungUmur(widget.anak.tanggalLahir)} • ${widget.anak.jenisKelamin}',
-                style: const TextStyle(
+                'Pemantauan pertumbuhan anak',
+                style: TextStyle(
+                  color: Color(0xFF64748B),
+                  fontWeight: FontWeight.normal,
                   fontSize: 12,
-                  color: Colors.grey,
                 ),
               ),
             ],
           ),
-          centerTitle: false,
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(1.0),
+            child: Container(color: Colors.grey.shade200, height: 1.0),
+          ),
         ),
         body: _isLoading
             ? const Center(
                 child: CircularProgressIndicator(
-                  color: Color(0xFF2563EB),
+                  color: Color(0xFF185FA5),
                   strokeWidth: 3,
                 ),
               )
@@ -296,7 +303,7 @@ class _DetailPertumbuhanScreenState extends State<DetailPertumbuhanScreen> {
                       (route) => false);
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2563EB),
+                  backgroundColor: const Color(0xFF185FA5),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8)),
                   padding:
@@ -309,7 +316,7 @@ class _DetailPertumbuhanScreenState extends State<DetailPertumbuhanScreen> {
               ElevatedButton(
                 onPressed: _loadData,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2563EB),
+                  backgroundColor: const Color(0xFF185FA5),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8)),
                   padding:
@@ -345,7 +352,10 @@ class _DetailPertumbuhanScreenState extends State<DetailPertumbuhanScreen> {
             const SizedBox(height: 18),
 
             // 3. Info Anak
-            ChildInfoBanner(anak: widget.anak),
+            ChildProfileCard(
+              nama: widget.anak.namaAnak,
+              usia: _hitungUmur(widget.anak.tanggalLahir),
+            ),
             const SizedBox(height: 18),
 
             // 4. Ringkasan Status Gizi (jika ada data)
@@ -381,7 +391,7 @@ class _DetailPertumbuhanScreenState extends State<DetailPertumbuhanScreen> {
             // 9. Tab selector kategori
             Row(
               children: [
-                Container(width: 6, height: 24, color: const Color(0xFF2563EB)),
+                Container(width: 6, height: 24, color: const Color(0xFF185FA5)),
                 const SizedBox(width: 8),
                 const Text(
                   'Grafik & Status Gizi',
@@ -454,7 +464,7 @@ class _DetailPertumbuhanScreenState extends State<DetailPertumbuhanScreen> {
                   );
                 },
                 style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFFD97706),
+                  backgroundColor: const Color(0xFFBA7517),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16)),
                 ),
@@ -542,7 +552,7 @@ class _DetailPertumbuhanScreenState extends State<DetailPertumbuhanScreen> {
                 label: 'Berat Badan',
                 value: _fmt(data.beratBadan),
                 unit: 'kg',
-                color: const Color(0xFF2563EB),
+                color: const Color(0xFF185FA5),
               ),
               MiniStatCard(
                 label: 'Tinggi Badan',
@@ -554,13 +564,13 @@ class _DetailPertumbuhanScreenState extends State<DetailPertumbuhanScreen> {
                 label: 'Lingkar Kepala',
                 value: _fmt(data.lingkarKepala),
                 unit: 'cm',
-                color: const Color(0xFF10b981),
+                color: const Color(0xFF0F6E56),
               ),
               MiniStatCard(
                 label: 'IMT',
                 value: _fmt(data.imt, isImt: true),
                 unit: 'kg/m²',
-                color: const Color(0xFFf59e0b),
+                color: const Color(0xFFBA7517),
               ),
             ],
           ),
@@ -592,9 +602,9 @@ class _DetailPertumbuhanScreenState extends State<DetailPertumbuhanScreen> {
         margin: const EdgeInsets.only(right: 12),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: isActive ? const Color(0xFF2563EB) : Colors.white,
+          color: isActive ? const Color(0xFF185FA5) : Colors.white,
           border: Border.all(
-              color: isActive ? const Color(0xFF2563EB) : Colors.grey.shade300),
+              color: isActive ? const Color(0xFF185FA5) : Colors.grey.shade300),
           borderRadius: BorderRadius.circular(24),
         ),
         child: Text(
@@ -656,7 +666,7 @@ class _DetailPertumbuhanScreenState extends State<DetailPertumbuhanScreen> {
   Widget _buildRiwayatItem(PertumbuhanModel data, bool isLatest) {
     final statusText = _getStatusForTab(data);
     final statusColors = _getStatusColor(statusText);
-    final dotColor = statusColors['text'] ?? (isLatest ? const Color(0xFF2563EB) : Colors.grey.shade400);
+    final dotColor = statusColors['text'] ?? (isLatest ? const Color(0xFF185FA5) : Colors.grey.shade400);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -779,7 +789,7 @@ class _DetailPertumbuhanScreenState extends State<DetailPertumbuhanScreen> {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: const Color(0xFF2563EB),
+          color: const Color(0xFF185FA5),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -830,7 +840,7 @@ class _DetailPertumbuhanScreenState extends State<DetailPertumbuhanScreen> {
       children: [
         Row(
           children: [
-            Container(width: 6, height: 24, color: const Color(0xFFF59E0B)),
+            Container(width: 6, height: 24, color: const Color(0xFFBA7517)),
             const SizedBox(width: 8),
             const Text(
               '3 Indikator Pertumbuhan',
@@ -934,7 +944,7 @@ class _DetailPertumbuhanScreenState extends State<DetailPertumbuhanScreen> {
             child: Row(
               children: [
                 Container(
-                    width: 4, height: 20, color: const Color(0xFF2563EB)),
+                    width: 4, height: 20, color: const Color(0xFF185FA5)),
                 const SizedBox(width: 8),
                 const Expanded(
                   child: Text(
@@ -959,7 +969,7 @@ class _DetailPertumbuhanScreenState extends State<DetailPertumbuhanScreen> {
               scrollDirection: Axis.horizontal,
               child: DataTable(
                 headingRowColor:
-                    MaterialStateProperty.all(const Color(0xFF1E3A5F)),
+                    MaterialStateProperty.all(const Color(0xFF185FA5)),
                 headingTextStyle: const TextStyle(
                     color: Colors.white,
                     fontSize: 12,
@@ -1023,7 +1033,7 @@ class _DetailPertumbuhanScreenState extends State<DetailPertumbuhanScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E3A5F),
+        color: const Color(0xFF185FA5),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -1070,7 +1080,7 @@ class _DetailPertumbuhanScreenState extends State<DetailPertumbuhanScreen> {
       children: [
         Row(
           children: [
-            Container(width: 6, height: 24, color: const Color(0xFF10B981)),
+            Container(width: 6, height: 24, color: const Color(0xFF0F6E56)),
             const SizedBox(width: 8),
             const Text(
               'Interpretasi Grafik KMS',
@@ -1143,12 +1153,12 @@ class _DetailPertumbuhanScreenState extends State<DetailPertumbuhanScreen> {
       case 'gizi kurang':
       case 'lebih':
       case 'berisiko gizi lebih':
-        return {'bg': const Color(0xFFFED7AA), 'text': const Color(0xFFD97706)};
+        return {'bg': const Color(0xFFFED7AA), 'text': const Color(0xFFBA7517)};
       case 'sangat kurang':
       case 'gizi buruk':
       case 'sangat lebih':
       case 'obesitas':
-        return {'bg': const Color(0xFFFECACA), 'text': const Color(0xFFDC2626)};
+        return {'bg': const Color(0xFFFECACA), 'text': const Color(0xFFA32D2D)};
       default:
         return {'bg': Colors.grey.shade200, 'text': Colors.grey.shade600};
     }

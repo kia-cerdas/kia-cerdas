@@ -10,11 +10,11 @@ class CatatanDetailScreen extends StatelessWidget {
     if (status == null) return const Color(0xFF9CA3AF);
     final lower = status.toLowerCase();
     if (lower == 'normal' || lower.contains('rendah') || lower.contains('tidak')) {
-      return const Color(0xFF10B981);
+      return const Color(0xFF0F6E56);
     } else if (lower.contains('perhatian') || lower.contains('sedang') || lower.contains('ada')) {
-      return const Color(0xFFF59E0B);
+      return const Color(0xFFBA7517);
     } else {
-      return const Color(0xFFEF4444);
+      return const Color(0xFFA32D2D);
     }
   }
 

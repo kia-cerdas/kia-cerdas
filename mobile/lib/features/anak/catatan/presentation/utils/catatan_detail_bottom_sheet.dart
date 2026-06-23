@@ -99,28 +99,28 @@ void showCatatanDetailLila(BuildContext ctx, PengukuranLilaModel item) {
 Color _getPlakColor(String status) {
   final lower = status.toLowerCase();
   if (lower == 'bersih' || lower.contains('tidak'))
-    return const Color(0xFF10B981);
-  if (lower == 'kotor' || lower.contains('ada')) return const Color(0xFFF59E0B);
+    return const Color(0xFF0F6E56);
+  if (lower == 'kotor' || lower.contains('ada')) return const Color(0xFFBA7517);
   return const Color(0xFF9CA3AF);
 }
 
 Color _getRisikoColor(String risiko) {
   final lower = risiko.toLowerCase();
-  if (lower == 'rendah') return const Color(0xFF10B981);
-  if (lower == 'sedang') return const Color(0xFFF59E0B);
-  if (lower == 'tinggi') return const Color(0xFFEF4444);
+  if (lower == 'rendah') return const Color(0xFF0F6E56);
+  if (lower == 'sedang') return const Color(0xFFBA7517);
+  if (lower == 'tinggi') return const Color(0xFFA32D2D);
   return const Color(0xFF9CA3AF);
 }
 
 Color _getKategoriRisikoColor(String kategori) {
   final lower = kategori.toLowerCase();
   if (lower.contains('normal') || lower.contains('hijau'))
-    return const Color(0xFF10B981);
+    return const Color(0xFF0F6E56);
   if (lower.contains('risiko') || lower.contains('kuning'))
-    return const Color(0xFFF59E0B);
+    return const Color(0xFFBA7517);
   if (lower.contains('buruk') ||
       lower.contains('merah') ||
-      lower.contains('kurang gizi')) return const Color(0xFFEF4444);
+      lower.contains('kurang gizi')) return const Color(0xFFA32D2D);
   return const Color(0xFF9CA3AF);
 }
 

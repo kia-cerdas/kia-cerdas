@@ -63,7 +63,7 @@ class _WarnaAirKencingScreenState extends State<WarnaAirKencingScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Pilih warna air kencing terlebih dahulu'),
-          backgroundColor: Color(0xFFEF4444),
+          backgroundColor: Color(0xFFA32D2D),
         ),
       );
       return;
@@ -99,10 +99,10 @@ class _WarnaAirKencingScreenState extends State<WarnaAirKencingScreen> {
                         ? Icons.info
                         : Icons.check_circle,
                 color: isBahaya
-                    ? const Color(0xFFDC2626)
+                    ? const Color(0xFFA32D2D)
                     : isPerhatian
-                        ? const Color(0xFFD97706)
-                        : const Color(0xFF16A34A),
+                        ? const Color(0xFFBA7517)
+                        : const Color(0xFF0F6E56),
               ),
             ),
             const SizedBox(width: 12),
@@ -110,10 +110,10 @@ class _WarnaAirKencingScreenState extends State<WarnaAirKencingScreen> {
               selectedData['status'],
               style: TextStyle(
                 color: isBahaya
-                    ? const Color(0xFFDC2626)
+                    ? const Color(0xFFA32D2D)
                     : isPerhatian
-                        ? const Color(0xFFD97706)
-                        : const Color(0xFF16A34A),
+                        ? const Color(0xFFBA7517)
+                        : const Color(0xFF0F6E56),
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -158,14 +158,14 @@ class _WarnaAirKencingScreenState extends State<WarnaAirKencingScreen> {
                 ),
                 child: const Row(
                   children: [
-                    Icon(Icons.local_hospital, color: Color(0xFFDC2626)),
+                    Icon(Icons.local_hospital, color: Color(0xFFA32D2D)),
                     SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         '⚠️ PERLU KE PUSKESMAS SEGERA!',
                         style: TextStyle(
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFFDC2626),
+                          color: Color(0xFFA32D2D),
                         ),
                       ),
                     ),
@@ -307,10 +307,10 @@ class _WarnaAirKencingScreenState extends State<WarnaAirKencingScreen> {
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: warna['status'] == 'Bahaya'
-                                      ? const Color(0xFFDC2626)
+                                      ? const Color(0xFFA32D2D)
                                       : warna['status'] == 'Perhatian'
-                                          ? const Color(0xFFD97706)
-                                          : const Color(0xFF16A34A),
+                                          ? const Color(0xFFBA7517)
+                                          : const Color(0xFF0F6E56),
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),

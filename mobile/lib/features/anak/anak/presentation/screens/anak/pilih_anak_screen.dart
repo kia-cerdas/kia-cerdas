@@ -76,7 +76,7 @@ class _PilihAnakScreenState extends State<PilihAnakScreen> {
                 ),
                 child: const Icon(
                   Icons.child_friendly_rounded,
-                  color: Color(0xFFF59E0B),
+                  color: Color(0xFFBA7517),
                   size: 40,
                 ),
               ),
@@ -122,7 +122,7 @@ class _PilihAnakScreenState extends State<PilihAnakScreen> {
                 child: const Row(
                   children: [
                     Icon(Icons.info_outline_rounded,
-                        color: Color(0xFF16A34A), size: 18),
+                        color: Color(0xFF0F6E56), size: 18),
                     SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -165,22 +165,37 @@ class _PilihAnakScreenState extends State<PilihAnakScreen> {
       backgroundColor: const Color(0xFFF1F5F9),
       appBar: AppBar(
         backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF1E293B),
         elevation: 0,
-        centerTitle: true,
-        title: const Text(
-          'Pilih Profil Anak',
-          style: TextStyle(
-            color: Color(0xFF1E293B),
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-          ),
+        centerTitle: false,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF1E293B)),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Pilih Profil Anak',
+              style: TextStyle(
+                color: Color(0xFF1E293B),
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+            Text(
+              'Pilih anak untuk melanjutkan',
+              style: TextStyle(
+                color: Color(0xFF64748B),
+                fontWeight: FontWeight.normal,
+                fontSize: 12,
+              ),
+            ),
+          ],
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1.0),
-          child: Container(
-            color: Colors.grey.shade200,
-            height: 1.0,
-          ),
+          child: Container(color: Colors.grey.shade200, height: 1.0),
         ),
       ),
       body: FutureBuilder<List<IbuAnakModel>>(
@@ -331,7 +346,7 @@ class _PilihAnakScreenState extends State<PilihAnakScreen> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(Icons.lock_outline_rounded,
-                                  size: 11, color: Color(0xFFF59E0B)),
+                                  size: 11, color: Color(0xFFBA7517)),
                               SizedBox(width: 4),
                               Text(
                                 'Pemantauan selesai (> 6 tahun)',
