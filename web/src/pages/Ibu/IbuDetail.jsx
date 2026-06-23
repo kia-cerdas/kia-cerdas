@@ -388,12 +388,12 @@ const handleNonAktif = async () => {
               <h2 className="text-base font-semibold text-[#185FA5] flex items-center gap-2 mb-3 font-sans">
                 <Venus size={18} /> Data Ibu
               </h2>
-              <div className="grid grid-cols-2 gap-y-2 gap-x-3 text-sm font-sans">
-                <span className="text-gray-500 text-xs font-sans">Nama Lengkap</span>
-                <span className="font-medium text-gray-800 text-sm font-sans">{kependudukan.nama_anggota_keluarga || "-"}</span>
+              <div className="grid gap-y-2 gap-x-3 text-sm" style={{gridTemplateColumns: "auto 1fr"}}>
+                <span className="text-gray-500 text-xs">Nama Lengkap</span>
+                <span className="font-medium text-gray-800 text-sm">{kependudukan.nama_anggota_keluarga || "-"}</span>
                 
-                <span className="text-gray-500 text-xs font-sans">NIK</span>
-                <span className="text-gray-800 text-sm font-sans">{kependudukan.nik || "-"}</span>
+                <span className="text-gray-500 text-xs">NIK</span>
+                <span className="text-gray-800 text-sm break-all">{kependudukan.nik || "-"}</span>
                 
                 <span className="text-gray-500 text-xs font-sans">Tanggal Lahir</span>
                 <span className="text-gray-800 text-sm font-sans">
@@ -432,8 +432,8 @@ const handleNonAktif = async () => {
                   <span className="text-gray-500 text-xs font-sans">Nama Lengkap</span>
                   <span className="font-medium text-gray-800 text-sm font-sans">{ayah.nama_anggota_keluarga || "-"}</span>
                   
-                  <span className="text-gray-500 text-xs font-sans">NIK</span>
-                  <span className="text-gray-800 text-sm font-sans">{ayah.nik || "-"}</span>
+                  <span className="text-gray-500 text-xs">NIK</span>
+                  <span className="text-gray-800 text-sm break-all">{suami.nik || "-"}</span>
                   
                   <span className="text-gray-500 text-xs font-sans">Pekerjaan</span>
                   <span className="text-gray-800 text-sm font-sans">{ayah.pekerjaan || "-"}</span>

@@ -792,7 +792,7 @@ if (selectedKunjungan === "KF4") {
             Kembali
           </button>
           <div>
-            <h1 className="text-[28px] font-bold text-gray-900">Pelayanan Nifas</h1>
+            <h1 className="text-lg sm:text-2xl md:text-[28px] font-bold text-gray-900">Pelayanan Nifas</h1>
             <p className="text-gray-500">Pencatatan pelayanan masa nifas ibu.</p>
           </div>
         </div>

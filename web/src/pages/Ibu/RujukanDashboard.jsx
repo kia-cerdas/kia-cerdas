@@ -169,7 +169,7 @@ export default function RujukanDashboard() {
     <MainLayout>
       <div className="p-6 max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Daftar Rujukan Ibu</h1>
+          <h1 className="text-lg sm:text-4xl md:text-[28px] font-bold text-gray-900">Daftar Rujukan Ibu</h1>
           <p className="text-gray-500 font-medium">Menerima dan mengelola daftar ibu yang memerlukan rujukan ke Fasilitas Kesehatan Rujukan Tingkat Lanjutan.</p>
         </div>
 

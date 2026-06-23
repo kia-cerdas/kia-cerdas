@@ -513,7 +513,7 @@ export default function SkriningDMGestasional() {
               <ArrowLeft size={16} />
               <span>Kembali</span>
             </button>
-            <h1 className="text-[28px] font-bold text-gray-900">
+            <h1 className="text-lg sm:text-2xl md:text-[28px] font-bold text-gray-900">
               Skrining Diabetes Melitus Gestasional
             </h1>
           </div>
