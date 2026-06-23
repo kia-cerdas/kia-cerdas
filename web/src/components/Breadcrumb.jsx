@@ -160,16 +160,7 @@ const Breadcrumb = () => {
       if (segment === "form") {
         const nextSegment = pathSegments[index + 1];
         const hasId = nextSegment && /^[0-9a-f-]{36}$|^\d+$/.test(nextSegment);
-<<<<<<< HEAD
-        label = hasId ? "Ubah Konten" : "Tambah Konten";
-      } else if (isPreviewPage && segment === "preview") {
-        // Combine with previous type (ibu/balita) to make "Preview Ibu" or "Preview Balita"
-        const typeSegment = pathSegments[pathSegments.indexOf("preview") - 1];
-        const typeLabel = breadcrumbLabels[typeSegment] || formatLabel(typeSegment);
-        label = `Preview ${typeLabel}`;
-=======
         label = hasId ? "Ubah Konten" : "Form Tambah Jadwal Posyandu";
->>>>>>> 2ac4102 (redesign jadwal layanan posyandu)
       } else {
         label = breadcrumbLabels[segment] || formatLabel(segment);
       }
