@@ -59,7 +59,7 @@ class InformasiUmumDetailScreen extends StatelessWidget {
               _Badge(
                 label: item.tipe.toUpperCase(),
                 backgroundColor: const Color(0xFFE6EFFF),
-                textColor: const Color(0xFF2563EB),
+                textColor: const Color(0xFF185FA5),
               ),
               _Badge(label: item.displayAgeText),
               _Badge(label: item.displayDurationText),
@@ -106,7 +106,7 @@ class InformasiUmumDetailScreen extends StatelessWidget {
                             const Padding(
                               padding: EdgeInsets.only(top: 3, right: 10),
                               child: Icon(Icons.lightbulb_outline,
-                                  size: 18, color: Color(0xFF2563EB)),
+                                  size: 18, color: Color(0xFF185FA5)),
                             ),
                             Expanded(
                               child: Text(
@@ -161,7 +161,7 @@ class InformasiUmumDetailScreen extends StatelessWidget {
                                 '${i + 1}',
                                 style: const TextStyle(
                                     fontWeight: FontWeight.w700,
-                                    color: Color(0xFF2563EB)),
+                                    color: Color(0xFF185FA5)),
                               ),
                             ),
                           ),
@@ -206,7 +206,7 @@ class InformasiUmumDetailScreen extends StatelessWidget {
                               const Padding(
                                 padding: EdgeInsets.only(top: 3, right: 10),
                                 child: Icon(Icons.lightbulb_outline,
-                                    size: 18, color: Color(0xFF2563EB)),
+                                    size: 18, color: Color(0xFF185FA5)),
                               ),
                               Expanded(
                                 child: Text(
@@ -236,7 +236,7 @@ class InformasiUmumDetailScreen extends StatelessWidget {
     return Icon(
       item.isVideo ? Icons.play_circle_outline : Icons.menu_book_rounded,
       size: 84,
-      color: item.isVideo ? const Color(0xFF3B82F6) : const Color(0xFFE2C499),
+      color: item.isVideo ? const Color(0xFF185FA5) : const Color(0xFFE2C499),
     );
   }
 

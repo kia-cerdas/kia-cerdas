@@ -40,7 +40,7 @@ class ChildListCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isMale = anak.jenisKelamin.toLowerCase().contains('laki');
-    final avatarColor = isMale ? const Color(0xFF2563EB) : const Color(0xFFEC4899);
+    final avatarColor = isMale ? const Color(0xFF185FA5) : const Color(0xFFEC4899);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -132,7 +132,7 @@ class ChildListCard extends StatelessWidget {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF2563EB).withOpacity(0.1),
+                              color: const Color(0xFF185FA5).withOpacity(0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
@@ -140,7 +140,7 @@ class ChildListCard extends StatelessWidget {
                               style: const TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w600,
-                                color: Color(0xFF2563EB),
+                                color: Color(0xFF185FA5),
                               ),
                             ),
                           ),

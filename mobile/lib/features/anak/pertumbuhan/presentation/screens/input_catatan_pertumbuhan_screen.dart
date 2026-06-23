@@ -5,7 +5,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:ta_pa2_pa3_project/features/anak/anak/data/models/anak_search_model.dart';
 import 'package:ta_pa2_pa3_project/features/anak/pertumbuhan/data/models/pertumbuhan_model.dart';
 import 'package:ta_pa2_pa3_project/features/anak/pertumbuhan/data/repositories/pertumbuhan_repository.dart';
-import 'package:ta_pa2_pa3_project/features/anak/anak/presentation/widgets/child_info_banner.dart';
+import 'package:ta_pa2_pa3_project/core/widgets/child_profile_card.dart';
 
 class InputCatatanPertumbuhanScreen extends StatefulWidget {
   final AnakSearchModel anak;
@@ -47,6 +47,33 @@ class _InputCatatanPertumbuhanScreenState
 
     _bbController.addListener(_calculateIMT);
     _tbController.addListener(_calculateIMT);
+  }
+
+  String _hitungUmur() {
+    try {
+      final birth = DateTime.parse(widget.anak.tanggalLahir);
+      final now = DateTime.now();
+      
+      final days = now.difference(birth).inDays;
+      if (days <= 28) {
+        return '$days Hari';
+      }
+
+      int totalMonths = (now.year - birth.year) * 12 + (now.month - birth.month);
+      if (now.day < birth.day) {
+        totalMonths--;
+      }
+      if (totalMonths < 0) totalMonths = 0;
+
+      if (totalMonths < 12) {
+        return '$totalMonths Bulan';
+      }
+
+      final thn = totalMonths ~/ 12;
+      final bln = totalMonths % 12;
+      if (bln == 0) return '$thn Tahun';
+      return '$thn Tahun $bln Bulan';
+    } catch (_) { return '-'; }
   }
 
   Future<void> _initializeLocale() async {
@@ -97,9 +124,9 @@ class _InputCatatanPertumbuhanScreenState
       builder: (context, child) {
         return Theme(
           data: ThemeData.light().copyWith(
-            primaryColor: const Color(0xFF2563EB),
+            primaryColor: const Color(0xFF185FA5),
             colorScheme: const ColorScheme.light(
-              primary: Color(0xFF2563EB),
+              primary: Color(0xFF185FA5),
             ),
           ),
           child: child!,
@@ -146,7 +173,7 @@ class _InputCatatanPertumbuhanScreenState
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Catatan pertumbuhan berhasil disimpan'),
-          backgroundColor: Color(0xFF22C55E),
+          backgroundColor: Color(0xFF0F6E56),
           duration: Duration(seconds: 2),
         ),
       );
@@ -158,7 +185,7 @@ class _InputCatatanPertumbuhanScreenState
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Gagal menyimpan: ${e.toString()}'),
-          backgroundColor: const Color(0xFFEF4444),
+          backgroundColor: const Color(0xFFA32D2D),
           duration: const Duration(seconds: 3),
         ),
       );
@@ -177,20 +204,38 @@ class _InputCatatanPertumbuhanScreenState
       backgroundColor: const Color(0xFFF9FAFB),
       appBar: AppBar(
         backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF1E293B),
         elevation: 0,
+        centerTitle: false,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF1E293B)),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Input Catatan Pertumbuhan',
-          style: TextStyle(
-            color: Colors.black87,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+        title: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Input Catatan Pertumbuhan',
+              style: TextStyle(
+                color: Color(0xFF1E293B),
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+            Text(
+              'Tambah data pengukuran anak',
+              style: TextStyle(
+                color: Color(0xFF64748B),
+                fontWeight: FontWeight.normal,
+                fontSize: 12,
+              ),
+            ),
+          ],
         ),
-        centerTitle: false,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1.0),
+          child: Container(color: Colors.grey.shade200, height: 1.0),
+        ),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -201,9 +246,9 @@ class _InputCatatanPertumbuhanScreenState
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Child Info Banner
-                ChildInfoBanner(
-                  anak: widget.anak,
-                  namaIbu: null,
+                ChildProfileCard(
+                  nama: widget.anak.namaAnak,
+                  usia: _hitungUmur(),
                 ),
                 const SizedBox(height: 24),
 
@@ -258,7 +303,7 @@ class _InputCatatanPertumbuhanScreenState
                               ),
                               const Icon(
                                 Icons.calendar_today,
-                                color: Color(0xFF2563EB),
+                                color: Color(0xFF185FA5),
                                 size: 20,
                               ),
                             ],
@@ -306,7 +351,7 @@ class _InputCatatanPertumbuhanScreenState
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(
-                              color: Color(0xFF2563EB),
+                              color: Color(0xFF185FA5),
                               width: 2,
                             ),
                           ),
@@ -370,7 +415,7 @@ class _InputCatatanPertumbuhanScreenState
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(
-                              color: Color(0xFF2563EB),
+                              color: Color(0xFF185FA5),
                               width: 2,
                             ),
                           ),
@@ -434,7 +479,7 @@ class _InputCatatanPertumbuhanScreenState
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(
-                              color: Color(0xFF2563EB),
+                              color: Color(0xFF185FA5),
                               width: 2,
                             ),
                           ),
@@ -463,10 +508,10 @@ class _InputCatatanPertumbuhanScreenState
                         Container(
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF2563EB).withOpacity(0.1),
+                            color: const Color(0xFF185FA5).withOpacity(0.1),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: const Color(0xFF2563EB).withOpacity(0.3),
+                              color: const Color(0xFF185FA5).withOpacity(0.3),
                             ),
                           ),
                           child: Row(
@@ -485,7 +530,7 @@ class _InputCatatanPertumbuhanScreenState
                                 style: const TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
-                                  color: Color(0xFF2563EB),
+                                  color: Color(0xFF185FA5),
                                 ),
                               ),
                             ],
@@ -520,7 +565,7 @@ class _InputCatatanPertumbuhanScreenState
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(
-                              color: Color(0xFF2563EB),
+                              color: Color(0xFF185FA5),
                               width: 2,
                             ),
                           ),
@@ -542,7 +587,7 @@ class _InputCatatanPertumbuhanScreenState
                   child: ElevatedButton(
                     onPressed: _isSubmitting ? null : _submitForm,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2563EB),
+                      backgroundColor: const Color(0xFF185FA5),
                       disabledBackgroundColor: Colors.grey.shade300,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -560,7 +605,7 @@ class _InputCatatanPertumbuhanScreenState
                             ),
                           )
                         : const Text(
-                            'Simpan Catatan Pertumbuhan',
+                            'Simpan',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -579,7 +624,7 @@ class _InputCatatanPertumbuhanScreenState
                     onPressed: _isSubmitting ? null : () => Navigator.pop(context),
                     style: OutlinedButton.styleFrom(
                       side: const BorderSide(
-                        color: Color(0xFF2563EB),
+                        color: Color(0xFF185FA5),
                         width: 2,
                       ),
                       shape: RoundedRectangleBorder(
@@ -591,7 +636,7 @@ class _InputCatatanPertumbuhanScreenState
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF2563EB),
+                        color: Color(0xFF185FA5),
                       ),
                     ),
                   ),

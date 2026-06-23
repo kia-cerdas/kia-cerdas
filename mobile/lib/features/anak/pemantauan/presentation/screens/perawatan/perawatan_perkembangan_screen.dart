@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import '../../../../pemantauan/data/models/perawatan_model.dart';
 import '../../../../pemantauan/data/services/perawatan_api_service.dart';
 import '../../../../../../core/widgets/verification_popup.dart';
+import 'package:ta_pa2_pa3_project/core/widgets/child_profile_card.dart';
 
 /// PerawatanPerkembanganScreen
 /// Menampilkan materi perawatan + kuesioner perkembangan anak per rentang usia
@@ -312,7 +313,7 @@ class _PerawatanPerkembanganScreenState
       builder: (ctx, child) => Theme(
         data: Theme.of(ctx).copyWith(
           colorScheme: const ColorScheme.light(
-            primary: Color(0xFF10B981),
+            primary: Color(0xFF0F6E56),
           ),
         ),
         child: child!,
@@ -327,7 +328,7 @@ class _PerawatanPerkembanganScreenState
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(msg),
-      backgroundColor: isSuccess ? const Color(0xFF10B981) : null,
+      backgroundColor: isSuccess ? const Color(0xFF0F6E56) : null,
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     ));
@@ -341,7 +342,7 @@ class _PerawatanPerkembanganScreenState
           const _MateriSection(
             title: 'Pelayanan Kesehatan',
             icon: Icons.local_hospital_outlined,
-            color: Color(0xFF3B82F6),
+            color: Color(0xFF185FA5),
             items: [
               'Bawa anak setiap bulan ke Posyandu/Puskesmas untuk mendapatkan pelayanan:',
               '• Pemantauan pertumbuhan dan perkembangan',
@@ -361,7 +362,7 @@ class _PerawatanPerkembanganScreenState
           const _MateriSection(
             title: 'Pantau Tumbuh Kembang Anak',
             icon: Icons.child_care,
-            color: Color(0xFF10B981),
+            color: Color(0xFF0F6E56),
             items: [
               'Dukung tumbuh kembang si kecil sesuai perkembangan anak usianya:',
               '• Main bola, lompat tali',
@@ -378,7 +379,7 @@ class _PerawatanPerkembanganScreenState
           const _MateriSection(
             title: 'Pelayanan Kesehatan',
             icon: Icons.local_hospital_outlined,
-            color: Color(0xFF3B82F6),
+            color: Color(0xFF185FA5),
             items: [
               'Bawa anak setiap bulan ke Posyandu/Puskesmas/Fasilitas Kesehatan untuk mendapatkan pelayanan:',
               '• Pemantauan pertumbuhan dan perkembangan',
@@ -389,7 +390,7 @@ class _PerawatanPerkembanganScreenState
           const _MateriSection(
             title: 'Pantau Tumbuh Kembang Anak',
             icon: Icons.child_care,
-            color: Color(0xFF10B981),
+            color: Color(0xFF0F6E56),
             items: [
               'Stimulasi bayi pada rentang usia 1-2 tahun:',
               '• Mengenal nama, fungsi benda-benda',
@@ -404,7 +405,7 @@ class _PerawatanPerkembanganScreenState
           const _MateriSection(
             title: 'Pelayanan Kesehatan',
             icon: Icons.local_hospital_outlined,
-            color: Color(0xFF3B82F6),
+            color: Color(0xFF185FA5),
             items: [
               'Bawa anak setiap bulan ke Posyandu/Puskesmas/Fasilitas Kesehatan untuk mendapatkan pelayanan:',
               '• Pemantauan pertumbuhan dan perkembangan',
@@ -415,7 +416,7 @@ class _PerawatanPerkembanganScreenState
           const _MateriSection(
             title: 'Pantau Tumbuh Kembang Anak',
             icon: Icons.child_care,
-            color: Color(0xFF10B981),
+            color: Color(0xFF0F6E56),
             items: [
               'Stimulasi bayi pada rentang usia 2-3 tahun:',
               '• Makan dengan sendok garpu, masak-masakan',
@@ -434,7 +435,7 @@ class _PerawatanPerkembanganScreenState
           const _MateriSection(
             title: 'Pelayanan Kesehatan',
             icon: Icons.local_hospital_outlined,
-            color: Color(0xFF3B82F6),
+            color: Color(0xFF185FA5),
             items: [
               'Bawa anak setiap bulan ke Posyandu/Puskesmas/Fasilitas Kesehatan:',
               '• Pemantauan pertumbuhan dan perkembangan',
@@ -445,7 +446,7 @@ class _PerawatanPerkembanganScreenState
           const _MateriSection(
             title: 'Pantau Tumbuh Kembang Anak',
             icon: Icons.child_care,
-            color: Color(0xFF10B981),
+            color: Color(0xFF0F6E56),
             items: [
               'Stimulasi bayi pada rentang usia 3-4 tahun:',
               '• Bermain peran, pura-pura',
@@ -461,7 +462,7 @@ class _PerawatanPerkembanganScreenState
           const _MateriSection(
             title: 'Pelayanan Kesehatan',
             icon: Icons.local_hospital_outlined,
-            color: Color(0xFF3B82F6),
+            color: Color(0xFF185FA5),
             items: [
               'Bawa anak setiap bulan ke Posyandu/Puskesmas/Fasilitas Kesehatan:',
               '• Pemantauan pertumbuhan dan perkembangan',
@@ -480,7 +481,7 @@ class _PerawatanPerkembanganScreenState
           const _MateriSection(
             title: 'Pantau Tumbuh Kembang Anak',
             icon: Icons.child_care,
-            color: Color(0xFF10B981),
+            color: Color(0xFF0F6E56),
             items: [
               'Stimulasi bayi pada rentang usia 4-5 tahun:',
               '• Main bola, lompat tali',
@@ -497,7 +498,7 @@ class _PerawatanPerkembanganScreenState
           const _MateriSection(
             title: 'Pelayanan Kesehatan',
             icon: Icons.local_hospital_outlined,
-            color: Color(0xFF3B82F6),
+            color: Color(0xFF185FA5),
             items: [
               'Bawa anak setiap bulan ke Posyandu/Puskesmas/Fasilitas Kesehatan:',
               '• Pemantauan pertumbuhan dan perkembangan',
@@ -518,7 +519,7 @@ class _PerawatanPerkembanganScreenState
           const _MateriSection(
             title: 'Pantau Tumbuh Kembang Anak',
             icon: Icons.child_care,
-            color: Color(0xFF10B981),
+            color: Color(0xFF0F6E56),
             items: [
               'Stimulasi bayi pada rentang usia 5-6 tahun:',
               '• Makan dengan sendok garpu, masak-masakan',
@@ -544,25 +545,38 @@ class _PerawatanPerkembanganScreenState
     return Scaffold(
       backgroundColor: const Color(0xFFF1F5F9),
       appBar: AppBar(
-        title: Column(
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF1E293B),
+        elevation: 0,
+        centerTitle: false,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF1E293B)),
+          onPressed: _handleBackPress,
+        ),
+        title: const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Perawatan Perkembangan',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
+              style: TextStyle(
+                color: Color(0xFF1E293B),
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
             ),
             Text(
-              _anakNama,
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400),
+              'Informasi dan kuesioner perawatan',
+              style: TextStyle(
+                color: Color(0xFF64748B),
+                fontWeight: FontWeight.normal,
+                fontSize: 12,
+              ),
             ),
           ],
         ),
-        backgroundColor: const Color(0xFF1D4ED8),
-        elevation: 0,
-        foregroundColor: Colors.white,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: _handleBackPress,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1.0),
+          child: Container(color: Colors.grey.shade200, height: 1.0),
         ),
       ),
       body: PopScope(
@@ -582,7 +596,7 @@ class _PerawatanPerkembanganScreenState
   // ─────────────────────────────────────────────────────────
   Widget _buildKuesionerTab() {
     return RefreshIndicator(
-      color: const Color(0xFF1D4ED8),
+      color: const Color(0xFF185FA5),
       onRefresh: () => _loadRangeData(_ageRanges[_selectedAgeIndex]),
       child: ListView(
         padding: const EdgeInsets.only(bottom: 140),
@@ -591,68 +605,7 @@ class _PerawatanPerkembanganScreenState
           // Profile Card
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  const CircleAvatar(
-                    radius: 26,
-                    backgroundColor: Color(0xFFD7ECFF),
-                    child: Icon(
-                      Icons.person_outline,
-                      size: 30,
-                      color: Color(0xFF185FA5),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _anakNama,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                              color: Color(0xFF1E293B)),
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFDBEAFE),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                'Usia: $_anakUsia',
-                                style: const TextStyle(
-                                    fontSize: 12,
-                                    color: Color(0xFF1D4ED8),
-                                    fontWeight: FontWeight.w600),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            child: ChildProfileCard(nama: _anakNama, usia: _anakUsia),
           ),
 
           const SizedBox(height: 16),
@@ -676,14 +629,14 @@ class _PerawatanPerkembanganScreenState
                     Row(
                       children: const [
                         Icon(Icons.calendar_month,
-                            color: Color(0xFF3B82F6), size: 20),
+                            color: Color(0xFF185FA5), size: 20),
                         SizedBox(width: 8),
                         Text(
                           'Tanggal Pemeriksaan',
                           style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
-                              color: Color(0xFF1E40AF)),
+                              color: Color(0xFF185FA5)),
                         ),
                       ],
                     ),
@@ -692,7 +645,7 @@ class _PerawatanPerkembanganScreenState
                       style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF1E40AF)),
+                          color: Color(0xFF185FA5)),
                     ),
                   ],
                 ),
@@ -757,11 +710,11 @@ class _PerawatanPerkembanganScreenState
                       padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
                         color:
-                            isSelected ? const Color(0xFF1D4ED8) : Colors.white,
+                            isSelected ? const Color(0xFF185FA5) : Colors.white,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
                           color: isSelected
-                              ? const Color(0xFF1D4ED8)
+                              ? const Color(0xFF185FA5)
                               : const Color(0xFFCBD5E1),
                         ),
                       ),
@@ -786,7 +739,7 @@ class _PerawatanPerkembanganScreenState
                             color: isSelected
                                 ? Colors.white
                                 : (isDone
-                                    ? const Color(0xFF1D4ED8)
+                                    ? const Color(0xFF185FA5)
                                     : const Color(0xFFCBD5E1)),
                           ),
                         ],
@@ -819,7 +772,7 @@ class _PerawatanPerkembanganScreenState
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              CircularProgressIndicator(color: Color(0xFF1D4ED8)),
+              CircularProgressIndicator(color: Color(0xFF185FA5)),
               SizedBox(height: 12),
               Text('Memuat data...',
                   style: TextStyle(color: Color(0xFF64748B))),
@@ -848,7 +801,7 @@ class _PerawatanPerkembanganScreenState
               FilledButton(
                 onPressed: () => _loadRangeData(range),
                 style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF1D4ED8)),
+                    backgroundColor: const Color(0xFF185FA5)),
                 child: const Text('Coba Lagi'),
               ),
             ],
@@ -905,7 +858,7 @@ class _PerawatanPerkembanganScreenState
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [Color(0xFF1D4ED8), Color(0xFF3B82F6)],
+                colors: [Color(0xFF185FA5), Color(0xFF185FA5)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -1151,7 +1104,7 @@ class _PerawatanPerkembanganScreenState
                         style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF1D4ED8))),
+                            color: Color(0xFF185FA5))),
                   ),
                 ),
                 SizedBox(
@@ -1161,7 +1114,7 @@ class _PerawatanPerkembanganScreenState
                         style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFFEA580C))),
+                            color: Color(0xFFBA7517))),
                   ),
                 ),
               ],
@@ -1196,7 +1149,7 @@ class _PerawatanPerkembanganScreenState
                             style: const TextStyle(
                               fontSize: 12.5,
                               height: 1.4,
-                              color: Color(0xFF1E3A5F),
+                              color: Color(0xFF185FA5),
                             ),
                           ),
                         ),
@@ -1205,7 +1158,7 @@ class _PerawatanPerkembanganScreenState
                           width: 44,
                           child: Checkbox(
                             value: jawaban == true,
-                            activeColor: const Color(0xFF1D4ED8),
+                            activeColor: const Color(0xFF185FA5),
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(4)),
                             onChanged: isLocked
@@ -1226,7 +1179,7 @@ class _PerawatanPerkembanganScreenState
                           width: 52,
                           child: Checkbox(
                             value: jawaban == false,
-                            activeColor: const Color(0xFFEA580C),
+                            activeColor: const Color(0xFFBA7517),
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(4)),
                             onChanged: isLocked
@@ -1277,11 +1230,11 @@ class _PerawatanPerkembanganScreenState
               )
             : const Icon(Icons.save_outlined),
         label: Text(
-          isSubmitting ? 'Menyimpan...' : 'Simpan Kuisioner',
+          isSubmitting ? 'Menyimpan...' : 'Simpan',
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
         ),
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF1D4ED8),
+          backgroundColor: const Color(0xFF185FA5),
           disabledBackgroundColor: const Color(0xFF9CA3AF),
           disabledForegroundColor: Colors.white,
           foregroundColor: Colors.white,

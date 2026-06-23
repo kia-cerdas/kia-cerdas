@@ -136,7 +136,7 @@ class _EdukasiScreenState extends State<EdukasiScreen> {
                       title: 'Pola Asuh',
                       subtitle: 'Metode pengasuhan positif',
                       gradient: const [Color(0xFFFEF3C7), Color(0xFFFFFBEB)],
-                      iconColor: const Color(0xFFD97706),
+                      iconColor: const Color(0xFFBA7517),
                       onTap: () {
                         Navigator.push(
                           context,
@@ -259,14 +259,14 @@ class _EdukasiScreenState extends State<EdukasiScreen> {
                       Row(
                         children: [
                           Icon(Icons.auto_awesome_rounded,
-                              color: Color(0xFF2563EB), size: 22),
+                              color: Color(0xFF185FA5), size: 22),
                           SizedBox(width: 8),
                           Text(
                             'Tips Hari Ini',
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w800,
-                              color: Color(0xFF1E40AF),
+                              color: Color(0xFF185FA5),
                             ),
                           ),
                         ],
@@ -662,7 +662,7 @@ class _EdukasiScreenState extends State<EdukasiScreen> {
               borderRadius: BorderRadius.circular(18),
             ),
             child: const Icon(Icons.auto_stories_rounded,
-                color: Color(0xFF2563EB), size: 30),
+                color: Color(0xFF185FA5), size: 30),
           ),
           const SizedBox(height: 12),
           Text(
@@ -694,7 +694,7 @@ class _EdukasiScreenState extends State<EdukasiScreen> {
   }) {
     final bool isVideo = item.isVideo;
     final Color accentColor =
-        isVideo ? const Color(0xFF2563EB) : const Color(0xFFF97316);
+        isVideo ? const Color(0xFF185FA5) : const Color(0xFFF97316);
     final Color chipBg =
         isVideo ? const Color(0xFFEFF6FF) : const Color(0xFFFFF7ED);
 
@@ -925,7 +925,7 @@ class _InformasiUmumPreviewCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool isVideo = item.isVideo;
     final Color accentColor =
-        isVideo ? const Color(0xFF2563EB) : const Color(0xFFF97316);
+        isVideo ? const Color(0xFF185FA5) : const Color(0xFFF97316);
     final Color chipBg =
         isVideo ? const Color(0xFFEFF6FF) : const Color(0xFFFFF7ED);
 

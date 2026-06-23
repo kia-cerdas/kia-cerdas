@@ -78,7 +78,7 @@
 //         actions: [
 //           IconButton(
 //             onPressed: _reload,
-//             icon: const Icon(Icons.refresh, color: Color(0xFF2563EB)),
+//             icon: const Icon(Icons.refresh, color: Color(0xFF185FA5)),
 //           ),
 //         ],
 //         bottom: PreferredSize(
@@ -130,7 +130,7 @@
 //                             _selectedFilter = label;
 //                           });
 //                         },
-//                         selectedColor: const Color(0xFF2563EB),
+//                         selectedColor: const Color(0xFF185FA5),
 //                         labelStyle: TextStyle(
 //                           color:
 //                               isActive ? Colors.white : const Color(0xFF475569),
@@ -140,7 +140,7 @@
 //                         shape: StadiumBorder(
 //                           side: BorderSide(
 //                             color: isActive
-//                                 ? const Color(0xFF2563EB)
+//                                 ? const Color(0xFF185FA5)
 //                                 : Colors.grey.shade300,
 //                           ),
 //                         ),
@@ -195,13 +195,13 @@
 //       ),
 //       child: const Row(
 //         children: [
-//           Icon(Icons.menu_book_rounded, color: Color(0xFF2563EB), size: 28),
+//           Icon(Icons.menu_book_rounded, color: Color(0xFF185FA5), size: 28),
 //           SizedBox(width: 12),
 //           Expanded(
 //             child: Text(
 //               'Konten di halaman ini diambil langsung dari data Informasi Umum yang kamu simpan lewat web.',
 //               style: TextStyle(
-//                 color: Color(0xFF1D4ED8),
+//                 color: Color(0xFF185FA5),
 //                 fontSize: 12,
 //                 fontWeight: FontWeight.w600,
 //               ),
@@ -272,7 +272,7 @@
 //     final Color topBgColor =
 //         item.isVideo ? const Color(0xFFE6EFFF) : const Color(0xFFFFF0D4);
 //     final Color typeColor =
-//         item.isVideo ? const Color(0xFF3B82F6) : const Color(0xFFFF5C00);
+//         item.isVideo ? const Color(0xFF185FA5) : const Color(0xFFFF5C00);
 //     final Color typeBgColor =
 //         item.isVideo ? const Color(0xFFE6EFFF) : const Color(0xFFFFF0D4);
 
@@ -311,7 +311,7 @@
 //                     Center(
 //                       child: item.isVideo
 //                           ? const Icon(Icons.play_circle_outline,
-//                               color: Color(0xFF3B82F6), size: 42)
+//                               color: Color(0xFF185FA5), size: 42)
 //                           : const Icon(Icons.menu_book_rounded,
 //                               color: Color(0xFFE2C499), size: 64),
 //                     ),
@@ -551,7 +551,7 @@ class _InformasiUmumScreenState extends State<InformasiUmumScreen> {
         actions: [
           IconButton(
             onPressed: _reload,
-            icon: const Icon(Icons.refresh, color: Color(0xFF2563EB)),
+            icon: const Icon(Icons.refresh, color: Color(0xFF185FA5)),
           ),
         ],
         bottom: PreferredSize(
@@ -603,7 +603,7 @@ class _InformasiUmumScreenState extends State<InformasiUmumScreen> {
                             _selectedFilter = label;
                           });
                         },
-                        selectedColor: const Color(0xFF2563EB),
+                        selectedColor: const Color(0xFF185FA5),
                         labelStyle: TextStyle(
                           color:
                               isActive ? Colors.white : const Color(0xFF475569),
@@ -613,7 +613,7 @@ class _InformasiUmumScreenState extends State<InformasiUmumScreen> {
                         shape: StadiumBorder(
                           side: BorderSide(
                             color: isActive
-                                ? const Color(0xFF2563EB)
+                                ? const Color(0xFF185FA5)
                                 : Colors.grey.shade300,
                           ),
                         ),
@@ -668,13 +668,13 @@ class _InformasiUmumScreenState extends State<InformasiUmumScreen> {
       ),
       child: const Row(
         children: [
-          Icon(Icons.menu_book_rounded, color: Color(0xFF2563EB), size: 28),
+          Icon(Icons.menu_book_rounded, color: Color(0xFF185FA5), size: 28),
           SizedBox(width: 12),
           Expanded(
             child: Text(
               'Konten di halaman ini diambil langsung dari data Informasi Umum yang kamu simpan lewat web.',
               style: TextStyle(
-                color: Color(0xFF1D4ED8),
+                color: Color(0xFF185FA5),
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
               ),
@@ -745,7 +745,7 @@ class _InformasiUmumCard extends StatelessWidget {
     final Color topBgColor =
         item.isVideo ? const Color(0xFFE6EFFF) : const Color(0xFFFFF0D4);
     final Color typeColor =
-        item.isVideo ? const Color(0xFF3B82F6) : const Color(0xFFFF5C00);
+        item.isVideo ? const Color(0xFF185FA5) : const Color(0xFFFF5C00);
     final Color typeBgColor =
         item.isVideo ? const Color(0xFFE6EFFF) : const Color(0xFFFFF0D4);
 
@@ -784,7 +784,7 @@ class _InformasiUmumCard extends StatelessWidget {
                     Center(
                       child: item.isVideo
                           ? const Icon(Icons.play_circle_outline,
-                              color: Color(0xFF3B82F6), size: 42)
+                              color: Color(0xFF185FA5), size: 42)
                           : const Icon(Icons.menu_book_rounded,
                               color: Color(0xFFE2C499), size: 64),
                     ),

@@ -6,6 +6,7 @@ import 'tanda_bahaya_screen.dart';
 import 'lila_screen.dart';
 import 'perawatan/perawatan_perkembangan_screen.dart';
 import 'deteksi_gejala_darurat_screen.dart';
+import 'package:ta_pa2_pa3_project/core/widgets/child_profile_card.dart';
 
 class MenuPemantauanScreen extends StatelessWidget {
   // const MenuPemantauanScreen({Key? key}) : super(key: key);
@@ -22,20 +23,37 @@ class MenuPemantauanScreen extends StatelessWidget {
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
         backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF1E293B),
         elevation: 0,
-        centerTitle: true,
-        title: const Text(
-          'Perkembangan Anak',
-          style: TextStyle(
-            color: Color(0xFF1E293B),
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
+        centerTitle: false,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios,
-              color: Color(0xFF1E293B), size: 20),
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF1E293B)),
           onPressed: () => Navigator.pop(context),
+        ),
+        title: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Perkembangan Anak',
+              style: TextStyle(
+                color: Color(0xFF1E293B),
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+            Text(
+              'Cek kesehatan mandiri anak',
+              style: TextStyle(
+                color: Color(0xFF64748B),
+                fontWeight: FontWeight.normal,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1.0),
+          child: Container(color: Colors.grey.shade200, height: 1.0),
         ),
       ),
       body: SafeArea(
@@ -45,63 +63,12 @@ class MenuPemantauanScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Hero Image Section
-              Stack(
-                children: [
-                  Container(
-                    height: 200,
-                    width: double.infinity,
-                    color: const Color(0xFFE0E7FF),
-                    child: const Center(
-                      child: Icon(
-                        Icons.health_and_safety,
-                        color: Color(0xFF4F46E5),
-                        size: 64,
-                      ),
-                    ),
-                  ),
-                  Container(
-                    height: 200,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.transparent,
-                          Colors.black.withOpacity(0.5),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const Positioned(
-                    bottom: 24,
-                    left: 20,
-                    right: 20,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Cek Kesehatan Mandiri',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
-                        ),
-                        SizedBox(height: 6),
-                        Text(
-                          'Pantau kondisi si kecil secara rutin',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.white,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+                child: ChildProfileCard(
+                  nama: anak['nama'] ?? anak['nama_anak'] ?? 'Si Kecil',
+                  usia: anak['usia_teks'] ?? '-',
+                ),
               ),
               const SizedBox(height: 24),
 
@@ -125,7 +92,7 @@ class MenuPemantauanScreen extends StatelessWidget {
                         subtitle: 'Deteksi cepat gejala tanpa rentang usia',
                         color: const Color(0xFFFFF1F2),
                         iconBgColor: const Color(0xFFFFE4E6),
-                        iconColor: const Color(0xFFE11D48),
+                        iconColor: const Color(0xFFA32D2D),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -145,7 +112,7 @@ class MenuPemantauanScreen extends StatelessWidget {
                         subtitle: 'Bayi 0-28 Hari & Balita 29 Hari-5 Thn',
                         color: const Color(0xFFFEF2F2),
                         iconBgColor: const Color(0xFFFEE2E2),
-                        iconColor: const Color(0xFFDC2626),
+                        iconColor: const Color(0xFFA32D2D),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -164,10 +131,10 @@ class MenuPemantauanScreen extends StatelessWidget {
                         subtitle: 'Pantau perkembangan dan pola asuh anak',
                         // color: const Color(0xFFF0FDF4),
                         // iconBgColor: const Color(0xFFD1FAE5),
-                        // iconColor: const Color(0xFF10B981),
+                        // iconColor: const Color(0xFF0F6E56),
                         color: const Color(0xFFFFF7ED),
                         iconBgColor: const Color(0xFFFFEDD5),
-                        iconColor: const Color(0xFFEA580C),
+                        iconColor: const Color(0xFFBA7517),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -186,7 +153,7 @@ class MenuPemantauanScreen extends StatelessWidget {
                         subtitle: 'Input usia 2 mgg, 1 bln, 2-4 bln',
                         color: const Color(0xFFFFF7ED),
                         iconBgColor: const Color(0xFFFFEDD5),
-                        iconColor: const Color(0xFFEA580C),
+                        iconColor: const Color(0xFFBA7517),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -204,10 +171,10 @@ class MenuPemantauanScreen extends StatelessWidget {
                         subtitle: 'Pemantauan hidrasi 12 - 24 Bulan',
                         // color: const Color(0xFFFFF7ED),
                         // iconBgColor: const Color(0xFFFFEDD5),
-                        // iconColor: const Color(0xFFEA580C),
+                        // iconColor: const Color(0xFFBA7517),
                         color: const Color(0xFFF0FDF4),
                         iconBgColor: const Color(0xFFD1FAE5),
-                        iconColor: const Color(0xFF10B981),
+                        iconColor: const Color(0xFF0F6E56),
                       ),
                     ),
                     // const SizedBox(height: 12),

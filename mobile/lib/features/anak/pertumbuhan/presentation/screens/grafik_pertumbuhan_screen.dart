@@ -5,6 +5,7 @@ import 'package:ta_pa2_pa3_project/features/anak/pertumbuhan/data/models/pertumb
 import 'package:ta_pa2_pa3_project/features/anak/pertumbuhan/data/repositories/pertumbuhan_repository.dart';
 import 'package:ta_pa2_pa3_project/features/anak/pertumbuhan/data/services/pertumbuhan_api_service.dart';
 import 'package:ta_pa2_pa3_project/features/anak/anak/presentation/widgets/growth_chart_widget.dart';
+import 'package:ta_pa2_pa3_project/core/widgets/child_profile_card.dart';
 
 class GrafikPertumbuhanScreen extends StatefulWidget {
   final AnakSearchModel anak;
@@ -225,9 +226,9 @@ class _GrafikPertumbuhanScreenState
 
   Color _statusColor(String s) {
     final l = s.toLowerCase();
-    if (l.contains('baik') || l.contains('normal')) return const Color(0xFF10B981);
-    if (l.contains('buruk') || l.contains('sangat') || l.contains('obesi') || l.contains('mikro') || l.contains('makro')) return const Color(0xFFEF4444);
-    return const Color(0xFFF59E0B);
+    if (l.contains('baik') || l.contains('normal')) return const Color(0xFF0F6E56);
+    if (l.contains('buruk') || l.contains('sangat') || l.contains('obesi') || l.contains('mikro') || l.contains('makro')) return const Color(0xFFA32D2D);
+    return const Color(0xFFBA7517);
   }
 
   @override
@@ -236,17 +237,41 @@ class _GrafikPertumbuhanScreenState
       backgroundColor: const Color(0xFFF1F5F9),
       appBar: AppBar(
         backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF1E293B),
         elevation: 0,
+        centerTitle: false,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF1E293B)),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('Grafik Pertumbuhan',
-            style: TextStyle(color: Colors.black87, fontSize: 17, fontWeight: FontWeight.bold)),
-        centerTitle: false,
+        title: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Grafik Pertumbuhan',
+              style: TextStyle(
+                color: Color(0xFF1E293B),
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+            Text(
+              'Pemantauan pertumbuhan anak',
+              style: TextStyle(
+                color: Color(0xFF64748B),
+                fontWeight: FontWeight.normal,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1.0),
+          child: Container(color: Colors.grey.shade200, height: 1.0),
+        ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF2563EB)))
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFF185FA5)))
           : _error != null
               ? _buildError()
               : _buildContent(),
@@ -300,10 +325,10 @@ class _GrafikPertumbuhanScreenState
                     margin: const EdgeInsets.only(right: 8),
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
-                      color: active ? const Color(0xFF1D4ED8) : Colors.white,
+                      color: active ? const Color(0xFF185FA5) : Colors.white,
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                          color: active ? const Color(0xFF1D4ED8) : Colors.grey.shade300),
+                          color: active ? const Color(0xFF185FA5) : Colors.grey.shade300),
                     ),
                     child: Text(t,
                         style: TextStyle(
@@ -318,44 +343,9 @@ class _GrafikPertumbuhanScreenState
           const SizedBox(height: 16),
 
           // ── Child card ──
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(14),
-              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8)],
-            ),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 26,
-                  backgroundColor: const Color(0xFFEFF6FF),
-                  child: const Icon(
-                    Icons.person_outline,
-                    size: 30,
-                    color: Color(0xFF185FA5),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(widget.anak.namaAnak,
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 4),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFEFF6FF),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text('Usia: ${_hitungUmur()}',
-                          style: const TextStyle(fontSize: 12, color: Color(0xFF2563EB), fontWeight: FontWeight.w600)),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+          ChildProfileCard(
+            nama: widget.anak.namaAnak,
+            usia: _hitungUmur(),
           ),
           const SizedBox(height: 14),
 
@@ -380,6 +370,10 @@ class _GrafikPertumbuhanScreenState
           if (latest != null) _buildStatusCard(latest),
           const SizedBox(height: 18),
 
+          // ── Klasifikasi ──
+          _buildKlasifikasi(),
+          const SizedBox(height: 18),
+
           // ── Riwayat pengukuran ──
           const Text('Riwayat Pengukuran',
               style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
@@ -393,14 +387,10 @@ class _GrafikPertumbuhanScreenState
                 onPressed: () => setState(() => _showAll = !_showAll),
                 child: Text(
                   _showAll ? 'Sembunyikan' : 'Lihat Semua Data',
-                  style: const TextStyle(color: Color(0xFF2563EB), fontWeight: FontWeight.w600),
+                  style: const TextStyle(color: Color(0xFF185FA5), fontWeight: FontWeight.w600),
                 ),
               ),
           ],
-          const SizedBox(height: 18),
-
-          // ── Klasifikasi ──
-          _buildKlasifikasi(),
           const SizedBox(height: 24),
         ],
       ),
@@ -545,7 +535,7 @@ class _GrafikPertumbuhanScreenState
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(children: [
-            const Icon(Icons.info_outline, size: 16, color: Color(0xFF2563EB)),
+            const Icon(Icons.info_outline, size: 16, color: Color(0xFF185FA5)),
             const SizedBox(width: 6),
             Expanded(
               child: Text(
@@ -566,7 +556,7 @@ class _GrafikPertumbuhanScreenState
                       style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF2563EB))),
+                          color: Color(0xFF185FA5))),
                 ),
                 Expanded(
                   child: Text(r[1],
