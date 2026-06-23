@@ -518,6 +518,137 @@ class _CatatanPelayananMenuScreenState
     );
   }
 
+//   Widget _buildCard(CatatanPelayananKehamilanModel item) {
+//     final tglPeriksa = item.tanggalPeriksa != null
+//         ? item.tanggalPeriksa!.toIso8601String().split('T').first
+//         : '-';
+//     final tglKembali = item.tanggalKembali != null
+//         ? item.tanggalKembali!.toIso8601String().split('T').first
+//         : '-';
+
+//     return Container(
+//       margin: const EdgeInsets.only(bottom: 16),
+//       decoration: BoxDecoration(
+//         color: Colors.white,
+//         borderRadius: BorderRadius.circular(24),
+//         border: Border.all(color: const Color(0xFFE2E8F0)),
+//         boxShadow: [
+//           BoxShadow(
+//             color: Colors.black.withOpacity(0.04),
+//             blurRadius: 10,
+//             offset: const Offset(0, 4),
+//           ),
+//         ],
+//       ),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           // Header
+//           Container(
+//             padding:
+//                 const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+//             decoration: const BoxDecoration(
+//               color: Color(0xFFEFF6FF),
+//               borderRadius: BorderRadius.only(
+//                 topLeft: Radius.circular(24),
+//                 topRight: Radius.circular(24),
+//               ),
+//             ),
+//             child: Row(
+//               children: [
+//                 Container(
+//                   width: 42,
+//                   height: 42,
+//                   decoration: BoxDecoration(
+//                     color: AppColors.primary.withOpacity(0.12),
+//                     borderRadius: BorderRadius.circular(14),
+//                   ),
+//                   child: const Icon(
+//                     Icons.description_outlined,
+//                     color: AppColors.primary,
+//                   ),
+//                 ),
+//                 const SizedBox(width: 12),
+//                 Expanded(
+//                   child: Column(
+//                     crossAxisAlignment: CrossAxisAlignment.start,
+//                     children: [
+//                       const Text(
+//                         'Tanggal Pemeriksaan',
+//                         style:
+//                             TextStyle(fontSize: 11, color: Colors.black54),
+//                       ),
+//                       const SizedBox(height: 2),
+//                       Text(
+//                         tglPeriksa,
+//                         style: const TextStyle(
+//                           fontSize: 15,
+//                           fontWeight: FontWeight.bold,
+//                           color: AppColors.primary,
+//                         ),
+//                       ),
+//                     ],
+//                   ),
+//                 ),
+//               ],
+//             ),
+//           ),
+//           // Body
+//           Padding(
+//             padding: const EdgeInsets.all(18),
+//             child: Column(
+//               crossAxisAlignment: CrossAxisAlignment.start,
+//               children: [
+//                 const Text(
+//                   'Keluhan & Pemeriksaan',
+//                   style: TextStyle(
+//                     fontSize: 12,
+//                     fontWeight: FontWeight.w700,
+//                     color: Colors.black54,
+//                   ),
+//                 ),
+//                 const SizedBox(height: 8),
+//                 Text(
+//                   item.keluhan.isNotEmpty ? item.keluhan : '-',
+//                   style: const TextStyle(fontSize: 14, height: 1.6),
+//                 ),
+//                 const SizedBox(height: 18),
+//                 Container(
+//                   padding: const EdgeInsets.symmetric(
+//                     horizontal: 14,
+//                     vertical: 12,
+//                   ),
+//                   decoration: BoxDecoration(
+//                     color: const Color(0xFFF8FAFC),
+//                     borderRadius: BorderRadius.circular(14),
+//                   ),
+//                   child: Row(
+//                     children: [
+//                       const Icon(
+//                         Icons.calendar_month,
+//                         size: 18,
+//                         color: AppColors.primary,
+//                       ),
+//                       const SizedBox(width: 8),
+//                       Expanded(
+//                         child: Text(
+//                           'Kembali periksa: $tglKembali',
+//                           style: const TextStyle(
+//                             fontSize: 13,
+//                             fontWeight: FontWeight.w600,
+//                           ),
+//                         ),
+//                       ),
+//                     ],
+//                   ),
+//                 ),
+//               ],
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
   Widget _buildCard(CatatanPelayananKehamilanModel item) {
     final tglPeriksa = item.tanggalPeriksa != null
         ? item.tanggalPeriksa!.toIso8601String().split('T').first
@@ -545,8 +676,7 @@ class _CatatanPelayananMenuScreenState
         children: [
           // Header
           Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
             decoration: const BoxDecoration(
               color: Color(0xFFEFF6FF),
               borderRadius: BorderRadius.only(
@@ -575,8 +705,7 @@ class _CatatanPelayananMenuScreenState
                     children: [
                       const Text(
                         'Tanggal Pemeriksaan',
-                        style:
-                            TextStyle(fontSize: 11, color: Colors.black54),
+                        style: TextStyle(fontSize: 11, color: Colors.black54),
                       ),
                       const SizedBox(height: 2),
                       Text(
@@ -593,26 +722,50 @@ class _CatatanPelayananMenuScreenState
               ],
             ),
           ),
+          
           // Body
           Padding(
             padding: const EdgeInsets.all(18),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Keluhan & Pemeriksaan',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black54,
+                // KONDISI: Kalau Trimester 1, tampilkan Keluhan
+                if (item.trimester == 1) ...[
+                  const Text(
+                    'Keluhan & Pemeriksaan',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black54,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  item.keluhan.isNotEmpty ? item.keluhan : '-',
-                  style: const TextStyle(fontSize: 14, height: 1.6),
-                ),
-                const SizedBox(height: 18),
+                  const SizedBox(height: 8),
+                  Text(
+                    item.keluhan.isNotEmpty ? item.keluhan : '-',
+                    style: const TextStyle(fontSize: 14, height: 1.6),
+                  ),
+                  const SizedBox(height: 18),
+                ],
+
+                // KONDISI: Kalau Trimester 3, tampilkan Penjelasan
+                if (item.trimester == 3) ...[
+                  const Text(
+                    'Penjelasan',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black54,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    item.penjelasan.isNotEmpty ? item.penjelasan : '-',
+                    style: const TextStyle(fontSize: 14, height: 1.6),
+                  ),
+                  const SizedBox(height: 18),
+                ],
+
+                // Bagian Tanggal Kembali (Selalu tampil di semua trimester)
                 Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 14,
@@ -650,3 +803,5 @@ class _CatatanPelayananMenuScreenState
     );
   }
 }
+
+

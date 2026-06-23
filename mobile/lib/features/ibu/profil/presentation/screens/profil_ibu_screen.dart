@@ -210,9 +210,9 @@ class _ProfilScreenState extends State<ProfilScreen> {
               padding: const EdgeInsets.fromLTRB(4, 8, 20, 12),
               child: Row(
                 children: [
-                  IconButton(
-                    icon: Icon(Icons.arrow_back_ios_new,
-                        color: AppColors.textPrimary, size: 20),
+                                    IconButton(
+                    icon: const Icon(Icons.arrow_back,
+                        color: Color(0xFF1E293B)),
                     onPressed: () => Navigator.pop(context),
                   ),
                   Container(

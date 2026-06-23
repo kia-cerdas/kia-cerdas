@@ -550,7 +550,7 @@ class _PemeriksaanDokterScreenState extends State<PemeriksaanDokterScreen> {
             Text(
               _title,
               style: const TextStyle(
-                color: AppColors.primary,
+                color: Color.fromARGB(255, 0, 0, 0),
                 fontWeight: FontWeight.bold,
                 fontSize: 18,
               ),
@@ -914,7 +914,7 @@ class PemeriksaanDokterDetailScreen extends StatelessWidget {
             Text(
               _title,
               style: const TextStyle(
-                color: AppColors.primary,
+                color: Color.fromARGB(255, 0, 0, 0),
                 fontWeight: FontWeight.bold,
                 fontSize: 18,
               ),

@@ -186,7 +186,7 @@ class _ChecklistProsesMelahirkanScreenState
             Text(
               'Proses Melahirkan',
               style: TextStyle(
-                color: AppColors.primary,
+                color: Color.fromARGB(255, 0, 0, 0),
                 fontWeight: FontWeight.bold,
                 fontSize: 18,
               ),

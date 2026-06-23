@@ -297,7 +297,7 @@ class _LogTTDMMSScreenState extends State<LogTTDMMSScreen>
             Text(
               'Log TTD / MMS',
               style: TextStyle(
-                color: AppColors.primary,
+                color: Color.fromARGB(255, 0, 0, 0),
                 fontWeight: FontWeight.bold,
                 fontSize: 18,
               ),

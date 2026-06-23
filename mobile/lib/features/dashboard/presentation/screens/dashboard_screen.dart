@@ -1159,6 +1159,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
         // ),
         // const SizedBox(height: 32),
 
+        const Text('MENU PEMANTAUAN',
+            style: TextStyle(
+                fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
+        const SizedBox(height: 12),
+
         DashboardQuickMenu(
           crossAxisCount: 3,
           childAspectRatio: 1.0,

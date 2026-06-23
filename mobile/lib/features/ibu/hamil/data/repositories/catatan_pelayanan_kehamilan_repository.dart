@@ -63,11 +63,13 @@ class CatatanPelayananKehamilanRepository {
         ? rawList
         : rawList.where((e) {
             final map = e as Map<String, dynamic>;
-            return map['kehamilan_id'] == kehamilanAktifId;
+            // return map['kehamilan_id'] == kehamilanAktifId;
+            return map['kehamilan_id'].toString() == kehamilanAktifId.toString();
           }).toList();
 
     return filtered.map((e) {
-      final map = Map<String, dynamic>.from(e as Map);
+      // final map = Map<String, dynamic>.from(e as Map);
+      final map = Map<String, dynamic>.from(e as Map<String, dynamic>);
       // Field "trimester" tidak ada di tabel pemeriksaan dokter, jadi kita
       // sisipkan manual sesuai parameter yang diminta.
       map['trimester'] = trimester;

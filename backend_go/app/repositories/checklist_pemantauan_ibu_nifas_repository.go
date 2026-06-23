@@ -24,6 +24,9 @@ type ChecklistPemantauanIbuNifasRepository interface {
 	FindAllWithKehamilan(posyanduID *int32) ([]models.ChecklistPemantauanIbuNifas, error)
 	FindByID(id int32) (*models.ChecklistPemantauanIbuNifas, error)
 	UpdateVerifikasi(data *models.ChecklistPemantauanIbuNifas) error
+
+	// Endpoint untuk mengambil data ceklis ibu nifas
+	FindByKehamilanID(kehamilanID int32) ([]models.ChecklistPemantauanIbuNifas, error)
 }
 
 type checklistPemantauanIbuNifasRepository struct {
@@ -150,3 +153,13 @@ func (r *checklistPemantauanIbuNifasRepository) UpdateVerifikasi(data *models.Ch
 
 
 
+// FindByKehamilanID mengambil semua checklist nifas berdasarkan kehamilan_id,
+// digunakan oleh bidan/dashboard untuk melihat riwayat lengkap per ibu.
+func (r *checklistPemantauanIbuNifasRepository) FindByKehamilanID(kehamilanID int32) ([]models.ChecklistPemantauanIbuNifas, error) {
+    var list []models.ChecklistPemantauanIbuNifas
+    err := r.db.
+        Where("kehamilan_id = ? AND deleted_at IS NULL", kehamilanID).
+        Order("hari_nifas ASC").
+        Find(&list).Error
+    return list, err
+}
