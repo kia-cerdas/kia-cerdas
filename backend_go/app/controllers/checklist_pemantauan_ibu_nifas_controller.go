@@ -272,3 +272,21 @@ func (ctrl *ChecklistPemantauanIbuNifasController) GetByKehamilanID(c echo.Conte
         Data:       data,
     })
 }
+
+
+
+
+func (ctrl *ChecklistPemantauanIbuNifasController) GetAllBidan(c echo.Context) error {
+    data, err := ctrl.usecase.GetAllBidan()
+    if err != nil {
+        return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+            "message": "Gagal mengambil data checklist pemantauan ibu nifas",
+            "error":   err.Error(),
+        })
+    }
+ 
+    return c.JSON(http.StatusOK, map[string]interface{}{
+        "message": "Berhasil mengambil data checklist pemantauan ibu nifas",
+        "data":    data,
+    })
+}

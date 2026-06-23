@@ -233,6 +233,9 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	bidan.GET("/checklist-nifas", controller.ChecklistPemantauanIbuNifas.GetByKehamilanID)
 	bidan.GET("/pemantauan-hamil", controller.PemantauanIbuHamil.GetByKehamilanIDBidan)
 
+	// bidan.GET("/checklist-nifas/all", controller.ChecklistPemantauanIbuNifas.GetAll)
+	bidan.GET("/checklist-nifas/all", controller.ChecklistPemantauanIbuNifas.GetAllBidan)
+
 	// Kader Management dipindahkan ke superadmin
 
 	// ==================== MODUL Anak ====================
