@@ -336,31 +336,36 @@ export default function RequestPerubahanImunisasiPage() {
                             <p className="text-xs text-gray-500">
                                 {pendingRequests.length === 0
                                     ? "Tidak ada data"
-                                    : `Menampilkan ${pendingFirstIndex + 1}-${Math.min(
-                                        pendingLastIndex,
-                                        pendingRequests.length
-                                    )} dari ${pendingRequests.length} data`}
+                                    : `Menampilkan ${pendingFirstIndex + 1}-${Math.min(pendingLastIndex, pendingRequests.length)} dari ${pendingRequests.length} data`}
                             </p>
 
-                            <div className="flex gap-2">
+                            <div className="flex items-center gap-1">
                                 <button
                                     disabled={pendingPage === 1}
-                                    onClick={() =>
-                                        setPendingPage((prev) => prev - 1)
-                                    }
-                                    className="p-2 border rounded-lg disabled:opacity-50"
+                                    onClick={() => setPendingPage((prev) => prev - 1)}
+                                    className="p-2 border rounded-lg disabled:opacity-40 hover:bg-gray-100"
                                 >
                                     <ChevronLeft size={16} />
                                 </button>
 
+                                {Array.from({ length: pendingTotalPages }, (_, i) => i + 1).map((page) => (
+                                    <button
+                                        key={page}
+                                        onClick={() => setPendingPage(page)}
+                                        className={`w-8 h-8 text-xs rounded-lg border font-medium ${
+                                            page === pendingPage
+                                                ? "bg-indigo-600 text-white border-indigo-600"
+                                                : "hover:bg-gray-100 text-gray-600"
+                                        }`}
+                                    >
+                                        {page}
+                                    </button>
+                                ))}
+
                                 <button
-                                    disabled={
-                                        pendingPage === pendingTotalPages
-                                    }
-                                    onClick={() =>
-                                        setPendingPage((prev) => prev + 1)
-                                    }
-                                    className="p-2 border rounded-lg disabled:opacity-50"
+                                    disabled={pendingPage === pendingTotalPages || pendingTotalPages === 0}
+                                    onClick={() => setPendingPage((prev) => prev + 1)}
+                                    className="p-2 border rounded-lg disabled:opacity-40 hover:bg-gray-100"
                                 >
                                     <ChevronRight size={16} />
                                 </button>
@@ -410,31 +415,36 @@ export default function RequestPerubahanImunisasiPage() {
                             <p className="text-xs text-gray-500">
                                 {completedRequests.length === 0
                                     ? "Tidak ada data"
-                                    : `Menampilkan ${completedFirstIndex + 1}-${Math.min(
-                                        completedLastIndex,
-                                        completedRequests.length
-                                    )} dari ${completedRequests.length} data`}
+                                    : `Menampilkan ${completedFirstIndex + 1}-${Math.min(completedLastIndex, completedRequests.length)} dari ${completedRequests.length} data`}
                             </p>
 
-                            <div className="flex gap-2">
+                            <div className="flex items-center gap-1">
                                 <button
                                     disabled={completedPage === 1}
-                                    onClick={() =>
-                                        setCompletedPage((prev) => prev - 1)
-                                    }
-                                    className="p-2 border rounded-lg disabled:opacity-50"
+                                    onClick={() => setCompletedPage((prev) => prev - 1)}
+                                    className="p-2 border rounded-lg disabled:opacity-40 hover:bg-gray-100"
                                 >
                                     <ChevronLeft size={16} />
                                 </button>
 
+                                {Array.from({ length: completedTotalPages }, (_, i) => i + 1).map((page) => (
+                                    <button
+                                        key={page}
+                                        onClick={() => setCompletedPage(page)}
+                                        className={`w-8 h-8 text-xs rounded-lg border font-medium ${
+                                            page === completedPage
+                                                ? "bg-indigo-600 text-white border-indigo-600"
+                                                : "hover:bg-gray-100 text-gray-600"
+                                        }`}
+                                    >
+                                        {page}
+                                    </button>
+                                ))}
+
                                 <button
-                                    disabled={
-                                        completedPage === completedTotalPages
-                                    }
-                                    onClick={() =>
-                                        setCompletedPage((prev) => prev + 1)
-                                    }
-                                    className="p-2 border rounded-lg disabled:opacity-50"
+                                    disabled={completedPage === completedTotalPages || completedTotalPages === 0}
+                                    onClick={() => setCompletedPage((prev) => prev + 1)}
+                                    className="p-2 border rounded-lg disabled:opacity-40 hover:bg-gray-100"
                                 >
                                     <ChevronRight size={16} />
                                 </button>
