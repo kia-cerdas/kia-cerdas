@@ -6,7 +6,6 @@ import { getIbuById } from "../../services/ibu";
 import { getKehamilanByIbuId } from "../../services/kehamilan";
 import { updateStatusKehamilan } from "../../services/kehamilan";
 import { getCurrentUser, isDokterUser, isBidanUser } from "../../services/auth";
-import { XCircle } from "lucide-react";
 import Swal from "sweetalert2";
 import { getDokterT1CompleteByKehamilanId } from "../../services/pemeriksaanDokter";
 import { 
@@ -346,14 +345,14 @@ const handleNonAktif = async () => {
                   disabled={nonAktifLoading}
                   className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#A32D2D] text-[#A32D2D] text-sm font-semibold hover:bg-red-50 transition disabled:opacity-50 font-sans"
                 >
-                  <XCircle size={16} />
+                  <AlertTriangle size={16} />
                   {nonAktifLoading ? "Memproses..." : "Tandai Abortus"}
                 </button>
               )}
 
               {kehamilan.status_kehamilan === "NON-AKTIF" && (
                 <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-100 text-[#A32D2D] text-sm font-semibold font-sans">
-                  <XCircle size={14} /> Abortus
+                  <AlertTriangle size={14} /> Abortus
                 </span>
               )}
             </div>

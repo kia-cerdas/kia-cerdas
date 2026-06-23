@@ -315,25 +315,12 @@ const Sidebar = ({ isOpen, onClose }) => {
                     flex flex-col transform transition-transform duration-300 ease-in-out ${isOpen ? "translate-x-0" : "-translate-x-full"
           }`}
       >
-        {/* Tombol Close */}
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-3 z-[70]
-                     w-8 h-8 rounded-lg flex items-center justify-center
-                     text-slate-400 hover:text-slate-600 hover:bg-slate-100
-                     active:bg-slate-200 transition-all"
-          aria-label="Tutup sidebar"
-          title="Tutup sidebar"
-        >
-          <X size={16} strokeWidth={2} />
-        </button>
-
         {/* Header Logo */}
         <div className="flex items-center gap-2.5 p-4 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-white">
           <div className="p-1.5 rounded-lg text-white shadow-lg shadow-blue-100 flex-shrink-0">
             <img src={logo} alt="Logo" className="w-6 h-6 object-contain" />
           </div>
-          <div className="min-w-0 flex-1 pr-12">
+          <div className="min-w-0 flex-1">
             <h1 className="text-base font-bold text-slate-800 leading-tight">Generasi Sehat</h1>
             <p className="text-[11px] text-slate-400">
               Beranda{" "}

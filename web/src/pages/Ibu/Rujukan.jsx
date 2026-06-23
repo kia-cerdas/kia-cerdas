@@ -567,7 +567,7 @@ export default function Rujukan() {
                     onClick={() => setMode("form-bidan")}
                     className="bg-[#185FA5] text-white rounded-lg px-5 py-2.5 font-semibold flex items-center gap-2 text-base mx-auto"
                   >
-                    <Plus size={18} /> Buat Permintaan Rujukan
+                     Buat Permintaan Rujukan
                   </button>
                 </>
               )}

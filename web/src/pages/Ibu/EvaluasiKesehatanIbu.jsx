@@ -27,6 +27,7 @@ import {
   Calendar,
   User,
   Baby,
+  FileText,
 } from "lucide-react";
 import { getCurrentUser, isDokterUser, isBidanUser } from "../../services/auth";
 
@@ -196,18 +197,25 @@ const EvaluationView = ({
 }) => {
   if (!evaluasi) {
     return (
-      <div className="bg-white rounded-xl shadow-sm p-6 text-center border border-gray-100">
-        <div className="text-gray-500 mb-4 text-sm">
-          Belum ada data evaluasi kesehatan untuk kehamilan ini.
+      <div className="bg-white rounded-xl shadow-sm p-8 text-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="p-4 rounded-full bg-indigo-50">
+            <FileText size={40} className="text-indigo-400" />
+          </div>
+          <h3 className="text-xl font-semibold text-gray-800">Belum Ada Data Evaluasi Kesehatan</h3>
+          <p className="text-gray-500 max-w-md">Silakan isi data evaluasi kesehatan untuk memulai pemantauan kesehatan ibu hamil.</p>
+          {canEdit && (
+            <button
+              onClick={() => setIsEditing(true)}
+              className="bg-indigo-600 text-white px-6 py-2.5 rounded-lg font-semibold flex items-center gap-2 hover:bg-indigo-700 transition"
+            >
+              <Plus size={18} /> Tambah Evaluasi Pertama
+            </button>
+          )}
+          {!canEdit && (
+            <p className="text-xs text-gray-400 mt-2">Hanya Bidan yang dapat menambahkan data Evaluasi Kesehatan.</p>
+          )}
         </div>
-        {canEdit && (
-          <button
-            onClick={() => setIsEditing(true)}
-            className="bg-primary text-white rounded-full px-6 py-3 text-sm font-semibold flex items-center gap-2 mx-auto hover:bg-primary/90 transition"
-          >
-            <Plus size={16} /> Tambah Evaluasi
-          </button>
-        )}
       </div>
     );
   }

@@ -563,7 +563,7 @@ export default function PemeriksaanKehamilanList() {
                 canEdit && (
                   <button
                     onClick={handleRujukClick}
-                    className="bg-danger hover:bg-danger/90 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 transition-all shadow-md hover:shadow-lg animate-pulse"
+                    className="bg-danger hover:bg-danger/90 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 transition-all shadow-md hover:shadow-lg"
                   >
                     <AlertTriangle size={18} /> Rujuk Segera
                   </button>

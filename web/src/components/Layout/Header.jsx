@@ -1,7 +1,7 @@
 // src/components/Layout/Header.jsx
 import { useState, useRef, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { LogOut, ChevronDown, User, PanelLeftOpen, PanelLeftClose, Mail, Shield, Edit2, Save, Eye, EyeOff, X } from "lucide-react";
+import { LogOut, ChevronDown, User, Menu, Mail, Shield, Edit2, Save, Eye, EyeOff, X } from "lucide-react";
 import { getCurrentUser, logout } from "../../services/auth";
 import api from "../../services/api";
 import Swal from "sweetalert2";
@@ -400,38 +400,21 @@ const Header = ({ onToggleSidebar, isSidebarOpen }) => {
 
   return (
     <>
-      {/* ── Floating toggle saat sidebar TERTUTUP ── */}
-      {!isSidebarOpen && (
-        <button
-          onClick={onToggleSidebar}
-          className="fixed left-0 top-1/2 -translate-y-1/2 z-[9999]
-                     w-9 h-9 bg-blue-600 hover:bg-blue-700
-                     flex items-center justify-center
-                     rounded-r-xl shadow-lg transition-colors"
-          aria-label="Buka sidebar"
-          title="Buka sidebar"
-        >
-          <PanelLeftOpen size={18} className="text-white" />
-        </button>
-      )}
-
       {/* ── Header bar ── */}
       <header className="px-4 py-3 border-b border-gray-100 bg-white relative z-50">
         <div className="bg-[#185FA5] text-white rounded-2xl px-4 py-3 flex items-center gap-3">
 
-          {/* Tombol toggle sidebar (hanya muncul saat sidebar TERBUKA) */}
-          {isSidebarOpen && (
-            <button
-              onClick={onToggleSidebar}
-              className="w-9 h-9 rounded-xl bg-white/15 hover:bg-white/25
-                         border border-white/20 flex items-center justify-center
-                         flex-shrink-0 transition-colors"
-              aria-label="Tutup sidebar"
-              title="Tutup sidebar"
-            >
-              <PanelLeftClose size={18} className="text-white" />
-            </button>
-          )}
+          {/* Tombol toggle sidebar */}
+          <button
+            onClick={onToggleSidebar}
+            className="w-9 h-9 rounded-xl bg-white/15 hover:bg-white/25
+                       border border-white/20 flex items-center justify-center
+                       flex-shrink-0 transition-colors"
+            aria-label="Toggle sidebar"
+            title="Toggle sidebar"
+          >
+            <Menu size={18} className="text-white" />
+          </button>
 
           {/* Judul halaman */}
           <div className="flex-1 min-w-0">

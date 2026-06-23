@@ -175,6 +175,16 @@ const Breadcrumb = () => {
         path: itemPath,
         segment,
       });
+    } else {
+      // Special handling for ID segments - add "Detail" breadcrumb for certain paths
+      const prevSegment = pathSegments[index - 1];
+      if (prevSegment === "data-ibu") {
+        breadcrumbItems.push({
+          label: "Detail Ibu",
+          path: currentPath,
+          segment: "detail",
+        });
+      }
     }
   });
 
