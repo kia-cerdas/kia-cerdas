@@ -20,31 +20,31 @@ class ZScoreCardWidget extends StatelessWidget {
     if (zScore < -2) {
       return _ZScoreInfo(
         position: 0.15, // Paling kiri (Merah)
-        color: const Color(0xFFEF4444),
+        color: const Color(0xFFA32D2D),
         category: 'Sangat Kurang',
       );
     } else if (zScore < -1) {
       return _ZScoreInfo(
         position: 0.28,
-        color: const Color(0xFFF59E0B),
+        color: const Color(0xFFBA7517),
         category: 'Kurang',
       );
     } else if (zScore <= 1) {
       return _ZScoreInfo(
         position: 0.50,
-        color: const Color(0xFF22C55E),
+        color: const Color(0xFF0F6E56),
         category: 'Normal',
       );
     } else if (zScore <= 2) {
       return _ZScoreInfo(
         position: 0.72,
-        color: const Color(0xFFF59E0B),
+        color: const Color(0xFFBA7517),
         category: 'Lebih',
       );
     } else {
       return _ZScoreInfo(
         position: 0.85, // Paling kanan (Merah)
-        color: const Color(0xFFEF4444),
+        color: const Color(0xFFA32D2D),
         category: 'Sangat Lebih',
       );
     }
@@ -128,11 +128,11 @@ class ZScoreCardWidget extends StatelessWidget {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        const Color(0xFFEF4444), // Merah
-                        const Color(0xFFF59E0B), // Kuning
-                        const Color(0xFF22C55E), // Hijau
-                        const Color(0xFFF59E0B), // Kuning
-                        const Color(0xFFEF4444), // Merah
+                        const Color(0xFFA32D2D), // Merah
+                        const Color(0xFFBA7517), // Kuning
+                        const Color(0xFF0F6E56), // Hijau
+                        const Color(0xFFBA7517), // Kuning
+                        const Color(0xFFA32D2D), // Merah
                       ],
                       stops: const [0, 0.25, 0.5, 0.75, 1.0],
                     ),

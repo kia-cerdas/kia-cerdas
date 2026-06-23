@@ -221,7 +221,7 @@ class _CariAnakScreenState extends State<CariAnakScreen> {
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: 40),
           child: CircularProgressIndicator(
-            color: Color(0xFF2563EB),
+            color: Color(0xFF185FA5),
             strokeWidth: 3,
           ),
         ),
@@ -238,13 +238,13 @@ class _CariAnakScreenState extends State<CariAnakScreen> {
         ),
         child: Row(
           children: [
-            const Icon(Icons.error_outline, color: Color(0xFFDC2626)),
+            const Icon(Icons.error_outline, color: Color(0xFFA32D2D)),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
                 _errorMessage!,
                 style: const TextStyle(
-                  color: Color(0xFFDC2626),
+                  color: Color(0xFFA32D2D),
                   fontSize: 13,
                 ),
               ),
@@ -350,13 +350,13 @@ class _CariAnakScreenState extends State<CariAnakScreen> {
       selected: isActive,
       onSelected: (_) => _onFilterChanged(filter),
       backgroundColor: Colors.white,
-      selectedColor: const Color(0xFF2563EB).withOpacity(0.2),
+      selectedColor: const Color(0xFF185FA5).withOpacity(0.2),
       labelStyle: TextStyle(
-        color: isActive ? const Color(0xFF2563EB) : Colors.grey.shade600,
+        color: isActive ? const Color(0xFF185FA5) : Colors.grey.shade600,
         fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
       ),
       side: BorderSide(
-        color: isActive ? const Color(0xFF2563EB) : Colors.grey.shade300,
+        color: isActive ? const Color(0xFF185FA5) : Colors.grey.shade300,
       ),
       showCheckmark: false, // UI lebih clean tanpa checkmark bawaan
     );

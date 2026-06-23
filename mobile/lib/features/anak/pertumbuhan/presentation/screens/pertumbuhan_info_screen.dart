@@ -62,19 +62,38 @@ class _PertumbuhanInfoScreenState extends State<PertumbuhanInfoScreen> {
       backgroundColor: const Color(0xFFF1F5F9),
       appBar: AppBar(
         backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF1E293B),
         elevation: 0,
+        centerTitle: false,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF1E293B)),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Pertumbuhan',
-          style: TextStyle(
-              color: Colors.black87,
-              fontSize: 18,
-              fontWeight: FontWeight.bold),
+        title: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Pertumbuhan',
+              style: TextStyle(
+                color: Color(0xFF1E293B),
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+            Text(
+              'Informasi standar pertumbuhan anak',
+              style: TextStyle(
+                color: Color(0xFF64748B),
+                fontWeight: FontWeight.normal,
+                fontSize: 12,
+              ),
+            ),
+          ],
         ),
-        centerTitle: false,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1.0),
+          child: Container(color: Colors.grey.shade200, height: 1.0),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -86,7 +105,7 @@ class _PertumbuhanInfoScreenState extends State<PertumbuhanInfoScreen> {
             _buildLihatGrafikButton(),
             const SizedBox(height: 20),
             _buildSectionTitle('3 Indikator Pertumbuhan',
-                color: const Color(0xFFF59E0B)),
+                color: const Color(0xFFBA7517)),
             const SizedBox(height: 10),
             Container(
               padding: const EdgeInsets.all(16),
@@ -117,7 +136,7 @@ class _PertumbuhanInfoScreenState extends State<PertumbuhanInfoScreen> {
             ),
             const SizedBox(height: 24),
             _buildSectionTitle('Standar BB & TB Median (WHO)',
-                color: const Color(0xFF2563EB)),
+                color: const Color(0xFF185FA5)),
             const SizedBox(height: 10),
             _buildWhoTable(),
             const SizedBox(height: 24),
@@ -134,11 +153,7 @@ class _PertumbuhanInfoScreenState extends State<PertumbuhanInfoScreen> {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 16),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF1D4ED8), Color(0xFF2563EB)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: const Color(0xFF185FA5),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -168,10 +183,10 @@ class _PertumbuhanInfoScreenState extends State<PertumbuhanInfoScreen> {
 
   Widget _buildLihatGrafikButton() {
     return Material(
-      color: const Color(0xFF1D4ED8), // Biru khas tombol primer
+      color: const Color(0xFF185FA5), // Biru khas tombol primer
       borderRadius: BorderRadius.circular(12),
       elevation: 4,
-      shadowColor: const Color(0xFF1D4ED8).withValues(alpha: 0.4),
+      shadowColor: const Color(0xFF185FA5).withValues(alpha: 0.4),
       child: InkWell(
         onTap: () {
           Navigator.push(
@@ -223,7 +238,7 @@ class _PertumbuhanInfoScreenState extends State<PertumbuhanInfoScreen> {
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Icons.arrow_forward_ios,
-                    color: Color(0xFF1D4ED8), size: 14),
+                    color: Color(0xFF185FA5), size: 14),
               ),
             ],
           ),
@@ -263,7 +278,7 @@ class _PertumbuhanInfoScreenState extends State<PertumbuhanInfoScreen> {
               width: 8,
               height: 8,
               decoration: const BoxDecoration(
-                color: Color(0xFFF59E0B),
+                color: Color(0xFFBA7517),
                 shape: BoxShape.circle,
               ),
             ),
@@ -301,7 +316,7 @@ class _PertumbuhanInfoScreenState extends State<PertumbuhanInfoScreen> {
         children: [
           // Header row
           Container(
-            color: const Color(0xFF1E3A5F),
+            color: const Color(0xFF185FA5),
             padding:
                 const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
             child: Row(
@@ -320,7 +335,7 @@ class _PertumbuhanInfoScreenState extends State<PertumbuhanInfoScreen> {
               padding: EdgeInsets.all(20),
               child: Center(
                   child: CircularProgressIndicator(
-                      color: Color(0xFF2563EB), strokeWidth: 2)),
+                      color: Color(0xFF185FA5), strokeWidth: 2)),
             )
           else
             ...List.generate(usiaList.length, (i) {
