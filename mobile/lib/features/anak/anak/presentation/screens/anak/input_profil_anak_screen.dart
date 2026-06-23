@@ -257,15 +257,15 @@ class _InputProfilAnakScreenState extends State<InputProfilAnakScreen> {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2F80ED),
+                    backgroundColor: const Color(0xFF185FA5),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                   child: const Text(
-                    "Simpan Data Anak",
-                    style: TextStyle(fontSize: 16),
+                    "Simpan",
+                    style: TextStyle(fontSize: 16, color: Colors.white),
                   ),
                 ),
               )

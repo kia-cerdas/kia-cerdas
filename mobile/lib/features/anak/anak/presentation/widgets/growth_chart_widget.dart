@@ -39,12 +39,12 @@ class _GrowthChartWidgetState extends State<GrowthChartWidget> {
 
   Color _statusColorByZScore(double zScore) {
     if (zScore >= -2 && zScore <= 2) {
-      return const Color(0xFF10B981); // Normal (Hijau)
+      return const Color(0xFF0F6E56); // Normal (Hijau)
     }
     if ((zScore >= -3 && zScore < -2) || (zScore > 2 && zScore <= 3)) {
-      return const Color(0xFFF59E0B); // Risiko (Kuning/Oranye)
+      return const Color(0xFFBA7517); // Risiko (Kuning/Oranye)
     }
-    return const Color(0xFFEF4444); // Buruk/Sangat (Merah)
+    return const Color(0xFFA32D2D); // Buruk/Sangat (Merah)
   }
 
   bool get _isLengthChart => widget.selectedTab == 'TB/U' || widget.selectedTab == 'BB/TB';
@@ -202,7 +202,7 @@ class _GrowthChartWidgetState extends State<GrowthChartWidget> {
     if (_showMedian) {
       barData.add(LineChartBarData(
           spots: _getLine((m) => m.median),
-          color: const Color(0xFF22C55E),
+          color: const Color(0xFF0F6E56),
           barWidth: 2,
           isCurved: true,
           dotData: const FlDotData(show: false)));
@@ -212,7 +212,7 @@ class _GrowthChartWidgetState extends State<GrowthChartWidget> {
       childIdx = barData.length;
       barData.add(LineChartBarData(
         spots: childData,
-        color: const Color(0xFF2563EB),
+        color: const Color(0xFF185FA5),
         barWidth: 3,
         isCurved: true,
         belowBarData: BarAreaData(show: false),
@@ -261,10 +261,10 @@ class _GrowthChartWidgetState extends State<GrowthChartWidget> {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1D4ED8).withOpacity(0.10),
+                  color: const Color(0xFF185FA5).withOpacity(0.10),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.show_chart, color: Color(0xFF1D4ED8)),
+                child: const Icon(Icons.show_chart, color: Color(0xFF185FA5)),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -399,7 +399,7 @@ class _GrowthChartWidgetState extends State<GrowthChartWidget> {
                         enabled: true,
                         getTouchedSpotIndicator: (LineChartBarData barData, List<int> spotIndexes) {
                           return spotIndexes.map((spotIndex) {
-                            if (barData.color == const Color(0xFF2563EB)) {
+                            if (barData.color == const Color(0xFF185FA5)) {
                               return TouchedSpotIndicatorData(
                                 const FlLine(color: Colors.transparent),
                                 FlDotData(show: true, getDotPainter: (spot, percent, barData, index) {
@@ -490,9 +490,9 @@ class _GrowthChartWidgetState extends State<GrowthChartWidget> {
           Wrap(
             runSpacing: 8,
             children: [
-              _buildLegendItem('Median', const Color(0xFF22C55E), _showMedian, () => setState(() => _showMedian = !_showMedian)),
-              _buildLegendItem('Data Anak', const Color(0xFF2563EB), _showDataAnak, () => setState(() => _showDataAnak = !_showDataAnak)),
-              _buildLegendItem('±2 SD', const Color(0xFFEF4444), _showSd2, () => setState(() => _showSd2 = !_showSd2)),
+              _buildLegendItem('Median', const Color(0xFF0F6E56), _showMedian, () => setState(() => _showMedian = !_showMedian)),
+              _buildLegendItem('Data Anak', const Color(0xFF185FA5), _showDataAnak, () => setState(() => _showDataAnak = !_showDataAnak)),
+              _buildLegendItem('±2 SD', const Color(0xFFA32D2D), _showSd2, () => setState(() => _showSd2 = !_showSd2)),
               _buildLegendItem('±3 SD', Colors.black54, _showSd3, () => setState(() => _showSd3 = !_showSd3)),
             ],
           ),

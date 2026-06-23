@@ -1399,7 +1399,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'Kenali Tanda Bahaya — Segera ke faskes jika ada gejala ini',
+                    'Kenali Tanda Darurat — Segera ke tindak lanjuti jika ada gejala ini',
                     style: TextStyle(fontSize: 12),
                   ),
                 ),

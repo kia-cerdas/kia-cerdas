@@ -60,7 +60,7 @@ class _ImunisasiScreenState extends State<ImunisasiScreen> {
       case 'selesai':
         return const Color(0xFF1B9E5F);
       case 'menunggu':
-        return const Color(0xFFF59E0B);
+        return const Color(0xFFBA7517);
       case 'terlambat':
         return Colors.red;
       default:

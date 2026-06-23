@@ -310,7 +310,7 @@ class _RiwayatSkriningTandaBahayaScreenState
                 onConfirm();
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2563EB),
+                backgroundColor: const Color(0xFF185FA5),
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -345,15 +345,37 @@ class _RiwayatSkriningTandaBahayaScreenState
       backgroundColor: const Color(0xFFF1F5F9),
       appBar: AppBar(
         backgroundColor: Colors.white,
-        elevation: 1,
+        foregroundColor: const Color(0xFF1E293B),
+        elevation: 0,
         centerTitle: false,
-        iconTheme: const IconThemeData(color: Colors.black),
-        title: Text(
-          'Riwayat Skrining',
-          style: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.w600,
-          ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF1E293B)),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Riwayat Skrining',
+              style: TextStyle(
+                color: Color(0xFF1E293B),
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+            Text(
+              'Pemantauan tanda bahaya bayi',
+              style: TextStyle(
+                color: Color(0xFF64748B),
+                fontWeight: FontWeight.normal,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1.0),
+          child: Container(color: Colors.grey.shade200, height: 1.0),
         ),
       ),
       body: RefreshIndicator(
@@ -467,7 +489,7 @@ class _RiwayatSkriningTandaBahayaScreenState
     //     child: const Row(
     //       crossAxisAlignment: CrossAxisAlignment.start,
     //       children: [
-    //         Icon(Icons.info_outline_rounded, color: Color(0xFF2563EB)),
+    //         Icon(Icons.info_outline_rounded, color: Color(0xFF185FA5)),
     //         SizedBox(width: 12),
     //         Expanded(
     //           child: Text(
@@ -497,7 +519,7 @@ class _RiwayatSkriningTandaBahayaScreenState
         children: [
           const Row(
             children: [
-              Icon(Icons.info_outline_rounded, color: Color(0xFF2563EB)),
+              Icon(Icons.info_outline_rounded, color: Color(0xFF185FA5)),
               SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -545,7 +567,7 @@ class _RiwayatSkriningTandaBahayaScreenState
               color: Color(0xFFDBEAFE),
             ),
             child: const Icon(Icons.pending_actions_rounded,
-                color: Color(0xFF2563EB)),
+                color: Color(0xFF185FA5)),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -744,7 +766,7 @@ class _RiwayatSkriningTandaBahayaScreenState
             ),
             child: const Icon(
               Icons.history_rounded,
-              color: Color(0xFFDC2626),
+              color: Color(0xFFA32D2D),
               size: 32,
             ),
           ),

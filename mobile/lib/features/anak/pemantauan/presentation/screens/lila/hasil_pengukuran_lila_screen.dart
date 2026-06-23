@@ -45,7 +45,7 @@ class _HasilPengukuranLilaScreenState extends State<HasilPengukuranLilaScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Lengkapi semua data pengukuran'),
-          backgroundColor: Color(0xFFEF4444),
+          backgroundColor: Color(0xFFA32D2D),
         ),
       );
       return;
@@ -56,7 +56,7 @@ class _HasilPengukuranLilaScreenState extends State<HasilPengukuranLilaScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Masukkan angka yang valid untuk LiLA'),
-          backgroundColor: Color(0xFFEF4444),
+          backgroundColor: Color(0xFFA32D2D),
         ),
       );
       return;
@@ -66,13 +66,13 @@ class _HasilPengukuranLilaScreenState extends State<HasilPengukuranLilaScreen> {
     Color statusColor;
     if (lila > 13.5) {
       status = 'Gizi Baik';
-      statusColor = const Color(0xFF16A34A);
+      statusColor = const Color(0xFF0F6E56);
     } else if (lila >= 11.5) {
       status = 'Gizi Kurang';
-      statusColor = const Color(0xFFD97706);
+      statusColor = const Color(0xFFBA7517);
     } else {
       status = 'Gizi Buruk';
-      statusColor = const Color(0xFFDC2626);
+      statusColor = const Color(0xFFA32D2D);
     }
 
     setState(() {
@@ -155,14 +155,14 @@ class _HasilPengukuranLilaScreenState extends State<HasilPengukuranLilaScreen> {
                 ),
                 child: const Row(
                   children: [
-                    Icon(Icons.local_hospital, color: Color(0xFFDC2626)),
+                    Icon(Icons.local_hospital, color: Color(0xFFA32D2D)),
                     SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         '⚠️ PERLU KE PUSKESMAS SEGERA!',
                         style: TextStyle(
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFFDC2626),
+                          color: Color(0xFFA32D2D),
                         ),
                       ),
                     ),
@@ -176,14 +176,14 @@ class _HasilPengukuranLilaScreenState extends State<HasilPengukuranLilaScreen> {
               child: ElevatedButton(
                 onPressed: () => Navigator.pop(context),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: statusColor,
+                  backgroundColor: const Color(0xFF185FA5),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
                 child: const Text(
-                  'Simpan & Tutup',
+                  'Simpan',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -285,7 +285,7 @@ class _HasilPengukuranLilaScreenState extends State<HasilPengukuranLilaScreen> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: Color(0xFF16A34A)),
+                        borderSide: const BorderSide(color: Color(0xFF0F6E56)),
                       ),
                     ),
                   ),
@@ -360,7 +360,7 @@ class _HasilPengukuranLilaScreenState extends State<HasilPengukuranLilaScreen> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: Color(0xFF16A34A)),
+                        borderSide: const BorderSide(color: Color(0xFF0F6E56)),
                       ),
                     ),
                   ),
@@ -372,14 +372,14 @@ class _HasilPengukuranLilaScreenState extends State<HasilPengukuranLilaScreen> {
                     child: ElevatedButton(
                       onPressed: _simpanPengukuran,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF16A34A),
+                        backgroundColor: const Color(0xFF185FA5),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
                       child: const Text(
-                        'Simpan Pengukuran',
+                        'Simpan',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -440,7 +440,7 @@ class _HasilPengukuranLilaScreenState extends State<HasilPengukuranLilaScreen> {
                       alignment: Alignment.centerRight,
                       padding: const EdgeInsets.only(right: 20),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFEF4444),
+                        color: const Color(0xFFA32D2D),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Icon(Icons.delete, color: Colors.white),

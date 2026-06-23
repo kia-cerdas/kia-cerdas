@@ -234,9 +234,9 @@ const PelayananGiziIndex = () => {
                 navigate(`/data-anak/dashboard/${anakId}`);
               }
             }}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-600 rounded-xl font-bold text-xs uppercase tracking-wider transition-all shadow-sm active:scale-95"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-[#185FA5] hover:bg-[#185FA5]/90 text-white text-sm font-semibold rounded-xl transition-all active:scale-95 shadow-sm"
           >
-            <ArrowLeft size={14} className="text-[#185FA5] stroke-[3px]" /> Kembali
+            <ArrowLeft size={16} /> {viewMode === 'FORM' ? 'Kembali ke Daftar' : 'Kembali'}
           </button>
         </div>
 

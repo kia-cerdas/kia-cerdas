@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+﻿import { useState, useEffect, useMemo } from "react";
 import MainLayout from "../../components/Layout/MainLayout";
 import { getAnak } from "../../services/Anak";
 import { getKategoriCapaianList, getPerawatanByAnak } from "../../services/perawatan";
@@ -112,12 +112,12 @@ export default function LihatDataPerkembangan() {
 
   return (
     <MainLayout>
-      <div className="p-6 space-y-6 bg-[#F8FAFC] min-h-screen">
+      <div className="p-4 md:p-6 space-y-6 bg-[#F8FAFC] min-h-screen">
 
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-800">Data Perawatan Anak</h1>
+            <h1 className="text-xl md:text-2xl font-bold text-slate-800">Data Perawatan Anak</h1>
             <p className="text-slate-500 text-sm">
               Pantau pencapaian indikator perkembangan anak berdasarkan lembar perawatan.
             </p>
@@ -133,7 +133,7 @@ export default function LihatDataPerkembangan() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 gap-3 md:gap-4">
           <StatCard
             icon={<FileText className="text-blue-600" />}
             label="TOTAL ANAK"
@@ -155,11 +155,11 @@ export default function LihatDataPerkembangan() {
         </div>
 
         {/* Filter + Tabel */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+        <div className="bg-white p-4 md:p-5 rounded-2xl border border-slate-200 shadow-sm">
 
           {/* Filter Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-            <div className="flex flex-wrap items-center gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-5">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-3">
               {/* Search */}
               <div className="flex flex-col gap-1">
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
@@ -175,7 +175,7 @@ export default function LihatDataPerkembangan() {
                     placeholder="Cari anak..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-blue-500 w-56"
+                    className="pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-[#185FA5] w-full sm:w-52"
                   />
                 </div>
               </div>
@@ -185,8 +185,7 @@ export default function LihatDataPerkembangan() {
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                   STATUS
                 </label>
-                <div className="flex gap-2">
-                  {["Semua", "Tercapai", "Sebagian", "Belum"].map((s) => (
+                <div className="flex flex-wrap gap-2">{["Semua", "Tercapai", "Sebagian", "Belum"].map((s) => (
                     <button
                       key={s}
                       onClick={() => setStatusFilter(s)}
@@ -205,17 +204,17 @@ export default function LihatDataPerkembangan() {
 
             <button
               onClick={() => { setStatusFilter("Semua"); setSearchTerm(""); }}
-              className="text-blue-600 text-sm font-semibold flex items-center gap-1 hover:underline"
+              className="text-[#185FA5] text-sm font-semibold flex items-center gap-1 hover:underline"
             >
               <RotateCcw size={13} /> Reset
             </button>
           </div>
 
           {/* Tabel */}
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
+          <div className="overflow-x-auto -mx-4 md:mx-0">
+            <table className="w-full text-left min-w-[540px]">
               <thead>
-                <tr className="text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                <tr className="text-xs font-semibold text-slate-500 border-b border-slate-100 bg-slate-50">
                   <th className="pb-3 px-2">IDENTITAS</th>
                   <th className="pb-3 px-2">USIA</th>
                   <th className="pb-3 px-2 text-center">CAPAIAN INDIKATOR</th>
@@ -261,7 +260,7 @@ export default function LihatDataPerkembangan() {
                           </span>
                           <div className="w-28 bg-slate-100 rounded-full h-2">
                             <div
-                              className="h-2 rounded-full transition-all bg-blue-500"
+                              className="h-2 rounded-full transition-all bg-[#185FA5]"
                               style={{
                                 width: `${item.total > 0 ? (item.tercapai / item.total) * 100 : 0}%`,
                               }}
@@ -285,8 +284,7 @@ export default function LihatDataPerkembangan() {
                         <div className="flex justify-end">
                           <Link
                             to={`/data-anak/perawatan/${item.id}`}
-                            className="p-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-blue-600 hover:text-white transition-all"
-                            title="Lihat & Isi Lembar Perawatan"
+                            className="p-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-[#185FA5] hover:text-white transition-all" title="Lihat & Isi Lembar Perawatan"
                           >
                             <Eye size={17} />
                           </Link>
@@ -308,11 +306,11 @@ export default function LihatDataPerkembangan() {
 
 function StatCard({ icon, label, value, color }) {
   return (
-    <div className="p-5 rounded-2xl border border-slate-100 bg-white shadow-sm flex items-center gap-4">
-      <div className={`p-3.5 rounded-xl ${color}`}>{icon}</div>
-      <div>
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{label}</p>
-        <p className="text-3xl font-black text-slate-800">{value}</p>
+    <div className="p-3 md:p-5 rounded-2xl border border-slate-100 bg-white shadow-sm flex items-center gap-2 md:gap-4">
+      <div className={`p-2 md:p-3.5 rounded-xl ${color} flex-shrink-0`}>{icon}</div>
+      <div className="min-w-0">
+        <p className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">{label}</p>
+        <p className="text-xl md:text-3xl font-black text-slate-800">{value}</p>
       </div>
     </div>
   );

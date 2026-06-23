@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ta_pa2_pa3_project/features/anak/pemantauan/data/models/warna_tinja_model.dart';
 import 'package:ta_pa2_pa3_project/features/anak/pemantauan/data/services/warna_tinja_api_service.dart';
 import 'package:ta_pa2_pa3_project/core/widgets/verification_popup.dart';
+import 'package:ta_pa2_pa3_project/core/widgets/child_profile_card.dart';
 
 class WarnaTinjaScreen extends StatefulWidget {
   final Map<String, dynamic> anak;
@@ -218,84 +219,47 @@ class _WarnaTinjaScreenState extends State<WarnaTinjaScreen> {
 
   Widget _buildAnakCard() {
     final nama = widget.anak['nama'] ?? widget.anak['nama_anak'] ?? 'Anak';
-
     final usia = widget.anak['usia_teks'] ?? '-';
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          const CircleAvatar(
-            radius: 26,
-            backgroundColor: Color(0xFFD7ECFF),
-            child: Icon(
-              Icons.person_outline,
-              size: 30,
-              color: Color(0xFF185FA5),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  nama,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                    color: Color(0xFF1E293B),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFDBEAFE),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    'Usia: $usia',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFF185FA5),
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
+    return ChildProfileCard(nama: nama, usia: usia);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Cek Warna Tinja',
-            style: TextStyle(color: Colors.black87)),
         backgroundColor: Colors.white,
-        iconTheme: const IconThemeData(color: Colors.black),
+        foregroundColor: const Color(0xFF1E293B),
+        elevation: 0,
+        centerTitle: false,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, size: 20),
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF1E293B)),
           onPressed: _handleBack,
+        ),
+        title: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Cek Warna Tinja',
+              style: TextStyle(
+                color: Color(0xFF1E293B),
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+            Text(
+              'Pemantauan dini atresia bilier',
+              style: TextStyle(
+                color: Color(0xFF64748B),
+                fontWeight: FontWeight.normal,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1.0),
+          child: Container(color: Colors.grey.shade200, height: 1.0),
         ),
       ),
       body: PopScope(
@@ -326,14 +290,14 @@ class _WarnaTinjaScreenState extends State<WarnaTinjaScreen> {
                           Icon(
                             Icons.info_outline,
                             size: 18,
-                            color: Color(0xFFD97706),
+                            color: Color(0xFFBA7517),
                           ),
                           SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               'Periksa warna tinja bayi setiap hari.',
                               style: TextStyle(
-                                color: Color(0xFFD97706),
+                                color: Color(0xFFBA7517),
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -436,9 +400,9 @@ class _WarnaTinjaScreenState extends State<WarnaTinjaScreen> {
                               borderRadius: BorderRadius.circular(10)),
                         ),
                         child: Text(
-                          _saving ? 'Menyimpan...' : 'Simpan Data',
+                          _saving ? 'Menyimpan...' : 'Simpan',
                           style: const TextStyle(
-                              fontSize: 16, color: Colors.white),
+                              fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ),

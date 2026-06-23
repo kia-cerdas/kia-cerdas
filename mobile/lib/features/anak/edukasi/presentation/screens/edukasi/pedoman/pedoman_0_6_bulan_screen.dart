@@ -25,7 +25,7 @@ class _Pedoman06BulanScreenState extends State<Pedoman06BulanScreen> {
             "0 - 6 Bulan: Berikan ASI Saja Sampai Usia 6 Bulan",
             style: TextStyle(
               fontSize: 14,
-              color: Color(0xFF2563EB),
+              color: Color(0xFF185FA5),
               fontWeight: FontWeight.w600,
             ),
           ),

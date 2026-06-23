@@ -144,7 +144,7 @@ const Breadcrumb = () => {
 
     // Skip role-prefix segments
     if (skipSegments.includes(segment)) return;
-    
+
     // Special handling for preview pages: combine type + preview into one breadcrumb item
     if (isPreviewPage && segment !== "laporan" && segment !== "preview") {
       // This is the "ibu" or "balita" segment - skip it as we'll combine it with "preview"
@@ -157,6 +157,9 @@ const Breadcrumb = () => {
     if (!isId) {
       // Kontekstual: "form" tampilkan sebagai "Tambah" atau "Ubah" tergantung apakah ada ID setelahnya
       let label;
+       const nextSegment = pathSegments[index + 1];
+    const hasId = nextSegment && /^[0-9a-f-]{36}$|^\d+$/.test(nextSegment);
+    
       if (segment === "form") {
         const nextSegment = pathSegments[index + 1];
         const hasId = nextSegment && /^[0-9a-f-]{36}$|^\d+$/.test(nextSegment);

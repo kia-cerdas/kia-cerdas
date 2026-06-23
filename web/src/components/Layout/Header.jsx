@@ -200,6 +200,7 @@ const InfoRow = ({ icon: Icon, label, value }) => (
   </div>
 );
 
+// Ambil pesan error dari response backend (bisa string atau array)
 const extractErrMsg = (err, fallback) => {
   const d = err?.response?.data;
   if (!d) return fallback;

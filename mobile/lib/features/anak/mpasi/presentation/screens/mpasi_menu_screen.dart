@@ -10,51 +10,43 @@ class MpasiMenuScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF1E293B),
+        elevation: 0,
+        centerTitle: false,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF1E293B)),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'MPASI',
+              style: TextStyle(
+                color: Color(0xFF1E293B),
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+            Text(
+              'Berdasarkan Buku KIA Terbaru 2024',
+              style: TextStyle(
+                color: Color(0xFF64748B),
+                fontWeight: FontWeight.normal,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1.0),
+          child: Container(color: Colors.grey.shade200, height: 1.0),
+        ),
+      ),
       body: Column(
         children: [
-          // Header
-          Container(
-            padding: const EdgeInsets.only(top: 50, left: 16, right: 16, bottom: 20),
-            decoration: const BoxDecoration(
-              color: Color(0xFF1E5B9B), // Dark blue
-            ),
-            child: Row(
-              children: [
-                GestureDetector(
-                  onTap: () => Navigator.pop(context),
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 16),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'MPASI',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      'Berdasarkan Buku KIA Terbaru 2024',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
 
           Expanded(
             child: ListView(
@@ -64,33 +56,37 @@ class MpasiMenuScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: const Color(0xFF185FA5).withOpacity(0.06),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.orange.shade200),
                   ),
                   child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(10),
+                        padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: Colors.blue.shade50,
+                          color: const Color(0xFF185FA5).withOpacity(0.12),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.newspaper, color: Colors.orange),
+                        child: const Icon(Icons.info_outline, color: Color(0xFF185FA5), size: 20),
                       ),
-                      const SizedBox(width: 16),
+                      const SizedBox(width: 12),
                       const Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               'Info MPASI',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                                color: Color(0xFF185FA5),
+                              ),
                             ),
                             SizedBox(height: 4),
                             Text(
                               'MPASI diberikan bertahap sesuai perkembangan tekstur dan porsi anak',
-                              style: TextStyle(fontSize: 12, color: Colors.grey),
+                              style: TextStyle(fontSize: 12, color: Color(0xFF486581)),
                             ),
                           ],
                         ),

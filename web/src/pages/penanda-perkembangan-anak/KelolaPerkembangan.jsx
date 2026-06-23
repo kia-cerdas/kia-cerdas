@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+﻿import React, { useEffect, useMemo, useState } from "react";
 import MainLayout from "../../components/Layout/MainLayout";
 import AlertNotification from "../../components/AlertNotification";
 import Swal from "sweetalert2";
@@ -223,9 +223,15 @@ export default function KelolaPerkembangan() {
         onRetry={notification?.type === "error" ? () => setNotification(null) : null}
       />
       <div className="max-w-6xl mx-auto space-y-6">
-        <div className="flex justify-between items-start gap-4 flex-col md:flex-row">
-          <div className="flex items-center gap-4 w-full">
-            <div className="relative w-full md:w-64">
+        <div className="flex flex-col gap-3">
+          {/* Title row */}
+          <div>
+            <h1 className="text-xl font-bold text-slate-800">Kelola Perawatan Anak</h1>
+            <p className="text-sm text-slate-500">Mengatur indikator checklist perkembangan perawatan anak.</p>
+          </div>
+          {/* Search + Add row */}
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
               <input
                 type="text"
@@ -235,17 +241,15 @@ export default function KelolaPerkembangan() {
                 onChange={(e) => setQuery(e.target.value)}
               />
             </div>
-            <div className="flex-1">
-              <h1 className="text-xl font-bold text-slate-800">Kelola Perawatan Anak</h1>
-              <p className="text-sm text-slate-500">Mengatur indikator checklist perkembangan perawatan anak.</p>
-            </div>
+            <button
+              onClick={openAddModal}
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#185FA5] hover:bg-[#185FA5]/90 text-white text-sm font-semibold rounded-xl transition-all active:scale-95 shadow-sm flex-shrink-0"
+            >
+              <Plus size={16} />
+              <span className="hidden sm:inline">Tambah Indikator</span>
+              <span className="sm:hidden">Tambah</span>
+            </button>
           </div>
-          <button
-            onClick={openAddModal}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-[#185FA5] hover:bg-[#185FA5]/90 text-white text-sm font-semibold rounded-xl transition-all active:scale-95 shadow-sm flex-shrink-0"
-          >
-            <Plus size={16} /> Tambah Indikator
-          </button>
         </div>
 
         {notice ? (
@@ -261,12 +265,12 @@ export default function KelolaPerkembangan() {
         ) : null}
 
         {/* Tab Selector */}
-        <div className="bg-slate-100/50 p-1 rounded-xl flex gap-1">
+        <div className="bg-slate-100/50 p-1 rounded-xl flex gap-1 overflow-x-auto">
           {kategoriUmurList.map((kategori) => (
             <button
               key={kategori.id}
               onClick={() => setActiveKategoriUsia(kategori.label)}
-              className={`flex-1 py-2.5 text-sm font-medium rounded-lg transition-all ${
+              className={`flex-shrink-0 sm:flex-1 px-4 sm:px-2 py-2.5 text-sm font-medium rounded-lg transition-all whitespace-nowrap ${
                 activeKategoriUsia === kategori.label
                   ? "bg-white text-blue-600 shadow-sm"
                   : "text-slate-500 hover:text-slate-700"
@@ -278,7 +282,8 @@ export default function KelolaPerkembangan() {
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-          <div className={`grid grid-cols-12 bg-slate-100 px-8 py-3.5 border-b border-slate-200 ${currentData.length === 0 ? 'hidden' : ''}`}>
+          {/* Desktop Header */}
+          <div className={`hidden md:grid grid-cols-12 bg-slate-100 px-4 md:px-8 py-3.5 border-b border-slate-200 ${currentData.length === 0 ? 'md:hidden' : ''}`}>
             <div className="col-span-1 text-xs font-semibold text-slate-600">No</div>
             <div className="col-span-8 text-xs font-semibold text-slate-600">Indikator Ceklist (Kategori Capaian)</div>
             <div className="col-span-3 text-xs font-semibold text-slate-600 text-right">Aksi Admin</div>
@@ -286,16 +291,43 @@ export default function KelolaPerkembangan() {
 
           <div className="divide-y divide-slate-100">
             {isLoading ? (
-              <div className="p-20 text-center">
+              <div className="p-12 md:p-20 text-center">
                 <p className="text-slate-400 text-sm italic">Memuat indikator...</p>
               </div>
             ) : currentData.length > 0 ? (
               currentData.map((item, index) => (
-                <div key={item.id} className="grid grid-cols-12 items-center px-8 py-5 hover:bg-slate-50/50 transition-colors">
-                  <div className="col-span-1 text-sm text-slate-400">
+                <div key={item.id} className="md:grid md:grid-cols-12 md:items-center px-4 md:px-8 py-4 md:py-5 hover:bg-slate-50/50 transition-colors">
+                  {/* Mobile: card layout */}
+                  <div className="flex items-start gap-3 md:hidden">
+                    <span className="text-xs text-slate-400 font-semibold mt-0.5 flex-shrink-0">{String(index + 1).padStart(2, "0")}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-slate-700 leading-relaxed">{item.pertanyaan_ceklist}</p>
+                      {item.aspek && (
+                        <span className="mt-1.5 inline-block text-xs px-2.5 py-0.5 bg-blue-50 text-blue-600 rounded-full font-semibold">
+                          {item.aspek}
+                        </span>
+                      )}
+                      <div className="flex gap-2 mt-3">
+                        <button
+                          onClick={() => openEditModal(item)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-yellow-50 hover:bg-yellow-100 text-yellow-700 border border-yellow-200 rounded-xl text-[13px] font-semibold transition-colors"
+                        >
+                          <Pencil size={14} /> Edit
+                        </button>
+                        <button
+                          onClick={() => openDeleteModal(item)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl text-[13px] font-semibold transition-colors"
+                        >
+                          <Trash2 size={14} /> Hapus
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Desktop: grid layout */}
+                  <div className="hidden md:block col-span-1 text-sm text-slate-400">
                     {String(index + 1).padStart(2, "0")}
                   </div>
-                  <div className="col-span-8 pr-10 text-sm text-slate-700 leading-relaxed">
+                  <div className="hidden md:block col-span-8 pr-10 text-sm text-slate-700 leading-relaxed">
                     <p>{item.pertanyaan_ceklist}</p>
                     {item.aspek && (
                       <span className="mt-1.5 inline-block text-xs px-2.5 py-0.5 bg-blue-50 text-blue-600 rounded-full font-semibold">
@@ -303,7 +335,7 @@ export default function KelolaPerkembangan() {
                       </span>
                     )}
                   </div>
-                  <div className="col-span-3 flex justify-end gap-2">
+                  <div className="hidden md:flex col-span-3 justify-end gap-2">
                     <button
                       onClick={() => openEditModal(item)}
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-yellow-50 hover:bg-yellow-100 text-yellow-700 border border-yellow-200 rounded-xl text-[13px] font-semibold transition-colors"
@@ -324,7 +356,7 @@ export default function KelolaPerkembangan() {
                 </div>
               ))
             ) : (
-              <div className="p-20 text-center">
+              <div className="p-12 md:p-20 text-center">
                 <p className="text-slate-400 text-sm italic">
                   Belum ada indikator untuk kategori {activeKategoriUsia || "ini"}.
                 </p>
@@ -336,7 +368,7 @@ export default function KelolaPerkembangan() {
         {isModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={closeModal} />
-            <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 animate-[fadeInScale_0.2s_ease-out]">
+            <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg p-5 md:p-6 max-h-[90vh] overflow-y-auto animate-[fadeInScale_0.2s_ease-out]">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-base font-semibold text-slate-800">
                   {formMode === "add" ? "Tambah Indikator" : "Ubah Indikator"}

@@ -9,7 +9,7 @@ import (
 )
 
 type PendudukRiskUsecase interface {
-	GetPendudukByRisk(kategori, risiko string, desaID *int32, role string) ([]models.PendudukRiskResponse, error)
+	GetPendudukByRisk(kategori, risiko string, posyanduID *int32, role string) ([]models.PendudukRiskResponse, error)
 }
 
 type pendudukRiskUsecase struct {
@@ -24,7 +24,7 @@ func NewPendudukRiskUsecase(pemeriksaanRepo repositories.PemeriksaanRepository, 
 	}
 }
 
-func (u *pendudukRiskUsecase) GetPendudukByRisk(kelompok, risiko string, desaID *int32, role string) ([]models.PendudukRiskResponse, error) {
+func (u *pendudukRiskUsecase) GetPendudukByRisk(kelompok, risiko string, posyanduID *int32, role string) ([]models.PendudukRiskResponse, error) {
 	validKelompok := map[string]bool{"balita": true, "anak": true, "remaja": true, "dewasa": true, "lansia": true}
 	if !validKelompok[kelompok] {
 		return nil, errors.New("kelompok tidak valid. Gunakan: balita, anak, remaja, dewasa, lansia")
@@ -37,7 +37,7 @@ func (u *pendudukRiskUsecase) GetPendudukByRisk(kelompok, risiko string, desaID 
 	}
 
 	if kelompok == "balita" {
-		anaks, err := u.anakUseCase.ListAnakByDesa(desaID, 0)
+		anaks, err := u.anakUseCase.ListAnakByDesa(posyanduID, 0)
 		if err != nil {
 			return nil, err
 		}
@@ -78,5 +78,5 @@ func (u *pendudukRiskUsecase) GetPendudukByRisk(kelompok, risiko string, desaID 
 		return result, nil
 	}
 
-	return u.pemeriksaanRepo.GetPendudukByRisk(kelompok, risiko, desaID, role)
+	return u.pemeriksaanRepo.GetPendudukByRisk(kelompok, risiko, posyanduID, role)
 }

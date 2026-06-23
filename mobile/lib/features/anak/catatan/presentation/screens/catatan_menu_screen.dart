@@ -10,6 +10,7 @@ import 'package:ta_pa2_pa3_project/features/anak/catatan/presentation/utils/cata
 import 'package:ta_pa2_pa3_project/features/anak/catatan/data/models/neonatus_model.dart';
 import 'package:ta_pa2_pa3_project/features/anak/catatan/data/services/neonatus_api_service.dart';
 import 'package:ta_pa2_pa3_project/features/anak/catatan/presentation/utils/catatan_detail_neonatus_bottom_sheet.dart';
+import 'package:ta_pa2_pa3_project/core/widgets/child_profile_card.dart';
 
 const _kBlue = Color(0xFF1565C0);
 const _kBlueDark = Color(0xFF0D47A1);
@@ -134,10 +135,51 @@ class _CatatanMenuScreenState extends State<CatatanMenuScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF1F5F9),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF1E293B),
+        elevation: 0,
+        centerTitle: false,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF1E293B)),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Catatan',
+              style: TextStyle(
+                color: Color(0xFF1E293B),
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+            Text(
+              'Catatan kesehatan anak',
+              style: TextStyle(
+                color: Color(0xFF64748B),
+                fontWeight: FontWeight.normal,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1.0),
+          child: Container(color: Colors.grey.shade200, height: 1.0),
+        ),
+      ),
       body: RepaintBoundary(
         child: Column(
           children: [
-            _buildHeader(),
+            Padding(
+              padding: const EdgeInsets.only(top: 16.0, left: 16.0, right: 16.0, bottom: 8.0),
+              child: ChildProfileCard(
+                nama: widget.anakName,
+                usia: widget.usiaTeks ?? '-',
+              ),
+            ),
             _buildTabChips(),
             _buildSectionTitle(),
             Expanded(child: _buildContent()),
@@ -147,84 +189,6 @@ class _CatatanMenuScreenState extends State<CatatanMenuScreen> {
     );
   }
 
-  Widget _buildHeader() {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft, end: Alignment.bottomRight,
-          colors: [_kBlueDark, _kBlueLight],
-        ),
-      ),
-      child: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            // AppBar row
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-              child: Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.white),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                  const Text('Catatan', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700)),
-                ],
-              ),
-            ),
-            // Profile card
-            Container(
-              margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 12, offset: const Offset(0, 4))],
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                    ),
-                    child: const CircleAvatar(
-                      backgroundColor: Color(0xFFD7ECFF),
-                      child: Icon(
-                        Icons.person_outline,
-                        size: 30,
-                        color: Color(0xFF185FA5),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(widget.anakName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xFF172033))),
-                      const SizedBox(height: 4),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFE3F2FD),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          'Usia: ${widget.usiaTeks ?? "-"}',
-                          style: const TextStyle(fontSize: 12, color: _kBlue, fontWeight: FontWeight.w500),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
 Widget _buildTabChips() {
     return Container(
