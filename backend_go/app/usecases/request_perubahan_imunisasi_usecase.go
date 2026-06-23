@@ -5,14 +5,14 @@ import (
 	"monitoring-service/app/models"
 )
 
-func (m *Main) GetAllRequestPerubahanJadwal() (
+func (m *Main) GetAllRequestPerubahanJadwal(posyanduID int32) (
 	[]models.RequestPerubahanJadwalResponse,
 	error,
 ) {
 
 	rows, err :=
 		m.repository.
-			GetAllRequestPerubahanJadwal()
+			GetAllRequestPerubahanJadwal(posyanduID)
 
 	if err != nil {
 		return nil, err
@@ -44,28 +44,26 @@ func (m *Main) GetAllRequestPerubahanJadwal() (
 func (m *Main) RequestPerubahanJadwal(
 	userID int32,
 	jadwalID uint,
-	jadwalLayananID int32,
+	tanggalBaru string,
 	alasan string,
 ) error {
 
-	jadwal, err :=
-		m.repository.GetJadwalByID(jadwalID)
-
-	jadwalLayanan, err := m.repository.GetJadwalLayananByID(
-		jadwalLayananID,
-	)
+	jadwal, err := m.repository.GetJadwalByID(jadwalID)
 	if err != nil {
 		return err
+	}
+
+	tanggalSebelum := ""
+	if jadwal != nil && jadwal.TanggalEstimasi != nil {
+		tanggalSebelum = jadwal.TanggalEstimasi.Format("2006-01-02")
 	}
 
 	request := models.RequestPerubahanImunisasi{
 		IDJadwalImunisasi: int32(jadwalID),
 		IDStatusRequest:   2,
-		TanggalSebelum: jadwal.TanggalEstimasi.
-			Format("2006-01-02"),
-		TanggalBaru: jadwalLayanan.Tanggal.
-			Format("2006-01-02"),
-		Alasan: alasan,
+		TanggalSebelum:    tanggalSebelum,
+		TanggalBaru:       tanggalBaru,
+		Alasan:            alasan,
 	}
 	return m.repository.
 		CreateRequestPerubahanJadwal(

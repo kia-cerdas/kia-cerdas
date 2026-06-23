@@ -89,19 +89,22 @@ func (u *AnakUseCase) CreateAnak(req models.CreateAnakRequest) (*models.AnakResp
 		nik := fmt.Sprintf("A%d", time.Now().UnixNano())
 
 		var desaID *int32
+		var posyanduID *int32
 		if req.IbuID > 0 {
 			ibuRecord, errIbuTable := u.ibuRepo.FindByID(req.IbuID)
 			if errIbuTable == nil && ibuRecord != nil && ibuRecord.Kependudukan != nil {
 				desaID = ibuRecord.Kependudukan.DesaID
+				posyanduID = ibuRecord.Kependudukan.PosyanduID
 			}
 		}
 
 		newPenduduk := &models.Kependudukan{
-			NIK:          &nik,
-			NamaLengkap:  req.Nama,
-			JenisKelamin: req.JenisKelamin,
-			TanggalLahir: tglLahir,
-			DesaID:       desaID,
+			NIK:                 &nik,
+			NamaAnggotaKeluarga: req.Nama,
+			JenisKelamin:        req.JenisKelamin,
+			TanggalLahir:        tglLahir,
+			DesaID:              desaID,
+			PosyanduID:          posyanduID,
 		}
 
 		if err := u.kependudukanRepo.Create(newPenduduk); err != nil {
@@ -180,21 +183,24 @@ func (u *AnakUseCase) CreateAnakDenganPenduduk(req models.CreateAnakDenganPendud
 	}
 
 	var desaID *int32
+	var posyanduID *int32
 	ibuRecord, errIbuTable := u.ibuRepo.FindByID(req.IbuID)
 	if errIbuTable == nil && ibuRecord != nil && ibuRecord.Kependudukan != nil {
 		desaID = ibuRecord.Kependudukan.DesaID
+		posyanduID = ibuRecord.Kependudukan.PosyanduID
 	}
 
 	nikSementara := fmt.Sprintf("A%d", time.Now().UnixNano())
 
 	newPenduduk := &models.Kependudukan{
-		NIK:           &nikSementara,
-		NamaLengkap:   req.Nama,
-		JenisKelamin:  req.JenisKelamin,
-		TanggalLahir:  tanggalLahir,
-		TempatLahir:   req.TempatLahir,
-		GolonganDarah: req.GolonganDarah,
-		DesaID:        desaID, // ✅ otomatis dari ibu
+		NIK:                 &nikSementara,
+		NamaAnggotaKeluarga: req.Nama,
+		JenisKelamin:        req.JenisKelamin,
+		TanggalLahir:        tanggalLahir,
+		TempatLahir:         req.TempatLahir,
+		GolonganDarah:       req.GolonganDarah,
+		DesaID:              desaID,     // ✅ otomatis dari ibu
+		PosyanduID:          posyanduID, // ✅ otomatis dari ibu
 	}
 
 	if err := u.kependudukanRepo.Create(newPenduduk); err != nil {
@@ -286,8 +292,8 @@ func (u *AnakUseCase) UpdateAnak(id int32, req models.UpdateAnakRequest) (*model
 		penduduk, pendudukErr := u.kependudukanRepo.FindByID(anak.PendudukID)
 		if pendudukErr == nil && penduduk != nil {
 			changed := false
-			if req.Nama != "" && req.Nama != penduduk.NamaLengkap {
-				penduduk.NamaLengkap = req.Nama
+			if req.Nama != "" && req.Nama != penduduk.NamaAnggotaKeluarga {
+				penduduk.NamaAnggotaKeluarga = req.Nama
 				changed = true
 			}
 			if req.JenisKelamin != "" && req.JenisKelamin != penduduk.JenisKelamin {
@@ -563,7 +569,7 @@ func (u *AnakUseCase) toAnakResponse(anak *models.Anak) models.AnakResponse {
 	}
 
 	if anak.Penduduk != nil {
-		resp.Nama = anak.Penduduk.NamaLengkap
+		resp.Nama = anak.Penduduk.NamaAnggotaKeluarga
 		if !anak.Penduduk.TanggalLahir.IsZero() && anak.Penduduk.TanggalLahir.Year() >= 1900 {
 			resp.TanggalLahir = anak.Penduduk.TanggalLahir.Format("2006-01-02")
 			usiaBulan := HitungUsiaBulan(anak.Penduduk.TanggalLahir)
@@ -588,9 +594,76 @@ func (u *AnakUseCase) toAnakResponse(anak *models.Anak) models.AnakResponse {
 		}
 
 		if anak.Kehamilan.Ibu != nil && anak.Kehamilan.Ibu.Kependudukan != nil {
-			resp.Kehamilan.Ibu.NamaIbu = anak.Kehamilan.Ibu.Kependudukan.NamaLengkap
+			resp.Kehamilan.Ibu.NamaIbu = anak.Kehamilan.Ibu.Kependudukan.NamaAnggotaKeluarga
 		}
 	}
 
 	return resp
+}
+
+func (u *AnakUseCase) ListAnakByPosyandu(posyanduID *int32, kehamilanID int32) ([]models.AnakResponse, error) {
+	var (
+		list []models.Anak
+		err  error
+	)
+
+	// Jika ada filter kehamilan_id, gunakan filter tersebut
+	if kehamilanID != 0 {
+		list, err = u.anakRepo.FindByKehamilanID(kehamilanID)
+	} else if posyanduID != nil && *posyanduID > 0 {
+		// Filter berdasarkan posyandu_id
+		list, err = u.anakRepo.FindAllByPosyanduID(*posyanduID)
+	} else {
+		// Jika tidak ada filter, ambil semua
+		list, err = u.anakRepo.FindAll()
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]models.AnakResponse, 0, len(list))
+	if len(list) == 0 {
+		return result, nil
+	}
+
+	// Kumpulkan ID anak untuk mengambil prediksi
+	var ids []int32
+	for _, k := range list {
+		ids = append(ids, k.ID)
+	}
+	predMap, _ := u.prediksiStuntingRepo.GetLatestPredictionsByAnakIDs(ids)
+
+	// Kumpulkan anak yang belum punya prediksi untuk di-sync
+	var missingIDs []int32
+	for _, k := range list {
+		if predMap == nil {
+			missingIDs = append(missingIDs, k.ID)
+		} else if _, ok := predMap[k.ID]; !ok {
+			missingIDs = append(missingIDs, k.ID)
+		}
+	}
+
+	// Jalankan retroaktif sync untuk anak yang belum punya prediksi
+	if u.onAnakCreatedSync != nil && len(missingIDs) > 0 {
+		for _, anakID := range missingIDs {
+			if err := u.onAnakCreatedSync(anakID); err != nil {
+				fmt.Printf("[AUTO SYNC] Gagal retroaktif sync anak ID %d: %v\n", anakID, err)
+			}
+		}
+		// Re-fetch predMap setelah sync
+		predMap, _ = u.prediksiStuntingRepo.GetLatestPredictionsByAnakIDs(ids)
+	}
+
+	for _, k := range list {
+		resp := u.toAnakResponse(&k)
+		if predMap != nil {
+			if status, ok := predMap[k.ID]; ok {
+				resp.StatusPrediksi = status
+			}
+		}
+		result = append(result, resp)
+	}
+
+	return result, nil
 }

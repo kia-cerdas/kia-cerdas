@@ -1,3 +1,5 @@
+// controllers/laporan_remaja_controller.go
+
 package controllers
 
 import (
@@ -28,21 +30,25 @@ func NewLaporanRemajaController(usecase usecases.LaporanRemajaUsecase) *LaporanR
 // @Failure      500  {object}  models.Response
 // @Router       /tenaga-kesehatan/laporan/remaja/preview [get]
 func (c *LaporanRemajaController) Preview(ctx echo.Context) error {
-	desaID := middlewares.GetDesaID(ctx)
+	posyanduID := middlewares.GetPosyanduID(ctx)
 	role := middlewares.GetRole(ctx)
 	startDate := ctx.QueryParam("start_date")
 	endDate := ctx.QueryParam("end_date")
 
-	data, err := c.usecase.GetLaporanRemaja(startDate, endDate, desaID, role)
+	data, err := c.usecase.GetLaporanRemaja(startDate, endDate, posyanduID, role)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
 			"message": err.Error(),
 		})
 	}
 
+	// Get dynamic headers
+	dynamicHeaders := c.usecase.GetDynamicHeaders(data)
+
 	return ctx.JSON(http.StatusOK, map[string]interface{}{
 		"message": "success",
 		"data":    data,
+		"dynamic_headers": dynamicHeaders,
 	})
 }
 
@@ -57,12 +63,12 @@ func (c *LaporanRemajaController) Preview(ctx echo.Context) error {
 // @Failure      500  {object}  models.Response
 // @Router       /tenaga-kesehatan/laporan/remaja/export/excel [get]
 func (c *LaporanRemajaController) ExportExcel(ctx echo.Context) error {
-	desaID := middlewares.GetDesaID(ctx)
+	posyanduID := middlewares.GetPosyanduID(ctx)
 	role := middlewares.GetRole(ctx)
 	startDate := ctx.QueryParam("start_date")
 	endDate := ctx.QueryParam("end_date")
 
-	f, err := c.usecase.ExportExcelLaporanRemaja(startDate, endDate, desaID, role)
+	f, err := c.usecase.ExportExcelLaporanRemaja(startDate, endDate, posyanduID, role)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
 			"message": err.Error(),

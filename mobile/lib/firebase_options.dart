@@ -56,19 +56,18 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBgxtbjrTI7zlR2m-E2YpdiE4hIWpc9sMc',
-    appId: '1:901600470237:android:e53cedd121c23277e72734',
-    messagingSenderId: '901600470237',
-    projectId: 'push-notifications-ec273',
-    storageBucket: 'push-notifications-ec273.firebasestorage.app',
+    apiKey: 'AIzaSyBCeOhopv-A6duK1UZSQ0befOdvGDFVaSg',
+    appId: '1:120006854123:android:38eb68d88a1bb8df4805ae',
+    messagingSenderId: '120006854123',
+    projectId: 'generasi-sehat',
+    storageBucket: 'generasi-sehat.firebasestorage.app',
   );
-
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyBkR8vOvyxLkU9_Qx8nbEDF2Zq5IXOEr9g',
-    appId: '1:901600470237:ios:9a4321f9e6a456e3e72734',
-    messagingSenderId: '901600470237',
-    projectId: 'push-notifications-ec273',
-    storageBucket: 'push-notifications-ec273.firebasestorage.app',
+    apiKey: 'AIzaSyDUFw0kt9B3cei_wGHZqaAXmBs7KmPVr9M',
+    appId: '1:120006854123:ios:daba2f6082f994d94805ae',
+    messagingSenderId: '120006854123',
+    projectId: 'generasi-sehat',
+    storageBucket: 'generasi-sehat.firebasestorage.app',
     iosBundleId: 'com.example.taPa2Pa3Project',
   );
 }

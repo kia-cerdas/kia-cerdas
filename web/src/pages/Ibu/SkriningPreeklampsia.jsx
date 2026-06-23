@@ -20,6 +20,7 @@ import {
   EyeOff,
   XCircle,
   AlertTriangle,
+  Info, // <-- Tambahkan import Info
 } from "lucide-react";
 
 export default function SkriningPreeklampsia() {
@@ -29,8 +30,7 @@ export default function SkriningPreeklampsia() {
   const navigate = useNavigate();
 
   const user = getCurrentUser();
-  // Skrining Preeklampsia: bidan mengelola, dokter hanya melihat
-  const isBidan  = isBidanUser(user);
+  const isBidan = isBidanUser(user);
   const isDokter = isDokterUser(user);
 
   const [kehamilan, setKehamilan] = useState(null);
@@ -40,7 +40,6 @@ export default function SkriningPreeklampsia() {
   const [isEditing, setIsEditing] = useState(false);
   const [isActive, setIsActive] = useState(true);
 
-  // Hanya bidan yang bisa mengelola; dokter hanya bisa melihat
   const canEdit = isBidan && isActive;
 
   const [form, setForm] = useState({
@@ -62,6 +61,26 @@ export default function SkriningPreeklampsia() {
     fisik_proteinuria_urin_celup: false,
     kesimpulan: "",
   });
+
+  // Daftar semua field risiko
+  const riskFactorKeys = [
+    'anamnesis_multipara_pasangan_baru_sedang',
+    'anamnesis_teknologi_reproduksi_berbantu_sedang',
+    'anamnesis_umur_diatas_35_tahun_sedang',
+    'anamnesis_nulipara_sedang',
+    'anamnesis_jarak_kehamilan_diatas_10_tahun_sedang',
+    'anamnesis_riwayat_preeklampsia_keluarga_sedang',
+    'anamnesis_obesitas_imt_diatas_30_sedang',
+    'anamnesis_riwayat_preeklampsia_sebelumnya_tinggi',
+    'anamnesis_kehamilan_multipel_tinggi',
+    'anamnesis_diabetes_dalam_kehamilan_tinggi',
+    'anamnesis_hipertensi_kronik_tinggi',
+    'anamnesis_penyakit_ginjal_tinggi',
+    'anamnesis_penyakit_autoimun_sle_tinggi',
+    'anamnesis_anti_phospholipid_syndrome_tinggi',
+    'fisik_map_diatas_90_mmhg',
+    'fisik_proteinuria_urin_celup'
+  ];
 
   useEffect(() => {
     const fetchData = async () => {
@@ -129,35 +148,8 @@ export default function SkriningPreeklampsia() {
     setForm((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
   };
 
-  const validateForm = () => {
-    const newErrors = {};
-    
-    // At least one risk factor must be checked
-    const allRiskFactors = [
-      'anamnesis_multipara_pasangan_baru_sedang',
-      'anamnesis_teknologi_reproduksi_berbantu_sedang',
-      'anamnesis_umur_diatas_35_tahun_sedang',
-      'anamnesis_nulipara_sedang',
-      'anamnesis_jarak_kehamilan_diatas_10_tahun_sedang',
-      'anamnesis_riwayat_preeklampsia_keluarga_sedang',
-      'anamnesis_obesitas_imt_diatas_30_sedang',
-      'anamnesis_riwayat_preeklampsia_sebelumnya_tinggi',
-      'anamnesis_kehamilan_multipel_tinggi',
-      'anamnesis_diabetes_dalam_kehamilan_tinggi',
-      'anamnesis_hipertensi_kronik_tinggi',
-      'anamnesis_penyakit_ginjal_tinggi',
-      'anamnesis_penyakit_autoimun_sle_tinggi',
-      'anamnesis_anti_phospholipid_syndrome_tinggi',
-      'fisik_map_diatas_90_mmhg',
-      'fisik_proteinuria_urin_celup'
-    ];
-    
-    const hasRiskFactor = allRiskFactors.some(key => form[key]);
-    if (!hasRiskFactor) {
-      newErrors.risk_factors = "Setidaknya satu faktor risiko harus dipilih";
-    }
-    
-    return Object.keys(newErrors).length === 0;
+  const hasRiskFactors = () => {
+    return riskFactorKeys.some(key => form[key] === true);
   };
 
   const handleSubmit = async (e) => {
@@ -170,15 +162,7 @@ export default function SkriningPreeklampsia() {
       });
       return;
     }
-    
-    if (!validateForm()) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Data Belum Lengkap',
-        text: 'Setidaknya satu faktor risiko harus dipilih.'
-      });
-      return;
-    }
+
     if (!kehamilan) {
       Swal.fire({
         icon: 'error',
@@ -187,6 +171,24 @@ export default function SkriningPreeklampsia() {
       });
       return;
     }
+
+    if (!hasRiskFactors()) {
+      const confirm = await Swal.fire({
+        icon: 'info',
+        title: 'Konfirmasi',
+        text: 'Anda belum memilih faktor risiko apapun. Status risiko akan otomatis menjadi "TIDAK PERLU RUJUKAN". Lanjutkan?',
+        showCancelButton: true,
+        confirmButtonColor: '#185FA5',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Ya, Lanjutkan',
+        cancelButtonText: 'Batal'
+      });
+
+      if (!confirm.isConfirmed) {
+        return;
+      }
+    }
+
     setSaving(true);
     try {
       const payload = {
@@ -209,17 +211,27 @@ export default function SkriningPreeklampsia() {
         timer: 2000,
         showConfirmButton: false
       });
-      
+
       setIsEditing(false);
       const refreshed = await getSkriningByKehamilanId(kehamilan.id);
       if (refreshed && refreshed.length > 0) setSkrining(refreshed[0]);
     } catch (err) {
       console.error(err);
-      Swal.fire({
-        icon: 'error',
-        title: 'Gagal Menyimpan',
-        text: err.response?.data?.message || err.message || 'Terjadi kesalahan.'
-      });
+
+      if (err.response?.status === 409 || err.message?.includes('duplicate')) {
+        Swal.fire({
+          icon: 'info',
+          title: 'Data Sudah Ada',
+          text: 'Skrining untuk kehamilan ini sudah ada. Silakan refresh halaman.',
+          confirmButtonColor: '#185FA5'
+        });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal Menyimpan',
+          text: err.response?.data?.message || err.message || 'Terjadi kesalahan.'
+        });
+      }
     } finally {
       setSaving(false);
     }
@@ -227,6 +239,7 @@ export default function SkriningPreeklampsia() {
 
   const hitungRisiko = () => {
     if (!skrining) return "TIDAK ADA DATA";
+
     const risikoSedang = [
       skrining.anamnesis_multipara_pasangan_baru_sedang,
       skrining.anamnesis_teknologi_reproduksi_berbantu_sedang,
@@ -236,6 +249,7 @@ export default function SkriningPreeklampsia() {
       skrining.anamnesis_riwayat_preeklampsia_keluarga_sedang,
       skrining.anamnesis_obesitas_imt_diatas_30_sedang,
     ].filter(Boolean).length;
+
     const risikoTinggi = [
       skrining.anamnesis_riwayat_preeklampsia_sebelumnya_tinggi,
       skrining.anamnesis_kehamilan_multipel_tinggi,
@@ -245,15 +259,22 @@ export default function SkriningPreeklampsia() {
       skrining.anamnesis_penyakit_autoimun_sle_tinggi,
       skrining.anamnesis_anti_phospholipid_syndrome_tinggi,
     ].filter(Boolean).length;
+
     const map = skrining.fisik_map_diatas_90_mmhg;
     const protein = skrining.fisik_proteinuria_urin_celup;
-    if (risikoTinggi >= 1 || risikoSedang >= 2 || map || protein) return "PERLU RUJUKAN";
+
+    if (risikoSedang === 0 && risikoTinggi === 0 && !map && !protein) {
+      return "TIDAK PERLU RUJUKAN";
+    }
+
+    if (risikoTinggi >= 1 || risikoSedang >= 2 || map || protein) {
+      return "PERLU RUJUKAN";
+    }
     return "TIDAK PERLU RUJUKAN";
   };
 
   const isRujukan = hitungRisiko() === "PERLU RUJUKAN";
 
-  // Handler untuk tombol rujukan
   const handleRujukClick = (e) => {
     e.preventDefault();
     Swal.fire({
@@ -273,7 +294,6 @@ export default function SkriningPreeklampsia() {
     });
   };
 
-  // Komponen checkbox dengan gaya design system
   const CheckboxItem = ({ name, label, description }) => {
     const isChecked = form[name];
     return (
@@ -294,7 +314,6 @@ export default function SkriningPreeklampsia() {
     );
   };
 
-  // Tampilan hasil (view mode)
   const ResultView = () => {
     if (!skrining) {
       return (
@@ -306,6 +325,8 @@ export default function SkriningPreeklampsia() {
             <h3 className="text-[22px] font-semibold text-[#185FA5]">Belum Ada Data Skrining Preeklampsia</h3>
             <p className="text-base text-gray-500 max-w-md">
               Silakan lakukan skrining preeklampsia untuk ibu hamil ini.
+              <br />
+              <span className="text-sm text-blue-600">ℹ️ Semua faktor risiko bersifat opsional.</span>
             </p>
             {canEdit && (
               <button
@@ -324,6 +345,8 @@ export default function SkriningPreeklampsia() {
         </div>
       );
     }
+
+    const hasSelectedRisk = riskFactorKeys.some(key => skrining[key] === true);
 
     return (
       <div className="space-y-6">
@@ -352,7 +375,21 @@ export default function SkriningPreeklampsia() {
           </div>
         </div>
 
-        {/* Detail skrining */}
+        {!hasSelectedRisk && (
+          <div className="bg-gray-50 border border-gray-200 p-4 rounded-lg flex items-start gap-3">
+            <Info size={20} className="text-gray-400 mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="text-gray-600 text-base">
+                <span className="font-semibold">Informasi:</span> Belum ada faktor risiko yang dipilih.
+                Status risiko otomatis menjadi <strong>"TIDAK PERLU RUJUKAN"</strong>.
+              </p>
+              <p className="text-sm text-gray-500 mt-1">
+                Jika ada faktor risiko yang muncul di kemudian hari, Anda dapat mengedit skrining ini.
+              </p>
+            </div>
+          </div>
+        )}
+
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           <div className="bg-[#185FA5] px-5 py-3">
             <div className="flex items-center gap-2">
@@ -363,7 +400,7 @@ export default function SkriningPreeklampsia() {
           <div className="p-5 space-y-5">
             {/* Risiko Sedang */}
             <div>
-              <h4 className="font-semibold text-[#BA7517] text-lg flex items-center gap-2 mb-3">
+              <h4 className="font-semibold text-yellow-600 text-lg flex items-center gap-2 mb-3">
                 <AlertCircle size={18} /> Risiko Sedang
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -441,7 +478,7 @@ export default function SkriningPreeklampsia() {
                   )}
                   <div>
                     <span className={skrining.fisik_map_diatas_90_mmhg ? "text-gray-900 font-medium" : "text-gray-400"}>
-                      MAP {" > "} 90 mmHg
+                      MAP {">"} 90 mmHg
                     </span>
                     <p className="text-xs text-gray-500">MAP = Mean Arterial Pressure (tekanan arteri rata-rata)</p>
                   </div>
@@ -471,7 +508,7 @@ export default function SkriningPreeklampsia() {
           </div>
         </div>
 
-        <div className="flex gap-3 justify-end">
+        <div className="flex flex-wrap gap-3 justify-end">
           {canEdit && (
             <button
               onClick={() => setIsEditing(true)}
@@ -480,11 +517,10 @@ export default function SkriningPreeklampsia() {
               <Edit2 size={18} /> Edit Skrining
             </button>
           )}
-          {/* Tombol Rujuk: muncul jika PERLU RUJUKAN, dan hanya untuk bidan (canEdit) */}
           {isRujukan && canEdit && (
             <button
               onClick={handleRujukClick}
-              className="bg-red-600 hover:bg-red-700 text-white rounded-full px-5 py-2.5 flex items-center gap-2 text-base font-semibold shadow-md hover:shadow-lg animate-pulse"
+              className="bg-red-600 hover:bg-red-700 text-white rounded-full px-5 py-2.5 flex items-center gap-2 text-base font-semibold shadow-md hover:shadow-lg"
             >
               <AlertTriangle size={18} /> Rujuk Segera
             </button>
@@ -500,146 +536,126 @@ export default function SkriningPreeklampsia() {
     );
   };
 
-  // FormView (mode edit)
-  const FormView = () => (
-    <form onSubmit={handleSubmit} className="space-y-8">
-      {/* Banner status risiko (real-time) */}
-      <div
-        className={`p-5 rounded-2xl flex items-center justify-between shadow-sm border ${
-          hitungRisiko() === "PERLU RUJUKAN"
-            ? "bg-[#A32D2D]/10 border-[#A32D2D]/30 text-[#A32D2D]"
-            : "bg-[#3B6D11]/10 border-[#3B6D11]/30 text-[#3B6D11]"
-        }`}
-      >
-        <div className="flex items-center gap-4">
-          {hitungRisiko() === "PERLU RUJUKAN" ? (
-            <ShieldAlert size={36} className="text-[#A32D2D]" />
-          ) : (
-            <CheckCircle2 size={36} className="text-[#3B6D11]" />
-          )}
+  const FormView = () => {
+    const hasSelectedRisk = hasRiskFactors();
+
+    return (
+      <form onSubmit={handleSubmit} className="space-y-8">
+        {/* Banner informasi */}
+        <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg flex items-start gap-3">
+          <Info size={20} className="text-blue-600 mt-0.5 flex-shrink-0" />
           <div>
-            <h3 className="text-xl font-bold">Status Risiko: {hitungRisiko()}</h3>
-            <p className="text-base">
-              {hitungRisiko() === "PERLU RUJUKAN"
-                ? "Pasien ini memiliki indikasi risiko tinggi dan disarankan untuk segera dirujuk."
-                : "Risiko rendah terpantau. Dapat melanjutkan ANC secara rutin."}
+            <p className="text-blue-700 text-base font-medium">ℹ️ Semua Faktor Risiko Bersifat Opsional</p>
+            <p className="text-blue-600 text-sm mt-1">
+              Anda dapat menyimpan skrining tanpa memilih faktor risiko apapun. 
+              Status risiko akan otomatis menjadi <strong>"TIDAK PERLU RUJUKAN"</strong>.
             </p>
+            {!hasSelectedRisk && (
+              <p className="text-blue-600 text-sm mt-2 font-medium">
+                ⚠️ Saat ini belum ada faktor risiko yang dipilih.
+              </p>
+            )}
           </div>
         </div>
-      </div>
 
-      {/* Risiko Sedang */}
-      <div className="bg-white rounded-xl shadow-sm p-5">
-        <h3 className="font-bold text-[22px] text-[#BA7517] border-b pb-2 flex items-center gap-2">
-          <AlertCircle size={20} /> Anamnesis - Risiko Sedang
-        </h3>
-        <p className="text-sm text-gray-500 mt-1 mb-4">
-          Centang jika kondisi berikut ini dialami oleh ibu hamil.
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <CheckboxItem
-            name="anamnesis_multipara_pasangan_baru_sedang"
-            label="Multipara dengan pasangan baru"
-            description="Pernah melahirkan dengan pasangan berbeda"
-          />
-          <CheckboxItem
-            name="anamnesis_teknologi_reproduksi_berbantu_sedang"
-            label="Teknologi reproduksi berbantu"
-            description="Kehamilan dengan IVF atau sejenisnya"
-          />
-          <CheckboxItem
-            name="anamnesis_umur_diatas_35_tahun_sedang"
-            label="Umur ≥ 35 tahun"
-            description="Usia ibu saat hamil 35 tahun atau lebih"
-          />
-          <CheckboxItem
-            name="anamnesis_nulipara_sedang"
-            label="Nulipara"
-            description="Belum pernah melahirkan sebelumnya"
-          />
-          <CheckboxItem
-            name="anamnesis_jarak_kehamilan_diatas_10_tahun_sedang"
-            label="Jarak kehamilan > 10 tahun"
-            description="Jarak dengan kehamilan terakhir lebih dari 10 tahun"
-          />
-          <CheckboxItem
-            name="anamnesis_riwayat_preeklampsia_keluarga_sedang"
-            label="Riwayat keluarga preeklampsia"
-            description="Ibu atau saudara perempuan pernah preeklampsia"
-          />
-          <CheckboxItem
-            name="anamnesis_obesitas_imt_diatas_30_sedang"
-            label="Obesitas (IMT > 30)"
-            description="Indeks Massa Tubuh sebelum hamil > 30"
-          />
+        {/* Risiko Sedang (hanya satu blok) */}
+        <div className="bg-white rounded-xl shadow-sm p-5">
+          <h3 className="font-bold text-base sm:text-lg md:text-[22px] text-[#BA7517] border-b pb-2 flex items-center gap-2">
+            <AlertCircle size={20} /> Anamnesis - Risiko Sedang
+            <span className="text-sm font-normal text-gray-400 ml-2">(Opsional)</span>
+          </h3>
+          <p className="text-sm text-gray-500 mt-1 mb-4">
+            Centang jika kondisi berikut ini dialami oleh ibu hamil.
+            <span className="text-blue-600 ml-1">Tidak wajib diisi.</span>
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <CheckboxItem
+              name="anamnesis_multipara_pasangan_baru_sedang"
+              label="Multipara dengan pasangan baru"
+              description="Pernah melahirkan dengan pasangan berbeda"
+            />
+            <CheckboxItem
+              name="anamnesis_teknologi_reproduksi_berbantu_sedang"
+              label="Teknologi reproduksi berbantu"
+              description="Kehamilan dengan IVF atau sejenisnya"
+            />
+            <CheckboxItem
+              name="anamnesis_umur_diatas_35_tahun_sedang"
+              label="Umur ≥ 35 tahun"
+              description="Usia ibu saat hamil 35 tahun atau lebih"
+            />
+            <CheckboxItem
+              name="anamnesis_nulipara_sedang"
+              label="Nulipara"
+              description="Belum pernah melahirkan sebelumnya"
+            />
+            <CheckboxItem
+              name="anamnesis_jarak_kehamilan_diatas_10_tahun_sedang"
+              label="Jarak kehamilan > 10 tahun"
+              description="Jarak dengan kehamilan terakhir lebih dari 10 tahun"
+            />
+            <CheckboxItem
+              name="anamnesis_riwayat_preeklampsia_keluarga_sedang"
+              label="Riwayat keluarga preeklampsia"
+              description="Ibu atau saudara perempuan pernah preeklampsia"
+            />
+            <CheckboxItem
+              name="anamnesis_obesitas_imt_diatas_30_sedang"
+              label="Obesitas (IMT > 30)"
+              description="Indeks Massa Tubuh sebelum hamil > 30"
+            />
+          </div>
         </div>
-      </div>
 
-      {/* Risiko Tinggi */}
-      <div className="bg-white rounded-xl shadow-sm p-5">
-        <h3 className="font-bold text-[22px] text-[#A32D2D] border-b pb-2 flex items-center gap-2">
-          <ShieldAlert size={20} /> Anamnesis - Risiko Tinggi
-        </h3>
-        <p className="text-sm text-gray-500 mt-1 mb-4">
-          Centang jika kondisi berikut ini dialami oleh ibu hamil.
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <CheckboxItem
-            name="anamnesis_riwayat_preeklampsia_sebelumnya_tinggi"
-            label="Riwayat preeklampsia sebelumnya"
-            description="Pernah mengalami preeklampsia pada kehamilan sebelumnya"
-          />
-          <CheckboxItem
-            name="anamnesis_kehamilan_multipel_tinggi"
-            label="Kehamilan multipel"
-            description="Hamil kembar dua atau lebih"
-          />
-          <CheckboxItem
-            name="anamnesis_diabetes_dalam_kehamilan_tinggi"
-            label="Diabetes dalam kehamilan"
-            description="Diabetes gestasional atau diabetes melitus"
-          />
-          <CheckboxItem
-            name="anamnesis_hipertensi_kronik_tinggi"
-            label="Hipertensi kronik"
-            description="Tekanan darah tinggi sebelum hamil"
-          />
-          <CheckboxItem
-            name="anamnesis_penyakit_ginjal_tinggi"
-            label="Penyakit ginjal"
-            description="Riwayat penyakit ginjal kronis"
-          />
-          <CheckboxItem
-            name="anamnesis_penyakit_autoimun_sle_tinggi"
-            label="Penyakit autoimun (SLE)"
-            description="Lupus atau penyakit autoimun lainnya"
-          />
-          <CheckboxItem
-            name="anamnesis_anti_phospholipid_syndrome_tinggi"
-            label="Anti phospholipid syndrome"
-            description="Gangguan pembekuan darah autoimun"
-          />
+        {/* Risiko Tinggi */}
+        <div className="bg-white rounded-xl shadow-sm p-5">
+          <h3 className="font-bold text-base sm:text-lg md:text-[22px] text-[#A32D2D] border-b pb-2 flex items-center gap-2">
+            <ShieldAlert size={20} /> Anamnesis - Risiko Tinggi
+            <span className="text-sm font-normal text-gray-400 ml-2">(Opsional)</span>
+          </h3>
+          <p className="text-sm text-gray-500 mt-1 mb-4">
+            Centang jika kondisi berikut ini dialami oleh ibu hamil.
+            <span className="text-blue-600 ml-1">Tidak wajib diisi.</span>
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <CheckboxItem
+              name="anamnesis_riwayat_preeklampsia_sebelumnya_tinggi"
+              label="Riwayat preeklampsia sebelumnya"
+              description="Pernah mengalami preeklampsia pada kehamilan sebelumnya"
+            />
+            <CheckboxItem
+              name="anamnesis_kehamilan_multipel_tinggi"
+              label="Kehamilan multipel"
+              description="Hamil kembar dua atau lebih"
+            />
+            <CheckboxItem
+              name="anamnesis_diabetes_dalam_kehamilan_tinggi"
+              label="Diabetes dalam kehamilan"
+              description="Diabetes gestasional atau diabetes melitus"
+            />
+            <CheckboxItem
+              name="anamnesis_hipertensi_kronik_tinggi"
+              label="Hipertensi kronik"
+              description="Tekanan darah tinggi sebelum hamil"
+            />
+            <CheckboxItem
+              name="anamnesis_penyakit_ginjal_tinggi"
+              label="Penyakit ginjal"
+              description="Riwayat penyakit ginjal kronis"
+            />
+            <CheckboxItem
+              name="anamnesis_penyakit_autoimun_sle_tinggi"
+              label="Penyakit autoimun (SLE)"
+              description="Lupus atau penyakit autoimun lainnya"
+            />
+            <CheckboxItem
+              name="anamnesis_anti_phospholipid_syndrome_tinggi"
+              label="Anti phospholipid syndrome"
+              description="Gangguan pembekuan darah autoimun"
+            />
+          </div>
         </div>
-      </div>
 
-      {/* Pemeriksaan Fisik */}
-      <div className="bg-white rounded-xl shadow-sm p-5">
-        <h3 className="font-bold text-[22px] text-[#185FA5] border-b pb-2">Pemeriksaan Fisik Khusus</h3>
-        <p className="text-sm text-gray-500 mt-1 mb-4">
-          Centang jika hasil pemeriksaan menunjukkan kondisi berikut.
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <CheckboxItem
-            name="fisik_map_diatas_90_mmhg"
-            label="MAP > 90 mmHg"
-            description="MAP = Mean Arterial Pressure (tekanan arteri rata-rata)"
-          />
-          <CheckboxItem
-            name="fisik_proteinuria_urin_celup"
-            label="Proteinuria (urin celup > +1)"
-            description="Protein dalam urine menandakan gangguan ginjal"
-          />
-        </div>
         <div className="mt-4">
           <label className="block font-semibold mb-2 text-sm text-gray-800">
             Kesimpulan Klinis (Opsional)
@@ -654,28 +670,66 @@ export default function SkriningPreeklampsia() {
             placeholder="Tambahkan catatan khusus hasil skrining..."
           />
         </div>
-      </div>
 
-      {canEdit && (
-        <div className="flex justify-end gap-4">
-          <button
-            type="button"
-            onClick={() => setIsEditing(false)}
-            className="px-5 py-2.5 border border-[#185FA5] text-[#185FA5] rounded-full font-semibold text-base"
-          >
-            Batal
-          </button>
-          <button
-            type="submit"
-            disabled={saving}
-            className="bg-[#185FA5] text-white rounded-full px-6 py-2.5 flex items-center gap-2 text-base font-semibold hover:bg-[#185FA5]/90 disabled:opacity-50"
-          >
-            <Save size={18} /> {saving ? "Menyimpan..." : "Simpan Skrining"}
-          </button>
+        {/* Pemeriksaan Fisik */}
+        <div className="bg-white rounded-xl shadow-sm p-5">
+          <h3 className="font-bold text-base sm:text-lg md:text-[22px] text-[#185FA5] border-b pb-2 flex items-center gap-2">
+            Pemeriksaan Fisik Khusus
+            <span className="text-sm font-normal text-gray-400 ml-2">(Opsional)</span>
+          </h3>
+          <p className="text-sm text-gray-500 mt-1 mb-4">
+            Centang jika hasil pemeriksaan menunjukkan kondisi berikut.
+            <span className="text-blue-600 ml-1">Tidak wajib diisi.</span>
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <CheckboxItem
+              name="fisik_map_diatas_90_mmhg"
+              label="MAP > 90 mmHg"
+              description="MAP = Mean Arterial Pressure (tekanan arteri rata-rata)"
+            />
+            <CheckboxItem
+              name="fisik_proteinuria_urin_celup"
+              label="Proteinuria (urin celup > +1)"
+              description="Protein dalam urine menandakan gangguan ginjal"
+            />
+          </div>
+          <div className="mt-4">
+            <label className="block font-semibold mb-2 text-base text-gray-800">
+              Kesimpulan Klinis (Opsional)
+            </label>
+            <textarea
+              name="kesimpulan"
+              value={form.kesimpulan}
+              onChange={handleChange}
+              disabled={!canEdit}
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 text-base focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5]"
+              rows="3"
+              placeholder="Tambahkan catatan khusus hasil skrining..."
+            />
+          </div>
         </div>
-      )}
-    </form>
-  );
+
+        {canEdit && (
+          <div className="flex justify-end gap-4">
+            <button
+              type="button"
+              onClick={() => setIsEditing(false)}
+              className="px-5 py-2.5 border border-[#185FA5] text-[#185FA5] rounded-full font-semibold text-base hover:bg-[#185FA5]/5"
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="bg-[#185FA5] text-white rounded-full px-6 py-2.5 flex items-center gap-2 text-base font-semibold hover:bg-[#185FA5]/90 disabled:opacity-50"
+            >
+              <Save size={18} /> {saving ? "Menyimpan..." : "Simpan Skrining"}
+            </button>
+          </div>
+        )}
+      </form>
+    );
+  };
 
   if (loading)
     return (
@@ -701,11 +755,23 @@ export default function SkriningPreeklampsia() {
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate(-1)}
-              className="p-2 rounded-full hover:bg-gray-100 transition"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#185FA5] text-[#185FA5] text-sm font-semibold hover:bg-[#185FA5]/5 transition"
             >
-              <ArrowLeft size={20} className="text-[#185FA5]" />
+              <ArrowLeft size={16} />
+              <span>Kembali</span>
             </button>
-            <h1 className="text-[28px] font-bold text-gray-900">Skrining Preeklampsia</h1>
+            <h1 className="text-lg sm:text-2xl md:text-[28px] font-bold text-gray-900">Skrining Preeklampsia</h1>
+          </div>
+
+          <div className="bg-[#E1F5EE] border-2 border-[#0F6E56]/20 rounded-xl p-4 flex items-start gap-3">
+            <ClipboardList size={20} className="text-[#0F6E56] mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="font-semibold text-[#085041] text-sm">Skrining Trimester 2</p>
+              <p className="text-[#085041]/80 text-sm mt-0.5">
+                Halaman ini adalah pengisian skrining preeklampsia yang digunakan untuk keperluan data pemantauan Trimester 2. 
+                Silakan lengkapi data skrining berikut sesuai dengan hasil pemeriksaan.
+              </p>
+            </div>
           </div>
 
           {!isActive && (

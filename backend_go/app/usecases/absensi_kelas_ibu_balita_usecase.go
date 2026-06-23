@@ -10,7 +10,7 @@ import (
 type AbsensiKelasIbuBalitaUsecase interface {
 	GetMine(userID int32) ([]models.AbsensiKelasIbuBalita, error)
 	SaveMine(userID int32, req models.AbsensiKelasIbuBalita) (*models.AbsensiKelasIbuBalita, error)
-	GetAll() ([]models.AbsensiKelasIbuBalita, error)
+	GetAll(posyanduID *int32) ([]models.AbsensiKelasIbuBalita, error)
 	Verify(id int32, namaKader string, tanggalParaf *time.Time, status string) error
 }
 
@@ -78,8 +78,8 @@ func (u *absensiKelasIbuBalitaUsecase) SaveMine(
 	return data, nil
 }
 
-func (u *absensiKelasIbuBalitaUsecase) GetAll() ([]models.AbsensiKelasIbuBalita, error) {
-	return u.repo.FindAllWithIbu()
+func (u *absensiKelasIbuBalitaUsecase) GetAll(posyanduID *int32) ([]models.AbsensiKelasIbuBalita, error) {
+	return u.repo.FindAllWithIbu(posyanduID)
 }
 
 func (u *absensiKelasIbuBalitaUsecase) Verify(id int32, namaKader string, tanggalParaf *time.Time, status string) error {

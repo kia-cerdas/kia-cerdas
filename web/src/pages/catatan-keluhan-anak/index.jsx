@@ -76,11 +76,11 @@ export default function PelayananKesehatanAnakList() {
     <MainLayout>
       {/* BREADCRUMB */}
       <nav className="flex items-center text-sm text-gray-500 mb-6 gap-2 bg-white p-3 rounded-lg shadow-sm border border-gray-100 w-fit">
-        <Link to="/dashboard" className="hover:text-indigo-600 flex items-center gap-1">
+        <Link to="/dashboard" className="hover:text-[#185FA5] flex items-center gap-1">
           Dashboard
         </Link>
         <ChevronRight size={14} />
-        <span className="font-semibold text-indigo-700">Pencatatan Pelayanan Kesehatan Anak</span>
+        <span className="font-semibold text-[#185FA5]">Pencatatan Pelayanan Kesehatan Anak</span>
       </nav>
 
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
@@ -89,12 +89,12 @@ export default function PelayananKesehatanAnakList() {
           <p className="text-gray-500 text-sm">Kelola data pencatatan pelayanan kesehatan anak oleh bidan.</p>
         </div>
         
-        <div className="bg-gradient-to-br from-indigo-600 to-indigo-700 text-white px-6 py-3 rounded-2xl shadow-lg shadow-indigo-100 flex items-center gap-4">
+        <div className="bg-gradient-to-br from-[#185FA5] to-[#134E87] text-white px-6 py-3 rounded-2xl shadow-lg shadow-blue-100 flex items-center gap-4">
           <div className="p-2 bg-white/20 rounded-xl">
             <Stethoscope size={24} />
           </div>
           <div>
-            <p className="text-[10px] text-indigo-100 font-bold uppercase tracking-wider">Total Kunjungan</p>
+            <p className="text-[10px] text-blue-100 font-bold uppercase tracking-wider">Total Kunjungan</p>
             <p className="text-2xl font-black">{kunjungan.length}</p>
           </div>
         </div>
@@ -107,13 +107,13 @@ export default function PelayananKesehatanAnakList() {
             <input
               type="text"
               placeholder="Cari nama anak atau kategori umur..."
-              className="pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl w-full focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-sm"
+              className="pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl w-full focus:ring-2 focus:ring-[#185FA5] outline-none transition-all text-sm"
               onChange={handleSearchChange}
             />
           </div>
           <Link
             to={anakID ? `/pelayanan-kesehatan-anak/create/${anakID}` : "/pelayanan-kesehatan-anak/create"}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl flex items-center justify-center gap-2 font-bold transition-all shadow-md active:scale-95"
+            className="bg-[#185FA5] hover:bg-[#185FA5]/90 text-white px-6 py-2.5 rounded-xl flex items-center justify-center gap-2 font-bold transition-all shadow-md active:scale-95"
           >
             <Plus size={20} /> Tambah Kunjungan
           </Link>
@@ -148,14 +148,14 @@ export default function PelayananKesehatanAnakList() {
               </tr>
             ) : (
               currentItems.map((item) => (
-                <tr key={item.id} className="hover:bg-indigo-50/20 transition-colors group">
+                <tr key={item.id} className="hover:bg-blue-50/20 transition-colors group">
                   {/* UBAH: dari item.anak?.nama menjadi item.anak?.nama_anak */}
                   <td className="px-6 py-4 font-bold text-gray-800 text-sm">
                     {item.anak?.nama_anak || "-"}
                   </td>
                   
                   <td className="px-6 py-4">
-                    <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase bg-indigo-50 text-indigo-700 border border-indigo-100">
+                    <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase bg-blue-50 text-[#185FA5] border border-blue-100">
                       {/* UBAH: K-nya kecil, sesuai tag JSON di model Golang */}
                       {item.kategori_umur?.kategori_umur || "-"}
                     </span>
@@ -170,7 +170,7 @@ export default function PelayananKesehatanAnakList() {
                     <div className="flex items-center justify-center gap-2">
                       <Link
                         to={`/pelayanan-kesehatan-anak/detail/${item.id}`}
-                        className="p-1.5 text-gray-400 hover:text-indigo-600 transition-colors"
+                        className="p-1.5 text-gray-400 hover:text-[#185FA5] transition-colors"
                         title="Lihat Detail"
                       >
                         <Eye size={16} />
@@ -201,7 +201,7 @@ export default function PelayananKesehatanAnakList() {
         {/* PAGINATION */}
         <div className="flex items-center justify-between px-6 py-4 bg-gray-50/50 border-t border-gray-100">
           <p className="text-xs text-gray-500 font-medium">
-            Menampilkan <span className="text-indigo-600">{filteredData.length > 0 ? indexOfFirstItem + 1 : 0}</span> - <span className="text-indigo-600">{Math.min(indexOfLastItem, filteredData.length)}</span> dari <span className="text-indigo-600">{filteredData.length}</span> data
+            Menampilkan <span className="text-[#185FA5]">{filteredData.length > 0 ? indexOfFirstItem + 1 : 0}</span> - <span className="text-[#185FA5]">{Math.min(indexOfLastItem, filteredData.length)}</span> dari <span className="text-[#185FA5]">{filteredData.length}</span> data
           </p>
           
           <div className="flex items-center gap-2">
@@ -220,7 +220,7 @@ export default function PelayananKesehatanAnakList() {
                   onClick={() => setCurrentPage(i + 1)}
                   className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${
                     currentPage === i + 1 
-                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-100" 
+                    ? "bg-[#185FA5] text-white shadow-md shadow-blue-100" 
                     : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
                   }`}
                 >

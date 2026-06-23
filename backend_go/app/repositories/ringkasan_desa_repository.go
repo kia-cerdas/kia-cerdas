@@ -13,7 +13,7 @@ func NewRingkasanDesaRepository(db *gorm.DB) *RingkasanDesaRepository {
 // CountIbuHamilByTrimester menghitung jumlah ibu hamil aktif per trimester (kehamilan.status_kehamilan
 // berisi 'TRIMESTER 1' / 'TRIMESTER 2' / 'TRIMESTER 3'), disaring berdasarkan desa_id penduduk
 // (kehamilan -> ibu -> penduduk). desaID nil berarti tanpa filter desa (untuk akses penuh seperti dokter).
-func (r *RingkasanDesaRepository) CountIbuHamilByTrimester(desaID *int32) (t1, t2, t3 int64, err error) {
+func (r *RingkasanDesaRepository) CountIbuHamilByTrimester(posyanduID *int32) (t1, t2, t3 int64, err error) {
 	type row struct {
 		Status string
 		Jumlah int64
@@ -27,8 +27,8 @@ func (r *RingkasanDesaRepository) CountIbuHamilByTrimester(desaID *int32) (t1, t
 		Where("k.deleted_at IS NULL").
 		Group("UPPER(TRIM(k.status_kehamilan))")
 
-	if desaID != nil {
-		q = q.Where("p.desa_id = ?", *desaID)
+	if posyanduID != nil {
+		q = q.Where("p.posyandu_id = ?", *posyanduID)
 	}
 
 	if err = q.Scan(&rows).Error; err != nil {
@@ -50,15 +50,15 @@ func (r *RingkasanDesaRepository) CountIbuHamilByTrimester(desaID *int32) (t1, t
 }
 
 // CountAnak menghitung jumlah anak yang penduduknya berada di sebuah desa.
-func (r *RingkasanDesaRepository) CountAnak(desaID *int32) (int64, error) {
+func (r *RingkasanDesaRepository) CountAnak(posyanduID *int32) (int64, error) {
 	var count int64
 
 	q := r.db.Table("anak a").
 		Joins("JOIN penduduk p ON p.id = a.penduduk_id AND p.deleted_at IS NULL").
 		Where("a.deleted_at IS NULL")
 
-	if desaID != nil {
-		q = q.Where("p.desa_id = ?", *desaID)
+	if posyanduID != nil {
+		q = q.Where("p.posyandu_id = ?", *posyanduID)
 	}
 
 	err := q.Count(&count).Error
@@ -67,7 +67,7 @@ func (r *RingkasanDesaRepository) CountAnak(desaID *int32) (int64, error) {
 
 // CountPerluTindakLanjut menghitung jumlah kunjungan imunisasi dengan status "Perlu Tindak Lanjut"
 // untuk anak-anak di sebuah desa.
-func (r *RingkasanDesaRepository) CountPerluTindakLanjut(desaID *int32) (int64, error) {
+func (r *RingkasanDesaRepository) CountPerluTindakLanjut(posyanduID *int32) (int64, error) {
 	var count int64
 
 	q := r.db.Table("kunjungan_imunisasi ki").
@@ -77,8 +77,8 @@ func (r *RingkasanDesaRepository) CountPerluTindakLanjut(desaID *int32) (int64, 
 		Joins("JOIN penduduk p ON p.id = a.penduduk_id AND p.deleted_at IS NULL").
 		Where("LOWER(TRIM(sk.status_kunjungan)) = ?", "perlu tindak lanjut")
 
-	if desaID != nil {
-		q = q.Where("p.desa_id = ?", *desaID)
+	if posyanduID != nil {
+		q = q.Where("p.posyandu_id = ?", *posyanduID)
 	}
 
 	err := q.Count(&count).Error
@@ -95,13 +95,13 @@ func (r *RingkasanDesaRepository) GetDesaName(desaID int32) (string, error) {
 	return nama, err
 }
 
-func (r *RingkasanDesaRepository) baseKelasIbuBalita(desaID *int32) *gorm.DB {
+func (r *RingkasanDesaRepository) baseKelasIbuBalita(posyanduID *int32) *gorm.DB {
 	q := r.db.Table("absensi_kelas_ibu_balita akb").
 		Joins("JOIN ibu i ON i.id = akb.ibu_id AND i.is_deleted IS NULL").
 		Joins("JOIN penduduk p ON p.id = i.penduduk_id AND p.deleted_at IS NULL")
 
-	if desaID != nil {
-		q = q.Where("p.desa_id = ?", *desaID)
+	if posyanduID != nil {
+		q = q.Where("p.posyandu_id = ?", *posyanduID)
 	}
 	return q
 }
@@ -110,11 +110,11 @@ func (r *RingkasanDesaRepository) baseKelasIbuBalita(desaID *int32) *gorm.DB {
 // sudah diproses kader di sebuah desa. Kader memproses absensi balita menjadi "Diterima"
 // atau "Ditolak" (lihat VerifikasiAbsensiKelasIbuBalitaScreen di mobile); "Terverifikasi"
 // disertakan juga untuk berjaga-jaga karena merupakan nilai default lama di backend.
-func (r *RingkasanDesaRepository) CountVerifikasiKelasIbuBalita(desaID *int32) (total, sudah int64, err error) {
-	if err = r.baseKelasIbuBalita(desaID).Count(&total).Error; err != nil {
+func (r *RingkasanDesaRepository) CountVerifikasiKelasIbuBalita(posyanduID *int32) (total, sudah int64, err error) {
+	if err = r.baseKelasIbuBalita(posyanduID).Count(&total).Error; err != nil {
 		return 0, 0, err
 	}
-	if err = r.baseKelasIbuBalita(desaID).
+	if err = r.baseKelasIbuBalita(posyanduID).
 		Where("akb.status IN (?)", []string{"Diterima", "Ditolak", "Terverifikasi"}).
 		Count(&sudah).Error; err != nil {
 		return 0, 0, err
@@ -122,75 +122,75 @@ func (r *RingkasanDesaRepository) CountVerifikasiKelasIbuBalita(desaID *int32) (
 	return total, sudah, nil
 }
 
-func (r *RingkasanDesaRepository) baseKelasIbuHamil(desaID *int32) *gorm.DB {
+func (r *RingkasanDesaRepository) baseKelasIbuHamil(posyanduID *int32) *gorm.DB {
 	q := r.db.Table("absensi_kelas_ibu_hamil akh").
 		Joins("JOIN kehamilan k ON k.id = akh.kehamilan_id AND k.deleted_at IS NULL").
 		Joins("JOIN ibu i ON i.id = k.ibu_id AND i.is_deleted IS NULL").
 		Joins("JOIN penduduk p ON p.id = i.penduduk_id AND p.deleted_at IS NULL")
 
-	if desaID != nil {
-		q = q.Where("p.desa_id = ?", *desaID)
+	if posyanduID != nil {
+		q = q.Where("p.posyandu_id = ?", *posyanduID)
 	}
 	return q
 }
 
 // CountVerifikasiKelasIbuHamil menghitung total absensi kelas ibu hamil dan berapa yang
 // sudah diverifikasi kader (status = 'Terverifikasi') di sebuah desa.
-func (r *RingkasanDesaRepository) CountVerifikasiKelasIbuHamil(desaID *int32) (total, sudah int64, err error) {
-	if err = r.baseKelasIbuHamil(desaID).Count(&total).Error; err != nil {
+func (r *RingkasanDesaRepository) CountVerifikasiKelasIbuHamil(posyanduID *int32) (total, sudah int64, err error) {
+	if err = r.baseKelasIbuHamil(posyanduID).Count(&total).Error; err != nil {
 		return 0, 0, err
 	}
-	if err = r.baseKelasIbuHamil(desaID).Where("akh.status = ?", "Terverifikasi").Count(&sudah).Error; err != nil {
+	if err = r.baseKelasIbuHamil(posyanduID).Where("akh.status = ?", "Terverifikasi").Count(&sudah).Error; err != nil {
 		return 0, 0, err
 	}
 	return total, sudah, nil
 }
 
-func (r *RingkasanDesaRepository) basePemantauanIbuHamil(desaID *int32) *gorm.DB {
+func (r *RingkasanDesaRepository) basePemantauanIbuHamil(posyanduID *int32) *gorm.DB {
 	q := r.db.Table("pemantauan_ibu_hamil pih").
 		Joins("JOIN kehamilan k ON k.id = pih.kehamilan_id AND k.deleted_at IS NULL").
 		Joins("JOIN ibu i ON i.id = k.ibu_id AND i.is_deleted IS NULL").
 		Joins("JOIN penduduk p ON p.id = i.penduduk_id AND p.deleted_at IS NULL").
 		Where("pih.deleted_at IS NULL")
 
-	if desaID != nil {
-		q = q.Where("p.desa_id = ?", *desaID)
+	if posyanduID != nil {
+		q = q.Where("p.posyandu_id = ?", *posyanduID)
 	}
 	return q
 }
 
 // CountVerifikasiPemantauanIbuHamil menghitung total laporan pemantauan ibu hamil dan berapa yang
 // sudah diverifikasi kader (tanggal_verifikasi terisi) di sebuah desa.
-func (r *RingkasanDesaRepository) CountVerifikasiPemantauanIbuHamil(desaID *int32) (total, sudah int64, err error) {
-	if err = r.basePemantauanIbuHamil(desaID).Count(&total).Error; err != nil {
+func (r *RingkasanDesaRepository) CountVerifikasiPemantauanIbuHamil(posyanduID *int32) (total, sudah int64, err error) {
+	if err = r.basePemantauanIbuHamil(posyanduID).Count(&total).Error; err != nil {
 		return 0, 0, err
 	}
-	if err = r.basePemantauanIbuHamil(desaID).Where("pih.tanggal_verifikasi IS NOT NULL").Count(&sudah).Error; err != nil {
+	if err = r.basePemantauanIbuHamil(posyanduID).Where("pih.tanggal_verifikasi IS NOT NULL").Count(&sudah).Error; err != nil {
 		return 0, 0, err
 	}
 	return total, sudah, nil
 }
 
-func (r *RingkasanDesaRepository) basePemantauanIbuNifas(desaID *int32) *gorm.DB {
+func (r *RingkasanDesaRepository) basePemantauanIbuNifas(posyanduID *int32) *gorm.DB {
 	q := r.db.Table("checklist_pemantauan_ibu_nifas cpn").
 		Joins("JOIN kehamilan k ON k.id = cpn.kehamilan_id AND k.deleted_at IS NULL").
 		Joins("JOIN ibu i ON i.id = k.ibu_id AND i.is_deleted IS NULL").
 		Joins("JOIN penduduk p ON p.id = i.penduduk_id AND p.deleted_at IS NULL").
 		Where("cpn.deleted_at IS NULL")
 
-	if desaID != nil {
-		q = q.Where("p.desa_id = ?", *desaID)
+	if posyanduID != nil {
+		q = q.Where("p.posyandu_id = ?", *posyanduID)
 	}
 	return q
 }
 
 // CountVerifikasiPemantauanIbuNifas menghitung total checklist pemantauan ibu nifas dan berapa yang
 // sudah diverifikasi kader (tanggal_verifikasi terisi) di sebuah desa.
-func (r *RingkasanDesaRepository) CountVerifikasiPemantauanIbuNifas(desaID *int32) (total, sudah int64, err error) {
-	if err = r.basePemantauanIbuNifas(desaID).Count(&total).Error; err != nil {
+func (r *RingkasanDesaRepository) CountVerifikasiPemantauanIbuNifas(posyanduID *int32) (total, sudah int64, err error) {
+	if err = r.basePemantauanIbuNifas(posyanduID).Count(&total).Error; err != nil {
 		return 0, 0, err
 	}
-	if err = r.basePemantauanIbuNifas(desaID).Where("cpn.tanggal_verifikasi IS NOT NULL").Count(&sudah).Error; err != nil {
+	if err = r.basePemantauanIbuNifas(posyanduID).Where("cpn.tanggal_verifikasi IS NOT NULL").Count(&sudah).Error; err != nil {
 		return 0, 0, err
 	}
 	return total, sudah, nil

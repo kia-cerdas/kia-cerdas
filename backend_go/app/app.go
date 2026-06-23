@@ -58,33 +58,39 @@ func (m *Main) startCronJob() {
 		if err := kehamilanUC.UpdateAllActiveGestationalAge(); err != nil {
 			log.Printf("[CRON] kehamilan error: %v", err)
 		}
-
-		// 2. reminder imunisasi
-		if err := m.usecase.ProcessReminder(); err != nil {
-			log.Printf("[CRON] reminder error: %v", err)
-		} else {
-			log.Println("[CRON] reminder selesai")
-		}
-
-		// 3. Reminder kontrol pemeriksaan kehamilan
-		if err := m.usecase.ProcessKontrolReminder(); err != nil {
-			log.Printf("[CRON] reminder kontrol error: %v", err)
-		} else {
-			log.Println("[CRON] reminder kontrol selesai")
-		}
-
-		// 4. Update status jadwal imunisasi
+		// 42 Update status jadwal imunisasi
 		if err := m.usecase.UpdateStatusJadwal(); err != nil {
 			log.Printf("[CRON] update status jadwal imunisasi error: %v", err)
 		} else {
 			log.Println("[CRON] update status jadwal imunisasi selesai")
 		}
 
-		// 5. Update overdue kunjungan imunisasi
-		if err := m.usecase.ProcessOverdueKunjunganImunisasi(); err != nil {
-			log.Printf("[CRON] overdue kunjungan imunisasi error: %v", err)
+		// 3. reminder imunisasi
+		if err := m.usecase.ProcessReminder(); err != nil {
+			log.Printf("[CRON] reminder error: %v", err)
 		} else {
-			log.Println("[CRON] overdue kunjungan imunisasi selesai")
+			log.Println("[CRON] reminder selesai")
+		}
+
+		// 4. Reminder kontrol pemeriksaan kehamilan
+		if err := m.usecase.ProcessKontrolReminder(); err != nil {
+			log.Printf("[CRON] reminder kontrol error: %v", err)
+		} else {
+			log.Println("[CRON] reminder kontrol selesai")
+		}
+
+		// 5. Update status & kirim notifikasi kunjungan imunisasi
+		if err := m.usecase.ProcessKunjunganImunisasiCron(); err != nil {
+			log.Printf("[CRON] kunjungan imunisasi cron error: %v", err)
+		} else {
+			log.Println("[CRON] kunjungan imunisasi cron selesai")
+		}
+
+		// 6. Reminder jadwal posyandu H-3
+		if err := m.usecase.ProcessPosyanduReminder(); err != nil {
+			log.Printf("[CRON] posyandu reminder error: %v", err)
+		} else {
+			log.Println("[CRON] posyandu reminder selesai")
 		}
 	})
 	if err != nil {
@@ -125,6 +131,12 @@ func (m *Main) Init() (err error) {
 		`ALTER TABLE prediksi_stunting ALTER COLUMN classification TYPE varchar(30)`,
 		`ALTER TABLE aturan_porsi_mpasi ADD COLUMN IF NOT EXISTS gambar_url text`,
 		`ALTER TABLE jadwal_harian_mpasi ADD COLUMN IF NOT EXISTS gambar_url text`,
+		`ALTER TABLE pemeriksaan_kehamilan ADD COLUMN IF NOT EXISTS overall_prediction INTEGER DEFAULT 0`,
+		`ALTER TABLE pemeriksaan_kehamilan ADD COLUMN IF NOT EXISTS overall_label VARCHAR(20) DEFAULT 'NORMAL'`,
+		`ALTER TABLE pemeriksaan_kehamilan ADD COLUMN IF NOT EXISTS active_risk_count INTEGER DEFAULT 0`,
+		`ALTER TABLE pemeriksaan_kehamilan ADD COLUMN IF NOT EXISTS alasan_klinis TEXT`,
+		`ALTER TABLE pemeriksaan_kehamilan ADD COLUMN IF NOT EXISTS rekomendasi_utama TEXT`,
+		`ALTER TABLE pemeriksaan_kehamilan ADD COLUMN IF NOT EXISTS risk_types TEXT`,
 	}
 	for _, q := range fixQueries {
 		if execErr := m.database.Postgres.Exec(q).Error; execErr != nil {

@@ -197,3 +197,22 @@ func (m *Main) CreateIbuUser(c echo.Context) error {
 	
 	return helpers.StandardResponse(c, http.StatusCreated, []string{"Akun Ibu berhasil dibuat"}, data, nil)
 }
+
+func (m *Main) UpdateUser(c echo.Context) error {
+	idRaw, err := strconv.ParseInt(c.Param("id"), 10, 32)
+	if err != nil {
+		return helpers.Response(c, http.StatusBadRequest, []string{"id user tidak valid"})
+	}
+
+	var req usecases.SuperadminUpdateUserRequest
+	if err := c.Bind(&req); err != nil {
+		return helpers.Response(c, http.StatusBadRequest, []string{"format request tidak valid"})
+	}
+
+	data, updateErr := m.usecases.SuperadminUser.UpdateUser(int32(idRaw), &req)
+	if updateErr != nil {
+		return helpers.Response(c, customerror.GetStatusCode(updateErr), []string{updateErr.Error()})
+	}
+
+	return helpers.StandardResponse(c, http.StatusOK, []string{constants.SUCCESS_RESPONSE_MESSAGE}, data, nil)
+}

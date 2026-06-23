@@ -122,14 +122,14 @@ export default function LihatDataPerkembangan() {
               Pantau pencapaian indikator perkembangan anak berdasarkan lembar perawatan.
             </p>
           </div>
-          <button
+          {/* <button
             onClick={loadData}
             disabled={loading}
             className="flex items-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg transition-all text-sm font-semibold shadow-sm"
           >
             <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
             Refresh
-          </button>
+          </button> */}
         </div>
 
         {/* Stats Cards */}

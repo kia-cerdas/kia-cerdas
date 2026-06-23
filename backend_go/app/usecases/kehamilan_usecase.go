@@ -171,6 +171,33 @@ func HitungUKDariHPHT(hpht time.Time) int32 {
 	}
 	return weeks
 }
+func HitungStatusKehamilan(hpht time.Time) string {
+    if hpht.IsZero() {
+        return "TIDAK DIKETAHUI"
+    }
+    
+    now := time.Now()
+    diff := now.Sub(hpht)
+    minggu := int(diff.Hours() / 24 / 7)
+    
+    if minggu <= 0 {
+        return "BELUM HAMIL"
+    }
+    if minggu <= 13 {
+        return "TRIMESTER 1"
+    }
+    if minggu <= 27 {
+        return "TRIMESTER 2"
+    }
+    if minggu <= 40 {
+        return "TRIMESTER 3"
+    }
+    if minggu <= 46 {
+        return "NIFAS"
+    }
+    return "PASCA NIFAS"
+}
+
 func (u *kehamilanUsecase) Create(kehamilan *models.Kehamilan) error {
 	if kehamilan.IbuID == 0 {
 		return errors.New("ibu_id wajib diisi")
@@ -201,12 +228,13 @@ func (u *kehamilanUsecase) Create(kehamilan *models.Kehamilan) error {
 	}
 
 	// Set default status kehamilan
-	if kehamilan.StatusKehamilan == "" {
-		kehamilan.StatusKehamilan = "TRIMESTER 1"
-	}
+	  if kehamilan.StatusKehamilan == "" {
+        kehamilan.StatusKehamilan = HitungStatusKehamilan(kehamilan.HPHT)
+    }
 
 	return u.repo.Create(kehamilan)
 }
+
 
 func (u *kehamilanUsecase) GetByID(id int32) (*models.Kehamilan, error) {
 	kehamilan, err := u.repo.FindByID(id)

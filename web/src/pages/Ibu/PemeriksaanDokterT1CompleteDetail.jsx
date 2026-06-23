@@ -375,9 +375,10 @@ export default function PemeriksaanDokterT1CompleteDetail() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate(`/data-ibu/${id}`)}
-              className="p-2 rounded-full hover:bg-gray-100 transition shrink-0"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#185FA5] text-[#185FA5] text-sm font-semibold hover:bg-[#185FA5]/5 transition"
             >
-              <ArrowLeft size={20} className="text-gray-600" />
+              <ArrowLeft size={16} />
+              <span>Kembali</span>
             </button>
             <div>
               <h1 className="text-xl md:text-2xl font-bold text-gray-800">
@@ -592,7 +593,7 @@ export default function PemeriksaanDokterT1CompleteDetail() {
                   label="GS (minggu)"
                   value={
                     d.usg_diameter_gs_minggu
-                      ? `${d.usg_diameter_gs_minggu} mg`
+                      ? `${d.usg_diameter_gs_minggu} minggu`
                       : null
                   }
                 />
@@ -620,7 +621,7 @@ export default function PemeriksaanDokterT1CompleteDetail() {
                 <InfoRow
                   label="CRL (minggu)"
                   value={
-                    d.usg_crl_minggu ? `${d.usg_crl_minggu} mg` : null
+                    d.usg_crl_minggu ? `${d.usg_crl_minggu} minggu` : null
                   }
                 />
                 <InfoRow

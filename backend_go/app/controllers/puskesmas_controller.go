@@ -4,6 +4,7 @@ import (
 	"monitoring-service/app/models"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 )
@@ -15,8 +16,8 @@ type PuskesmasController struct {
 // GetAll - List semua puskesmas
 func (ctrl *PuskesmasController) GetAll(c echo.Context) error {
 	var puskesmas []models.Puskesmas
-	
-	if err := ctrl.DB().Order("id DESC").Find(&puskesmas).Error; err != nil {
+
+	if err := ctrl.DB().Preload("Kecamatan").Preload("Kecamatan.Kabupaten").Preload("Kecamatan.Kabupaten.Provinsi").Order("id DESC").Find(&puskesmas).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
 			"status":  "error",
 			"message": "Gagal mengambil data puskesmas",
@@ -42,7 +43,7 @@ func (ctrl *PuskesmasController) GetByID(c echo.Context) error {
 	}
 
 	var puskesmas models.Puskesmas
-	if err := ctrl.DB().First(&puskesmas, id).Error; err != nil {
+	if err := ctrl.DB().Preload("Kecamatan").Preload("Kecamatan.Kabupaten").Preload("Kecamatan.Kabupaten.Provinsi").First(&puskesmas, id).Error; err != nil {
 		return c.JSON(http.StatusNotFound, map[string]interface{}{
 			"status":  "error",
 			"message": "Puskesmas tidak ditemukan",
@@ -59,9 +60,10 @@ func (ctrl *PuskesmasController) GetByID(c echo.Context) error {
 // Create - Tambah puskesmas baru
 func (ctrl *PuskesmasController) Create(c echo.Context) error {
 	var req struct {
-		Nama      string `json:"nama" validate:"required"`
-		Alamat    string `json:"alamat"`
-		NoTelepon string `json:"no_telepon"`
+		Nama        string `json:"nama" validate:"required"`
+		Alamat      string `json:"alamat"`
+		NoTelepon   string `json:"no_telepon"`
+		KecamatanID *int32 `json:"kecamatan_id"`
 	}
 
 	if err := c.Bind(&req); err != nil {
@@ -79,17 +81,38 @@ func (ctrl *PuskesmasController) Create(c echo.Context) error {
 		})
 	}
 
+	// Cek duplikasi nama puskesmas
+	var existingCount int64
+	ctrl.DB().Model(&models.Puskesmas{}).Where("LOWER(nama) = LOWER(?)", req.Nama).Count(&existingCount)
+	if existingCount > 0 {
+		return c.JSON(http.StatusBadRequest, map[string]interface{}{
+			"status":  "error",
+			"message": "Puskesmas dengan nama tersebut sudah ada",
+		})
+	}
+
 	puskesmas := models.Puskesmas{
-		Nama:      req.Nama,
-		Alamat:    req.Alamat,
-		NoTelepon: req.NoTelepon,
+		Nama:        req.Nama,
+		Alamat:      req.Alamat,
+		NoTelepon:   req.NoTelepon,
+		KecamatanID: req.KecamatanID,
 	}
 
 	if err := ctrl.DB().Create(&puskesmas).Error; err != nil {
+		// Handle specific PostgreSQL errors
+		errMsg := err.Error()
+		if strings.Contains(errMsg, "duplicate key") || strings.Contains(errMsg, "unique constraint") {
+			return c.JSON(http.StatusConflict, map[string]interface{}{
+				"status":  "error",
+				"message": "Data puskesmas sudah ada atau terjadi konflik ID. Silakan coba lagi atau hubungi administrator untuk memperbaiki database sequence.",
+				"error":   errMsg,
+			})
+		}
+		
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
 			"status":  "error",
 			"message": "Gagal menyimpan puskesmas",
-			"error":   err.Error(),
+			"error":   errMsg,
 		})
 	}
 
@@ -119,9 +142,10 @@ func (ctrl *PuskesmasController) Update(c echo.Context) error {
 	}
 
 	var req struct {
-		Nama      string `json:"nama"`
-		Alamat    string `json:"alamat"`
-		NoTelepon string `json:"no_telepon"`
+		Nama        string `json:"nama"`
+		Alamat      string `json:"alamat"`
+		NoTelepon   string `json:"no_telepon"`
+		KecamatanID *int32 `json:"kecamatan_id"`
 	}
 
 	if err := c.Bind(&req); err != nil {
@@ -137,6 +161,7 @@ func (ctrl *PuskesmasController) Update(c echo.Context) error {
 	}
 	puskesmas.Alamat = req.Alamat
 	puskesmas.NoTelepon = req.NoTelepon
+	puskesmas.KecamatanID = req.KecamatanID
 
 	if err := ctrl.DB().Save(&puskesmas).Error; err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]interface{}{

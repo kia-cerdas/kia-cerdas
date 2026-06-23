@@ -382,8 +382,8 @@ class _VerifikasiAbsensiKelasIbuBalitaScreenState extends State<VerifikasiAbsens
                                               children: [
                                                 Text(
                                                   item.namaIbu.isNotEmpty 
-                                                    ? 'Ibu ${item.namaIbu}' 
-                                                    : 'Ibu (Data tidak lengkap)',
+                                                    ? '${item.namaIbu}' 
+                                                    : '(Data tidak lengkap)',
                                                   style: const TextStyle(
                                                     fontWeight: FontWeight.bold, 
                                                     fontSize: 16,

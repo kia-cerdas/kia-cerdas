@@ -120,31 +120,34 @@ export default function AnakDashboard() {
     <MainLayout>
       <div className="p-4 md:p-8 bg-[#f8fafc] min-h-screen">
 
-        {/* HEADER: Lebih rapat */}
+        {/* HEADER */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
           <div>
             <Link
               to="/daftar-anak"
-              className="flex items-center gap-2 px-6 py-2 border border-blue-600 text-blue-600 hover:bg-blue-50 rounded-full font-medium text-sm transition-all group w-fit mb-4 mt-2"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-[#185FA5] hover:bg-[#185FA5]/90 text-white rounded-xl font-semibold text-sm transition-all active:scale-95 shadow-sm mb-4 mt-2"
             >
-              <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Kembali
+              <ArrowLeft size={16} /> Kembali
             </Link>
             <h1 className="text-2xl font-bold text-gray-800 tracking-tight">{child.nama}</h1>
           </div>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 text-sm font-semibold shadow-md transition-all active:scale-95"
+            className="bg-[#185FA5] hover:bg-[#185FA5]/90 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 text-sm font-semibold shadow-sm transition-all active:scale-95"
           >
             <Plus size={18} /> Input Data
           </button>
         </div>
 
-        {/* STAT CARDS: Lebih ramping */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-          <StatCard icon={<Calendar size={20} />} label="Usia" value={child.usia_teks || "-"} color="blue" />
-          <StatCard icon={<User size={20} />} label="Ibu" value={child.kehamilan?.ibu?.nama_ibu || "-"} color="blue" />
-          <StatCard icon={<Activity size={20} />} label="BB" value={lastGrowth?.berat_badan ? `${lastGrowth.berat_badan} kg` : "- kg"} color="blue" />
-          <StatCard icon={<Ruler size={20} />} label="TB" value={lastGrowth?.tinggi_badan ? `${lastGrowth.tinggi_badan} cm` : "- cm"} color="blue" />
+        {/* INFO CARD: Data anak dalam satu card */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-6">
+          <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-4">Informasi Anak</h3>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatCard icon={<Calendar size={18} />} label="Usia" value={child.usia_teks || "-"} />
+            <StatCard icon={<User size={18} />} label="Nama Ibu" value={child.kehamilan?.ibu?.nama_ibu || "-"} />
+            <StatCard icon={<Activity size={18} />} label="Berat Badan" value={lastGrowth?.berat_badan ? `${lastGrowth.berat_badan} kg` : "- kg"} />
+            <StatCard icon={<Ruler size={18} />} label="Tinggi Badan" value={lastGrowth?.tinggi_badan ? `${lastGrowth.tinggi_badan} cm` : "- cm"} />
+          </div>
         </div>
 
         {/* GRAFIK: Tampilkan 4 grafik kecil dalam tata letak seperti gambar pertama */}
@@ -322,10 +325,6 @@ function ChartCard({ title, dataKey, data = [], color = "#3b82f6" }) {
         ) : (
           <div className="h-full flex items-center justify-center text-gray-300 font-medium italic">Belum ada data untuk ditampilkan</div>
         )}
-      </div>
-      <div className="flex items-center gap-2 pt-3 text-sm text-gray-500">
-        <span className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
-        <span className="font-semibold">Data anak</span>
       </div>
     </div>
   );

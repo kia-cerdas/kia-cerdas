@@ -60,7 +60,7 @@ export default function RujukanDisplay() {
       <div className="p-4 md:p-6 max-w-4xl mx-auto">
         <div className="mb-6">
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">Data Rujukan Ibu Hamil</h1>
-          <p className="text-sm md:text-base text-gray-500">Dokumentasi rujukan dan rujukan balik ke FKRTL</p>
+          <p className="text-sm md:text-base text-gray-500">Dokumentasi rujukan dan rujukan balik ke Fasilitas Kesehatan Rujukan Tingkat Lanjutan</p>
         </div>
 
         {rujukan ? (
@@ -78,12 +78,12 @@ export default function RujukanDisplay() {
               </div>
             </div>
 
-            {/* Rujukan ke FKRTL */}
+            {/* Rujukan ke Fasilitas Kesehatan Rujukan Tingkat Lanjutan */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
               <div className="bg-gradient-to-r from-red-500 to-rose-600 px-4 md:px-5 py-3">
                 <div className="flex items-center gap-2">
                   <AlertCircle size={22} className="text-white" />
-                  <h3 className="text-lg md:text-xl font-bold text-white">Rujukan ke FKRTL</h3>
+                  <h3 className="text-lg md:text-xl font-bold text-white">Rujukan ke Fasilitas Kesehatan Rujukan Tingkat Lanjutan</h3>
                 </div>
               </div>
 
@@ -108,7 +108,7 @@ export default function RujukanDisplay() {
 
                 {/* Alasan Rujukan */}
                 <div>
-                  <label className="block text-xs md:text-sm font-semibold text-gray-700 mb-2">Alasan Dirujuk ke FKRTL</label>
+                  <label className="block text-xs md:text-sm font-semibold text-gray-700 mb-2">Alasan Dirujuk ke Fasilitas Kesehatan Rujukan Tingkat Lanjutan</label>
                   <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
                     <p className="text-sm text-yellow-900 whitespace-pre-wrap leading-relaxed line-clamp-3">
                       {rujukan.rujukan_alasan_dirujuk_ke_fkrtl || "-"}

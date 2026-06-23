@@ -23,6 +23,7 @@ type SuperadminCreateBidanUserRequest struct {
 	DesaID      *int32 `json:"desa_id,omitempty"`
 	NoSTR       string `json:"no_str"`
 	NoSIPB      string `json:"no_sipb"`
+	PosyanduID	 *int32 `json:"posyandu_id,omitempty"`
 }
 
 type SuperadminCreateAdminDesaUserRequest struct {
@@ -60,6 +61,14 @@ type SuperadminUpdateUserRoleRequest struct {
 
 type SuperadminResetPasswordRequest struct {
 	Password string `json:"password"`
+}
+
+type SuperadminUpdateUserRequest struct {
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	NoSTR    string `json:"no_str"`
+	NoSIPB   string `json:"no_sipb"`
 }
 
 type SuperadminUserUsecase struct {
@@ -214,15 +223,15 @@ func (u *SuperadminUserUsecase) CreateBidanUser(req *SuperadminCreateBidanUserRe
 		return nil, err
 	}
 
-	if _, err := u.repo.Bidan.FindByPendudukID(req.PendudukID); err == nil {
-		return nil, customerror.NewConflictError("penduduk sudah terdaftar sebagai bidan")
-	} else if !u.isNotFound(err) {
+	if bidanData, err := u.repo.Bidan.FindByPendudukID(req.PendudukID); err != nil {
 		return nil, customerror.NewInternalServiceError("gagal memvalidasi data bidan")
+	} else if bidanData != nil {
+		return nil, customerror.NewConflictError("penduduk sudah terdaftar sebagai bidan")
 	}
-	if _, err := u.repo.Kader.FindByPendudukID(req.PendudukID); err == nil {
-		return nil, customerror.NewConflictError("penduduk sudah terdaftar sebagai kader")
-	} else if !u.isNotFound(err) {
+	if kaderData, err := u.repo.Kader.FindByPendudukID(req.PendudukID); err != nil {
 		return nil, customerror.NewInternalServiceError("gagal memvalidasi data kader")
+	} else if kaderData != nil {
+		return nil, customerror.NewConflictError("penduduk sudah terdaftar sebagai kader")
 	}
 	if _, err := u.repo.User.FindByPendudukID(int64(req.PendudukID)); err == nil {
 		return nil, customerror.NewConflictError("penduduk sudah memiliki akun pengguna")
@@ -254,7 +263,7 @@ func (u *SuperadminUserUsecase) CreateBidanUser(req *SuperadminCreateBidanUserRe
 	pendudukID64 := int64(req.PendudukID)
 	err = u.repo.DB().Transaction(func(tx *gorm.DB) error {
 		createdUser = models.User{
-			Name:       strings.TrimSpace(req.Name),
+			Username:   strings.TrimSpace(req.Name),
 			Email:      email,
 			IsActive:   true,
 			Password:   hashedPassword,
@@ -267,18 +276,44 @@ func (u *SuperadminUserUsecase) CreateBidanUser(req *SuperadminCreateBidanUserRe
 		if err := tx.Model(&models.Kependudukan{}).Where("id = ?", req.PendudukID).Update("telepon", normalizedPhone).Error; err != nil {
 			return err
 		}
-		createdBidan = models.Bidan{
-			PendudukID: req.PendudukID,
-			NoSTR:      strings.TrimSpace(req.NoSTR),
-			NoSIPB:     strings.TrimSpace(req.NoSIPB),
-			Status:     "aktif",
-		}
-		if err := tx.Create(&createdBidan).Error; err != nil {
-			return err
+		// Cek apakah ada bidan yang sudah di-soft-delete untuk penduduk ini
+		var existingBidan models.Bidan
+		findErr := tx.Unscoped().Where("penduduk_id = ?", req.PendudukID).First(&existingBidan).Error
+		if findErr == nil && existingBidan.DeletedAt != nil {
+			// Pulihkan data bidan yang sudah di-soft-delete
+			existingBidan.NoSTR = strings.TrimSpace(req.NoSTR)
+			existingBidan.NoSIPB = strings.TrimSpace(req.NoSIPB)
+			existingBidan.Status = "aktif"
+			existingBidan.PosyanduID = req.PosyanduID
+			existingBidan.DeletedAt = nil
+			if err := tx.Unscoped().Save(&existingBidan).Error; err != nil {
+				return err
+			}
+			createdBidan = existingBidan
+		} else if findErr == nil {
+			// Record aktif sudah ada (seharusnya tidak sampai sini karena validasi di atas)
+			return customerror.NewConflictError("penduduk sudah terdaftar sebagai bidan")
+		} else if errors.Is(findErr, gorm.ErrRecordNotFound) {
+			// Belum ada record, buat baru
+			createdBidan = models.Bidan{
+				PendudukID: req.PendudukID,
+				NoSTR:      strings.TrimSpace(req.NoSTR),
+				NoSIPB:     strings.TrimSpace(req.NoSIPB),
+				Status:     "aktif",
+				PosyanduID: req.PosyanduID,
+			}
+			if err := tx.Create(&createdBidan).Error; err != nil {
+				return err
+			}
+		} else {
+			return findErr
 		}
 		return nil
 	})
 	if err != nil {
+		if conflictErr, ok := err.(customerror.ConflictError); ok {
+			return nil, conflictErr
+		}
 		if strings.Contains(strings.ToLower(err.Error()), "unique") || strings.Contains(strings.ToLower(err.Error()), "duplicate") {
 			return nil, customerror.NewConflictError("data bidan atau akun pengguna sudah terdaftar")
 		}
@@ -359,7 +394,7 @@ func (u *SuperadminUserUsecase) CreateAdminDesaUser(req *SuperadminCreateAdminDe
 	var user *models.User
 	err = u.repo.DB().Transaction(func(tx *gorm.DB) error {
 		user = &models.User{
-			Name:       strings.TrimSpace(req.Name),
+			Username:   strings.TrimSpace(req.Name),
 			Email:      email,
 			IsActive:   true,
 			Password:   hashedPassword,
@@ -424,15 +459,15 @@ func (u *SuperadminUserUsecase) CreateKaderUser(req *SuperadminCreateKaderUserRe
 		return nil, err
 	}
 
-	if _, err := u.repo.Bidan.FindByPendudukID(req.PendudukID); err == nil {
-		return nil, customerror.NewConflictError("penduduk sudah terdaftar sebagai bidan")
-	} else if !u.isNotFound(err) {
+	if bidanData, err := u.repo.Bidan.FindByPendudukID(req.PendudukID); err != nil {
 		return nil, customerror.NewInternalServiceError("gagal memvalidasi data bidan")
+	} else if bidanData != nil {
+		return nil, customerror.NewConflictError("penduduk sudah terdaftar sebagai bidan")
 	}
-	if _, err := u.repo.Kader.FindByPendudukID(req.PendudukID); err == nil {
-		return nil, customerror.NewConflictError("penduduk sudah terdaftar sebagai kader")
-	} else if !u.isNotFound(err) {
+	if kaderData, err := u.repo.Kader.FindByPendudukID(req.PendudukID); err != nil {
 		return nil, customerror.NewInternalServiceError("gagal memvalidasi data kader")
+	} else if kaderData != nil {
+		return nil, customerror.NewConflictError("penduduk sudah terdaftar sebagai kader")
 	}
 	if _, err := u.repo.User.FindByPendudukID(int64(req.PendudukID)); err == nil {
 		return nil, customerror.NewConflictError("penduduk sudah memiliki akun pengguna")
@@ -464,7 +499,7 @@ func (u *SuperadminUserUsecase) CreateKaderUser(req *SuperadminCreateKaderUserRe
 	var createdKader models.Kader
 	err = u.repo.DB().Transaction(func(tx *gorm.DB) error {
 		createdUser = models.User{
-			Name:       strings.TrimSpace(req.Name),
+			Username:   strings.TrimSpace(req.Name),
 			Email:      email,
 			IsActive:   true,
 			Password:   hashedPassword,
@@ -477,17 +512,40 @@ func (u *SuperadminUserUsecase) CreateKaderUser(req *SuperadminCreateKaderUserRe
 		if err := tx.Model(&models.Kependudukan{}).Where("id = ?", req.PendudukID).Update("telepon", normalizedPhone).Error; err != nil {
 			return err
 		}
-		createdKader = models.Kader{
-			PendudukID: req.PendudukID,
-			PosyanduID: req.PosyanduID,
-			Status:     "aktif",
-		}
-		if err := tx.Create(&createdKader).Error; err != nil {
-			return err
+		// Cek apakah ada kader yang sudah di-soft-delete untuk penduduk ini
+		var existingKader models.Kader
+		findErr := tx.Unscoped().Where("penduduk_id = ?", req.PendudukID).First(&existingKader).Error
+		if findErr == nil && existingKader.DeletedAt != nil {
+			// Pulihkan data kader yang sudah di-soft-delete
+			existingKader.PosyanduID = req.PosyanduID
+			existingKader.Status = "aktif"
+			existingKader.DeletedAt = nil
+			if err := tx.Unscoped().Save(&existingKader).Error; err != nil {
+				return err
+			}
+			createdKader = existingKader
+		} else if findErr == nil {
+			// Record aktif sudah ada (seharusnya tidak sampai sini karena validasi di atas)
+			return customerror.NewConflictError("penduduk sudah terdaftar sebagai kader")
+		} else if errors.Is(findErr, gorm.ErrRecordNotFound) {
+			// Belum ada record, buat baru
+			createdKader = models.Kader{
+				PendudukID: req.PendudukID,
+				PosyanduID: req.PosyanduID,
+				Status:     "aktif",
+			}
+			if err := tx.Create(&createdKader).Error; err != nil {
+				return err
+			}
+		} else {
+			return findErr
 		}
 		return nil
 	})
 	if err != nil {
+		if conflictErr, ok := err.(customerror.ConflictError); ok {
+			return nil, conflictErr
+		}
 		if strings.Contains(strings.ToLower(err.Error()), "unique") || strings.Contains(strings.ToLower(err.Error()), "duplicate") {
 			return nil, customerror.NewConflictError("data kader atau akun pengguna sudah terdaftar")
 		}
@@ -561,15 +619,15 @@ func (u *SuperadminUserUsecase) CreateUser(req *SuperadminCreateUserRequest) (*m
 		} else if !u.isNotFound(err) {
 			return nil, customerror.NewInternalServiceError("gagal memvalidasi akun pengguna")
 		}
-		if _, err := u.repo.Bidan.FindByPendudukID(int32(*pendudukID)); err == nil {
-			return nil, customerror.NewConflictError("penduduk sudah terdaftar sebagai bidan")
-		} else if !u.isNotFound(err) {
+		if bidanData, err := u.repo.Bidan.FindByPendudukID(int32(*pendudukID)); err != nil {
 			return nil, customerror.NewInternalServiceError("gagal memvalidasi data bidan")
+		} else if bidanData != nil {
+			return nil, customerror.NewConflictError("penduduk sudah terdaftar sebagai bidan")
 		}
-		if _, err := u.repo.Kader.FindByPendudukID(int32(*pendudukID)); err == nil {
-			return nil, customerror.NewConflictError("penduduk sudah terdaftar sebagai kader")
-		} else if !u.isNotFound(err) {
+		if kaderData, err := u.repo.Kader.FindByPendudukID(int32(*pendudukID)); err != nil {
 			return nil, customerror.NewInternalServiceError("gagal memvalidasi data kader")
+		} else if kaderData != nil {
+			return nil, customerror.NewConflictError("penduduk sudah terdaftar sebagai kader")
 		}
 	}
 
@@ -585,7 +643,7 @@ func (u *SuperadminUserUsecase) CreateUser(req *SuperadminCreateUserRequest) (*m
 	var user *models.User
 	err = u.repo.DB().Transaction(func(tx *gorm.DB) error {
 		user = &models.User{
-			Name:       strings.TrimSpace(req.Name),
+			Username:   strings.TrimSpace(req.Name),
 			Email:      email,
 			IsActive:   true,
 			Password:   hashedPassword,
@@ -700,7 +758,7 @@ func (u *SuperadminUserUsecase) DeactivateUser(id int32) (*models.User, error) {
 			}
 		case "Kader":
 			if user.PendudukID != nil {
-				if err := tx.Model(&models.Kader{}).Where("id_penduduk = ? AND deleted_at IS NULL", *user.PendudukID).Updates(map[string]interface{}{
+				if err := tx.Model(&models.Kader{}).Where("penduduk_id  = ? AND deleted_at IS NULL", *user.PendudukID).Updates(map[string]interface{}{
 					"status":     "nonaktif",
 					"updated_at": gorm.Expr("NOW()"),
 				}).Error; err != nil {
@@ -746,7 +804,7 @@ func (u *SuperadminUserUsecase) ActivateUser(id int32) (*models.User, error) {
 			}
 		case "Kader":
 			if user.PendudukID != nil {
-				if err := tx.Model(&models.Kader{}).Where("id_penduduk = ? AND deleted_at IS NULL", *user.PendudukID).Updates(map[string]interface{}{
+				if err := tx.Model(&models.Kader{}).Where("penduduk_id = ? AND deleted_at IS NULL", *user.PendudukID).Updates(map[string]interface{}{
 					"status":     "aktif",
 					"updated_at": gorm.Expr("NOW()"),
 				}).Error; err != nil {
@@ -880,7 +938,7 @@ func (u *SuperadminUserUsecase) CreateIbuUser(req *SuperadminCreateUserRequest) 
 	// Simpan ke database dengan transaction
 	err = u.repo.DB().Transaction(func(tx *gorm.DB) error {
 		user = &models.User{
-			Name:       strings.TrimSpace(req.Name),
+			Username:   strings.TrimSpace(req.Name),
 			Email:      email,
 			IsActive:   true,
 			Password:   hashedPassword,
@@ -910,4 +968,93 @@ func (u *SuperadminUserUsecase) CreateIbuUser(req *SuperadminCreateUserRequest) 
 	}
 	
 	return user, nil
+}
+
+func (u *SuperadminUserUsecase) UpdateUser(id int32, req *SuperadminUpdateUserRequest) (*models.User, error) {
+	if id == 0 {
+		return nil, customerror.NewBadRequestError("id user tidak valid")
+	}
+	if req == nil {
+		return nil, customerror.NewBadRequestError("request tidak valid")
+	}
+
+	user, err := u.repo.User.FindByID(id)
+	if err != nil {
+		return nil, customerror.NewNotFoundError("user tidak ditemukan")
+	}
+
+	name := strings.TrimSpace(req.Name)
+	email := strings.TrimSpace(req.Email)
+	password := strings.TrimSpace(req.Password)
+
+	if name == "" {
+		return nil, customerror.NewBadRequestError("nama wajib diisi")
+	}
+	if email == "" {
+		return nil, customerror.NewBadRequestError("email wajib diisi")
+	}
+
+	// Check email uniqueness if changed
+	if !strings.EqualFold(user.Email, email) {
+		if existing, findErr := u.repo.User.FindByEmail(email); findErr == nil && existing.ID != id {
+			return nil, customerror.NewConflictError("email sudah digunakan oleh akun lain")
+		}
+	}
+
+	// Build updates map for user table
+	updates := map[string]interface{}{
+		"nama":       name,
+		"email":      email,
+		"updated_at": gorm.Expr("NOW()"),
+	}
+
+	if password != "" {
+		hashedPassword, hashErr := u.preparePassword(password)
+		if hashErr != nil {
+			return nil, hashErr
+		}
+		updates["kata_sandi"] = hashedPassword
+	}
+
+	roleName := strings.TrimSpace(user.Role.Name)
+	noSTR := strings.TrimSpace(req.NoSTR)
+	noSIPB := strings.TrimSpace(req.NoSIPB)
+
+	if err := u.repo.DB().Transaction(func(tx *gorm.DB) error {
+		if err := tx.Model(&models.User{}).Where("id = ?", id).Updates(updates).Error; err != nil {
+			return err
+		}
+
+		// Update bidan-specific fields
+		if strings.EqualFold(roleName, "Bidan") && user.PendudukID != nil {
+			bidanUpdates := map[string]interface{}{
+				"updated_at": gorm.Expr("NOW()"),
+			}
+			if noSTR != "" {
+				bidanUpdates["no_str"] = noSTR
+			}
+			if noSIPB != "" {
+				bidanUpdates["no_sipb"] = noSIPB
+			}
+			if len(bidanUpdates) > 1 {
+				if err := tx.Model(&models.Bidan{}).Where("penduduk_id = ? AND deleted_at IS NULL", *user.PendudukID).Updates(bidanUpdates).Error; err != nil {
+					return err
+				}
+			}
+		}
+
+		return nil
+	}); err != nil {
+		if strings.Contains(strings.ToLower(err.Error()), "unique") || strings.Contains(strings.ToLower(err.Error()), "duplicate") {
+			return nil, customerror.NewConflictError("email sudah digunakan")
+		}
+		return nil, customerror.NewInternalServiceError("gagal memperbarui data user")
+	}
+
+	// Refresh user data
+	updatedUser, err := u.repo.User.FindByID(id)
+	if err != nil {
+		return user, nil
+	}
+	return updatedUser, nil
 }

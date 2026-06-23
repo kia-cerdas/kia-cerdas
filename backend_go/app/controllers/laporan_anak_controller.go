@@ -22,27 +22,31 @@ func NewLaporanAnakController(usecase usecases.LaporanAnakUsecase) *LaporanAnakC
 // @Tags         laporan-anak
 // @Security     BearerAuth
 // @Produce      json
-// @Param        start_date  query  string  false  "Tanggal Lahir/Ukur Awal (YYYY-MM-DD)"
-// @Param        end_date    query  string  false  "Tanggal Lahir/Ukur Akhir (YYYY-MM-DD)"
+// @Param        start_date  query  string  false  "Tanggal Pemeriksaan Awal (YYYY-MM-DD)"
+// @Param        end_date    query  string  false  "Tanggal Pemeriksaan Akhir (YYYY-MM-DD)"
 // @Success      200  {object}  models.Response
 // @Failure      500  {object}  models.Response
 // @Router       /tenaga-kesehatan/laporan/anak/preview [get]
 func (c *LaporanAnakController) Preview(ctx echo.Context) error {
-	desaID := middlewares.GetDesaID(ctx)
+	posyanduID := middlewares.GetPosyanduID(ctx)
 	role := middlewares.GetRole(ctx)
 	startDate := ctx.QueryParam("start_date")
 	endDate := ctx.QueryParam("end_date")
 
-	data, err := c.usecase.GetLaporanAnak(startDate, endDate, desaID, role)
+	data, err := c.usecase.GetLaporanAnak(startDate, endDate, posyanduID, role)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
 			"message": err.Error(),
 		})
 	}
 
+	// Get dynamic headers
+	dynamicHeaders := c.usecase.GetDynamicHeaders(data)
+
 	return ctx.JSON(http.StatusOK, map[string]interface{}{
-		"message": "success",
-		"data":    data,
+		"message":         "success",
+		"data":            data,
+		"dynamic_headers": dynamicHeaders,
 	})
 }
 
@@ -51,18 +55,18 @@ func (c *LaporanAnakController) Preview(ctx echo.Context) error {
 // @Tags         laporan-anak
 // @Security     BearerAuth
 // @Produce      application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
-// @Param        start_date  query  string  false  "Tanggal Lahir/Ukur Awal (YYYY-MM-DD)"
-// @Param        end_date    query  string  false  "Tanggal Lahir/Ukur Akhir (YYYY-MM-DD)"
+// @Param        start_date  query  string  false  "Tanggal Pemeriksaan Awal (YYYY-MM-DD)"
+// @Param        end_date    query  string  false  "Tanggal Pemeriksaan Akhir (YYYY-MM-DD)"
 // @Success      200  {file}    file
 // @Failure      500  {object}  models.Response
 // @Router       /tenaga-kesehatan/laporan/anak/export/excel [get]
 func (c *LaporanAnakController) ExportExcel(ctx echo.Context) error {
-	desaID := middlewares.GetDesaID(ctx)
+	posyanduID := middlewares.GetPosyanduID(ctx)
 	role := middlewares.GetRole(ctx)
 	startDate := ctx.QueryParam("start_date")
 	endDate := ctx.QueryParam("end_date")
 
-	f, err := c.usecase.ExportExcelLaporanAnak(startDate, endDate, desaID, role)
+	f, err := c.usecase.ExportExcelLaporanAnak(startDate, endDate, posyanduID, role)
 	if err != nil {
 		return ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
 			"message": err.Error(),
@@ -70,7 +74,6 @@ func (c *LaporanAnakController) ExportExcel(ctx echo.Context) error {
 	}
 	defer f.Close()
 
-	// Stream file to response writer
 	ctx.Response().Header().Set(echo.HeaderContentType, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 	ctx.Response().Header().Set(echo.HeaderContentDisposition, `attachment; filename="laporan_anak.xlsx"`)
 	ctx.Response().WriteHeader(http.StatusOK)

@@ -161,14 +161,14 @@ func (r *IbuRepository) FindByPendudukID(pendudukID int32) (*models.Ibu, error) 
 
 // return result, err
 // }
-func (r *IbuRepository) GetDashboard(desaID *int32, role string) ([]models.IbuDashboardDTO, error) {
+func (r *IbuRepository) GetDashboard(posyanduID *int32, role string) ([]models.IbuDashboardDTO, error) {
 	var result []models.IbuDashboardDTO
 
 	query := r.db.
 		Table("ibu i").
 		Select(`
             i.id as id_ibu,
-            kp.nama_lengkap,
+            kp.nama_anggota_keluarga,
             kp.dusun,
             k.status_kehamilan,
             k.hpht,
@@ -202,8 +202,8 @@ func (r *IbuRepository) GetDashboard(desaID *int32, role string) ([]models.IbuDa
 		Order(`i.created_at DESC, i.id ASC, k.id ASC, p.tanggal_periksa DESC`)
 
 	// Filter desa hanya jika role TIDAK memiliki akses penuh
-	if !middlewares.HasFullAccess(role) && desaID != nil {
-		query = query.Where("kp.desa_id = ?", *desaID)
+	if !middlewares.HasFullAccess(role) && posyanduID != nil {
+		query = query.Where("kp.posyandu_id = ?", *posyanduID)
 	}
 
 	err := query.Scan(&result).Error

@@ -42,9 +42,15 @@ type PemeriksaanKehamilan struct {
 	TataLaksanaKasus string `gorm:"type:text" json:"tata_laksana_kasus"`
 
 	// TAMBAHKAN FIELD HASIL SKORING (OPSIONAL TAPI SANGAT MEMBANTU)
-	SkorRisiko   int32  `json:"skor_risiko"`
-	StatusRisiko string `gorm:"type:varchar(20)" json:"status_risiko"`
-	DetailRisiko string `gorm:"type:text" json:"detail_risiko"`
+	SkorRisiko        int32  `json:"skor_risiko"`
+	StatusRisiko      string `gorm:"type:varchar(20)" json:"status_risiko"`
+	DetailRisiko      string `gorm:"type:text" json:"detail_risiko"`
+	OverallPrediction int32  `json:"overall_prediction"`
+	OverallLabel      string `gorm:"type:varchar(20)" json:"overall_label"`
+	ActiveRiskCount   int32  `json:"active_risk_count"`
+	AlasanKlinis      string `gorm:"type:text" json:"alasan_klinis"`
+	RekomendasiUtama  string `gorm:"type:text" json:"rekomendasi_utama"`
+	RiskTypes         string `gorm:"type:text" json:"risk_types"` // JSON array of risk type details
 
 	CreatedAt time.Time `json:"created_at"`
 }

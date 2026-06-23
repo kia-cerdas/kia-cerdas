@@ -101,3 +101,73 @@ func (r *AnakRepository) Delete(id int32) error {
 	}
 	return nil
 }
+
+func (r *AnakRepository) FindAllByPosyanduID(posyanduID int32) ([]models.Anak, error) {
+	var anaks []models.Anak
+
+	// Coba dulu: filter lewat kehamilan → ibu → kependudukan ibu (posyandu_id di sisi ibu)
+	err := r.db.
+		Preload("Penduduk").
+		Preload("Kehamilan").
+		Preload("Kehamilan.Ibu").
+		Preload("Kehamilan.Ibu.Kependudukan").
+		Joins("LEFT JOIN kehamilan ON kehamilan.id = anak.kehamilan_id AND kehamilan.deleted_at IS NULL").
+		Joins("LEFT JOIN ibu ON ibu.id = kehamilan.ibu_id AND ibu.is_deleted IS NULL").
+		Joins("LEFT JOIN penduduk pi ON pi.id = ibu.penduduk_id AND pi.deleted_at IS NULL").
+		Joins("LEFT JOIN penduduk pa ON pa.id = anak.penduduk_id AND pa.deleted_at IS NULL").
+		Where("(pi.posyandu_id = ? OR pa.posyandu_id = ?)", posyanduID, posyanduID).
+		Where("anak.deleted_at IS NULL").
+		Find(&anaks).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Jika tidak ada hasil, coba filter lewat desa yang sama dengan posyandu tersebut
+	if len(anaks) == 0 {
+		err = r.db.
+			Preload("Penduduk").
+			Preload("Kehamilan").
+			Preload("Kehamilan.Ibu").
+			Preload("Kehamilan.Ibu.Kependudukan").
+			Joins("LEFT JOIN penduduk pa ON pa.id = anak.penduduk_id AND pa.deleted_at IS NULL").
+			Joins("LEFT JOIN posyandu pos ON pos.id = ?", posyanduID).
+			Where("pa.desa_id = pos.desa_id").
+			Where("anak.deleted_at IS NULL").
+			Find(&anaks).Error
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// Jika masih kosong, kembalikan semua anak tanpa filter (fallback untuk debugging)
+	// agar bidan bisa melihat data
+	if len(anaks) == 0 {
+		err = r.db.
+			Preload("Penduduk").
+			Preload("Kehamilan").
+			Preload("Kehamilan.Ibu").
+			Preload("Kehamilan.Ibu.Kependudukan").
+			Where("anak.deleted_at IS NULL").
+			Find(&anaks).Error
+	}
+
+	return anaks, err
+}
+
+// // FindAllByDesaID mendapatkan semua anak berdasarkan desa_id
+// func (r *AnakRepository) FindAllByDesaID(desaID int32) ([]models.Anak, error) {
+// 	var anaks []models.Anak
+	
+// 	err := r.db.
+// 		Preload("Penduduk").
+// 		Preload("Kehamilan").
+// 		Preload("Kehamilan.Ibu").
+// 		Preload("Kehamilan.Ibu.Kependudukan").
+// 		Joins("JOIN penduduk ON penduduk.id = anak.penduduk_id").
+// 		Where("penduduk.desa_id = ?", desaID).
+// 		Where("anak.deleted_at IS NULL").
+// 		Find(&anaks).Error
+	
+// 	return anaks, err
+// }

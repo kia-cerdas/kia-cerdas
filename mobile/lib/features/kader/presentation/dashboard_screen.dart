@@ -95,7 +95,7 @@ class _DashboardKaderScreenState extends State<DashboardKaderScreen> {
     ),
     _MenuLayananItem(
       title: 'Imunisasi Terlewat',
-      subtitle: 'Daftar anak terlewat',
+      subtitle: 'Anak imunisasi terlewat',
       icon: Icons.vaccines_rounded,
       color: Colors.orange,
       screenBuilder: (_) => const DaftarImunisasiTerlewatScreen(),
@@ -277,7 +277,7 @@ class _DashboardKaderScreenState extends State<DashboardKaderScreen> {
             return _buildEscalationCard(
               title: hasWarning
                   ? '$jumlahPerluTindak kunjungan imunisasi perlu ditindak lanjut.'
-                  : 'Tidak ada kunjungan yang perlu ditindak lanjut saat ini.',
+                  : 'Tidak ada kunjungan Imunisasi yang perlu ditindak lanjut saat ini.',
               isWarning: hasWarning,
               icon: hasWarning
                   ? Icons.warning_amber_rounded

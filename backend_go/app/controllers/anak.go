@@ -46,16 +46,16 @@ func (h *AnakController) AdminList(c echo.Context) error {
 	}
 
 	// Ambil desa_id dan role dari JWT context (sudah di-set oleh middleware)
-	desaID := middlewares.GetDesaID(c)
+	posyanduID := middlewares.GetPosyanduID(c)
 	role := middlewares.GetRole(c)
 
 	// Jika role punya full access (dokter, superadmin, admin), tampilkan semua data
 	// Jika bidan, hanya tampilkan anak di desa bidan
 	if middlewares.HasFullAccess(role) {
-		desaID = nil // admin/dokter/superadmin → lihat semua
+		posyanduID = nil // admin/dokter/superadmin → lihat semua
 	}
 
-	list, err := h.anakUC.ListAnakByDesa(desaID, kehamilanID)
+	list, err := h.anakUC.ListAnakByPosyandu(posyanduID, kehamilanID)
 	if err != nil {
 		return helpers.StandardResponse(c, http.StatusInternalServerError, err.Error(), nil, nil)
 	}

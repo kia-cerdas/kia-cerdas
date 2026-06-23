@@ -139,9 +139,14 @@ func (c *JadwalLayananController) Create(ctx echo.Context) error {
 
 	// Log untuk debugging
 	println("Creating jadwal with dosis_vaksin_ids:", len(in.DosisVaksinIDs))
+	for i, id := range in.DosisVaksinIDs {
+		println("  Dosis Vaksin ID", i, ":", id)
+	}
 
 	// Panggil usecase dengan DosisVaksinIDs
 	if err := c.usecase.Create(&model, in.DosisVaksinIDs); err != nil {
+		// Log error detail
+		println("ERROR creating jadwal:", err.Error())
 		return ctx.JSON(http.StatusInternalServerError, echo.Map{"error": "create_failed", "details": err.Error()})
 	}
 

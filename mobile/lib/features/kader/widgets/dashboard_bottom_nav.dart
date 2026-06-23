@@ -23,7 +23,7 @@ class DashboardBottomNav extends StatelessWidget {
       items: const [
         BottomNavigationBarItem(
             icon: Icon(Icons.home_filled), label: 'Beranda'),
-        BottomNavigationBarItem(icon: Icon(Icons.calendar_today), label: 'Imunisasi Terlambat'),
+        BottomNavigationBarItem(icon: Icon(Icons.vaccines_rounded), label: 'Imunisasi Terlewat'),
         BottomNavigationBarItem(
             icon: Icon(Icons.person_outline), label: 'Profil'),
       ],

@@ -663,6 +663,7 @@
 import 'package:flutter/material.dart';
 import 'package:ta_pa2_pa3_project/core/services/auth_session.dart';
 import 'package:ta_pa2_pa3_project/core/themes/app_theme.dart';
+import 'package:ta_pa2_pa3_project/core/services/notification_prefs.dart';
 import 'package:ta_pa2_pa3_project/features/ibu/imunisasi/data/models/imunisasi_model.dart';
 
 class DashboardHeader extends StatelessWidget {
@@ -741,7 +742,7 @@ class DashboardHeader extends StatelessWidget {
                   Icon(Icons.favorite, color: Colors.white70, size: 14),
                   SizedBox(width: 4),
                   Text(
-                    "Semangat jalani hari ini, Bunda!",
+                    "Tetap semangat menjaga kesehatan buah hati!",
                     style: TextStyle(color: Colors.white, fontSize: 12),
                   ),
                 ],

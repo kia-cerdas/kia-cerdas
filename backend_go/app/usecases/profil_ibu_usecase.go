@@ -265,6 +265,8 @@ type RiwayatKehamilanSingkat struct {
 
 type ProfilIbuUsecase interface {
 	GetProfilSaya(userID int32) (*ProfilIbuResponse, error)
+	// Untuk profil keluarga
+	GetProfilKeluarga(userID int32) ([]AnggotaKeluargaResponse, error)
 }
 
 type profilIbuUsecase struct {
@@ -274,6 +276,8 @@ type profilIbuUsecase struct {
 	evaluasiRepo         *repositories.EvaluasiKesehatanIbuRepository
 	riwayatKehamilanRepo *repositories.RiwayatKehamilanLaluRepository
 	desaRepo             *repositories.DesaRepository
+	// Profil keluarga
+	kependudukanRepo     *repositories.KependudukanRepository
 }
 
 func NewProfilIbuUsecase(
@@ -283,6 +287,8 @@ func NewProfilIbuUsecase(
 	evaluasiRepo *repositories.EvaluasiKesehatanIbuRepository,
 	riwayatKehamilanRepo *repositories.RiwayatKehamilanLaluRepository,
 	desaRepo *repositories.DesaRepository,
+	// Profil keluarga
+	kependudukanRepo *repositories.KependudukanRepository,
 ) ProfilIbuUsecase {
 	return &profilIbuUsecase{
 		userRepo:             userRepo,
@@ -291,6 +297,8 @@ func NewProfilIbuUsecase(
 		evaluasiRepo:         evaluasiRepo,
 		riwayatKehamilanRepo: riwayatKehamilanRepo,
 		desaRepo:             desaRepo,
+		// Profil keluarga
+		kependudukanRepo:     kependudukanRepo,
 	}
 }
 
@@ -328,27 +336,26 @@ func (u *profilIbuUsecase) GetProfilSaya(userID int32) (*ProfilIbuResponse, erro
 	// 5. Isi dari Kependudukan
 	if ibu.Kependudukan != nil {
 		k := ibu.Kependudukan
-		resp.NomorTelepon = k.Telepon
+		// resp.NomorTelepon = k.Telepon
 		if k.NIK != nil {
 			resp.NIK = *k.NIK
 		}
-		resp.NamaLengkap = k.NamaLengkap
+		resp.NamaLengkap = k.NamaAnggotaKeluarga
 		resp.TempatLahir = k.TempatLahir
 		if !k.TanggalLahir.IsZero() {
 			resp.TanggalLahir = k.TanggalLahir.Format("2006-01-02")
 		}
 		resp.GolonganDarah = k.GolonganDarah
 		resp.Agama = k.Agama
-		resp.Pendidikan = k.PendidikanTerakhir
+		resp.Pendidikan = k.Pendidikan
 		resp.Pekerjaan = k.Pekerjaan
-		resp.StatusPerkawinan = k.StatusPerkawinan
+		resp.StatusPerkawinan = k.Hubungan
 		resp.Dusun = k.Dusun
 		if k.DesaID != nil {
 			if desa, err := u.desaRepo.FindByID(*k.DesaID); err == nil && desa != nil {
 				resp.Desa = desa.NamaDesa
 			}
 		}
-		resp.Kecamatan = k.Kecamatan
 	}
 
 	// 6. Susun riwayat kehamilan beserta riwayat persalinan sebelumnya
@@ -408,4 +415,72 @@ func (u *profilIbuUsecase) GetProfilSaya(userID int32) (*ProfilIbuResponse, erro
 	resp.RiwayatKehamilan = riwayat
 
 	return resp, nil
+}
+
+
+
+
+
+
+
+
+
+// Profil Keluarga
+
+type AnggotaKeluargaResponse struct {
+    ID         int32  `json:"id"`
+    Nama       string `json:"nama"`
+    NIK        string `json:"nik"`
+    Hubungan   string `json:"hubungan"`
+    JenisKelamin string `json:"jenis_kelamin"`
+    TempatLahir  string `json:"tempat_lahir"`
+    TanggalLahir string `json:"tanggal_lahir"`
+    Pendidikan   string `json:"pendidikan"`
+    Pekerjaan    string `json:"pekerjaan"`
+}
+
+func (u *profilIbuUsecase) GetProfilKeluarga(userID int32) ([]AnggotaKeluargaResponse, error) {
+    user, err := u.userRepo.FindByID(userID)
+    if err != nil || user.PendudukID == nil {
+        return nil, errors.New("data pengguna tidak ditemukan")
+    }
+
+    ibu, err := u.ibuRepo.FindByPendudukID(int32(*user.PendudukID))
+    if err != nil || ibu.Kependudukan == nil {
+        return nil, errors.New("data kependudukan tidak ditemukan")
+    }
+
+    kodeKeluarga := ibu.Kependudukan.KodeKeluarga
+    if kodeKeluarga == "" {
+        return []AnggotaKeluargaResponse{}, nil
+    }
+
+    list, err := u.kependudukanRepo.FindByKodeKeluarga(kodeKeluarga)
+    if err != nil {
+        return nil, errors.New("gagal mengambil data keluarga")
+    }
+
+    result := make([]AnggotaKeluargaResponse, 0, len(list))
+    for _, k := range list {
+        nik := ""
+        if k.NIK != nil {
+            nik = *k.NIK
+        }
+        tgl := ""
+        if !k.TanggalLahir.IsZero() {
+            tgl = k.TanggalLahir.Format("2006-01-02")
+        }
+        result = append(result, AnggotaKeluargaResponse{
+            ID:           k.IDKependudukan,
+            Nama:         k.NamaAnggotaKeluarga,
+            NIK:          nik,
+            Hubungan:     k.Hubungan,
+            JenisKelamin: k.JenisKelamin,
+            TempatLahir:  k.TempatLahir,
+            TanggalLahir: tgl,
+            Pendidikan:   k.Pendidikan,
+            Pekerjaan:    k.Pekerjaan,
+        })
+    }
+    return result, nil
 }

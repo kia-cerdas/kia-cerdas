@@ -14,9 +14,19 @@ func (m *Main) GetAllRequestPerubahanJadwal(
 	c echo.Context,
 ) error {
 
+	claims := c.Get("auth_claims").(*models.AuthClaims)
+
+	if claims.PosyanduID == nil {
+		return helpers.Response(
+			c,
+			http.StatusForbidden,
+			[]string{"bidan tidak terdaftar di posyandu manapun"},
+		)
+	}
+
 	data, err :=
 		m.usecases.
-			GetAllRequestPerubahanJadwal()
+			GetAllRequestPerubahanJadwal(*claims.PosyanduID)
 
 	if err != nil {
 
@@ -77,7 +87,7 @@ func (m *Main) RequestPerubahanJadwal(
 			RequestPerubahanJadwal(
 				claims.UserID,
 				uint(jadwalID),
-				req.JadwalLayananID,
+				req.TanggalBaru,
 				req.Alasan,
 			)
 

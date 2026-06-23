@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import {
   Save, Syringe, CheckSquare, Square, Calendar,
-  CheckCircle2, RefreshCw, X, ArrowLeft, AlertTriangle, XCircle, CalendarClock
+  CheckCircle2, RefreshCw, X, ArrowLeft, AlertTriangle, XCircle, CalendarClock, Lock, Clock
 } from 'lucide-react';
 import Swal from 'sweetalert2';
 import MainLayout from "../../components/Layout/MainLayout";
@@ -43,6 +43,7 @@ const PelayananImunisasi = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
   const [formData, setFormData] = useState({
     selectedJadwalIds: [],
     batches: {},
@@ -67,7 +68,12 @@ const PelayananImunisasi = () => {
 
       try {
         const resAturan = await getAturanVaksinAnak();
-        setAturanVaksin(Array.isArray(resAturan) ? resAturan : []);
+        const aturanList = Array.isArray(resAturan) ? resAturan : [];
+        setAturanVaksin(aturanList);
+        console.log('[DEBUG] Aturan Vaksin loaded:', aturanList.length, 'items');
+        if (aturanList.length > 0) {
+          console.log('[DEBUG] Sample aturan:', aturanList[0]);
+        }
       } catch {
         setAturanVaksin([]);
       }
@@ -238,52 +244,92 @@ const PelayananImunisasi = () => {
   };
 
   // Get cell color based on aturan min/max usia hari
-  // min_usia_hari = Usia Tepat, max_usia_hari = Masih Diperbolehkan, past max = Tidak Diperbolehkan
+  // Sesuai dengan pedoman Kemenkes:
+  // PUTIH = Usia Tepat Pemberian Imunisasi (ideal window)
+  // ORANGE = Usia yang masih diperbolehkan untuk melengkapi Imunisasi
+  // PINK = Usia Pemberian Imunisasi yang belum lengkap (Imunisasi Kejar)
+  // ABU-ABU = Usia yang tidak diperbolehkan untuk pemberian Imunisasi
   const getCellColor = (dosisVaksinId, monthValue, doneBulan) => {
     const monthStart = getMonthStart(monthValue);
     const monthEnd = (typeof monthValue === 'string' && monthValue.includes('-'))
       ? parseInt(monthValue.split('-')[1])
       : monthStart;
 
-    // Completed dose → green
+    // Completed dose → green (standard Tailwind classes, always generated)
     if (doneBulan !== null && doneBulan >= monthStart && doneBulan <= monthEnd)
-      return 'bg-green-100 border-green-300';
+      return { className: 'bg-green-100 border-green-300', style: null };
 
     const aturan = findAturanByDosisId(dosisVaksinId);
-    if (!aturan || aturan.min_usia_hari == null) return 'bg-gray-100 border-gray-200';
+
+    // Jika tidak ada aturan, return neutral
+    if (!aturan || aturan.min_usia_hari == null) {
+      return { className: 'bg-gray-100 border-gray-200', style: null };
+    }
 
     const minHari = aturan.min_usia_hari;
-    const maxHari = aturan.max_usia_hari || minHari;
+    const maxHari = aturan.max_usia_hari || (minHari + 730); // default 2 tahun jika tidak ada max
 
     // Convert month column to days range
-    // Month 0 = 0-29 days, Month 1 = 30-59 days, etc.
     const monthStartDays = monthStart * 30;
     const monthEndDays = (monthEnd + 1) * 30 - 1;
 
-    // Past max usia → GRAY (Tidak Diperbolehkan)
-    // If the month START is already past the max allowed days
-    if (monthStartDays > maxHari)
-      return 'bg-[#A9A9A9] border-[#888888]';
+    // Helper: cek apakah bulan ini overlap dengan range hari tertentu
+    const overlaps = (startDay, endDay) => {
+      return monthStartDays <= endDay && monthEndDays >= startDay;
+    };
 
-    // Before min usia → neutral gray
-    // If the month END is before the min allowed days
-    if (monthEndDays < minHari)
-      return 'bg-gray-100 border-gray-200';
+    // 1. ABU-ABU: Sudah lewat max usia (tidak boleh lagi) — inline style for JIT safety
+    if (monthStartDays > maxHari) {
+      return { className: '', style: { backgroundColor: '#D3D3D3', borderColor: '#A9A9A9' } };
+    }
 
-    // Calculate ideal window: minHari to minHari + 30 days (1 month tolerance)
-    const idealEndDays = minHari + 30;
+    // 2. Belum waktunya (sebelum min usia)
+    if (monthEndDays < minHari) {
+      return { className: 'bg-gray-100 border-gray-200', style: null };
+    }
 
-    // At ideal usia window → WHITE (Usia Tepat)
-    // If month overlaps with ideal period
-    if (monthStartDays <= idealEndDays && monthEndDays >= minHari)
-      return 'bg-white border-gray-300';
+    // 3. PUTIH: Usia Tepat - bulan pertama sejak min_usia_hari (standard Tailwind)
+    const tePATEnd = minHari + 30; // 1 bulan sejak bisa diberikan
+    if (overlaps(minHari, tePATEnd)) {
+      return { className: 'bg-white border-gray-400', style: null };
+    }
 
-    // After ideal, up to max usia → ORANGE (Masih Diperbolehkan)
-    if (monthStartDays <= maxHari)
-      return 'bg-[#F4B183] border-[#D99A6C]';
+    // 4. Hitung sisa window setelah periode tepat
+    const sisaWindow = maxHari - tePATEnd;
 
-    // Fallback: past max → GRAY
-    return 'bg-[#A9A9A9] border-[#888888]';
+    // Jika sisa window > 4 bulan (120 hari)
+    if (sisaWindow > 120) {
+      // ORANGE: 70% awal dari sisa window — inline style
+      const orangeEnd = tePATEnd + (sisaWindow * 0.7);
+      if (overlaps(tePATEnd + 1, orangeEnd)) {
+        return { className: '', style: { backgroundColor: '#FFA500', borderColor: '#FF8C00' } };
+      }
+
+      // PINK: 30% akhir dari sisa window (periode kejar) — inline style
+      if (overlaps(orangeEnd + 1, maxHari)) {
+        return { className: '', style: { backgroundColor: '#FFB6C1', borderColor: '#FF69B4' } };
+      }
+    } else {
+      // Window kecil (≤ 4 bulan)
+      // Bagi dua: setengah awal orange, setengah akhir pink
+      const midPoint = tePATEnd + (sisaWindow / 2);
+
+      if (overlaps(tePATEnd + 1, midPoint)) {
+        return { className: '', style: { backgroundColor: '#FFA500', borderColor: '#FF8C00' } };
+      }
+
+      if (overlaps(midPoint + 1, maxHari)) {
+        return { className: '', style: { backgroundColor: '#FFB6C1', borderColor: '#FF69B4' } };
+      }
+    }
+
+    // Fallback: masih dalam window yang diperbolehkan → orange
+    if (monthEndDays <= maxHari) {
+      return { className: '', style: { backgroundColor: '#FFA500', borderColor: '#FF8C00' } };
+    }
+
+    // Fallback final: abu-abu
+    return { className: '', style: { backgroundColor: '#D3D3D3', borderColor: '#A9A9A9' } };
   };
 
   const formatTanggal = (dateString) => {
@@ -296,62 +342,27 @@ const PelayananImunisasi = () => {
   // All unfinished jadwal for modal
   const jadwalBelumSelesai = jadwalList.filter(j => j.status_id !== 6);
 
-  // Filter jadwal based on selected jadwal layanan
-  // Uses useMemo to recalculate whenever jadwalLayananToday or jadwalList changes
+  // All available (unfinished) jadwal for the modal — no longer filtered by jadwal layanan
+  const allAvailableJadwal = React.useMemo(() => {
+    return jadwalList.filter(j => j.status_id !== 6);
+  }, [jadwalList]);
+
+  // Legacy: filter jadwal based on selected jadwal layanan (kept for reference)
   const availableJadwalToday = React.useMemo(() => {
-    if (!jadwalLayananToday) {
-      console.log('[DEBUG] ❌ No jadwal layanan selected');
-      return [];
-    }
+    if (!jadwalLayananToday) return allAvailableJadwal;
 
-    // All unfinished jadwal
-    const jadwalBelumSelesai = jadwalList.filter(j => j.status_id !== 6);
-
-    // Extract dosis vaksin IDs from the preloaded relationship
-    // Backend returns: { dosis_vaksins: [{ id: 1, nama_dosis: "BCG", ... }, ...] }
     let allowedDosisIds = [];
-    
     if (jadwalLayananToday.dosis_vaksins && Array.isArray(jadwalLayananToday.dosis_vaksins)) {
-      // Extract IDs from the preloaded DosisVaksin objects
       allowedDosisIds = jadwalLayananToday.dosis_vaksins.map(dv => dv.id);
-      console.log('[DEBUG] ✅ Extracted dosis IDs from dosis_vaksins:', allowedDosisIds);
     } else if (jadwalLayananToday.DosisVaksins && Array.isArray(jadwalLayananToday.DosisVaksins)) {
-      // Fallback: capital D (some APIs use PascalCase)
       allowedDosisIds = jadwalLayananToday.DosisVaksins.map(dv => dv.id);
-      console.log('[DEBUG] ✅ Extracted dosis IDs from DosisVaksins:', allowedDosisIds);
-    } else {
-      console.log('[DEBUG] ⚠️ No dosis_vaksins array found in jadwal layanan:', jadwalLayananToday);
     }
 
-    if (allowedDosisIds.length === 0) {
-      console.log('[DEBUG] ⚠️ No dosis vaksin IDs in jadwal layanan');
-      console.log('[DEBUG] Jadwal structure:', Object.keys(jadwalLayananToday));
-      return [];
-    }
+    if (allowedDosisIds.length === 0) return allAvailableJadwal;
 
-    console.log('[DEBUG] 📋 Allowed dosis IDs from schedule:', allowedDosisIds);
-    console.log('[DEBUG] 📋 Available jadwal belum selesai:', jadwalBelumSelesai.length);
-
-    // Filter jadwal that match selected schedule AND not yet completed
-    const filtered = jadwalBelumSelesai.filter(j => {
-      const isAllowed = allowedDosisIds.includes(j.dosis_vaksin_id);
-      console.log('[DEBUG] 🔍 Checking:', {
-        nama_dosis: j.nama_dosis,
-        dosis_vaksin_id: j.dosis_vaksin_id,
-        jadwal_id: j.jadwal_id,
-        isAllowed,
-        allowedDosisIds
-      });
-      return isAllowed;
-    });
-
-    console.log('[DEBUG] ✅ Filtered available jadwal count:', filtered.length);
-    if (filtered.length > 0) {
-      console.log('[DEBUG] Available vaccines:', filtered.map(f => f.nama_dosis).join(', '));
-    }
-    
-    return filtered;
-  }, [jadwalLayananToday, jadwalList]);
+    const filtered = jadwalList.filter(j => j.status_id !== 6 && allowedDosisIds.includes(j.dosis_vaksin_id));
+    return filtered.length > 0 ? filtered : allAvailableJadwal;
+  }, [jadwalLayananToday, jadwalList, allAvailableJadwal]);
 
   // Calculate child's current age in days
   const getUmurAnakHariIni = () => {
@@ -426,6 +437,7 @@ const PelayananImunisasi = () => {
     try {
       await batalParafImunisasi(jadwalId);
       await fetchData();
+      setRefreshKey(prev => prev + 1);
       Swal.fire({
         icon: 'success',
         title: 'Berhasil!',
@@ -465,6 +477,41 @@ const PelayananImunisasi = () => {
       });
       return;
     }
+
+    // Konfirmasi sebelum menyimpan paraf
+    const selectedVaccineNames = formData.selectedJadwalIds
+      .map(id => {
+        const jadwal = jadwalList.find(j => j.jadwal_id === id);
+        return jadwal?.nama_dosis;
+      })
+      .filter(Boolean);
+
+    const result = await Swal.fire({
+      icon: 'question',
+      title: 'Konfirmasi Paraf Imunisasi',
+      html: `
+        <div class="text-left">
+          <p class="mb-3 text-gray-700">Apakah Anda yakin vaksin berikut <b>sudah diberikan</b> kepada anak?</p>
+          <div class="bg-blue-50 border-l-4 border-blue-500 p-3 rounded mb-3">
+            <ul class="list-disc list-inside space-y-1">
+              ${selectedVaccineNames.map(name => `<li class="font-semibold text-blue-900">${name}</li>`).join('')}
+            </ul>
+          </div>
+          <p class="text-sm text-gray-600 mt-2">
+            <span class="text-amber-600 font-semibold">⚠️ Peringatan:</span> Paraf akan disimpan dan data akan tercatat dalam sistem.
+          </p>
+        </div>
+      `,
+      showCancelButton: true,
+      confirmButtonText: '✓ Ya, Sudah Vaksin',
+      cancelButtonText: '✕ Belum',
+      confirmButtonColor: '#10b981',
+      cancelButtonColor: '#6b7280',
+      reverseButtons: true,
+      width: '500px'
+    });
+
+    if (!result.isConfirmed) return;
 
     try {
       setIsSubmitting(true);
@@ -507,6 +554,7 @@ const PelayananImunisasi = () => {
         tanggal: new Date().toISOString().split('T')[0],
       });
       await fetchData();
+      setRefreshKey(prev => prev + 1);
       Swal.fire({
         icon: 'success',
         title: 'Berhasil!',
@@ -566,14 +614,14 @@ const PelayananImunisasi = () => {
 
           {/* ═══════════ HEADER ═══════════ */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-6">
-            <div>
+            <div className="w-full md:w-auto">
               <Link
                 to={`/data-anak/dashboard/${id}`}
-                className="flex items-center gap-2 text-gray-500 hover:text-blue-600 text-sm mb-1 transition-colors"
+                className="flex items-center gap-2 text-gray-500 hover:text-blue-600 text-sm mb-2 transition-colors"
               >
                 <ArrowLeft size={16} /> Kembali
               </Link>
-              <h1 className="text-2xl font-bold text-gray-800">Pelayanan Imunisasi</h1>
+            
               {dataAnak && (
                 <div className="mt-2 space-y-1">
                   <p className="text-gray-500 text-sm">
@@ -586,7 +634,7 @@ const PelayananImunisasi = () => {
                       const sisaHari = umurHari % 30;
                       return (
                         <p className="text-blue-600 text-sm font-semibold">
-                          Umur saat ini: {umurBulan} bulan {sisaHari} hari ({umurHari} hari)
+                          Umur saat ini: {umurBulan} bulan {sisaHari} hari
                         </p>
                       );
                     }
@@ -597,66 +645,32 @@ const PelayananImunisasi = () => {
             </div>
 
             <div className="flex items-center gap-3">
-              <span className="bg-green-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm">
-                Diisi oleh Tenaga Kesehatan
-              </span>
-              
-              {/* Show schedule info */}
-              {jadwalLayananToday && jadwalLayananToday.dosis_vaksins && jadwalLayananToday.dosis_vaksins.length > 0 ? (
-                <div className="flex items-center gap-2 bg-blue-50 text-blue-700 text-xs font-semibold px-3 py-1.5 rounded-lg border border-blue-200">
-                  <CalendarClock size={14} />
-                  <span>Jadwal Hari Ini: {jadwalLayananToday.layanan || 'Imunisasi'}</span>
-                </div>
-              ) : jadwalLayananToday && jadwalLayananToday.DosisVaksins && jadwalLayananToday.DosisVaksins.length > 0 ? (
-                <div className="flex items-center gap-2 bg-blue-50 text-blue-700 text-xs font-semibold px-3 py-1.5 rounded-lg border border-blue-200">
-                  <CalendarClock size={14} />
-                  <span>Jadwal Hari Ini: {jadwalLayananToday.layanan || 'Imunisasi'}</span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2 bg-amber-50 text-amber-700 text-xs font-semibold px-3 py-1.5 rounded-lg border border-amber-200">
-                  <AlertTriangle size={14} />
-                  <span>Tidak Ada Jadwal Hari Ini</span>
-                </div>
-              )}
+             
 
               <button
                 onClick={() => {
-                  const hasSchedule = jadwalLayananToday && 
-                    ((jadwalLayananToday.dosis_vaksins && jadwalLayananToday.dosis_vaksins.length > 0) ||
-                     (jadwalLayananToday.DosisVaksins && jadwalLayananToday.DosisVaksins.length > 0));
-                  
-                  if (!hasSchedule) {
-                    Swal.fire({
-                      icon: 'warning',
-                      title: 'Tidak Ada Jadwal Layanan',
-                      html: 'Belum ada jadwal layanan untuk hari ini.<br/><small class="text-gray-500">Silakan buat jadwal layanan terlebih dahulu di menu <b>Jadwal Layanan</b>.</small>',
-                      confirmButtonColor: '#2563eb'
-                    });
-                    return;
-                  }
-                  
-                  if (availableJadwalToday.length === 0) {
+                  if (allAvailableJadwal.length === 0) {
                     Swal.fire({
                       icon: 'info',
                       title: 'Tidak Ada Vaksin yang Tersedia',
-                      html: 'Semua vaksin dari jadwal hari ini sudah selesai diparaf,<br/>atau anak ini tidak memiliki jadwal vaksin yang sesuai dengan jadwal layanan hari ini.',
+                      html: 'Semua vaksin sudah selesai diparaf untuk anak ini.',
                       confirmButtonColor: '#2563eb'
                     });
                     return;
                   }
-                  
                   setIsModalOpen(true);
                 }}
-                disabled={!jadwalLayananToday || availableJadwalToday.length === 0}
+                disabled={allAvailableJadwal.length === 0}
                 className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-bold text-sm shadow-md transition-all active:scale-95 disabled:bg-gray-300 disabled:cursor-not-allowed"
               >
                 <Syringe size={16} /> PARAF IMUNISASI
               </button>
             </div>
           </div>
-
+                  {/* Title - Centered */}
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-800 text-center mb-2">Pelayanan Imunisasi</h1>
           {/* ═══════════ TABEL IMUNISASI KIA ═══════════ */}
-          <div className="bg-white shadow-xl border border-gray-300 rounded overflow-hidden mb-4">
+          <div key={refreshKey} className="bg-white shadow-xl border border-gray-300 rounded overflow-hidden mb-4">
             <div className="overflow-x-auto">
               <table className="w-full border-collapse text-[11px]">
                 <thead>
@@ -723,30 +737,32 @@ const PelayananImunisasi = () => {
                       >
                         {/* Vaccine Name Cell (Jenis Vaksin) */}
                         <td className="border border-gray-300 p-2 font-semibold text-gray-700 text-[10px] leading-tight">
-                          <div className="flex items-center justify-between gap-1">
-                            <span>{namaDosis}</span>
-                            {doneItem && (
-                              <button
-                                onClick={() => handleBatalParaf(doneItem.jadwal_id, namaDosis)}
-                                className="flex-shrink-0 text-red-400 hover:text-red-600 hover:bg-red-50 rounded p-0.5 transition-colors"
-                                title="Batalkan paraf"
-                              >
-                                <XCircle size={12} />
-                              </button>
-                            )}
-                          </div>
+                          <span>{namaDosis}</span>
                         </td>
 
                         {/* Month Cells */}
                         {MONTHS.map((m, mIdx) => {
-                          const monthValue = parseInt(m);
-                          const cellColor = getCellColor(dosisVaksinId, monthValue, doneBulan);
+                          const monthValue = m;
+                          const { className: colorClass, style: colorStyle } = getCellColor(dosisVaksinId, monthValue, doneBulan);
                           const cell = getCellContent(group, monthValue);
+
+                          // Debug log untuk baris pertama
+                          if (vIdx === 0 && mIdx === 0) {
+                            const aturan = findAturanByDosisId(dosisVaksinId);
+                            console.log(`[DEBUG COLOR] Vaksin: ${namaDosis}, Bulan ${m}:`, {
+                              dosisVaksinId,
+                              aturan: aturan ? `min=${aturan.min_usia_hari}, max=${aturan.max_usia_hari}` : 'NOT FOUND',
+                              colorClass,
+                              colorStyle,
+                              doneBulan
+                            });
+                          }
 
                           return (
                             <td
                               key={mIdx}
-                              className={`border border-gray-300 text-center p-0.5 ${cellColor}`}
+                              className={`border border-gray-300 text-center p-0.5 ${colorClass}`}
+                              style={colorStyle}
                             >
                               {cell.show === 'done' ? (
                                 <div className="flex flex-col items-center justify-center py-0.5">
@@ -773,17 +789,44 @@ const PelayananImunisasi = () => {
 
           {/* ═══════════ LEGENDA WARNA ═══════════ */}
           <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm mb-6">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+            <h3 className="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2">
+              <span className="w-1 h-4 bg-blue-600 rounded"></span>
+              Keterangan Warna Usia Pemberian Imunisasi
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-5 bg-white border border-gray-300 rounded flex-shrink-0" />
-                <span className="text-gray-700">Usia Tepat Dan Masih Diperbolehkan Pemberian Imunisasi</span>
+                <div className="w-8 h-6 bg-white border-2 border-gray-400 rounded flex-shrink-0 shadow-sm" />
+                <span className="text-gray-700 font-medium">Usia Tepat Pemberian Imunisasi</span>
               </div>
               
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-5 rounded flex-shrink-0 border border-[#888888]" style={{ backgroundColor: '#A9A9A9' }} />
-                <span className="text-gray-700">
+                <div className="w-8 h-6 rounded flex-shrink-0 border-2 shadow-sm" style={{ backgroundColor: '#FFA500', borderColor: '#FF8C00' }} />
+                <span className="text-gray-700 font-medium">
+                  Usia yang masih diperbolehkan untuk melengkapi Imunisasi
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-6 rounded flex-shrink-0 border-2 shadow-sm" style={{ backgroundColor: '#FFB6C1', borderColor: '#FF69B4' }} />
+                <span className="text-gray-700 font-medium">
+                  Usia Pemberian Imunisasi yang belum lengkap (Imunisasi Kejar)
+                </span>
+              </div>
+              
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-6 rounded flex-shrink-0 border-2 shadow-sm" style={{ backgroundColor: '#D3D3D3', borderColor: '#A9A9A9' }} />
+                <span className="text-gray-700 font-medium">
                   Usia yang tidak diperbolehkan untuk pemberian Imunisasi
                 </span>
+              </div>
+            </div>
+            
+            <div className="mt-3 pt-3 border-t border-gray-200">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 bg-green-100 border-2 border-green-300 rounded flex items-center justify-center flex-shrink-0 shadow-sm">
+                  <span className="text-green-700 font-bold text-xs">✓</span>
+                </div>
+                <span className="text-gray-600 text-xs">= Imunisasi telah diberikan</span>
               </div>
             </div>
           </div>
@@ -794,7 +837,7 @@ const PelayananImunisasi = () => {
               <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-4 border-b border-blue-800">
                 <h2 className="text-white font-bold text-lg flex items-center gap-2">
                   <Syringe size={20} />
-                  Catatan Imunisasi
+                 Riwayat Catatan Imunisasi
                 </h2>
                 <p className="text-blue-100 text-xs mt-1">
                   Riwayat pemberian imunisasi yang telah dilakukan
@@ -823,12 +866,15 @@ const PelayananImunisasi = () => {
                       <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                         Catatan
                       </th>
+                      <th className="px-4 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">
+                        Aksi
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
                     {pencatatanList
                       .filter(p => p.is_selesai)
-                      .sort((a, b) => new Date(b.tanggal_pemberian) - new Date(a.tanggal_pemberian))
+                      .sort((a, b) => new Date(a.tanggal_pemberian) - new Date(b.tanggal_pemberian))
                       .map((pencatatan, index) => {
                         const namaDosis = pencatatan.jadwal_imunisasi_anak?.dosis_vaksin?.nama_dosis || '-';
                         const namaBidan = pencatatan.bidan_petugas?.name || 'Tidak tersedia';  // Changed from 'nama' to 'name'
@@ -863,6 +909,19 @@ const PelayananImunisasi = () => {
                             <td className="px-4 py-3 text-sm text-gray-600">
                               {pencatatan.catatan || '-'}
                             </td>
+                            <td className="px-4 py-3 text-center">
+                              <button
+                                onClick={() => handleBatalParaf(
+                                  pencatatan.id_jadwal_imunisasi_anak,
+                                  namaDosis
+                                )}
+                                className="inline-flex items-center gap-1.5 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 border border-red-200 hover:border-red-300 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all active:scale-95"
+                                title="Batalkan paraf imunisasi"
+                              >
+                                <XCircle size={14} />
+                                <span>Batalkan Paraf</span>
+                              </button>
+                            </td>
                           </tr>
                         );
                       })}
@@ -885,9 +944,9 @@ const PelayananImunisasi = () => {
       {/* ═══════════ MODAL PARAF IMUNISASI ═══════════ */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-hidden shadow-2xl border-t-4 border-blue-600 flex flex-col">
+          <div className="bg-white rounded-2xl w-full max-w-lg max-h-[85vh] overflow-hidden shadow-2xl border-t-4 border-blue-600 flex flex-col">
             {/* Modal Header */}
-            <div className="bg-gray-800 p-4 text-white flex justify-between items-center flex-shrink-0">
+            <div className="bg-gray-800 px-4 py-3 text-white flex justify-between items-center flex-shrink-0">
               <span className="flex items-center gap-2 font-bold text-sm uppercase tracking-wider">
                 <Syringe size={18} className="text-blue-400" /> Paraf Imunisasi
               </span>
@@ -899,119 +958,56 @@ const PelayananImunisasi = () => {
               </button>
             </div>
 
+            {/* Tanggal Pemberian - Fixed at top */}
+            <div className="px-5 pt-4 pb-3 bg-blue-50 border-b border-blue-100 flex-shrink-0">
+              <label className="text-gray-600 mb-1.5 block text-xs font-bold uppercase tracking-wider">
+                Tanggal Pemberian
+              </label>
+              <div className="flex items-center gap-2 bg-white border-2 border-blue-200 rounded-lg px-3 py-2 focus-within:border-blue-500 transition-colors">
+                <Calendar size={18} className="text-blue-500" />
+                <input
+                  type="date"
+                  className="w-full outline-none font-bold text-sm bg-transparent text-black"
+                  style={{ colorScheme: 'light' }}
+                  value={formData.tanggal}
+                  onChange={(e) => setFormData({ ...formData, tanggal: e.target.value })}
+                  max={new Date().toISOString().split('T')[0]}
+                  required
+                />
+              </div>
+              <p className="text-xs text-blue-600 mt-1.5 font-medium">
+                📅 Pilih tanggal pemberian imunisasi
+              </p>
+            </div>
+
             {/* Modal Form - Scrollable */}
-            <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto">
-              <div className="p-6 space-y-4">
-                {/* Tanggal - Dropdown dari Jadwal Layanan */}
-                <div>
-                  <label className="text-gray-500 mb-1 block text-xs font-bold uppercase tracking-wider">
-                    Tanggal Pelayanan
-                  </label>
-                  <div className="flex items-center gap-2 border-b-2 focus-within:border-blue-600 pb-2">
-                    <Calendar size={16} className="text-gray-400" />
-                    <select
-                      className="w-full outline-none font-bold text-sm bg-transparent cursor-pointer"
-                      value={formData.tanggal}
-                      onChange={(e) => {
-                        const selectedDate = e.target.value;
-                        setFormData({ ...formData, tanggal: selectedDate });
-                        
-                        // Find jadwal for selected date and update available vaccines
-                        const selectedJadwal = jadwalLayananList.find(j => {
-                          const jadwalDate = j.tanggal ? new Date(j.tanggal).toISOString().split('T')[0] : '';
-                          return jadwalDate === selectedDate;
-                        });
-                        
-                        if (selectedJadwal) {
-                          setJadwalLayananToday(selectedJadwal);
-                          console.log('[DEBUG] Selected jadwal for date:', selectedDate, selectedJadwal);
-                        }
-                      }}
-                      required
-                    >
-                      <option value="">Pilih tanggal dari jadwal layanan...</option>
-                      {jadwalLayananList
-                        .filter(jadwal => jadwal.tanggal) // Only jadwal with valid date
-                        .map(jadwal => {
-                          const tanggalFormatted = new Date(jadwal.tanggal).toISOString().split('T')[0];
-                          const tanggalDisplay = new Date(jadwal.tanggal).toLocaleDateString('id-ID', {
-                            weekday: 'long',
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                          });
-                          const dosisCount = (jadwal.dosis_vaksins || jadwal.DosisVaksins || []).length;
-                          
-                          return (
-                            <option key={jadwal.id} value={tanggalFormatted}>
-                              {tanggalDisplay} - {jadwal.layanan} ({dosisCount} vaksin)
-                            </option>
-                          );
-                        })
-                      }
-                    </select>
-                  </div>
-                  <p className="text-xs text-gray-400 mt-1">
-                    📅 Pilih dari jadwal layanan yang sudah dibuat
-                  </p>
-                  {jadwalLayananList.length === 0 && (
-                    <p className="text-xs text-amber-600 mt-2 flex items-center gap-1">
-                      <AlertTriangle size={12} />
-                      Belum ada jadwal layanan. Silakan buat jadwal terlebih dahulu di menu Jadwal Layanan.
-                    </p>
-                  )}
-                </div>
+            <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden">
+              <div className="flex-1 overflow-y-auto p-5 space-y-3.5">
 
                 {/* Vaccine Selection */}
-                <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
-                  <div className="flex justify-between items-center mb-3">
+                <div className="bg-gray-50 p-3.5 rounded-xl border border-gray-200">
+                  <div className="flex justify-between items-center mb-2.5">
                     <label className="text-gray-400 text-[10px] font-bold uppercase tracking-widest">
-                      Vaksin yang Diberikan Hari Ini:
+                      Vaksin yang Belum Diberikan:
                     </label>
                     <span className="text-[10px] text-gray-500">
-                      {availableJadwalToday.length} tersedia dari jadwal
+                      {allAvailableJadwal.length} tersedia
                     </span>
                   </div>
 
-                  {/* Jadwal Layanan Info */}
-                  {jadwalLayananToday && (
-                    <div className="mb-3 p-2 bg-blue-50 border border-blue-200 rounded-lg">
-                      <p className="text-[10px] text-blue-700 font-semibold flex items-center gap-1">
-                        <CalendarClock size={12} />
-                        Jadwal: {jadwalLayananToday.layanan || 'Imunisasi'}
-                      </p>
-                      <p className="text-[9px] text-blue-600 mt-0.5">
-                        {(jadwalLayananToday.dosis_vaksins || jadwalLayananToday.DosisVaksins) && 
-                         (jadwalLayananToday.dosis_vaksins || jadwalLayananToday.DosisVaksins).length > 0 
-                          ? (jadwalLayananToday.dosis_vaksins || jadwalLayananToday.DosisVaksins)
-                              .map(dv => `${dv.Vaksin?.nama || dv.vaksin?.nama || 'Vaksin'} - ${dv.nama_dosis}`)
-                              .join(', ')
-                          : 'Daftar vaksin tersedia'
-                        }
-                      </p>
-                    </div>
-                  )}
-
                   {/* Empty State Messages */}
-                  {!formData.tanggal && (
-                    <div className="text-center py-8">
-                      <Calendar size={32} className="text-gray-300 mx-auto mb-2" />
-                      <p className="text-sm text-gray-500">Pilih tanggal pelayanan terlebih dahulu</p>
-                    </div>
-                  )}
-
-                  {formData.tanggal && availableJadwalToday.length === 0 && (
-                    <div className="text-center py-8">
+                  {allAvailableJadwal.length === 0 && (
+                    <div className="text-center py-6">
                       <AlertTriangle size={32} className="text-amber-400 mx-auto mb-2" />
                       <p className="text-sm text-gray-600 font-medium">Tidak ada vaksin tersedia</p>
                       <p className="text-xs text-gray-500 mt-1">
-                        Semua vaksin pada tanggal ini sudah diberikan atau tidak ada jadwal vaksin untuk anak ini.
+                        Semua vaksin untuk anak ini sudah diberikan.
                       </p>
                     </div>
                   )}
 
-                  <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
-                    {availableJadwalToday.map((jadwal) => {
+                  <div className="space-y-2 max-h-52 overflow-y-auto pr-1.5">
+                    {allAvailableJadwal.map((jadwal) => {
                       const isSelected = formData.selectedJadwalIds.includes(
                         jadwal.jadwal_id
                       );
@@ -1025,6 +1021,25 @@ const PelayananImunisasi = () => {
                       const aturan = findAturanByDosisId(jadwal.dosis_vaksin_id);
                       const minUsiaBulan = aturan?.min_usia_hari ? Math.floor(aturan.min_usia_hari / 30) : 0;
 
+                      // Determine icon and color based on condition
+                      let StatusIcon = XCircle;
+                      let iconColor = 'text-gray-400';
+                      let reasonText = '';
+                      
+                      if (!prevDoseOk) {
+                        StatusIcon = Lock;
+                        iconColor = 'text-red-500';
+                        reasonText = `Memerlukan ${prevDoseName} selesai terlebih dahulu`;
+                      } else if (!usiaCukup) {
+                        StatusIcon = Clock;
+                        iconColor = 'text-amber-500';
+                        reasonText = `Anak belum mencapai usia minimal ${minUsiaBulan} bulan`;
+                      } else if (usiaTerlambat) {
+                        StatusIcon = AlertTriangle;
+                        iconColor = 'text-orange-500';
+                        reasonText = 'Terlambat dari jadwal ideal';
+                      }
+
                       return (
                         <div key={jadwal.jadwal_id} className="space-y-2">
                           <div
@@ -1034,62 +1049,65 @@ const PelayananImunisasi = () => {
                                   Swal.fire({
                                     icon: 'warning',
                                     title: 'Belum Bisa Diberikan',
-                                    html: `<b>${jadwal.nama_dosis}</b> memerlukan dosis <b>${prevDoseName}</b> diselesaikan terlebih dahulu.`,
-                                    confirmButtonColor: '#2563eb'
+                                    html: `<div class="text-left"><p class="mb-2"><b>${jadwal.nama_dosis}</b> memerlukan dosis <b>${prevDoseName}</b> diselesaikan terlebih dahulu.</p><p class="text-sm text-gray-600">📋 Dosis harus diberikan secara berurutan untuk memastikan kekebalan yang optimal.</p></div>`,
+                                    confirmButtonColor: '#2563eb',
+                                    confirmButtonText: 'Mengerti'
                                   });
                                 } else if (!usiaCukup) {
                                   Swal.fire({
-                                    icon: 'warning',
+                                    icon: 'info',
                                     title: 'Anak Belum Cukup Umur',
-                                    html: `<b>${jadwal.nama_dosis}</b> dapat diberikan minimal pada usia <b>${minUsiaBulan} bulan</b>.<br/><small class="text-gray-500">Anak ini belum mencapai usia minimal untuk vaksin tersebut.</small>`,
-                                    confirmButtonColor: '#2563eb'
+                                    html: `<div class="text-left"><p class="mb-2"><b>${jadwal.nama_dosis}</b> dapat diberikan minimal pada usia <b>${minUsiaBulan} bulan</b>.</p><p class="text-sm text-gray-600">⏰ Anak ini belum mencapai usia minimal untuk vaksin tersebut.</p></div>`,
+                                    confirmButtonColor: '#2563eb',
+                                    confirmButtonText: 'Mengerti'
                                   });
                                 }
                                 return;
                               }
                               handleToggleJadwal(jadwal.jadwal_id);
                             }}
-                            className={`flex items-center justify-between gap-3 p-3 rounded-lg border-2 transition-all cursor-pointer ${
+                            className={`flex items-center justify-between gap-3 p-2.5 rounded-lg border-2 transition-all cursor-pointer ${
                               !canBeSelected
-                                ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed opacity-70'
+                                ? 'bg-gray-50 border-gray-200 text-gray-500 cursor-not-allowed'
                                 : isSelected
-                                  ? 'bg-blue-600 text-white border-blue-600'
-                                  : 'bg-white border-gray-100 text-gray-700 hover:border-blue-300'
+                                  ? 'bg-blue-600 text-white border-blue-600 shadow-md'
+                                  : 'bg-white border-gray-200 text-gray-700 hover:border-blue-300 hover:shadow-sm'
                             }`}
                           >
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-3 flex-1">
                               {!canBeSelected ? (
-                                <XCircle size={18} className="text-gray-400 flex-shrink-0" />
+                                <StatusIcon size={20} className={`${iconColor} flex-shrink-0`} />
                               ) : isSelected ? (
-                                <CheckSquare size={18} />
+                                <CheckSquare size={20} className="flex-shrink-0" />
                               ) : (
-                                <Square size={18} />
+                                <Square size={20} className="flex-shrink-0" />
                               )}
-                              <div className="flex flex-col">
-                                <span className="text-xs font-medium">
+                              <div className="flex flex-col flex-1">
+                                <span className="text-sm font-semibold">
                                   {jadwal.nama_dosis}
                                 </span>
-                                {!prevDoseOk && (
-                                  <span className="text-[10px] text-red-500 mt-0.5">
-                                    ⚠️ Memerlukan {prevDoseName} selesai
+                                {!canBeSelected && reasonText && (
+                                  <span className={`text-[10px] mt-0.5 flex items-start gap-1 ${
+                                    !prevDoseOk ? 'text-red-600' : 'text-amber-600'
+                                  }`}>
+                                    <span className="font-bold">●</span>
+                                    <span>{reasonText}</span>
                                   </span>
                                 )}
-                                {prevDoseOk && !usiaCukup && (
-                                  <span className="text-[10px] text-amber-600 mt-0.5">
-                                    ⏳ Min. usia {minUsiaBulan} bulan
-                                  </span>
-                                )}
-                                {usiaTerlambat && (
-                                  <span className="text-[10px] text-orange-600 mt-0.5">
-                                    ⚠️ Terlambat dari jadwal ideal
+                                {canBeSelected && usiaTerlambat && (
+                                  <span className="text-[10px] text-orange-600 mt-0.5 flex items-center gap-1">
+                                    <AlertTriangle size={12} />
+                                    <span>{reasonText}</span>
                                   </span>
                                 )}
                               </div>
                             </div>
-                            <CheckCircle2
-                              size={16}
-                              className={isSelected ? 'text-white' : !canBeSelected ? 'text-gray-300' : 'text-gray-300'}
-                            />
+                            {canBeSelected && (
+                              <CheckCircle2
+                                size={18}
+                                className={`flex-shrink-0 ${isSelected ? 'text-white' : 'text-gray-300'}`}
+                              />
+                            )}
                           </div>
 
                           {isSelected && (
@@ -1097,7 +1115,7 @@ const PelayananImunisasi = () => {
                               <input
                                 type="text"
                                 placeholder="No. Batch Vaksin (opsional)"
-                                className="w-full text-xs border-2 border-blue-200 rounded-lg px-3 py-2 outline-none focus:border-blue-400 bg-blue-50/30"
+                                className="w-full text-xs border-2 border-blue-200 rounded-lg px-2.5 py-1.5 outline-none focus:border-blue-400 bg-blue-50/30"
                                 value={formData.batches[jadwal.jadwal_id] || ''}
                                 onChange={(e) =>
                                   setFormData((prev) => ({
@@ -1126,7 +1144,7 @@ const PelayananImunisasi = () => {
                     Catatan Umum
                   </label>
                   <textarea
-                    className="w-full border-2 border-gray-200 p-2 outline-none text-sm focus:border-blue-600 rounded-lg resize-none"
+                    className="w-full border-2 border-gray-200 p-2 outline-none text-xs focus:border-blue-600 rounded-lg resize-none"
                     placeholder="Catatan tambahan (opsional)..."
                     rows="2"
                     value={formData.catatan}
@@ -1137,14 +1155,14 @@ const PelayananImunisasi = () => {
                 </div>
               </div>
 
-              {/* Submit Button - Fixed at bottom */}
-              <div className="p-6 pt-0 border-t border-gray-100 bg-white flex-shrink-0">
+              {/* Submit Button - Fixed at bottom, always visible */}
+              <div className="px-5 py-3.5 border-t border-gray-100 bg-white flex-shrink-0">
                 <button
                   disabled={
                     isSubmitting || formData.selectedJadwalIds.length === 0
                   }
                   type="submit"
-                  className="w-full bg-blue-600 text-white py-3.5 rounded-xl hover:bg-blue-700 flex justify-center items-center gap-3 transition-all font-bold text-sm uppercase tracking-wider disabled:bg-gray-300"
+                  className="w-full bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 flex justify-center items-center gap-3 transition-all font-bold text-sm uppercase tracking-wider disabled:bg-gray-300 shadow-lg disabled:shadow-none"
                 >
                   {isSubmitting ? (
                     <>

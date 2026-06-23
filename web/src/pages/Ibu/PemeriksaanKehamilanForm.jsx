@@ -28,7 +28,8 @@ import {
   Baby,
   Droplet,
   Heart,
-  Eye,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 
 // ─────────────────────────────────────────────────────────────
@@ -81,91 +82,24 @@ const getKunjunganKeFromWeek = (minggu) => {
   return "6";
 };
 
-// Hitung status risiko dari data klinis
-const hitungStatusRisiko = (data) => {
-  if (!data) return null;
-
-  const faktorRujukan = [];
-  const faktorTindakan = [];
-
-  // 1. Tekanan darah
-  const sistole = parseFloat(data.sistole) || 0;
-  const diastole = parseFloat(data.diastole) || 0;
-  if (sistole > 0 || diastole > 0) {
-    if (sistole >= 140 || diastole >= 90) {
-      faktorRujukan.push(`Tekanan darah tinggi (${sistole}/${diastole} mmHg)`);
-    } else if (sistole >= 130 || diastole >= 80) {
-      faktorTindakan.push(`Tekanan darah batas waspada (${sistole}/${diastole} mmHg)`);
-    }
+// Parse alasan_klinis from JSON string
+const parseAlasanKlinis = (alasanString) => {
+  if (!alasanString) return [];
+  try {
+    return JSON.parse(alasanString);
+  } catch {
+    return [];
   }
+};
 
-  // 2. DJJ
-  const djj = parseInt(data.denyut_jantung_janin) || 0;
-  if (djj > 0) {
-    if (djj < 100 || djj > 180) {
-      faktorRujukan.push(`DJJ tidak normal (${djj} bpm)`);
-    } else if (djj < 120 || djj > 160) {
-      faktorTindakan.push(`DJJ di luar batas normal (${djj} bpm)`);
-    }
+// Parse risk_types from JSON string
+const parseRiskTypes = (riskTypesString) => {
+  if (!riskTypesString) return [];
+  try {
+    return JSON.parse(riskTypesString);
+  } catch {
+    return [];
   }
-
-  // 3. Hemoglobin
-  const hb = parseFloat(data.tes_lab_hb) || 0;
-  if (hb > 0) {
-    if (hb < 7) {
-      faktorRujukan.push(`Anemia berat, Hb ${hb} g/dL`);
-    } else if (hb < 10) {
-      faktorTindakan.push(`Anemia sedang, Hb ${hb} g/dL`);
-    } else if (hb < 11) {
-      faktorTindakan.push(`Hb rendah (${hb} g/dL), perlu suplemen zat besi`);
-    }
-  }
-
-  // 4. Gula darah
-  const gds = parseInt(data.tes_lab_gula_darah) || 0;
-  if (gds > 0) {
-    if (gds > 200) {
-      faktorRujukan.push(`Gula darah sangat tinggi (${gds} mg/dL)`);
-    } else if (gds > 140) {
-      faktorTindakan.push(`Gula darah meningkat (${gds} mg/dL)`);
-    }
-  }
-
-  // 5. Protein urine
-  const protein = (data.tes_lab_protein_urine || "").toLowerCase();
-  if (protein.includes("positif 2") || protein.includes("positif 3") || protein === "++" || protein === "+++") {
-    faktorRujukan.push(`Protein urine positif (${data.tes_lab_protein_urine}) - risiko preeklampsia`);
-  } else if (protein.includes("positif 1") || protein === "+" || protein.includes("trace")) {
-    faktorTindakan.push(`Protein urine positif 1 (${data.tes_lab_protein_urine}) - waspadai preeklampsia`);
-  }
-
-  // 6. LILA
-  const lila = parseFloat(data.lingkar_lengan_atas) || 0;
-  if (lila > 0 && lila < 23.5) {
-    faktorTindakan.push(`LILA kurang dari normal (${lila} cm) - risiko KEK`);
-  }
-
-  // 7. Triple eliminasi reaktif
-  const tripel = (data.tripel_eliminasi || "").toLowerCase();
-  if (tripel.includes("reaktif") && !tripel.includes("non")) {
-    faktorRujukan.push(`Triple eliminasi reaktif (${data.tripel_eliminasi}) - perlu penanganan khusus`);
-  }
-
-  const skor = faktorRujukan.length * 2 + faktorTindakan.length;
-  let status_risiko, ringkasan;
-
-  if (faktorRujukan.length > 0) {
-    status_risiko = "PERLU RUJUKAN";
-    ringkasan = faktorRujukan.join("; ");
-  } else if (faktorTindakan.length > 0) {
-    status_risiko = "PERLU TINDAKAN";
-    ringkasan = faktorTindakan.join("; ");
-  } else {
-    status_risiko = "NORMAL";
-    ringkasan = "Semua parameter klinis dalam batas normal.";
-  }
-
-  return { status_risiko, skor_risiko: skor, ringkasan, faktorRujukan, faktorTindakan };
 };
 
 // Format tanggal ke Indonesia
@@ -200,6 +134,12 @@ export default function PemeriksaanKehamilanForm() {
   const [loadingKehamilan, setLoadingKehamilan] = useState(false);
   const [autoCalculate, setAutoCalculate] = useState(true);
   const [lastCalculatedDate, setLastCalculatedDate] = useState(null);
+  
+  // State untuk hasil prediksi ML dari backend
+  const [mlPrediction, setMlPrediction] = useState(null);
+  
+  // State untuk dropdown functionality
+  const [expandedRisks, setExpandedRisks] = useState({});
 
   const [form, setForm] = useState({
     kehamilan_id: kehamilanId || "",
@@ -329,16 +269,6 @@ export default function PemeriksaanKehamilanForm() {
     }
   }, [form.minggu_kehamilan, autoCalculate]);
 
-  // Hitung risiko
-  const risikoHasil = useMemo(() => {
-    const adaData = form.sistole || form.diastole || form.denyut_jantung_janin ||
-                    form.tes_lab_hb || form.tes_lab_gula_darah;
-    if (!adaData) return null;
-    return hitungStatusRisiko(form);
-  }, [form.sistole, form.diastole, form.denyut_jantung_janin,
-      form.tes_lab_hb, form.tes_lab_gula_darah, form.tes_lab_protein_urine,
-      form.lingkar_lengan_atas, form.tripel_eliminasi]);
-
   // Fetch data jika edit
   useEffect(() => {
     if (isEdit && periksaId) {
@@ -372,6 +302,18 @@ export default function PemeriksaanKehamilanForm() {
             tes_golongan_darah: data.tes_golongan_darah || "",
             tata_laksana_kasus: data.tata_laksana_kasus || "",
           }));
+          
+          // Set ML prediction results if available
+          if (data.overall_label || data.status_risiko) {
+            setMlPrediction({
+              overall_label: data.overall_label || data.status_risiko,
+              skor_risiko: data.skor_risiko || 0,
+              active_risk_count: data.active_risk_count || 0,
+              alasan_klinis: parseAlasanKlinis(data.alasan_klinis),
+              rekomendasi_utama: data.rekomendasi_utama || data.detail_risiko,
+              risk_types: parseRiskTypes(data.risk_types),
+            });
+          }
         })
         .catch((err) => {
           console.error(err);
@@ -456,15 +398,7 @@ export default function PemeriksaanKehamilanForm() {
 
   const validateStep3 = () => {
     const newErrors = {};
-    if (!form.skrining_dokter?.trim()) {
-      newErrors.skrining_dokter = "Skrining dokter / temuan harus diisi";
-    }
-    if (!form.konseling?.trim()) {
-      newErrors.konseling = "Konseling yang diberikan harus diisi";
-    }
-    if (!form.tata_laksana_kasus?.trim()) {
-      newErrors.tata_laksana_kasus = "Tata laksana kasus harus diisi";
-    }
+    // Step 3 (Konseling) is optional, so always return true
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -484,7 +418,7 @@ export default function PemeriksaanKehamilanForm() {
         icon: "warning",
         title: "Data Belum Lengkap",
         html: `<div class="text-left" style="white-space: pre-line;">${errorList}</div>`,
-        confirmButtonColor: "#4f46e5",
+        confirmButtonColor: "#185FA5",
       });
 
       // Scroll to first error field
@@ -557,7 +491,7 @@ export default function PemeriksaanKehamilanForm() {
         icon: "warning",
         title: "Data Belum Lengkap",
         html: `<div class="text-left" style="white-space: pre-line;">${errorList}</div>`,
-        confirmButtonColor: "#4f46e5",
+        confirmButtonColor: "#185FA5",
       });
       
       if (!step1Valid) setStep(1);
@@ -581,13 +515,31 @@ export default function PemeriksaanKehamilanForm() {
       const payload = buildPayload();
       console.log("PAYLOAD:", JSON.stringify(payload, null, 2));
       
+      let result;
       if (isEdit) {
-        await updatePemeriksaanKehamilan(periksaId, payload);
+        result = await updatePemeriksaanKehamilan(periksaId, payload);
         await Swal.fire({ icon: "success", title: "Berhasil", text: "Pemeriksaan ANC berhasil diperbarui", timer: 2000, showConfirmButton: false });
       } else {
-        await createPemeriksaanKehamilan(payload);
+        result = await createPemeriksaanKehamilan(payload);
         await Swal.fire({ icon: "success", title: "Berhasil", text: "Pemeriksaan ANC berhasil disimpan", timer: 2000, showConfirmButton: false });
       }
+      
+      // Update ML prediction state with the result
+      console.log("API Response:", result);
+      const data = result.data || result; // Handle both wrapped and unwrapped responses
+      if (data && (data.overall_label || data.status_risiko)) {
+        setMlPrediction({
+          overall_label: data.overall_label || data.status_risiko,
+          skor_risiko: data.skor_risiko || 0,
+          active_risk_count: data.active_risk_count || 0,
+          alasan_klinis: parseAlasanKlinis(data.alasan_klinis),
+          rekomendasi_utama: data.rekomendasi_utama || data.detail_risiko,
+          risk_types: parseRiskTypes(data.risk_types),
+        });
+      } else {
+        console.warn("No ML prediction data in response");
+      }
+      
       navigate(`/data-ibu/${ibuId}/pemeriksaan-rutin?kehamilan_id=${kehamilanId}`);
     } catch (err) {
       console.error(err);
@@ -605,8 +557,8 @@ export default function PemeriksaanKehamilanForm() {
   if (loading || loadingKehamilan) {
     return (
       <MainLayout>
-        <div className="min-h-screen flex items-center justify-center bg-[#F7FAFB]">
-          <Loader2 className="animate-spin text-indigo-600" size={32} />
+          <div className="min-h-screen flex items-center justify-center bg-background">
+            <Loader2 className="animate-spin text-primary" size={32} />
           <span className="ml-2 text-gray-500">Memuat data...</span>
         </div>
       </MainLayout>
@@ -627,17 +579,17 @@ export default function PemeriksaanKehamilanForm() {
 
   return (
     <MainLayout>
-      <div className="min-h-screen bg-[#F7FAFB] p-4 md:p-6">
+      <div className="min-h-screen bg-background p-4 md:p-6">
         <div className="max-w-7xl mx-auto">
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 text-sm text-gray-500 mb-4 flex-wrap">
-            <Link to="/dashboard" className="hover:text-indigo-600 flex items-center gap-1">
+            <Link to="/dashboard" className="hover:text-primary flex items-center gap-1">
               <Home size={14} /> Beranda
             </Link>
             <span>/</span>
-            <Link to="/data-ibu" className="hover:text-indigo-600">Data Ibu</Link>
+            <Link to="/data-ibu" className="hover:text-primary">Data Ibu</Link>
             <span>/</span>
-            <Link to={`/data-ibu/${ibuId}?kehamilan_id=${kehamilanId}`} className="hover:text-indigo-600">
+            <Link to={`/data-ibu/${ibuId}?kehamilan_id=${kehamilanId}`} className="hover:text-primary">
               Detail Ibu
             </Link>
             <span>/</span>
@@ -648,15 +600,15 @@ export default function PemeriksaanKehamilanForm() {
 
           {/* Informasi HPHT Card - Auto-fill utama */}
           {kehamilanDetail?.hpht && (
-            <div className="mb-6 p-4 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl border border-indigo-200 shadow-sm">
+            <div className="mb-6 p-4 bg-gradient-to-r from-primary-50 to-blue-50 rounded-xl border border-primary/20 shadow-sm">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
-                    <Calendar size={24} className="text-indigo-600" />
+                  <div className="w-12 h-12 bg-primary-50 rounded-full flex items-center justify-center">
+                    <Calendar size={24} className="text-primary" />
                   </div>
                   <div>
                     <p className="text-xs text-gray-500 uppercase tracking-wide">Hari Pertama Haid Terakhir (HPHT)</p>
-                    <p className="font-bold text-lg text-indigo-700">{formatTanggalIndo(kehamilanDetail.hpht)}</p>
+                     <p className="font-bold text-lg text-primary">{formatTanggalIndo(kehamilanDetail.hpht)}</p>
                     <p className="text-xs text-gray-500">
                       Taksiran Persalinan: {formatTanggalIndo(kehamilanDetail.taksiran_persalinan)}
                     </p>
@@ -668,7 +620,7 @@ export default function PemeriksaanKehamilanForm() {
                     <Baby size={24} className="text-pink-500" />
                     <div>
                       <p className="text-xs text-gray-500">Usia Kehamilan (Per Tanggal Periksa)</p>
-                      <p className="font-bold text-xl text-indigo-700">{currentUsiaKehamilan.display}</p>
+                      <p className="font-bold text-xl text-primary">{currentUsiaKehamilan.display}</p>
                       <p className="text-xs text-gray-400">{currentUsiaKehamilan.totalHari} hari</p>
                     </div>
                   </div>
@@ -705,7 +657,7 @@ export default function PemeriksaanKehamilanForm() {
                         }
                       }
                     }}
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700 transition flex items-center gap-2"
+                    className="px-4 py-2 bg-primary text-white rounded-lg text-sm hover:bg-primary/90 transition flex items-center gap-2"
                   >
                     <RefreshCw size={14} />
                     Isi Otomatis Usia Kehamilan
@@ -715,13 +667,13 @@ export default function PemeriksaanKehamilanForm() {
               
               {/* Toggle mode */}
               {!isReadOnly && (
-                <div className="mt-3 flex items-center justify-end gap-4 border-t border-indigo-100 pt-3">
+                <div className="mt-3 flex items-center justify-end gap-4 border-t border-primary/10 pt-3">
                   <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={autoCalculate}
                       onChange={(e) => setAutoCalculate(e.target.checked)}
-                      className="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4"
+                      className="rounded text-primary focus:ring-primary w-4 h-4"
                     />
                     <span className="flex items-center gap-1">
                       <RefreshCw size={12} />
@@ -729,7 +681,7 @@ export default function PemeriksaanKehamilanForm() {
                     </span>
                   </label>
                   {autoCalculate && (
-                    <span className="text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                    <span className="text-xs text-success bg-success/10 px-2 py-1 rounded-full">
                       Aktif - Usia kehamilan akan terisi otomatis
                     </span>
                   )}
@@ -738,21 +690,91 @@ export default function PemeriksaanKehamilanForm() {
             </div>
           )}
 
-          {/* Risk Card */}
-          {risikoHasil && (
-            <div className={`mb-6 p-4 rounded-lg border-l-4 ${risikoConfig[risikoHasil.status_risiko]?.border} ${risikoConfig[risikoHasil.status_risiko]?.bg} shadow-sm`}>
+          {/* Risk Card - ML Prediction Results */}
+          {mlPrediction && (
+            <div className={`mb-6 p-4 rounded-lg border-l-4 ${risikoConfig[mlPrediction.overall_label]?.border} ${risikoConfig[mlPrediction.overall_label]?.bg} shadow-sm`}>
               <div className="flex items-start gap-3">
-                <div className="mt-1">{risikoConfig[risikoHasil.status_risiko]?.icon}</div>
+                <div className="mt-1">{risikoConfig[mlPrediction.overall_label]?.icon}</div>
                 <div className="flex-1">
                   <h3 className="font-bold text-lg flex items-center gap-2 flex-wrap">
-                    Hasil Prediksi Risiko:
-                    <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${risikoConfig[risikoHasil.status_risiko]?.label}`}>
-                      {risikoHasil.status_risiko}
+                    Hasil Prediksi Risiko ML:
+                    <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${risikoConfig[mlPrediction.overall_label]?.label}`}>
+                      {mlPrediction.overall_label}
                     </span>
-                    <span className="text-sm text-gray-500">(Skor: {risikoHasil.skor_risiko})</span>
+                    <span className="text-sm text-gray-500">(Skor: {mlPrediction.skor_risiko} | Risiko Aktif: {mlPrediction.active_risk_count})</span>
                   </h3>
-                  <p className="mt-2 text-sm text-gray-700">{risikoHasil.ringkasan}</p>
-                  {risikoHasil.status_risiko === "PERLU RUJUKAN" && (
+                  
+                  {/* Only Detected Risks */}
+                  {mlPrediction.risk_types && mlPrediction.risk_types.length > 0 && (
+                    <div className="mt-4">
+                      <p className="text-sm font-semibold text-gray-700 mb-3">Risiko yang Terdeteksi:</p>
+                      {mlPrediction.risk_types.filter(risk => risk.detected).length > 0 ? (
+                        <div className="space-y-2">
+                          {mlPrediction.risk_types
+                            .filter(risk => risk.detected)
+                            .sort((a, b) => b.probability - a.probability)
+                            .map((risk, idx) => (
+                            <div 
+                              key={idx} 
+                              className="bg-white rounded-lg border border-red-200 shadow-sm"
+                            >
+                              <button
+                                onClick={() => setExpandedRisks(prev => ({ ...prev, [idx]: !prev[idx] }))}
+                                className="w-full p-3 flex items-center justify-between hover:bg-red-50 transition-colors"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <span className="font-semibold text-sm text-gray-800">{risk.name}</span>
+                                  <span className="text-xs px-2 py-1 rounded-full bg-red-100 text-red-700 font-medium">
+                                    {(risk.probability * 100).toFixed(1)}%
+                                  </span>
+                                </div>
+                                {expandedRisks[idx] ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                              </button>
+                              {expandedRisks[idx] && risk.tindakan && risk.tindakan.length > 0 && (
+                                <div className="p-3 pt-0 border-t border-red-100">
+                                  <p className="text-xs font-semibold text-gray-700 mb-2 mt-2">Tindakan yang Disarankan:</p>
+                                  <ul className="text-xs text-gray-600 space-y-1">
+                                    {risk.tindakan.map((tindakan, tIdx) => (
+                                      <li key={tIdx} className="flex items-start gap-2">
+                                        <span className="text-red-500 mt-0.5">•</span>
+                                        <span>{tindakan}</span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="p-4 rounded-xl border border-emerald-200 bg-emerald-50">
+                          <p className="text-sm text-emerald-700 font-medium">✅ Tidak ada risiko yang terdeteksi</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Alasan Klinis */}
+                  {mlPrediction.alasan_klinis && mlPrediction.alasan_klinis.length > 0 && (
+                    <div className="mt-3">
+                      <p className="text-sm font-semibold text-gray-700 mb-1">Alasan Klinis:</p>
+                      <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
+                        {mlPrediction.alasan_klinis.map((alasan, idx) => (
+                          <li key={idx}>{alasan}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  
+                  {/* Rekomendasi Utama */}
+                  {mlPrediction.rekomendasi_utama && (
+                    <div className="mt-3 p-3 bg-white rounded border border-gray-200">
+                      <p className="text-sm font-semibold text-gray-700 mb-1">Rekomendasi Utama:</p>
+                      <p className="text-sm text-gray-600">{mlPrediction.rekomendasi_utama}</p>
+                    </div>
+                  )}
+                  
+                  {mlPrediction.overall_label === "PERLU RUJUKAN" && (
                     <div className="mt-2 p-2 bg-red-100 rounded text-red-700 text-xs">
                       ⚠️ Pasien memerlukan rujukan segera ke fasilitas kesehatan yang lebih lengkap.
                     </div>
@@ -763,18 +785,22 @@ export default function PemeriksaanKehamilanForm() {
           )}
 
           {/* Info awal jika belum ada data */}
-          {!risikoHasil && (
-            <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200 text-blue-800 flex items-center gap-2">
+          {!mlPrediction && (
+            <div className="mb-6 p-4 bg-primary/10 rounded-lg border border-primary/20 text-primary flex items-center gap-2">
               <Info size={20} />
-              <span>Sistem akan menghitung tingkat risiko kehamilan secara otomatis berdasarkan data yang Anda masukkan.</span>
+              <span>Sistem Machine Learning akan menghitung tingkat risiko kehamilan secara otomatis setelah data disimpan.</span>
             </div>
           )}
 
           {/* Header Form */}
           <div className="flex items-center gap-4 mb-6">
-            <button onClick={() => navigate(-1)} className="p-2 bg-white rounded-full shadow hover:shadow-md transition">
-              <ArrowLeft size={24} />
-            </button>
+          <button
+            onClick={() => navigate(-1)}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#185FA5] text-[#185FA5] text-sm font-semibold hover:bg-[#185FA5]/5 transition"
+          >
+            <ArrowLeft size={16} />
+            <span>Kembali</span>
+          </button>
             <div>
               <h1 className="text-[28px] font-bold text-gray-900">
                 {isReadOnly ? "Lihat Detail" : (isEdit ? "Edit" : "Input")} Pemeriksaan ANC
@@ -787,7 +813,7 @@ export default function PemeriksaanKehamilanForm() {
 
           {/* Warning banner for read-only mode */}
           {isReadOnly && (
-            <div className="mb-6 bg-blue-50 border border-blue-200 p-4 rounded-lg text-blue-800 flex items-center gap-3">
+            <div className="mb-6 bg-secondary/10 border border-secondary/30 text-secondary p-4 rounded-lg flex items-center gap-3">
               <Eye size={20} className="flex-shrink-0" />
               <div>
                 <p className="font-semibold">Mode Baca Saja (Dokter)</p>
@@ -802,9 +828,9 @@ export default function PemeriksaanKehamilanForm() {
               <div className="flex items-center gap-2">
                 {[Activity, Beaker, MessageCircle].map((Icon, i) => (
                   <React.Fragment key={i}>
-                    {i > 0 && <div className={`w-16 h-0.5 ${step > i ? "bg-indigo-600" : "bg-gray-200"}`} />}
+                    {i > 0 && <div className={`w-16 h-0.5 ${step > i ? "bg-primary" : "bg-gray-200"}`} />}
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
-                      step >= i + 1 ? "bg-indigo-600 text-white shadow-md" : "bg-gray-200 text-gray-500"
+                      step >= i + 1 ? "bg-primary text-white shadow-md" : "bg-gray-200 text-gray-500"
                     }`}>
                       <Icon size={20} />
                     </div>
@@ -917,7 +943,7 @@ export default function PemeriksaanKehamilanForm() {
                               setForm(prev => ({ ...prev, minggu_kehamilan: usia.minggu.toString() }));
                             }
                           }}
-                          className="mt-1 px-3 py-2 bg-indigo-100 text-indigo-700 rounded-lg text-sm hover:bg-indigo-200 transition flex items-center gap-1"
+                          className="mt-1 px-3 py-2 bg-primary-50 text-primary rounded-lg text-sm hover:bg-primary/10 transition flex items-center gap-1"
                         >
                           <RefreshCw size={14} />
                           Hitung dari HPHT
@@ -926,7 +952,7 @@ export default function PemeriksaanKehamilanForm() {
                     </div>
                     <ErrorMsg field="minggu_kehamilan" />
                     {currentUsiaKehamilan && currentUsiaKehamilan.minggu > 0 && autoCalculate && (
-                      <p className="text-xs text-green-600 mt-1">
+                      <p className="text-xs text-success mt-1">
                         ✓ Usia kehamilan: {currentUsiaKehamilan.display} (dihitung otomatis dari HPHT)
                       </p>
                     )}
@@ -1070,7 +1096,7 @@ export default function PemeriksaanKehamilanForm() {
             {/* Step 2: Laboratorium - sama seperti sebelumnya */}
             {(step === 2 || isReadOnly) && (
               <div className="bg-white rounded-xl shadow-sm p-6 space-y-6 border border-gray-100">
-                <h2 className="text-lg font-semibold flex items-center gap-2 text-indigo-800 border-b pb-2">
+                <h2 className="text-lg font-semibold flex items-center gap-2 text-primary border-b pb-2">
                   <Beaker size={20} /> Laboratorium & Penunjang
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1227,7 +1253,7 @@ export default function PemeriksaanKehamilanForm() {
             {/* Step 3: Konseling */}
             {(step === 3 || isReadOnly) && (
               <div className="bg-white rounded-xl shadow-sm p-6 space-y-6 border border-gray-100">
-                <h2 className="text-lg font-semibold flex items-center gap-2 text-indigo-800 border-b pb-2">
+                <h2 className="text-lg font-semibold flex items-center gap-2 text-primary border-b pb-2">
                   <MessageCircle size={20} /> Konseling & Tindak Lanjut
                 </h2>
                 <div className="grid grid-cols-1 gap-4">
@@ -1293,7 +1319,7 @@ export default function PemeriksaanKehamilanForm() {
                   <button
                     type="button"
                     onClick={handleNext}
-                    className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg shadow transition"
+                    className="flex-1 bg-primary hover:bg-primary/90 text-white font-semibold py-3 rounded-lg shadow transition"
                   >
                     Selanjutnya →
                   </button>

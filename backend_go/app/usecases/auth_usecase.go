@@ -31,20 +31,20 @@ var roleDestinations = map[string]roleDestination{
 }
 
 var roleAliases = map[string]string{
-	"admin":           "Admin",
-	"dokter":          "Dokter",
+	"admin":            "Admin",
+	"dokter":           "Dokter",
 	"tenagakesehatan":  "Tenaga-kesehatan",
 	"tenaga-kesehatan": "Tenaga-kesehatan",
 	"tenaga kesehatan": "Tenaga-kesehatan",
-	"kader":           "Kader",
-	"bidan":           "Bidan",
-	"bidanpuskesmas":  "Bidan_puskesmas",
-	"bidan_puskesmas": "Bidan_puskesmas",
-	"superadmin":      "Superadmin",
-	"orangtua":        "Orangtua",
-	"orang tua":       "Orangtua",
-	"orang-tua":       "Orangtua",
-	"Ibu":             "Orangtua",
+	"kader":            "Kader",
+	"bidan":            "Bidan",
+	"bidanpuskesmas":   "Bidan_puskesmas",
+	"bidan_puskesmas":  "Bidan_puskesmas",
+	"superadmin":       "Superadmin",
+	"orangtua":         "Orangtua",
+	"orang tua":        "Orangtua",
+	"orang-tua":        "Orangtua",
+	"Ibu":              "Orangtua",
 }
 
 var phonePattern = regexp.MustCompile(`^\+62[0-9]{8,13}$`)
@@ -131,7 +131,7 @@ func validateRegisterInput(req *models.RegisterRequest) error {
 	return nil
 }
 
-func (m *Main) buildAccessToken(user *models.User, destination roleDestination, desaID *int32) (tokenString string, expiresIn int64, err error) {
+func (m *Main) buildAccessToken(user *models.User, destination roleDestination, posyanduID *int32) (tokenString string, expiresIn int64, err error) {
 	now := time.Now()
 	expiry := now.Add(time.Duration(m.config.JWTAccessTokenMins) * time.Minute)
 
@@ -149,7 +149,8 @@ func (m *Main) buildAccessToken(user *models.User, destination roleDestination, 
 		Role:          user.Role.Name,
 		TargetApp:     destination.TargetApp,
 		RedirectRoute: destination.RedirectRoute,
-		DesaID:        desaID,
+		// DesaID:        desaID,
+		PosyanduID: posyanduID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:   fmt.Sprintf("%d", user.ID),
 			IssuedAt:  jwt.NewNumericDate(now),
@@ -232,7 +233,7 @@ func (m *Main) Register(req *models.RegisterRequest) error {
 	}
 
 	user := &models.User{
-		Name:       req.Name,
+		Username:   req.Name,
 		Email:      req.Email,
 		IsActive:   true,
 		Password:   string(hashedPassword),
@@ -252,7 +253,6 @@ func (m *Main) Register(req *models.RegisterRequest) error {
 
 	return nil
 }
-
 func (m *Main) Login(req *models.LoginRequest) (*models.LoginResponse, error) {
 	if req == nil {
 		return nil, customerror.NewBadRequestError("request tidak valid")
@@ -269,19 +269,26 @@ func (m *Main) Login(req *models.LoginRequest) (*models.LoginResponse, error) {
 
 	var user *models.User
 	var err error
-	if isEmail(identifier) {
+	switch {
+	case isEmail(identifier):
+		// Identifier berupa email
 		user, err = m.repository.GetUserByEmail(strings.ToLower(identifier))
-	} else {
-		normalizedPhoneNumber, nErr := normalizePhoneNumber(identifier)
-		if nErr != nil {
-			return nil, customerror.NewBadRequestError("identifier harus email atau nomor hp valid")
+	default:
+		// Coba sebagai username (kolom `nama`) terlebih dahulu.
+		user, err = m.repository.GetUserByUsername(identifier)
+		if err != nil {
+			if _, ok := err.(customerror.NotFoundError); ok {
+				// Username tidak ditemukan: jika identifier berformat nomor hp, coba sebagai nomor hp.
+				if normalizedPhoneNumber, nErr := normalizePhoneNumber(identifier); nErr == nil {
+					user, err = m.repository.GetUserByPhoneNumber(normalizedPhoneNumber)
+				}
+			}
 		}
-		user, err = m.repository.GetUserByPhoneNumber(normalizedPhoneNumber)
 	}
 
 	if err != nil {
 		if _, ok := err.(customerror.NotFoundError); ok {
-			return nil, customerror.NewBadRequestError("email/nomor hp atau password salah")
+			return nil, customerror.NewBadRequestError("username/email/nomor hp atau password salah")
 		}
 		return nil, err
 	}
@@ -291,34 +298,76 @@ func (m *Main) Login(req *models.LoginRequest) (*models.LoginResponse, error) {
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
-		return nil, customerror.NewBadRequestError("email/nomor hp atau password salah")
+		return nil, customerror.NewBadRequestError("username/email/nomor hp atau password salah")
 	}
 
 	canonicalRoleName := normalizeRoleName(user.Role.Name)
+
+	// =============================================
+	// AMBIL POSYANDU_ID HANYA UNTUK BIDAN
+	// =============================================
+	var posyanduID *int32
+	var posyanduNama string
+	var phoneNumber string
+
 	if user.PendudukID != nil {
+		pendudukID := int32(*user.PendudukID)
+
+		// Ambil phone number dari penduduk
+		penduduk, err := m.repository.Kependudukan.FindByID(pendudukID)
+		if err == nil && penduduk != nil {
+			phoneNumber = penduduk.Telepon
+		}
+
 		switch canonicalRoleName {
 		case "Bidan":
-			bidan, bErr := m.repository.Bidan.FindByPendudukID(int32(*user.PendudukID))
-			if bErr != nil || strings.ToLower(strings.TrimSpace(bidan.Status)) != "aktif" {
+			//  Cari bidan
+			bidan, bErr := m.repository.Bidan.FindByPendudukID(pendudukID)
+			if bErr != nil {
+				return nil, customerror.NewBadRequestError("data bidan tidak ditemukan")
+			}
+			if bidan == nil {
+				return nil, customerror.NewBadRequestError("data bidan tidak ditemukan")
+			}
+			if strings.ToLower(strings.TrimSpace(bidan.Status)) != "aktif" {
 				return nil, customerror.NewBadRequestError("akun bidan nonaktif")
 			}
+
+			//  AMBIL POSYANDU_ID DARI BIDAN
+			if bidan.PosyanduID != nil {
+				posyanduID = bidan.PosyanduID
+				// Ambil nama posyandu
+				if bidan.Posyandu != nil {
+					posyanduNama = bidan.Posyandu.Nama
+				}
+			} else {
+				//  Logging jika posyandu_id di bidan NULL
+				fmt.Printf("⚠️ Bidan dengan penduduk_id %d tidak memiliki posyandu_id\n", pendudukID)
+			}
+
 		case "Kader":
-			fmt.Println("PendudukID:", *user.PendudukID)
-
-			kader, kErr := m.repository.Kader.FindByPendudukID(int32(*user.PendudukID))
-
-			fmt.Println("Kader:", kader)
-			fmt.Println("Error:", kErr)
-
+			//  Cari kader
+			kader, kErr := m.repository.Kader.FindByPendudukID(pendudukID)
 			if kErr != nil {
-				fmt.Println("Find kader error:", kErr)
+				return nil, customerror.NewBadRequestError("data kader tidak ditemukan")
+			}
+			if kader == nil {
+				return nil, customerror.NewBadRequestError("data kader tidak ditemukan")
+			}
+			if strings.ToLower(strings.TrimSpace(kader.Status)) != "aktif" {
 				return nil, customerror.NewBadRequestError("akun kader nonaktif")
 			}
 
-			fmt.Println("Status kader:", kader.Status)
-
-			if strings.ToLower(strings.TrimSpace(kader.Status)) != "aktif" {
-				return nil, customerror.NewBadRequestError("akun kader nonaktif")
+			//  AMBIL POSYANDU_ID DARI KADER
+			if kader.PosyanduID != nil {
+				// Konversi jika tipe data berbeda
+				id := int32(*kader.PosyanduID)
+				posyanduID = &id
+				if kader.Posyandu != nil {
+					posyanduNama = kader.Posyandu.Nama
+				}
+			} else {
+				fmt.Printf("⚠️ Kader dengan penduduk_id %d tidak memiliki posyandu_id\n", pendudukID)
 			}
 		}
 	}
@@ -342,31 +391,178 @@ func (m *Main) Login(req *models.LoginRequest) (*models.LoginResponse, error) {
 			}
 		}
 	}
-	// ========== END ==========
-
-	accessToken, expiresIn, err := m.buildAccessToken(user, destination, desaID)
+	// =============================================
+	// BUILD TOKEN DENGAN POSYANDU_ID
+	// =============================================
+	accessToken, expiresIn, err := m.buildAccessToken(user, destination, posyanduID)
 	if err != nil {
 		return nil, customerror.NewInternalServiceError("gagal membuat access token")
 	}
 
+	// =============================================
+	// RESPONSE
+	// =============================================
 	res := &models.LoginResponse{
 		AccessToken:   accessToken,
 		TokenType:     "Bearer",
 		ExpiresIn:     expiresIn,
 		UserID:        user.ID,
-		Name:          user.Name,
+		Name:          user.Username,
 		Email:         user.Email,
+		PhoneNumber:   phoneNumber,
 		Role:          user.Role.Name,
 		TargetApp:     destination.TargetApp,
 		RedirectRoute: destination.RedirectRoute,
 		DesaID:        desaID,
 		DesaNama:      desaNama,
+		PosyanduID:    posyanduID,
+		PosyanduNama:  posyanduNama,
 	}
-	// if canonicalRoleName == "Ibu" {
 
-	// 	_ = m.GenerateJadwalImunisasi(
-	// 		user.ID,
-	// 	)
-	// }
 	return res, nil
 }
+
+// func (m *Main) Login(req *models.LoginRequest) (*models.LoginResponse, error) {
+// 	if req == nil {
+// 		return nil, customerror.NewBadRequestError("request tidak valid")
+// 	}
+
+// 	identifier := strings.TrimSpace(req.Identifier)
+// 	if identifier == "" {
+// 		identifier = strings.TrimSpace(req.Email)
+// 	}
+
+// 	if identifier == "" || req.Password == "" {
+// 		return nil, customerror.NewBadRequestError("identifier/email dan password wajib diisi")
+// 	}
+
+// 	var user *models.User
+// 	var err error
+// 	if isEmail(identifier) {
+// 		user, err = m.repository.GetUserByEmail(strings.ToLower(identifier))
+// 	} else {
+// 		normalizedPhoneNumber, nErr := normalizePhoneNumber(identifier)
+// 		if nErr != nil {
+// 			return nil, customerror.NewBadRequestError("identifier harus email atau nomor hp valid")
+// 		}
+// 		user, err = m.repository.GetUserByPhoneNumber(normalizedPhoneNumber)
+// 	}
+
+// 	if err != nil {
+// 		if _, ok := err.(customerror.NotFoundError); ok {
+// 			return nil, customerror.NewBadRequestError("email/nomor hp atau password salah")
+// 		}
+// 		return nil, err
+// 	}
+
+// 	if !user.IsActive {
+// 		return nil, customerror.NewBadRequestError("akun dinonaktifkan")
+// 	}
+
+// 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
+// 		return nil, customerror.NewBadRequestError("email/nomor hp atau password salah")
+// 	}
+
+// 	canonicalRoleName := normalizeRoleName(user.Role.Name)
+
+// 	// =============================================
+// 	// AMBIL POSYANDU_ID BERDASARKAN ROLE
+// 	// =============================================
+// 	var posyanduID *int32
+// 	var posyanduNama string
+// 	var phoneNumber string
+
+// 	if user.PendudukID != nil {
+// 		// Ambil phone number dari penduduk
+// 		penduduk, err := m.repository.Kependudukan.FindByID(int32(*user.PendudukID))
+// 		if err == nil && penduduk != nil {
+// 			phoneNumber = penduduk.Telepon
+// 		}
+
+// 		switch canonicalRoleName {
+// 		case "Bidan":
+// 			bidan, bErr := m.repository.Bidan.FindByPendudukID(int32(*user.PendudukID))
+// 			if bErr != nil {
+// 				return nil, customerror.NewBadRequestError("data bidan tidak ditemukan")
+// 			}
+// 			if strings.ToLower(strings.TrimSpace(bidan.Status)) != "aktif" {
+// 				return nil, customerror.NewBadRequestError("akun bidan nonaktif")
+// 			}
+// 			// POSYANDU_ID DARI BIDAN (tempat bertugas)
+// 			if bidan.PosyanduID != nil {
+// 				posyanduID = bidan.PosyanduID
+// 				posyandu, pErr := m.repository.Posyandu.FindByID(*bidan.PosyanduID)
+// 				if pErr == nil && posyandu != nil {
+// 					posyanduNama = posyandu.Nama
+// 				}
+// 			}
+
+// 		case "Kader":
+// 			kader, kErr := m.repository.Kader.FindByPendudukID(int32(*user.PendudukID))
+// 			if kErr != nil {
+// 				return nil, customerror.NewBadRequestError("data kader tidak ditemukan")
+// 			}
+// 			if strings.ToLower(strings.TrimSpace(kader.Status)) != "aktif" {
+// 				return nil, customerror.NewBadRequestError("akun kader nonaktif")
+// 			}
+// 			// POSYANDU_ID DARI KADER
+// 			if kader.PosyanduID != nil {
+// 				posyanduID = kader.PosyanduID
+// 				posyandu, pErr := m.repository.Posyandu.FindByID(*kader.PosyanduID)
+// 				if pErr == nil && posyandu != nil {
+// 					posyanduNama = posyandu.Nama
+// 				}
+// 			}
+// 		}
+// 	}
+
+// 	destination, ok := roleRedirect(canonicalRoleName)
+// 	if !ok {
+// 		return nil, customerror.NewInternalServiceError("role belum memiliki mapping target aplikasi")
+// 	}
+// 	user.Role.Name = canonicalRoleName
+
+// 	// ========== AMBIL DESA ==========
+// 	var desaID *int32
+// 	var desaNama string
+// 	if user.PendudukID != nil {
+// 		penduduk, err := m.repository.Kependudukan.FindByID(int32(*user.PendudukID))
+// 		if err == nil && penduduk != nil && penduduk.DesaID != nil {
+// 			desaID = penduduk.DesaID
+// 			desa, err := m.repository.Desa.FindByID(*penduduk.DesaID)
+// 			if err == nil && desa != nil {
+// 				desaNama = desa.NamaDesa
+// 			}
+// 		}
+// 	}
+
+// 	// =============================================
+// 	// BUILD TOKEN DENGAN POSYANDU_ID
+// 	// =============================================
+// 	accessToken, expiresIn, err := m.buildAccessToken(user, destination, posyanduID)
+// 	if err != nil {
+// 		return nil, customerror.NewInternalServiceError("gagal membuat access token")
+// 	}
+
+// 	// =============================================
+// 	// RESPONSE - LENGKAPI SEMUA FIELD
+// 	// =============================================
+// 	res := &models.LoginResponse{
+// 		AccessToken:   accessToken,
+// 		TokenType:     "Bearer",
+// 		ExpiresIn:     expiresIn,
+// 		UserID:        user.ID,
+// 		Name:          user.Name,
+// 		Email:         user.Email,
+// 		PhoneNumber:   phoneNumber,
+// 		Role:          user.Role.Name,
+// 		TargetApp:     destination.TargetApp,
+// 		RedirectRoute: destination.RedirectRoute,
+// 		DesaID:        desaID,
+// 		DesaNama:      desaNama,
+// 		PosyanduID:    posyanduID,
+// 		PosyanduNama:  posyanduNama,
+// 	}
+
+// 	return res, nil
+// }

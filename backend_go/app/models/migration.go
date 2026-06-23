@@ -7,14 +7,14 @@ func AutoMigrate(db *gorm.DB) error {
 	models := []interface{}{
 		// ==================== MASTER DATA ====================
 		&Role{},
+		&Posyandu{},
+		&Kependudukan{},
 		&User{},
 		&Desa{},
 		&KartuKeluarga{},
-		&Kependudukan{},
 		&Bidan{},
 		&Kader{},
-		&KaderPosyandu{},
-		&Posyandu{},
+		// &KaderPosyandu{},
 
 		// ==================== ANAK & PERTUMBUHAN ====================
 		&Anak{},
@@ -94,9 +94,9 @@ func AutoMigrate(db *gorm.DB) error {
 		&PemeriksaanDokterTrimester3{},
 		&PemeriksaanLaboratoriumJiwa{},
 		&PemeriksaanLanjutanTrimester3{},
-		&CatatanPelayananTrimester1{},
+		// &CatatanPelayananTrimester1{},
 		&CatatanPelayananTrimester2{},
-		&CatatanPelayananTrimester3{},
+		// &CatatanPelayananTrimester3{},
 
 		// ==================== SKRINING IBU HAMIL ====================
 		&SkriningPreeklampsia{},
@@ -127,11 +127,6 @@ func AutoMigrate(db *gorm.DB) error {
 		// ==================== BBL (BAYI BARU LAHIR) ====================
 		&Bbl{},
 		&BblCheck{},
-
-		// ==================== LAPORAN ====================
-		&LaporanIbu{},
-		&LaporanAnak{},
-
 		// ==================== MODUL IBU ====================
 		&LogTTDMMS{},
 		&PemantauanIbuHamil{},

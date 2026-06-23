@@ -144,13 +144,25 @@ function RingkasanCard({
         boxShadow: "0 1px 2px rgba(0,0,0,0.02)",
         transition: "transform 0.1s ease",
         cursor: onClick ? "pointer" : "default",
+        minWidth: "180px",
+        height: "fit-content",
       }}
       onMouseEnter={(e) => { if (onClick) e.currentTarget.style.transform = "translateY(-2px)"; }}
       onMouseLeave={(e) => { if (onClick) e.currentTarget.style.transform = "translateY(0)"; }}
     >
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-        <div style={{ fontSize: 11, fontWeight: 600, color: "#475569" }}>{label}</div>
-        <div style={{ width: 26, height: 26, background: bgColor, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", color: color }}>
+        <div style={{ 
+          fontSize: 11, 
+          fontWeight: 600, 
+          color: "#475569",
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          maxWidth: "calc(100% - 35px)"
+        }}>
+          {label}
+        </div>
+        <div style={{ width: 26, height: 26, background: bgColor, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", color: color, flexShrink: 0 }}>
           {icon}
         </div>
       </div>
@@ -160,15 +172,28 @@ function RingkasanCard({
       </div>
 
       <div style={{ display: "flex", justifyContent: "space-between", fontSize: 9, marginBottom: 6, gap: 6 }}>
-        <span style={{ color: "#10b981", fontWeight: 500 }}>{sub1Label}: {sub1Value}</span>
-        <span style={{ color: "#f97316", fontWeight: 500 }}>{sub2Label}: {sub2Value}</span>
+        <span style={{ color: "#10b981", fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+          {sub1Label}: {sub1Value}
+        </span>
+        <span style={{ color: "#f97316", fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+          {sub2Label}: {sub2Value}
+        </span>
       </div>
 
       <div style={{ background: "#e2e8f0", borderRadius: 4, height: 4, overflow: "hidden", marginTop: 2, marginBottom: 4 }}>
         <div style={{ width: `${persentase}%`, background: "#10b981", height: 4, borderRadius: 4 }} />
       </div>
 
-      <div style={{ fontSize: 9, color: "#64748b", marginTop: 2, display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
+      <div style={{ 
+        fontSize: 9, 
+        color: "#64748b", 
+        marginTop: 2, 
+        display: "flex", 
+        alignItems: "center", 
+        justifyContent: "center", 
+        gap: 4,
+        whiteSpace: "nowrap"
+      }}>
         <span>{cakupanLabel}: {persentase.toFixed(1)}%</span>
         {/* <span style={{ cursor: "help", borderBottom: "1px dotted #94a3b8" }} title={tooltipText}>
           {icons.info}
@@ -347,7 +372,7 @@ export default function Dashboard() {
         return normalized === selectedRiskFilter;
       })
       .map((item) => ({
-        nama: item.nama_lengkap,
+        nama: item.nama_anggota_keluarga,
         detail: `Dusun ${item.dusun}, usia kehamilan ${item.usia_kehamilan} minggu`,
         kehamilan_id: item.kehamilan_id,
         ibu_id: item.id_ibu,
@@ -362,7 +387,7 @@ export default function Dashboard() {
     const list = allIbuData
       .filter((item) => item.kehamilan_id && item.kehamilan_id !== 0 && item.dusun === dusunName)
       .map((item) => ({
-        nama: item.nama_lengkap,
+        nama: item.nama_anggota_keluarga,
         detail: `Usia kehamilan ${item.usia_kehamilan} minggu, risiko ${normalizeRisk(item.status_risiko)}`,
         kehamilan_id: item.kehamilan_id,
         ibu_id: item.id_ibu,
@@ -596,7 +621,7 @@ export default function Dashboard() {
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               <div style={{ background: "rgba(255,255,255,0.2)", borderRadius: 12, padding: 8 }}>{icons.calendar}</div>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 500, opacity: 0.9 }}>Jadwal Layanan Imunisasi Hari Ini</div>
+                <div style={{ fontSize: 14, fontWeight: 500, opacity: 0.9 }}>Jadwal Layanan Posyandu Hari Ini</div>
                 <div style={{ fontSize: 28, fontWeight: "bold" }}>{todayScheduleCount} sesi</div>
                 <div style={{ fontSize: 11, opacity: 0.7 }}>Klik tombol untuk kelola jadwal</div>
               </div>
@@ -604,30 +629,37 @@ export default function Dashboard() {
             <button onClick={() => navigate("/jadwal-layanan")} style={{ background: "white", color: "#185FA5", border: "none", borderRadius: 8, padding: "8px 16px", fontWeight: "bold", cursor: "pointer" }}>Lihat Jadwal →</button>
           </div>
 
-          {/* KARTU RINGKASAN SATU BARIS (grid 6 kolom) - dengan onClick */}
+          {/* KARTU RINGKASAN SATU BARIS (grid 6 kolom desktop / horizontal scroll mobile) - dengan onClick */}
           <div style={{ marginBottom: 20 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
               <h3 style={{ fontSize: 13, fontWeight: 600, color: "#334155" }}>Ringkasan Sasaran & Cakupan</h3>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(6, minmax(0, 1fr))", gap: 12 }}>
-              {ringkasanCards.map((card, idx) => (
-                <RingkasanCard
-                  key={idx}
-                  label={card.label}
-                  total={card.total}
-                  sub1Value={card.sub1Value}
-                  sub2Value={card.sub2Value}
-                  persentase={card.persentase}
-                  sub1Label={card.sub1Label}
-                  sub2Label={card.sub2Label}
-                  cakupanLabel={card.cakupanLabel}
-                  tooltipText={card.tooltipText}
-                  icon={card.icon}
-                  color={card.color}
-                  bgColor={card.bg}
-                  onClick={() => handleCardClick(card.kategoriKey)}
-                />
-              ))}
+            <div className="overflow-x-auto pb-2">
+              <div style={{ 
+                display: "grid", 
+                gridTemplateColumns: "repeat(6, minmax(180px, 1fr))", 
+                gap: 12,
+                minWidth: "min-content"
+              }}>
+                {ringkasanCards.map((card, idx) => (
+                  <RingkasanCard
+                    key={idx}
+                    label={card.label}
+                    total={card.total}
+                    sub1Value={card.sub1Value}
+                    sub2Value={card.sub2Value}
+                    persentase={card.persentase}
+                    sub1Label={card.sub1Label}
+                    sub2Label={card.sub2Label}
+                    cakupanLabel={card.cakupanLabel}
+                    tooltipText={card.tooltipText}
+                    icon={card.icon}
+                    color={card.color}
+                    bgColor={card.bg}
+                    onClick={() => handleCardClick(card.kategoriKey)}
+                  />
+                ))}
+              </div>
             </div>
           </div>
 
@@ -734,10 +766,10 @@ export default function Dashboard() {
                       ) : selectedKategori === "ibu-hamil" ? (
                         `Ibu dengan ${selectedRiskLabel}`
                       ) : (
-                        `Daftar dengan Risiko ${activeRiskLabelKelompok || "-"} - ${kelompokList.find((k) => k.key === selectedKategori)?.label || selectedKategori}`
+                        `Daftar dengan Risiko ${activeRiskLabelKelompok || "-"} ${kelompokList.find((k) => k.key === selectedKategori)?.label || selectedKategori}`
                       )}
                     </h2>
-                    <span style={{ fontSize: 11, background: "#fef2f2", color: "#ef4444", padding: "2px 8px", borderRadius: 20, fontWeight: 600 }}>
+                    <span style={{ fontSize: 11, background: "#fef2f2", color: "#ef4444", padding: "1px 10px", borderRadius: 20, fontWeight: 600, whiteSpace: "nowrap" }}>
                       {selectedDusun ? dusunIbuList.length : (selectedKategori === "ibu-hamil" ? filteredIbuList.length : daftarKelompok.length)} orang
                     </span>
                   </div>
@@ -914,7 +946,7 @@ export default function Dashboard() {
                         >
                           <div>
                             <div style={{ fontWeight: 600 }}>
-                              {p.nama_lengkap}
+                              {p.nama_anggota_keluarga}
                               {p.nik && (
                                 <span style={{ fontSize: 11, fontWeight: "normal", color: "#6c757d", marginLeft: 6 }}>
                                   ({p.nik})

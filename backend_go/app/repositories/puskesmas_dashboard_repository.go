@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"fmt"
+	"sort"
 	"time"
 
 	"gorm.io/gorm"
@@ -139,7 +140,8 @@ func (r *PuskesmasDashboardRepository) CountPemeriksaanByDesaFiltered(desaID int
 
 // GetMonthlyTrendData retrieves monthly aggregated data for the last 6 months
 func (r *PuskesmasDashboardRepository) GetMonthlyTrendData(desaIDs []int32, months int) ([]map[string]interface{}, error) {
-	since := time.Now().AddDate(0, -months, 0)
+	now := time.Now()
+	since := now.AddDate(0, -months, 0)
 
 	type monthlyRow struct {
 		YearMonth string `gorm:"column:ym"`
@@ -171,8 +173,13 @@ func (r *PuskesmasDashboardRepository) GetMonthlyTrendData(desaIDs []int32, mont
 		return nil, fmt.Errorf("gagal query trend rujukan bulanan: %w", err)
 	}
 
-	// Build month map
+	// Build month map — pre-fill all months in range with zeros so the chart has no gaps
 	monthMap := make(map[string]map[string]int64)
+	for i := months - 1; i >= 0; i-- {
+		ymKey := now.AddDate(0, -i, 0).Format("2006-01")
+		monthMap[ymKey] = map[string]int64{"kasus_baru": 0, "rujukan": 0}
+	}
+	// Overwrite with actual data
 	for _, row := range pendudukRows {
 		if monthMap[row.YearMonth] == nil {
 			monthMap[row.YearMonth] = make(map[string]int64)
@@ -186,13 +193,20 @@ func (r *PuskesmasDashboardRepository) GetMonthlyTrendData(desaIDs []int32, mont
 		monthMap[row.YearMonth]["rujukan"] = row.Count
 	}
 
-	// Convert to result
+	// Convert to result (sorted by ym key)
 	var results []map[string]interface{}
-	for ym, data := range monthMap {
+	// Collect and sort keys
+	var keys []string
+	for ym := range monthMap {
+		keys = append(keys, ym)
+	}
+	sort.Strings(keys)
+	for _, ym := range keys {
+		data := monthMap[ym]
 		results = append(results, map[string]interface{}{
-			"ym":             ym,
-			"kasus_baru":     data["kasus_baru"],
-			"rujukan":        data["rujukan"],
+			"ym":         ym,
+			"kasus_baru": data["kasus_baru"],
+			"rujukan":    data["rujukan"],
 		})
 	}
 

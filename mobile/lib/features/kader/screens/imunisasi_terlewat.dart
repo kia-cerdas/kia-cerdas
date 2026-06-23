@@ -164,6 +164,10 @@ return ListView(
         'Darurat',
         Colors.red,
       ),
+      _buildInfoCard(
+        'Segera jadwalkan kunjungan imunisasi ke rumah anak-anak berikut. Imunisasi sudah sangat terlambat dan memerlukan tindakan segera.',
+      ),
+      const SizedBox(height: 10),
       ...darurat.map(
         (item) => _buildItem(
           context,
@@ -178,6 +182,10 @@ return ListView(
         'Tinggi',
         Colors.orange,
       ),
+      _buildInfoCard(
+        'Jadwalkan kunjungan imunisasi untuk anak-anak berikut secepatnya agar imunisasi yang terlewat dapat segera dilakukan.',
+      ),
+      const SizedBox(height: 10),
       ...tinggi.map(
         (item) => _buildItem(
           context,
@@ -192,6 +200,10 @@ return ListView(
         'Sedang',
         Colors.amber,
       ),
+      _buildInfoCard(
+        'Jadwalkan kunjungan imunisasi untuk anak-anak berikut dalam waktu dekat agar imunisasi tidak semakin tertunda.',
+      ),
+      const SizedBox(height: 10),
       ...sedang.map(
         (item) => _buildItem(
           context,
@@ -332,7 +344,45 @@ onTap: () {
     );
   }
 
-  Widget _buildSectionTitle(
+  Widget _buildInfoCard(String message) {
+  return Container(
+    width: double.infinity,
+    padding: const EdgeInsets.symmetric(
+      horizontal: 12,
+      vertical: 10,
+    ),
+    decoration: BoxDecoration(
+      color: const Color(0xFFFFFBEB),
+      borderRadius: BorderRadius.circular(10),
+      border: Border.all(
+        color: const Color(0xFFFDE68A),
+      ),
+    ),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Icon(
+          Icons.info_outline_rounded,
+          size: 16,
+          color: Color(0xFFB45309),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            message,
+            style: const TextStyle(
+              fontSize: 12,
+              color: Color(0xFF92400E),
+              height: 1.4,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+Widget _buildSectionTitle(
   String title,
   Color color,
 ) {

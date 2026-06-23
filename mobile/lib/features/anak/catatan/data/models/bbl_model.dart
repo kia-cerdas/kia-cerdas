@@ -29,7 +29,7 @@ class BblCheckModel {
       final kader = json['verified_by_kader'] as Map<String, dynamic>;
       if (kader['penduduk'] != null) {
         final penduduk = kader['penduduk'] as Map<String, dynamic>;
-        namaKader = penduduk['nama_lengkap'] as String?;
+        namaKader = penduduk['nama_lengkap'] as String? ?? penduduk['nama_anggota_keluarga'] as String?;
       }
     }
 
@@ -88,7 +88,7 @@ class BblModel {
       final anak = json['anak'] as Map<String, dynamic>;
       if (anak['penduduk'] != null) {
         final pendudukAnak = anak['penduduk'] as Map<String, dynamic>;
-        namaAnakStr = pendudukAnak['nama_lengkap'] as String?;
+        namaAnakStr = pendudukAnak['nama_lengkap'] as String? ?? pendudukAnak['nama_anggota_keluarga'] as String?;
       }
       if (namaAnakStr == null || namaAnakStr.isEmpty) {
         namaAnakStr = anak['nama_lengkap'] as String? ?? anak['nama'] as String?;

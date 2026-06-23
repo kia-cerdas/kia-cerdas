@@ -10,7 +10,7 @@ export default function TandaMelahirkanFormPage() {
       listPath="/edukasi-digital/tanda-melahirkan"
       fields={[
         { key: "judul", label: "Judul", type: "text" },
-        { key: "gambar_url", label: "URL gambar (opsional)", type: "text" },
+        { key: "gambar_url", label: "Gambar", type: "image" },
         { key: "isi", label: "Isi konten", type: "textarea", rows: 4 },
         { key: "tanda", label: "Tanda-tanda Melahirkan", type: "textarea", rows: 4 },
         { key: "tindakan", label: "Tindakan yang perlu dilakukan", type: "textarea", rows: 4 },

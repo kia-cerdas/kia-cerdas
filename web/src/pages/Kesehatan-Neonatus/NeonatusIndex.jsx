@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+﻿import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import MainLayout from "../../components/Layout/MainLayout";
 import AlertNotification from "../../components/AlertNotification";
@@ -41,9 +41,16 @@ const NeonatusIndex = () => {
   const authUser = useMemo(() => {
     try {
       const storedUser = localStorage.getItem('user');
-      return storedUser ? JSON.parse(storedUser) : { id: 0, nama: 'Unknown', lokasi: 'Puskesmas' };
+      const parsed = storedUser ? JSON.parse(storedUser) : null;
+      return {
+        id: parsed?.id || parsed?.user_id || 0,
+        nama: parsed?.nama || parsed?.name || parsed?.username || parsed?.full_name || 'Petugas Kesehatan',
+        lokasi: parsed?.lokasi || parsed?.puskesmas || 'Puskesmas',
+        tenaga_kesehatan_id: parsed?.tenaga_kesehatan_id || parsed?.id || 0,
+        user_id: parsed?.user_id || parsed?.id || 0,
+      };
     } catch {
-      return { id: 0, nama: 'Guest', lokasi: 'Puskesmas' };
+      return { id: 0, nama: 'Petugas Kesehatan', lokasi: 'Puskesmas', tenaga_kesehatan_id: 0, user_id: 0 };
     }
   }, []);
 
@@ -427,83 +434,95 @@ const NeonatusIndex = () => {
           setViewMode('FORM');
         } : null}
       />
-      <div className="max-w-6xl mx-auto pb-20 px-4 font-sans">
+      <div className="max-w-6xl mx-auto pb-20 px-4 font-['Noto_Sans',_sans-serif]">
         {/* HEADER */}
-        <header className="mb-8 flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b pb-6">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 bg-blue-900 rounded-2xl flex items-center justify-center text-white shadow-xl rotate-3 hover:rotate-0 transition-transform">
-              <User size={26} />
-            </div>
-            <div>
-              <div className="flex items-center gap-3">
-                <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tight leading-none">Pemeriksaan Neonatus</h1>
-                {existingRecordId ? (
-                  <span className="flex items-center gap-1 px-3 py-1 bg-amber-50 text-amber-700 text-[10px] font-black rounded-lg border border-amber-200 uppercase tracking-wider">
-                    <Edit3 size={11} /> Mode Edit
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-1 px-3 py-1 bg-green-50 text-green-700 text-[10px] font-black rounded-lg border border-green-200 uppercase tracking-wider">
-                    <PlusCircle size={11} /> Mode Baru
-                  </span>
-                )}
-              </div>
-              <p className="text-[10px] text-slate-400 font-bold mt-2 uppercase tracking-widest">
-                Petugas: {authUser.nama}
-              </p>
-            </div>
+        <header className="mb-8 pt-2">
+          {/* Baris atas: Kembali */}
+          <div className="mb-4">
+            <button
+              onClick={() => navigate(`/data-anak/dashboard/${id}`)}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-[#185FA5] hover:bg-[#185FA5]/90 text-white rounded-xl font-semibold text-sm transition-all active:scale-95 shadow-sm"
+            >
+              <ArrowLeft size={16} /> Kembali
+            </button>
           </div>
 
-          <button
-            onClick={() => navigate(`/data-anak/dashboard/${id}`)}
-            className="flex items-center gap-2 px-6 py-2 border border-blue-600 text-blue-600 hover:bg-blue-50 rounded-full font-medium text-sm transition-all group w-fit"
-          >
-            <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Kembali
-          </button>
+          {/* Baris bawah: Ikon + Judul */}
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-6 border-b border-slate-100">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-[#185FA5] rounded-xl flex items-center justify-center text-white shadow-md flex-shrink-0">
+                <Stethoscope size={22} />
+              </div>
+              <div>
+                <div className="flex items-center gap-3 flex-wrap">
+                  <h1 className="text-xl font-bold text-slate-800">Pemeriksaan Neonatus</h1>
+                  {existingRecordId ? (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-700 text-xs font-semibold rounded-full border border-amber-200">
+                      <Edit3 size={11} /> Mode Edit — ubah data yang sudah tersimpan
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-[#185FA5] text-xs font-semibold rounded-full border border-blue-200">
+                      <PlusCircle size={11} /> Mode Baru — isi data pemeriksaan baru
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm text-slate-500 mt-0.5">
+                  Petugas: <span className="font-semibold text-slate-700">{authUser.nama}</span>
+                </p>
+              </div>
+            </div>
+          </div>
         </header>
 
         {loading ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">
-            <Loader2 className="w-10 h-10 text-blue-600 animate-spin mb-3" />
-            <p className="font-black text-slate-400 uppercase text-[10px] tracking-widest">Menyinkronkan Database...</p>
+            <Loader2 className="w-10 h-10 text-[#185FA5] animate-spin mb-3" />
+            <p className="text-sm font-medium text-slate-500">Memuat data pemeriksaan...</p>
           </div>
         ) : viewMode === 'LIST' ? (
-          <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
             <table className="w-full text-left">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-100">
-                  <th className="p-5 pl-8 text-[10px] font-black uppercase tracking-widest text-slate-400">Periode Pemeriksaan</th>
-                  <th className="p-5 text-[10px] font-black uppercase tracking-widest text-slate-400">Tanggal</th>
-                  <th className="p-5 text-[10px] font-black uppercase tracking-widest text-slate-400">Status</th>
-                  <th className="p-5 text-[10px] font-black uppercase tracking-widest text-slate-400 ">Aksi</th>
+                <tr className="bg-slate-100 border-b border-slate-200">
+                  <th className="p-5 pl-8 text-xs font-semibold text-slate-600">Periode Pemeriksaan</th>
+                  <th className="p-5 text-xs font-semibold text-slate-600">Tanggal</th>
+                  <th className="p-5 text-xs font-semibold text-slate-600">Status</th>
+                  <th className="p-5 text-xs font-semibold text-slate-600">Aksi</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-50">
+              <tbody className="divide-y divide-slate-100">
                 {Object.keys(tabToPeriode).map(key => {
                   const record = allRecords.find(r => r.periode_id === tabToPeriode[key]);
                   return (
                     <tr key={key} className="hover:bg-slate-50/50 transition-colors">
                       <td className="p-5 pl-8">
-                        <p className="text-xs font-bold text-slate-900">
+                        <p className="text-sm font-semibold text-slate-800">
                           {key === '0-6 JAM' ? '0 - 6 JAM' : key === 'KN1' ? 'KN 1' : key === 'KN2' ? 'KN 2' : 'KN 3'}
                         </p>
-                        <p className="text-[10px] text-slate-400 font-medium">
+                        <p className="text-xs text-slate-500 mt-0.5">
                           Rentang Usia: {key === '0-6 JAM' ? '0-6 jam' : key === 'KN1' ? '6-48 jam' : key === 'KN2' ? '3-7 hari' : '8-24 hari'} • Pelayanan Kesehatan Bayi Baru Lahir
                         </p>
                       </td>
-                      <td className="p-5 text-xs font-bold text-slate-600">
-                        {record?.tanggal ? new Date(record.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-'}
+                      <td className="p-5 text-sm text-slate-700">
+                        {record?.tanggal
+                          ? new Date(record.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+                          : <span className="text-slate-400">-</span>}
                       </td>
                       <td className="p-5">
                         {record ? (
-                          <span className="px-3 py-1 bg-green-50 text-green-700 text-[9px] font-black rounded-full uppercase tracking-wider">Lengkap</span>
+                          <span className="inline-flex items-center px-3 py-1 bg-green-50 text-green-700 text-xs font-semibold rounded-full border border-green-200">
+                            Lengkap
+                          </span>
                         ) : (
-                          <span className="px-3 py-1 bg-slate-100 text-slate-400 text-[9px] font-black rounded-full uppercase tracking-wider">Belum Diisi</span>
+                          <span className="inline-flex items-center px-3 py-1 bg-slate-100 text-slate-500 text-xs font-semibold rounded-full border border-slate-200">
+                            Belum Diisi
+                          </span>
                         )}
                       </td>
-                      <td className="p-5 text-left">
+                      <td className="p-5">
                         <button
                           onClick={() => handleEdit(key)}
-                          className="px-5 py-2.5 bg-blue-50 text-blue-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+                          className="inline-flex items-center px-4 py-2 bg-[#185FA5] hover:bg-[#185FA5]/90 text-white text-xs font-semibold rounded-xl transition-all active:scale-95 shadow-sm"
                         >
                           {record ? 'Edit Data' : 'Isi Form'}
                         </button>
@@ -517,58 +536,54 @@ const NeonatusIndex = () => {
         ) : (
           <div className="space-y-6">
             {/* Form Nav & Top Info */}
-            <div className="flex items-center justify-between bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
-              <div className="flex items-center gap-3">
-                <button onClick={() => setViewMode('LIST')} className="p-2.5 hover:bg-slate-50 rounded-xl text-slate-400 transition-colors">
-                  <ChevronLeft size={22} />
-                </button>
-                <div>
-                  <h3 className="text-sm font-black text-slate-900 uppercase tracking-tight">
-                    Input Data Kunjungan: {
-                      activeTab === '0-6 JAM' ? '0-6 JAM (0-6 jam)' :
-                        activeTab === 'KN1' ? 'KN 1 (6-48 jam)' :
-                          activeTab === 'KN2' ? 'KN 2 (3-7 hari)' :
-                            'KN 3 (8-24 hari)'
-                    }
-                  </h3>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Lengkapi data rekam medis bayi di bawah ini</p>
-                </div>
+            <div className="flex items-center justify-between bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+              <div>
+                <h3 className="text-sm font-semibold text-slate-800">
+                  Input Data Kunjungan: {
+                    activeTab === '0-6 JAM' ? '0-6 JAM (0-6 jam)' :
+                      activeTab === 'KN1' ? 'KN 1 (6-48 jam)' :
+                        activeTab === 'KN2' ? 'KN 2 (3-7 hari)' :
+                          'KN 3 (8-24 hari)'
+                  }
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">Lengkapi data rekam medis bayi di bawah ini</p>
               </div>
               <div>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-3 text-blue-600" size={15} />
-                  <input
-                    type="date" value={tanggal} onChange={(e) => setTanggal(e.target.value)}
-                    max={new Date().toISOString().split('T')[0]}
-                    className="pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-[11px] font-black outline-none focus:ring-2 focus:ring-blue-500/10"
-                  />
-                </div>
+                <label className="block text-xs font-semibold text-slate-500 mb-1">Tanggal Pemeriksaan</label>
+                <input
+                  type="date"
+                  value={tanggal}
+                  onChange={(e) => setTanggal(e.target.value)}
+                  max={new Date().toISOString().split('T')[0]}
+                  className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 outline-none focus:ring-2 focus:ring-[#185FA5]/20 focus:border-[#185FA5]"
+                />
               </div>
             </div>
 
-            {/* Custom Clinical Form Columns */}
+            {/* Form Columns */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
               {/* SECTION A: Kondisi & Antropometri */}
-              <div className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6">
-                <h3 className="text-[10px] font-black text-blue-600 uppercase tracking-widest flex items-center gap-2 border-b pb-3">
-                  <Scale size={16} /> Kondisi & Antropometri
+              <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-5">
+                <h3 className="text-sm font-semibold text-[#185FA5] flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <Scale size={16} /> Kondisi &amp; Antropometri
                 </h3>
 
                 {(activeTab === '0-6 JAM' || activeTab === 'KN1') ? (
-                  <div className="space-y-5">
+                  <div className="space-y-4">
                     {/* BB Input */}
                     <div className="w-full">
-                      <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5 px-1">Berat Badan (BB)</label>
-                      <div className="relative group">
+                      <label className="block text-xs font-semibold text-slate-600 mb-1.5">Berat Badan (BB)</label>
+                      <div className="relative">
                         <input
                           type="number"
-                          className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 pr-12 focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 focus:bg-white outline-none transition-all text-sm font-bold text-slate-700 shadow-sm"
-                          placeholder="0"
+                          step="0.1"
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 pr-16 focus:ring-2 focus:ring-[#185FA5]/20 focus:border-[#185FA5] focus:bg-white outline-none transition-all text-sm text-slate-700"
+                          placeholder="Cth: 3000.0"
                           value={formData.bb}
                           onChange={(e) => setFormData({ ...formData, bb: e.target.value })}
                         />
-                        <span className="absolute right-4 top-3 text-slate-400 font-black text-[10px] uppercase pointer-events-none group-focus-within:text-blue-500 transition-colors">
+                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-semibold pointer-events-none">
                           gram
                         </span>
                       </div>
@@ -576,16 +591,17 @@ const NeonatusIndex = () => {
 
                     {/* PB Input */}
                     <div className="w-full">
-                      <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5 px-1">Panjang Badan (PB)</label>
-                      <div className="relative group">
+                      <label className="block text-xs font-semibold text-slate-600 mb-1.5">Panjang Badan (PB)</label>
+                      <div className="relative">
                         <input
                           type="number"
-                          className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 pr-12 focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 focus:bg-white outline-none transition-all text-sm font-bold text-slate-700 shadow-sm"
-                          placeholder="0"
+                          step="0.1"
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 pr-12 focus:ring-2 focus:ring-[#185FA5]/20 focus:border-[#185FA5] focus:bg-white outline-none transition-all text-sm text-slate-700"
+                          placeholder="Cth: 48.0"
                           value={formData.pb}
                           onChange={(e) => setFormData({ ...formData, pb: e.target.value })}
                         />
-                        <span className="absolute right-4 top-3 text-slate-400 font-black text-[10px] uppercase pointer-events-none group-focus-within:text-blue-500 transition-colors">
+                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-semibold pointer-events-none">
                           cm
                         </span>
                       </div>
@@ -593,16 +609,17 @@ const NeonatusIndex = () => {
 
                     {/* LK Input */}
                     <div className="w-full">
-                      <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5 px-1">Lingkar Kepala (LK)</label>
-                      <div className="relative group">
+                      <label className="block text-xs font-semibold text-slate-600 mb-1.5">Lingkar Kepala (LK)</label>
+                      <div className="relative">
                         <input
                           type="number"
-                          className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 pr-12 focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 focus:bg-white outline-none transition-all text-sm font-bold text-slate-700 shadow-sm"
-                          placeholder="0"
+                          step="0.1"
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 pr-12 focus:ring-2 focus:ring-[#185FA5]/20 focus:border-[#185FA5] focus:bg-white outline-none transition-all text-sm text-slate-700"
+                          placeholder="Cth: 33.0"
                           value={formData.lk}
                           onChange={(e) => setFormData({ ...formData, lk: e.target.value })}
                         />
-                        <span className="absolute right-4 top-3 text-slate-400 font-black text-[10px] uppercase pointer-events-none group-focus-within:text-blue-500 transition-colors">
+                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-semibold pointer-events-none">
                           cm
                         </span>
                       </div>
@@ -617,9 +634,9 @@ const NeonatusIndex = () => {
               </div>
 
               {/* SECTION B: Pelayanan & Tindakan Medis */}
-              <div className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-6">
-                <h3 className="text-[10px] font-black text-green-600 uppercase tracking-widest flex items-center gap-2 border-b pb-3">
-                  <ClipboardCheck size={16} /> Pelayanan & Tindakan Medis
+              <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-5">
+                <h3 className="text-sm font-semibold text-green-600 flex items-center gap-2 border-b border-slate-100 pb-3">
+                  <ClipboardCheck size={16} /> Pelayanan &amp; Tindakan Medis
                 </h3>
 
                 {activeTab === '0-6 JAM' && (
@@ -628,7 +645,7 @@ const NeonatusIndex = () => {
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, imd: !formData.imd })}
-                      className={`flex items-center gap-3 p-3.5 border rounded-2xl transition-all w-full text-left text-xs uppercase tracking-wider group ${formData.imd ? "bg-green-50 border-green-500 text-green-700 font-bold" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
+                      className={`flex items-center gap-3 p-3.5 border rounded-2xl transition-all w-full text-left text-sm group ${formData.imd ? "bg-green-50 border-green-500 text-green-700 font-bold" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
                         }`}
                     >
                       <div className={`w-5 h-5 rounded-lg flex items-center justify-center border transition-colors ${formData.imd ? "bg-green-600 border-green-600 text-white" : "bg-white border-slate-300"}`}>
@@ -641,7 +658,7 @@ const NeonatusIndex = () => {
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, vitk: !formData.vitk })}
-                      className={`flex items-center gap-3 p-3.5 border rounded-2xl transition-all w-full text-left text-xs uppercase tracking-wider group ${formData.vitk ? "bg-green-50 border-green-500 text-green-700 font-bold" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
+                      className={`flex items-center gap-3 p-3.5 border rounded-2xl transition-all w-full text-left text-sm group ${formData.vitk ? "bg-green-50 border-green-500 text-green-700 font-bold" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
                         }`}
                     >
                       <div className={`w-5 h-5 rounded-lg flex items-center justify-center border transition-colors ${formData.vitk ? "bg-green-600 border-green-600 text-white" : "bg-white border-slate-300"}`}>
@@ -654,7 +671,7 @@ const NeonatusIndex = () => {
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, salep: !formData.salep })}
-                      className={`flex items-center gap-3 p-3.5 border rounded-2xl transition-all w-full text-left text-xs uppercase tracking-wider group ${formData.salep ? "bg-green-50 border-green-500 text-green-700 font-bold" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
+                      className={`flex items-center gap-3 p-3.5 border rounded-2xl transition-all w-full text-left text-sm group ${formData.salep ? "bg-green-50 border-green-500 text-green-700 font-bold" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
                         }`}
                     >
                       <div className={`w-5 h-5 rounded-lg flex items-center justify-center border transition-colors ${formData.salep ? "bg-green-600 border-green-600 text-white" : "bg-white border-slate-300"}`}>
@@ -667,7 +684,7 @@ const NeonatusIndex = () => {
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, hb: !formData.hb })}
-                      className={`flex items-center gap-3 p-3.5 border rounded-2xl transition-all w-full text-left text-xs uppercase tracking-wider group ${formData.hb ? "bg-green-50 border-green-500 text-green-700 font-bold" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
+                      className={`flex items-center gap-3 p-3.5 border rounded-2xl transition-all w-full text-left text-sm group ${formData.hb ? "bg-green-50 border-green-500 text-green-700 font-bold" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
                         }`}
                     >
                       <div className={`w-5 h-5 rounded-lg flex items-center justify-center border transition-colors ${formData.hb ? "bg-green-600 border-green-600 text-white" : "bg-white border-slate-300"}`}>
@@ -684,7 +701,7 @@ const NeonatusIndex = () => {
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, menyusu: !formData.menyusu })}
-                      className={`flex items-center gap-3 p-3.5 border rounded-2xl transition-all w-full text-left text-xs uppercase tracking-wider group ${formData.menyusu ? "bg-green-50 border-green-500 text-green-700 font-bold" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
+                      className={`flex items-center gap-3 p-3.5 border rounded-2xl transition-all w-full text-left text-sm group ${formData.menyusu ? "bg-green-50 border-green-500 text-green-700 font-bold" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
                         }`}
                     >
                       <div className={`w-5 h-5 rounded-lg flex items-center justify-center border transition-colors ${formData.menyusu ? "bg-green-600 border-green-600 text-white" : "bg-white border-slate-300"}`}>
@@ -697,7 +714,7 @@ const NeonatusIndex = () => {
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, tali_pusat: !formData.tali_pusat })}
-                      className={`flex items-center gap-3 p-3.5 border rounded-2xl transition-all w-full text-left text-xs uppercase tracking-wider group ${formData.tali_pusat ? "bg-green-50 border-green-500 text-green-700 font-bold" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
+                      className={`flex items-center gap-3 p-3.5 border rounded-2xl transition-all w-full text-left text-sm group ${formData.tali_pusat ? "bg-green-50 border-green-500 text-green-700 font-bold" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
                         }`}
                     >
                       <div className={`w-5 h-5 rounded-lg flex items-center justify-center border transition-colors ${formData.tali_pusat ? "bg-green-600 border-green-600 text-white" : "bg-white border-slate-300"}`}>
@@ -710,7 +727,7 @@ const NeonatusIndex = () => {
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, vitk: !formData.vitk })}
-                      className={`flex items-center gap-3 p-3.5 border rounded-2xl transition-all w-full text-left text-xs uppercase tracking-wider group ${formData.vitk ? "bg-green-50 border-green-500 text-green-700 font-bold" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
+                      className={`flex items-center gap-3 p-3.5 border rounded-2xl transition-all w-full text-left text-sm group ${formData.vitk ? "bg-green-50 border-green-500 text-green-700 font-bold" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
                         }`}
                     >
                       <div className={`w-5 h-5 rounded-lg flex items-center justify-center border transition-colors ${formData.vitk ? "bg-green-600 border-green-600 text-white" : "bg-white border-slate-300"}`}>
@@ -723,7 +740,7 @@ const NeonatusIndex = () => {
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, salep: !formData.salep })}
-                      className={`flex items-center gap-3 p-3.5 border rounded-2xl transition-all w-full text-left text-xs uppercase tracking-wider group ${formData.salep ? "bg-green-50 border-green-500 text-green-700 font-bold" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
+                      className={`flex items-center gap-3 p-3.5 border rounded-2xl transition-all w-full text-left text-sm group ${formData.salep ? "bg-green-50 border-green-500 text-green-700 font-bold" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
                         }`}
                     >
                       <div className={`w-5 h-5 rounded-lg flex items-center justify-center border transition-colors ${formData.salep ? "bg-green-600 border-green-600 text-white" : "bg-white border-slate-300"}`}>
@@ -736,7 +753,7 @@ const NeonatusIndex = () => {
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, hb: !formData.hb })}
-                      className={`flex items-center gap-3 p-3.5 border rounded-2xl transition-all w-full text-left text-xs uppercase tracking-wider group ${formData.hb ? "bg-green-50 border-green-500 text-green-700 font-bold" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
+                      className={`flex items-center gap-3 p-3.5 border rounded-2xl transition-all w-full text-left text-sm group ${formData.hb ? "bg-green-50 border-green-500 text-green-700 font-bold" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
                         }`}
                     >
                       <div className={`w-5 h-5 rounded-lg flex items-center justify-center border transition-colors ${formData.hb ? "bg-green-600 border-green-600 text-white" : "bg-white border-slate-300"}`}>
@@ -749,7 +766,7 @@ const NeonatusIndex = () => {
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, skrining_hipotiroid: !formData.skrining_hipotiroid })}
-                      className={`flex items-center gap-3 p-3.5 border rounded-2xl transition-all w-full text-left text-xs uppercase tracking-wider group ${formData.skrining_hipotiroid ? "bg-green-50 border-green-500 text-green-700 font-bold" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
+                      className={`flex items-center gap-3 p-3.5 border rounded-2xl transition-all w-full text-left text-sm group ${formData.skrining_hipotiroid ? "bg-green-50 border-green-500 text-green-700 font-bold" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
                         }`}
                     >
                       <div className={`w-5 h-5 rounded-lg flex items-center justify-center border transition-colors ${formData.skrining_hipotiroid ? "bg-green-600 border-green-600 text-white" : "bg-white border-slate-300"}`}>
@@ -759,7 +776,7 @@ const NeonatusIndex = () => {
                     </button>
 
                     <div className="pt-2 border-t border-slate-50">
-                      <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5 px-1">Skrining Jantung Bawaan Kritis (Hasil) (Opsional)</label>
+                      <label className="block text-xs font-semibold text-slate-600 mb-1.5">Skrining Jantung Bawaan Kritis (Hasil) (Opsional)</label>
                       <input
                         type="text"
                         placeholder="Contoh: Normal / Dirujuk"
@@ -777,7 +794,7 @@ const NeonatusIndex = () => {
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, menyusu: !formData.menyusu })}
-                      className={`flex items-center gap-3 p-3.5 border rounded-2xl transition-all w-full text-left text-xs uppercase tracking-wider group ${formData.menyusu ? "bg-green-50 border-green-500 text-green-700 font-bold" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
+                      className={`flex items-center gap-3 p-3.5 border rounded-2xl transition-all w-full text-left text-sm group ${formData.menyusu ? "bg-green-50 border-green-500 text-green-700 font-bold" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
                         }`}
                     >
                       <div className={`w-5 h-5 rounded-lg flex items-center justify-center border transition-colors ${formData.menyusu ? "bg-green-600 border-green-600 text-white" : "bg-white border-slate-300"}`}>
@@ -790,7 +807,7 @@ const NeonatusIndex = () => {
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, tali_pusat: !formData.tali_pusat })}
-                      className={`flex items-center gap-3 p-3.5 border rounded-2xl transition-all w-full text-left text-xs uppercase tracking-wider group ${formData.tali_pusat ? "bg-green-50 border-green-500 text-green-700 font-bold" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
+                      className={`flex items-center gap-3 p-3.5 border rounded-2xl transition-all w-full text-left text-sm group ${formData.tali_pusat ? "bg-green-50 border-green-500 text-green-700 font-bold" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
                         }`}
                     >
                       <div className={`w-5 h-5 rounded-lg flex items-center justify-center border transition-colors ${formData.tali_pusat ? "bg-green-600 border-green-600 text-white" : "bg-white border-slate-300"}`}>
@@ -803,7 +820,7 @@ const NeonatusIndex = () => {
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, tanda_bahaya: !formData.tanda_bahaya })}
-                      className={`flex items-center gap-3 p-3.5 border rounded-2xl transition-all w-full text-left text-xs uppercase tracking-wider group ${formData.tanda_bahaya ? "bg-green-50 border-green-500 text-green-700 font-bold" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
+                      className={`flex items-center gap-3 p-3.5 border rounded-2xl transition-all w-full text-left text-sm group ${formData.tanda_bahaya ? "bg-green-50 border-green-500 text-green-700 font-bold" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
                         }`}
                     >
                       <div className={`w-5 h-5 rounded-lg flex items-center justify-center border transition-colors ${formData.tanda_bahaya ? "bg-green-600 border-green-600 text-white" : "bg-white border-slate-300"}`}>
@@ -816,7 +833,7 @@ const NeonatusIndex = () => {
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, kuning: !formData.kuning })}
-                      className={`flex items-center gap-3 p-3.5 border rounded-2xl transition-all w-full text-left text-xs uppercase tracking-wider group ${formData.kuning ? "bg-green-50 border-green-500 text-green-700 font-bold" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
+                      className={`flex items-center gap-3 p-3.5 border rounded-2xl transition-all w-full text-left text-sm group ${formData.kuning ? "bg-green-50 border-green-500 text-green-700 font-bold" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
                         }`}
                     >
                       <div className={`w-5 h-5 rounded-lg flex items-center justify-center border transition-colors ${formData.kuning ? "bg-green-600 border-green-600 text-white" : "bg-white border-slate-300"}`}>
@@ -829,7 +846,7 @@ const NeonatusIndex = () => {
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, hb: !formData.hb })}
-                      className={`flex items-center gap-3 p-3.5 border rounded-2xl transition-all w-full text-left text-xs uppercase tracking-wider group ${formData.hb ? "bg-green-50 border-green-500 text-green-700 font-bold" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
+                      className={`flex items-center gap-3 p-3.5 border rounded-2xl transition-all w-full text-left text-sm group ${formData.hb ? "bg-green-50 border-green-500 text-green-700 font-bold" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
                         }`}
                     >
                       <div className={`w-5 h-5 rounded-lg flex items-center justify-center border transition-colors ${formData.hb ? "bg-green-600 border-green-600 text-white" : "bg-white border-slate-300"}`}>
@@ -842,7 +859,7 @@ const NeonatusIndex = () => {
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, skrining_hipotiroid: !formData.skrining_hipotiroid })}
-                      className={`flex items-center gap-3 p-3.5 border rounded-2xl transition-all w-full text-left text-xs uppercase tracking-wider group ${formData.skrining_hipotiroid ? "bg-green-50 border-green-500 text-green-700 font-bold" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
+                      className={`flex items-center gap-3 p-3.5 border rounded-2xl transition-all w-full text-left text-sm group ${formData.skrining_hipotiroid ? "bg-green-50 border-green-500 text-green-700 font-bold" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
                         }`}
                     >
                       <div className={`w-5 h-5 rounded-lg flex items-center justify-center border transition-colors ${formData.skrining_hipotiroid ? "bg-green-600 border-green-600 text-white" : "bg-white border-slate-300"}`}>
@@ -859,7 +876,7 @@ const NeonatusIndex = () => {
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, menyusu: !formData.menyusu })}
-                      className={`flex items-center gap-3 p-3.5 border rounded-2xl transition-all w-full text-left text-xs uppercase tracking-wider group ${formData.menyusu ? "bg-green-50 border-green-500 text-green-700 font-bold" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
+                      className={`flex items-center gap-3 p-3.5 border rounded-2xl transition-all w-full text-left text-sm group ${formData.menyusu ? "bg-green-50 border-green-500 text-green-700 font-bold" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
                         }`}
                     >
                       <div className={`w-5 h-5 rounded-lg flex items-center justify-center border transition-colors ${formData.menyusu ? "bg-green-600 border-green-600 text-white" : "bg-white border-slate-300"}`}>
@@ -872,7 +889,7 @@ const NeonatusIndex = () => {
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, tali_pusat: !formData.tali_pusat })}
-                      className={`flex items-center gap-3 p-3.5 border rounded-2xl transition-all w-full text-left text-xs uppercase tracking-wider group ${formData.tali_pusat ? "bg-green-50 border-green-500 text-green-700 font-bold" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
+                      className={`flex items-center gap-3 p-3.5 border rounded-2xl transition-all w-full text-left text-sm group ${formData.tali_pusat ? "bg-green-50 border-green-500 text-green-700 font-bold" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
                         }`}
                     >
                       <div className={`w-5 h-5 rounded-lg flex items-center justify-center border transition-colors ${formData.tali_pusat ? "bg-green-600 border-green-600 text-white" : "bg-white border-slate-300"}`}>
@@ -885,7 +902,7 @@ const NeonatusIndex = () => {
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, tanda_bahaya: !formData.tanda_bahaya })}
-                      className={`flex items-center gap-3 p-3.5 border rounded-2xl transition-all w-full text-left text-xs uppercase tracking-wider group ${formData.tanda_bahaya ? "bg-green-50 border-green-500 text-green-700 font-bold" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
+                      className={`flex items-center gap-3 p-3.5 border rounded-2xl transition-all w-full text-left text-sm group ${formData.tanda_bahaya ? "bg-green-50 border-green-500 text-green-700 font-bold" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
                         }`}
                     >
                       <div className={`w-5 h-5 rounded-lg flex items-center justify-center border transition-colors ${formData.tanda_bahaya ? "bg-green-600 border-green-600 text-white" : "bg-white border-slate-300"}`}>
@@ -898,7 +915,7 @@ const NeonatusIndex = () => {
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, kuning: !formData.kuning })}
-                      className={`flex items-center gap-3 p-3.5 border rounded-2xl transition-all w-full text-left text-xs uppercase tracking-wider group ${formData.kuning ? "bg-green-50 border-green-500 text-green-700 font-bold" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
+                      className={`flex items-center gap-3 p-3.5 border rounded-2xl transition-all w-full text-left text-sm group ${formData.kuning ? "bg-green-50 border-green-500 text-green-700 font-bold" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
                         }`}
                     >
                       <div className={`w-5 h-5 rounded-lg flex items-center justify-center border transition-colors ${formData.kuning ? "bg-green-600 border-green-600 text-white" : "bg-white border-slate-300"}`}>
@@ -911,7 +928,7 @@ const NeonatusIndex = () => {
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, skrining_hipotiroid: !formData.skrining_hipotiroid })}
-                      className={`flex items-center gap-3 p-3.5 border rounded-2xl transition-all w-full text-left text-xs uppercase tracking-wider group ${formData.skrining_hipotiroid ? "bg-green-50 border-green-500 text-green-700 font-bold" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
+                      className={`flex items-center gap-3 p-3.5 border rounded-2xl transition-all w-full text-left text-sm group ${formData.skrining_hipotiroid ? "bg-green-50 border-green-500 text-green-700 font-bold" : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
                         }`}
                     >
                       <div className={`w-5 h-5 rounded-lg flex items-center justify-center border transition-colors ${formData.skrining_hipotiroid ? "bg-green-600 border-green-600 text-white" : "bg-white border-slate-300"}`}>
@@ -928,31 +945,36 @@ const NeonatusIndex = () => {
 
                 {/* Batch / Tgl Imunisasi Card */}
                 {activeTab !== 'KN3' && (
-                  <div className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-4">
-                    <h3 className="text-[10px] font-black text-slate-600 uppercase tracking-widest flex items-center gap-2 border-b pb-3">
+                  <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+                    <h3 className="text-sm font-semibold text-slate-700 flex items-center gap-2 border-b border-slate-100 pb-3">
                       <Clock size={16} /> Log Tindakan / Imunisasi
                     </h3>
-                    <div className="space-y-3">
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 px-1">Jam</label>
-                          <input
-                            type="time"
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500"
-                            value={formData.jam_imunisasi}
-                            onChange={(e) => setFormData({ ...formData, jam_imunisasi: e.target.value })}
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 px-1">No. Batch (Opsional)</label>
-                          <input
-                            type="text"
-                            placeholder="Batch #"
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500"
-                            value={formData.batch_imunisasi}
-                            onChange={(e) => setFormData({ ...formData, batch_imunisasi: e.target.value })}
-                          />
-                        </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-600 mb-1.5">Jam (HH:MM)</label>
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          maxLength={5}
+                          placeholder="Cth: 08:30"
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-[#185FA5]/20 focus:border-[#185FA5]"
+                          value={formData.jam_imunisasi}
+                          onChange={(e) => {
+                            let val = e.target.value.replace(/[^0-9:]/g, '');
+                            if (val.length === 2 && !val.includes(':')) val = val + ':';
+                            setFormData({ ...formData, jam_imunisasi: val });
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-600 mb-1.5">No. Batch (Opsional)</label>
+                        <input
+                          type="text"
+                          placeholder="Cth: BC-2026-001"
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-[#185FA5]/20 focus:border-[#185FA5]"
+                          value={formData.batch_imunisasi}
+                          onChange={(e) => setFormData({ ...formData, batch_imunisasi: e.target.value })}
+                        />
                       </div>
                     </div>
                   </div>
@@ -960,8 +982,8 @@ const NeonatusIndex = () => {
 
                 {/* Kramer Visual Scale for KN3 only */}
                 {activeTab === 'KN3' && (
-                  <div className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-4">
-                    <h3 className="text-[10px] font-black text-amber-500 uppercase tracking-widest flex items-center gap-2 border-b pb-3">
+                  <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+                    <h3 className="text-sm font-semibold text-amber-600 flex items-center gap-2 border-b border-slate-100 pb-3">
                       <Stethoscope size={16} /> Kramer Jaundice Scale (Kuning)
                     </h3>
 
@@ -990,8 +1012,8 @@ const NeonatusIndex = () => {
                 )}
 
                 {/* Tripel Eliminasi Card */}
-                <div className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-4">
-                  <h3 className="text-[10px] font-black text-red-600 uppercase tracking-widest flex items-center gap-2 border-b pb-3">
+                <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+                  <h3 className="text-sm font-semibold text-red-600 flex items-center gap-2 border-b border-slate-100 pb-3">
                     <ShieldAlert size={16} /> Tripel Eliminasi
                   </h3>
 
@@ -1002,7 +1024,7 @@ const NeonatusIndex = () => {
                       { key: 'hepb', label: 'Hepatitis B (Hep B)' }
                     ].map(item => (
                       <div key={item.key} className="flex items-center justify-between gap-4 p-2 bg-slate-50 rounded-xl border border-slate-100">
-                        <span className="text-[10px] font-black text-slate-600 uppercase pl-2">{item.label}</span>
+                        <span className="text-xs font-semibold text-slate-700">{item.label}</span>
                         <div className="flex gap-1 bg-slate-200 p-0.5 rounded-lg">
                           {['Non-Reaktif', 'Reaktif'].map(opt => {
                             const isSel = formData[item.key] === opt;
@@ -1011,7 +1033,7 @@ const NeonatusIndex = () => {
                                 key={opt}
                                 type="button"
                                 onClick={() => setFormData({ ...formData, [item.key]: opt })}
-                                className={`px-3 py-1 rounded-md text-[9px] font-bold uppercase transition-all ${isSel
+                                className={`px-3 py-1 rounded-md text-xs font-semibold transition-all ${isSel
                                   ? opt === 'Reaktif' ? 'bg-red-600 text-white shadow-sm' : 'bg-blue-600 text-white shadow-sm'
                                   : 'text-slate-400 hover:text-slate-600'
                                   }`}
@@ -1033,20 +1055,21 @@ const NeonatusIndex = () => {
             <div className="flex items-center justify-end gap-4 pt-6 border-t border-slate-100">
               <button
                 onClick={() => setViewMode('LIST')}
-                className="text-xs font-bold text-slate-400 hover:text-slate-600 transition-colors"
+                className="px-4 py-2 text-sm font-semibold text-slate-500 hover:text-slate-700 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors"
               >
                 Batal
               </button>
               <button
-                onClick={handleFinalSubmit} disabled={submitting}
-                className="px-12 py-4 bg-blue-900 hover:bg-blue-950 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 shadow-xl shadow-blue-100 flex items-center gap-2"
+                onClick={handleFinalSubmit}
+                disabled={submitting}
+                className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#185FA5] hover:bg-[#185FA5]/90 text-white text-sm font-semibold rounded-xl transition-all active:scale-95 disabled:opacity-50 shadow-sm"
               >
                 {submitting ? (
                   <Loader2 className="animate-spin" size={16} />
                 ) : (
                   <Save size={16} />
                 )}
-                <span>{existingRecordId ? 'Simpan Perubahan' : 'Finalisasi & Simpan'}</span>
+                <span>{existingRecordId ? 'Simpan Perubahan' : 'Simpan Data'}</span>
               </button>
             </div>
           </div>

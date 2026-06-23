@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"errors"
 	"monitoring-service/app/models"
 	"time"
 
@@ -41,8 +42,17 @@ func (r *BidanRepository) FindByID(id int32) (*models.Bidan, error) {
 
 func (r *BidanRepository) FindByPendudukID(pendudukID int32) (*models.Bidan, error) {
 	var data models.Bidan
-	err := r.db.Where("penduduk_id = ? AND deleted_at IS NULL", pendudukID).First(&data).Error
-	return &data, err
+	err := r.db.Where("penduduk_id = ? AND deleted_at IS NULL", pendudukID).
+	  Preload("Penduduk").   
+        Preload("Posyandu").  
+	First(&data).Error
+    if err != nil {
+        if errors.Is(err, gorm.ErrRecordNotFound) {
+            return nil, nil // 
+        }
+        return nil, err
+    }
+    return &data, nil
 }
 
 func (r *BidanRepository) FindAnyByPendudukID(pendudukID int32) (*models.Bidan, error) {
@@ -69,7 +79,7 @@ func (r *BidanRepository) List(desa string) ([]BidanListItem, error) {
 	var rows []BidanListItem
 
 	q := r.db.Table("bidan b").
-		Select("b.id, b.penduduk_id, p.nama_lengkap, p.nik, p.kecamatan, p.desa, b.no_str, b.no_sipb, b.status, b.created_at, b.updated_at").
+		Select("b.id, b.penduduk_id, p.nama_anggota_keluarga as nama_lengkap, p.nik, p.kecamatan, p.desa, b.no_str, b.no_sipb, b.status, b.created_at, b.updated_at").
 		Joins("JOIN penduduk p ON p.id = b.penduduk_id").
 		Where("b.deleted_at IS NULL AND p.deleted_at IS NULL").
 		Order("b.id DESC")

@@ -10,9 +10,12 @@ import RencanaPersalinanForm from './pages/Ibu/RencanaPersalinanForm';
 import RencanaPersalinanDetail from './pages/Ibu/RencanaPersalinanDetail';
 import RencanaPersalinanRedirect from './pages/Ibu/RencanaPersalinanRedirect';
 import AdminRoute from "./routes/AdminRoute";
-import AdminAkunKeluargaCreate from "./pages/Admin/AkunKeluargaCreate";
-import AkunKeluargaManagement from "./pages/Admin/AkunKeluargaManagement";
 import { getPostLoginRoute, isAuthenticated } from "./services/auth";
+
+// ─── Public Pages (tanpa login) ───────────────────────────────────────────────
+import LandingPage from "./pages/public/LandingPage";
+import PublicEdukasiList from "./pages/public/PublicEdukasiList";
+import PublicEdukasiDetail from "./pages/public/PublicEdukasiDetail";
 
 // Data Ibu
 import IbuList from "./pages/Ibu/IbuList";
@@ -46,6 +49,7 @@ import DetailAnak from "./pages/Anak/detail";
 import Monitoring from "./pages/Monitoring";
 import Laporan from "./pages/Laporan";
 import LaporanIbuPreview from "./pages/previewlaporanibu";
+import LaporanBalitaPreview from "./pages/previewlaporanbalita";
 import LaporanAnakPreview from "./pages/previewlaporananak";
 import LaporanRemajaPreview from "./pages/previewlaporanremaja";
 import LaporanDewasaPreview from "./pages/previewlaporandewasa";
@@ -138,10 +142,12 @@ import PertumbuhanIndex from "./pages/Pertumbuhan/index";
 import SuperAdminDashboard from "./pages/SuperAdmin/Dashboard";
 // import AuditTrail from "./pages/SuperAdmin/AuditTrail";
 import KelolaDesa from "./pages/SuperAdmin/KelolaDesa";
-import KelolaUser from "./pages/SuperAdmin/Kelola Bidan&Kader&Admin desa";
-import KelolaUserPerDesa from "./pages/SuperAdmin/Kelola Akun User Per Desa";
+import KelolaWilayah from "./pages/SuperAdmin/KelolaWilayah";
+import KelolaNakes from "./pages/SuperAdmin/Kelola Nakes";
+import KelolaUser from "./pages/SuperAdmin/Kelola User";
 import KelolaPuskesmas from "./pages/SuperAdmin/KelolaPuskesmas";
 import KelolaPosyandu from "./pages/SuperAdmin/KelolaPosyandu";
+import KelolaPenduduk from "./pages/SuperAdmin/KelolaPenduduk";
 import RequestPerubahanImunisasiPage from "./pages/RequestPerubahanImunisasi";
 
 // Detail penduduk
@@ -161,7 +167,12 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* PUBLIC */}
+        {/* ── PUBLIC (tanpa login) ── */}
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/edukasi-publik/:category" element={<PublicEdukasiList />} />
+        <Route path="/edukasi-publik/:category/:id" element={<PublicEdukasiDetail />} />
+
+        {/* Login */}
         <Route path="/login" element={<Login />} />
 
         {/* PROTECTED */}
@@ -236,6 +247,7 @@ function App() {
           <Route path="/monitoring" element={<Monitoring />} />
           <Route path="/laporan" element={<Laporan />} />
           <Route path="/laporan/ibu/preview" element={<LaporanIbuPreview />} />
+          <Route path="/laporan/balita/preview" element={<LaporanBalitaPreview />} />
           <Route path="/laporan/anak/preview" element={<LaporanAnakPreview />} />
           <Route path="/laporan/remaja/preview" element={<LaporanRemajaPreview />} />
           <Route path="/laporan/dewasa/preview" element={<LaporanDewasaPreview />} />
@@ -249,15 +261,14 @@ function App() {
 
         <Route path="/superadmin/dashboard" element={<ProtectedRoute allowedRoles={["superadmin"]}><SuperAdminDashboard /></ProtectedRoute>} />
         {/* <Route path="/superadmin/audit-trail" element={<ProtectedRoute allowedRoles={["superadmin"]}><AuditTrail /></ProtectedRoute>} /> */}
+        <Route path="/superadmin/kelola-nakes" element={<ProtectedRoute allowedRoles={["superadmin"]}><KelolaNakes /></ProtectedRoute>} />
         <Route path="/superadmin/kelola-user" element={<ProtectedRoute allowedRoles={["superadmin"]}><KelolaUser /></ProtectedRoute>} />
-        <Route path="/superadmin/kelola-user-per-desa" element={<ProtectedRoute allowedRoles={["superadmin"]}><KelolaUserPerDesa /></ProtectedRoute>} />
+        <Route path="/superadmin/kelola-wilayah" element={<ProtectedRoute allowedRoles={["superadmin"]}><KelolaWilayah /></ProtectedRoute>} />
         <Route path="/superadmin/kelola-desa" element={<ProtectedRoute allowedRoles={["superadmin"]}><KelolaDesa /></ProtectedRoute>} />
         <Route path="/superadmin/kelola-puskesmas" element={<ProtectedRoute allowedRoles={["superadmin"]}><KelolaPuskesmas /></ProtectedRoute>} />
         <Route path="/superadmin/kelola-posyandu" element={<ProtectedRoute allowedRoles={["superadmin"]}><KelolaPosyandu /></ProtectedRoute>} />
-        <Route path="/superadmin/akun-keluarga" element={<ProtectedRoute allowedRoles={["superadmin"]}><AdminAkunKeluargaCreate /></ProtectedRoute>} />
-        <Route path="/superadmin/manajemen-keluarga" element={<ProtectedRoute allowedRoles={["superadmin"]}><AkunKeluargaManagement /></ProtectedRoute>} />
-        <Route path="/superadmin/users" element={<Navigate to="/superadmin/kelola-user" replace />} />
-        <Route path="/superadmin/user-desa" element={<Navigate to="/superadmin/kelola-user-per-desa" replace />} />
+        <Route path="/superadmin/kelola-penduduk" element={<ProtectedRoute allowedRoles={["superadmin"]}><KelolaPenduduk /></ProtectedRoute>} />
+        <Route path="/superadmin/users" element={<Navigate to="/superadmin/kelola-nakes" replace />} />
         <Route path="/superadmin/desa" element={<Navigate to="/superadmin/kelola-desa" replace />} />
 
         {/* ── RUTE ANAK (tanpa auth wrapper) ── */}
@@ -345,38 +356,37 @@ function App() {
         <Route path="/edukasi-digital/mpasi-resep/form/:id" element={<MpasiResepFormPage />} />
 
         {/* ── PUSKESMAS (Bidan Puskesmas & Dokter) ── */}
-        <Route 
-          path="/dashboard/puskesmas" 
+        <Route
+          path="/dashboard/puskesmas"
           element={
             <ProtectedRoute allowedRoles={["bidan_puskesmas", "dokter"]}>
               <DashboardPuskesmas />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/puskesmas/kelola-vaksin" 
+        <Route
+          path="/puskesmas/kelola-vaksin"
           element={
             <ProtectedRoute allowedRoles={["bidan_puskesmas", "dokter"]}>
               <RoleAccessGuard allowedRoles={["bidan_puskesmas"]} featureName="Kelola Vaksin">
                 <KelolaVaksin />
               </RoleAccessGuard>
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/puskesmas/dashboard-dokter" 
+        <Route
+          path="/puskesmas/dashboard-dokter"
           element={
             <ProtectedRoute allowedRoles={["bidan_puskesmas", "dokter"]}>
               <RoleAccessGuard allowedRoles={["dokter"]} featureName="Dashboard Dokter">
-                <Dashboard/>
+                <Dashboard />
               </RoleAccessGuard>
             </ProtectedRoute>
-          } 
+          }
         />
 
         {/* ── DEFAULT ── */}
         <Route path="/dashboard" element={<RootRoute />} />
-        <Route path="/" element={<RootRoute />} />
         <Route path="*" element={<RootRoute />} />
         <Route path="/data-penduduk/:id" element={<DetailPenduduk />} />
         <Route path="/pencatatan-kesehatan" element={<PencatatanKesehatan />} />

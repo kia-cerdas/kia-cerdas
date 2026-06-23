@@ -11,7 +11,7 @@ type AbsensiKelasIbuHamilUsecase interface {
 	GetMine(userID int32) ([]models.AbsensiKelasIbuHamil, error)
 	SaveMine(userID int32, req models.AbsensiKelasIbuHamil) (*models.AbsensiKelasIbuHamil, error)
 	// Kaader
-	GetAll() ([]models.AbsensiKelasIbuHamil, error) 
+	GetAll(posyanduID *int32) ([]models.AbsensiKelasIbuHamil, error) 
 	Verify(id int32, namaKader string, tanggalParaf *time.Time) error
 }
 
@@ -119,8 +119,8 @@ func (u *absensiKelasIbuHamilUsecase) SaveMine(
 
 // BAGIAN KADER
 
-func (u *absensiKelasIbuHamilUsecase) GetAll() ([]models.AbsensiKelasIbuHamil, error) {
-	return u.repo.FindAllWithIbu()
+func (u *absensiKelasIbuHamilUsecase) GetAll(posyanduID *int32) ([]models.AbsensiKelasIbuHamil, error) {
+	return u.repo.FindAllWithIbu(posyanduID)
 }
  
 func (u *absensiKelasIbuHamilUsecase) Verify(id int32, namaKader string, tanggalParaf *time.Time) error {

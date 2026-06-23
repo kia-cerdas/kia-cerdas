@@ -2,8 +2,9 @@ import React, { useState, useEffect } from "react";
 import MainLayout from "../../components/Layout/MainLayout";
 import { Link, useNavigate } from "react-router-dom";
 import { getAnak, deleteAnak } from "../../services/Anak";
+import Swal from "sweetalert2";
 import {
-  Plus, Search, Pencil, Trash2, ChevronLeft, ChevronRight,
+  Plus, Search, Pencil, ChevronLeft, ChevronRight,
   Baby, AlertTriangle, CheckCircle, Minus, RefreshCw, Brain
 } from "lucide-react";
 
@@ -58,12 +59,29 @@ export default function AnakListNakes() {
   }, [navigate]);
 
   const handleDelete = async (id, name) => {
-    if (!window.confirm(`Hapus data anak "${name}"?\n\nTindakan ini tidak dapat dibatalkan.`)) return;
+    const result = await Swal.fire({
+      title: "Hapus Data Anak?",
+      text: `Data "${name}" akan dihapus permanen dan tidak dapat dikembalikan.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#EF4444",
+      cancelButtonColor: "#6B7280",
+      confirmButtonText: "Ya, Hapus",
+      cancelButtonText: "Batal",
+    });
+    if (!result.isConfirmed) return;
     try {
       await deleteAnak(id);
       setChildren((prev) => prev.filter((item) => item.id !== id));
+      Swal.fire({
+        icon: "success",
+        title: "Berhasil",
+        text: `Data "${name}" berhasil dihapus.`,
+        timer: 2000,
+        showConfirmButton: false,
+      });
     } catch {
-      alert("Gagal menghapus data. Silakan coba lagi.");
+      Swal.fire({ icon: "error", title: "Gagal", text: "Gagal menghapus data. Silakan coba lagi." });
     }
   };
 
@@ -124,7 +142,7 @@ export default function AnakListNakes() {
               iconBgInactive="bg-blue-50"
               iconColorActive="text-white"
               iconColorInactive="text-blue-600"
-              labelColorActive="text-indigo-100"
+              labelColorActive="text-blue-100"
               onClick={() => handleQuickFilterChange("all")}
             />
             {/* Normal */}
@@ -182,7 +200,7 @@ export default function AnakListNakes() {
               <input
                 type="text"
                 placeholder="Cari nama balita atau nama ibu..."
-                className="pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl w-full focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-sm"
+                className="pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl w-full focus:ring-2 focus:ring-[#185FA5] outline-none transition-all text-sm"
                 onChange={handleSearchChange}
               />
             </div>
@@ -192,23 +210,23 @@ export default function AnakListNakes() {
         <div className="bg-white rounded-b-2xl shadow-sm border border-gray-100 overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-gray-50/50 border-y border-gray-100 text-gray-500 uppercase text-[10px] tracking-widest font-black">
-                <th className="px-6 py-4">Nama Anak</th>
-                <th className="px-6 py-4">Jenis Kelamin</th>
-                <th className="px-6 py-4">Status Stunting</th>
-                <th className="px-6 py-4">Tanggal Lahir</th>
-                <th className="px-6 py-4">Usia</th>
-                <th className="px-6 py-4">Nama Ibu</th>
-                <th className="px-6 py-4 text-center">Aksi</th>
+              <tr className="bg-gray-50 border-y border-gray-100">
+                <th className="px-6 py-3.5 text-xs font-semibold text-gray-500">Nama Anak</th>
+                <th className="px-6 py-3.5 text-xs font-semibold text-gray-500">Jenis Kelamin</th>
+                <th className="px-6 py-3.5 text-xs font-semibold text-gray-500">Status Stunting</th>
+                <th className="px-6 py-3.5 text-xs font-semibold text-gray-500">Tanggal Lahir</th>
+                <th className="px-6 py-3.5 text-xs font-semibold text-gray-500">Usia</th>
+                <th className="px-6 py-3.5 text-xs font-semibold text-gray-500">Nama Ibu</th>
+                <th className="px-6 py-3.5 text-xs font-semibold text-gray-500 text-center">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-gray-100">
               {loading ? (
                 <tr>
                   <td colSpan="7" className="py-16">
                     <div className="flex flex-col items-center justify-center gap-3">
                       <RefreshCw size={36} className="animate-spin text-blue-600" />
-                      <p className="text-[14px] text-slate-500 font-medium">Memuat data anak...</p>
+                      <p className="text-sm text-slate-500 font-medium">Memuat data anak...</p>
                     </div>
                   </td>
                 </tr>
@@ -224,27 +242,35 @@ export default function AnakListNakes() {
               ) : currentItems.length === 0 ? (
                 <tr>
                   <td colSpan="7" className="text-center py-16">
-                    <p className="text-gray-500 font-medium">Tidak ada data yang sesuai dengan pencarian atau filter aktif.</p>
+                    <p className="text-gray-500 text-sm">Tidak ada data yang sesuai dengan pencarian atau filter aktif.</p>
                   </td>
                 </tr>
               ) : (
                 currentItems.map((child) => (
-                  <tr key={child.id} className="hover:bg-indigo-50/20 transition-colors group">
-                    <td className="px-6 py-4 font-bold text-gray-800 text-sm">{child.nama}</td>
-                    <td className="px-6 py-4 text-sm text-gray-700">{child.jenis_kelamin || "-"}</td>
+                  <tr key={child.id} className="hover:bg-blue-50/20 transition-colors group">
+                    <td className="px-6 py-4 text-sm font-semibold text-gray-800">{child.nama}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{child.jenis_kelamin || "-"}</td>
                     <td className="px-6 py-4">
                       <StatusBadge status={child.status_prediksi} />
                     </td>
-                    <td className="px-6 py-4 text-xs">{formatDate(child.tanggal_lahir)}</td>
-                    <td className="px-6 py-4 text-xs font-bold">{child.usia_teks || "-"}</td>
-                    <td className="px-6 py-4 text-sm font-semibold">{child.kehamilan?.ibu?.nama_ibu || "-"}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{formatDate(child.tanggal_lahir)}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{child.usia_teks || "-"}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{child.kehamilan?.ibu?.nama_ibu || "-"}</td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-center gap-1.5">
-                        <Link to={`/data-anak/dashboard/${child.id}`} className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm active:scale-95">
+                        <Link
+                          to={`/data-anak/dashboard/${child.id}`}
+                          className="inline-flex items-center px-3 py-1.5 bg-[#185FA5] hover:bg-[#185FA5]/90 text-white text-xs font-semibold rounded-xl transition-all active:scale-95 shadow-sm"
+                        >
                           Detail
                         </Link>
-                        <Link to={`/data-anak/edit/${child.id}`} className="p-1.5 text-gray-400 hover:text-amber-600"><Pencil size={14} /></Link>
-                        <button onClick={() => handleDelete(child.id, child.nama)} className="p-1.5 text-gray-400 hover:text-red-600"><Trash2 size={14} /></button>
+                        <Link
+                          to={`/data-anak/edit/${child.id}`}
+                          className="p-1.5 rounded-lg text-gray-400 hover:text-amber-600 hover:bg-amber-50 transition-colors"
+                          title="Edit"
+                        >
+                          <Pencil size={14} />
+                        </Link>
                       </div>
                     </td>
                   </tr>
@@ -274,7 +300,7 @@ export default function AnakListNakes() {
                     key={i}
                     onClick={() => setCurrentPage(i + 1)}
                     className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${currentPage === i + 1
-                      ? "bg-indigo-600 text-white shadow-md shadow-indigo-100"
+                      ? "bg-[#185FA5] text-white shadow-md shadow-blue-100"
                       : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
                       }`}
                   >

@@ -9,17 +9,19 @@ import (
 )
 
 type UserListItem struct {
-	ID          int32     `json:"id"`
-	Name        string    `json:"name"`
-	Email       string    `json:"email"`
-	PhoneNumber string    `json:"phone_number"`
-	DesaID      *int32    `json:"desa_id,omitempty"`
-	DesaName    string    `json:"desa_name,omitempty"`
-	Role        string    `json:"role"`
-	IsActive    bool      `json:"is_active"`
-	PendudukID  *int64    `json:"penduduk_id,omitempty"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	ID          int32     `gorm:"column:id" json:"id"`
+	Name        string    `gorm:"column:name" json:"name"`
+	Email       string    `gorm:"column:email" json:"email"`
+	PhoneNumber string    `gorm:"column:phone_number" json:"phone_number"`
+	DesaID      *int32    `gorm:"column:desa_id" json:"desa_id,omitempty"`
+	DesaName    string    `gorm:"column:desa_name" json:"desa_name,omitempty"`
+	Role        string    `gorm:"column:role" json:"role"`
+	IsActive    bool      `gorm:"column:is_active" json:"is_active"`
+	PendudukID  *int64    `gorm:"column:penduduk_id" json:"penduduk_id,omitempty"`
+	NoSTR       string    `gorm:"column:no_str" json:"no_str,omitempty"`
+	NoSIPB      string    `gorm:"column:no_sipb" json:"no_sipb,omitempty"`
+	CreatedAt   time.Time `gorm:"column:created_at" json:"created_at"`
+	UpdatedAt   time.Time `gorm:"column:updated_at" json:"updated_at"`
 }
 
 type UserRepository struct {
@@ -86,7 +88,8 @@ func (r *UserRepository) FindByKartuKeluargaID(kartuKeluargaID int64) (*models.U
 	var user models.User
 	err := r.db.Preload("Role").
 		Joins("JOIN penduduk p ON p.id = pengguna.penduduk_id").
-		Where("p.kartu_keluarga_id = ? AND p.deleted_at IS NULL", kartuKeluargaID).
+		Joins("JOIN kartu_keluarga kk ON kk.no_kk = p.kode_keluarga").
+		Where("kk.id = ? AND p.deleted_at IS NULL AND kk.deleted_at IS NULL", kartuKeluargaID).
 		Order("pengguna.id ASC").
 		First(&user).Error
 	return &user, err
@@ -118,10 +121,11 @@ func (r *UserRepository) List(search, role, desa string) ([]UserListItem, error)
 	var rows []UserListItem
 
 	q := r.db.Table("pengguna u").
-		Select("u.id, u.nama, u.email, p.telepon AS phone_number, p.desa_id AS desa_id, COALESCE(d.nama_desa, '') AS desa_name, r.name AS role, u.is_active, u.penduduk_id, u.created_at, u.updated_at").
+		Select("u.id, u.nama AS name, u.email, p.telepon AS phone_number, p.desa_id AS desa_id, COALESCE(d.nama_desa, '') AS desa_name, r.name AS role, u.is_active, u.penduduk_id, COALESCE(b.no_str, '') AS no_str, COALESCE(b.no_sipb, '') AS no_sipb, u.created_at, u.updated_at").
 		Joins("JOIN roles r ON r.id = u.role_id").
 		Joins("LEFT JOIN penduduk p ON p.id = u.penduduk_id AND p.deleted_at IS NULL").
 		Joins("LEFT JOIN desa d ON d.id = p.desa_id AND d.deleted_at IS NULL").
+		Joins("LEFT JOIN bidan b ON b.penduduk_id = u.penduduk_id AND b.deleted_at IS NULL").
 		Order("u.id DESC")
 
 	search = strings.TrimSpace(search)

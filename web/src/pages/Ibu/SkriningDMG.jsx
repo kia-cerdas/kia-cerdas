@@ -76,13 +76,13 @@ export default function SkriningDMGestasional() {
       return {
         type: "early",
         message:
-          "⚠️ Peringatan: Usia kehamilan masih terlalu dini untuk skrining DM Gestasional (ideal: 24-28 minggu). Hasil skrining mungkin belum akurat.",
+          "⚠️ Peringatan: Usia kehamilan masih terlalu dini untuk Skrining Diabetes Melitus Gestasional (ideal: 24-28 minggu). Hasil skrining mungkin belum akurat.",
       };
     } else if (usiaMinggu > 28) {
       return {
         type: "late",
         message:
-          "⚠️ Peringatan: Usia kehamilan sudah melewati waktu ideal skrining DM Gestasional (ideal: 24-28 minggu). Segera konsultasikan hasil dengan dokter.",
+          "⚠️ Peringatan: Usia kehamilan sudah melewati waktu ideal Skrining Diabetes Melitus Gestasional (ideal: 24-28 minggu). Segera konsultasikan hasil dengan dokter.",
       };
     } else {
       return {
@@ -245,11 +245,11 @@ export default function SkriningDMGestasional() {
           : "Peringatan Skrining Terlambat",
         html: isEarlySkrining
           ? `Usia kehamilan saat ini: <strong>${usiaKehamilanSaatIni} minggu</strong><br/><br/>
-           Skrining DM Gestasional idealnya dilakukan pada usia <strong>24-28 minggu</strong>.<br/><br/>
+           Skrining Diabetes Melitus Gestasional idealnya dilakukan pada usia <strong>24-28 minggu</strong>.<br/><br/>
            Hasil yang disimpan sekarang mungkin belum akurat.<br/><br/>
            <strong>Apakah Anda tetap ingin menyimpan data?</strong>`
           : `Usia kehamilan saat ini: <strong>${usiaKehamilanSaatIni} minggu</strong><br/><br/>
-           Waktu ideal skrining DM Gestasional adalah <strong>24-28 minggu</strong>.<br/><br/>
+           Waktu ideal Skrining Diabetes Melitus Gestasional adalah <strong>24-28 minggu</strong>.<br/><br/>
            Anda akan menyimpan skrining yang sudah <strong>terlambat</strong>.<br/><br/>
            <strong>Apakah Anda tetap ingin melanjutkan?</strong>`,
         showCancelButton: true,
@@ -305,21 +305,21 @@ export default function SkriningDMGestasional() {
         await Swal.fire({
           icon: "success",
           title: "Data Tersimpan",
-          html: "Skrining DM Gestasional berhasil disimpan.<br/><br/>⚠️ <strong>Catatan Penting:</strong> Skrining ini dilakukan setelah melewati masa optimal (24-28 minggu). Segera konsultasikan hasil dengan dokter kandungan untuk penanganan lebih lanjut.",
+          html: "Skrining Diabetes Melitus Gestasional berhasil disimpan.<br/><br/>⚠️ <strong>Catatan Penting:</strong> Skrining ini dilakukan setelah melewati masa optimal (24-28 minggu). Segera konsultasikan hasil dengan dokter kandungan untuk penanganan lebih lanjut.",
           confirmButtonColor: "#185FA5",
         });
       } else if (isEarlySkrining) {
         await Swal.fire({
           icon: "success",
           title: "Data Tersimpan",
-          html: "Skrining DM Gestasional berhasil disimpan.<br/><br/>⚠️ <strong>Catatan Penting:</strong> Skrining ini dilakukan pada usia kehamilan yang masih dini. Pertimbangkan untuk mengulang skrining pada usia 24-28 minggu.",
+          html: "Skrining Diabetes Melitus Gestasional berhasil disimpan.<br/><br/>⚠️ <strong>Catatan Penting:</strong> Skrining ini dilakukan pada usia kehamilan yang masih dini. Pertimbangkan untuk mengulang skrining pada usia 24-28 minggu.",
           confirmButtonColor: "#185FA5",
         });
       } else {
         await Swal.fire({
           icon: "success",
           title: "Berhasil",
-          text: "Skrining DM Gestasional berhasil disimpan.",
+          text: "Skrining Diabetes Melitus Gestasional berhasil disimpan.",
           timer: 2000,
           showConfirmButton: false,
         });
@@ -355,7 +355,7 @@ export default function SkriningDMGestasional() {
         icon: "warning",
         title: "Usia Kehamilan Terlalu Dini",
         html: `Usia kehamilan saat ini: <strong>${usiaKehamilanSaatIni} minggu</strong><br/><br/>
-             Skrining DM Gestasional idealnya dilakukan pada usia kehamilan <strong>24-28 minggu</strong>.<br/><br/>
+             Skrining Diabetes Melitus Gestasional idealnya dilakukan pada usia kehamilan <strong>24-28 minggu</strong>.<br/><br/>
              Hasil skrining yang direkam saat usia dini mungkin belum akurat.<br/><br/>
              <strong>Apakah Anda tetap ingin mengedit?</strong>`,
         showCancelButton: true,
@@ -377,7 +377,7 @@ export default function SkriningDMGestasional() {
         icon: "error",
         title: "Sudah Melewati Waktu Skrining Optimal",
         html: `Usia kehamilan saat ini: <strong>${usiaKehamilanSaatIni} minggu</strong><br/><br/>
-             Skrining DM Gestasional seharusnya dilakukan pada usia <strong>24-28 minggu</strong>.<br/><br/>
+             Skrining Diabetes Melitus Gestasional seharusnya dilakukan pada usia <strong>24-28 minggu</strong>.<br/><br/>
              Data yang diedit sekarang sudah melewati masa skrining optimal.<br/><br/>
              <strong>Apakah Anda tetap ingin melanjutkan?</strong>`,
         showCancelButton: true,
@@ -413,7 +413,7 @@ export default function SkriningDMGestasional() {
         icon: "warning",
         title: "Usia Kehamilan Terlalu Dini",
         html: `Usia kehamilan saat ini: <strong>${usiaKehamilanSaatIni} minggu</strong><br/><br/>
-             Skrining DM Gestasional idealnya dilakukan pada usia kehamilan <strong>24-28 minggu</strong>.<br/><br/>
+             Skrining Diabetes Melitus Gestasional idealnya dilakukan pada usia kehamilan <strong>24-28 minggu</strong>.<br/><br/>
              Hasil skrining saat ini mungkin belum akurat.<br/><br/>
              <strong>Apakah Anda tetap ingin melanjutkan?</strong>`,
         showCancelButton: true,
@@ -435,7 +435,7 @@ export default function SkriningDMGestasional() {
         icon: "error",
         title: "Sudah Melewati Waktu Skrining Optimal",
         html: `Usia kehamilan saat ini: <strong>${usiaKehamilanSaatIni} minggu</strong><br/><br/>
-             Waktu ideal skrining DM Gestasional adalah <strong>24-28 minggu</strong>.<br/><br/>
+             Waktu ideal Skrining Diabetes Melitus Gestasional adalah <strong>24-28 minggu</strong>.<br/><br/>
              Skrining yang dilakukan sekarang sudah terlambat dan mungkin mempengaruhi rencana penanganan.<br/><br/>
              <strong>Apakah Anda tetap ingin melanjutkan?</strong>`,
         showCancelButton: true,
@@ -504,16 +504,17 @@ export default function SkriningDMGestasional() {
     <MainLayout>
       <div className="min-h-screen bg-[#F7FAFB]">
         <div className="max-w-5xl mx-auto p-5 space-y-6">
-          {/* Header - disamakan dengan Skrining Preeklampsia */}
+          {/* Header */}
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate(-1)}
-              className="p-2 rounded-full hover:bg-gray-100 transition"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#185FA5] text-[#185FA5] text-sm font-semibold hover:bg-[#185FA5]/5 transition"
             >
-              <ArrowLeft size={20} className="text-[#185FA5]" />
+              <ArrowLeft size={16} />
+              <span>Kembali</span>
             </button>
-            <h1 className="text-[28px] font-bold text-gray-900">
-              Skrining DM Gestasional
+            <h1 className="text-lg sm:text-2xl md:text-[28px] font-bold text-gray-900">
+              Skrining Diabetes Melitus Gestasional
             </h1>
           </div>
 
@@ -523,15 +524,16 @@ export default function SkriningDMGestasional() {
               className={`p-4 rounded-lg ${
                 isEarlySkrining
                   ? "bg-yellow-50 border-l-4 border-yellow-500"
-                  : "bg-red-50 border-l-4 border-red-500"
+                  : "border-l-4"
               }`}
+              style={isLateSkrining ? { backgroundColor: "#FAEEDA", borderColor: "#BA7517" } : undefined}
             >
               <div className="flex items-start gap-3">
                 <div className="flex-shrink-0">
                   {isEarlySkrining ? (
                     <AlertCircle size={20} className="text-yellow-600" />
                   ) : (
-                    <AlertCircle size={20} className="text-red-600" />
+                    <AlertCircle size={20} style={{ color: "#BA7517" }} />
                   )}
                 </div>
                 <div className="flex-1">
@@ -545,7 +547,7 @@ export default function SkriningDMGestasional() {
                       <>
                         Usia kehamilan saat ini:{" "}
                         <strong>{usiaKehamilanSaatIni} minggu</strong>.
-                        Skrining DM Gestasional idealnya dilakukan pada usia
+                        Skrining Diabetes Melitus Gestasional idealnya dilakukan pada usia
                         kehamilan <strong>24-28 minggu</strong>. Hasil
                         skrining saat ini mungkin belum akurat.
                       </>
@@ -553,7 +555,7 @@ export default function SkriningDMGestasional() {
                       <>
                         Usia kehamilan saat ini:{" "}
                         <strong>{usiaKehamilanSaatIni} minggu</strong>. Waktu
-                        ideal skrining DM Gestasional adalah{" "}
+                        ideal Skrining Diabetes Melitus Gestasional adalah{" "}
                         <strong>24-28 minggu</strong>. Skrining yang dilakukan
                         sekarang sudah terlambat. Segera konsultasikan hasil
                         dengan dokter.
@@ -567,12 +569,12 @@ export default function SkriningDMGestasional() {
           {/* Banner peringatan status kehamilan dan hak akses */}
           {!isActive && (
             <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg text-blue-700 text-base flex items-center gap-2">
-              <EyeOff size={16} /> Kehamilan ini sudah selesai (NON-AKTIF). Data hanya dapat dilihat, tidak dapat diubah.
+               Kehamilan ini sudah selesai. Data hanya dapat dilihat, tidak dapat diubah.
             </div>
           )}
           {!canEdit && isActive && (
             <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg text-blue-700 text-base flex items-center gap-2">
-              <Eye size={16} /> Anda dalam mode baca (Dokter). Data hanya dapat dilihat, tidak dapat diubah.
+               Anda dalam mode baca. Data hanya dapat dilihat, tidak dapat diubah.
             </div>
           )}
 
@@ -584,7 +586,7 @@ export default function SkriningDMGestasional() {
                   <Save size={48} className="text-[#185FA5]" />
                 </div>
                 <h3 className="text-[22px] font-semibold text-[#185FA5]">
-                  Belum Ada Data Skrining DM Gestasional
+                  Belum Ada Data Skrining Diabetes Melitus Gestasional
                 </h3>
                 <p className="text-gray-500 text-base max-w-md">
                   Silakan lakukan skrining diabetes melitus gestasional (DMG)
@@ -613,7 +615,7 @@ export default function SkriningDMGestasional() {
             <div className="bg-white rounded-xl shadow-sm p-5">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-[22px] font-semibold text-[#185FA5]">
-                  Hasil Skrining DM Gestasional
+                  Skrining Diabetes Melitus Gestasional
                 </h2>
                 {canEdit && (
                   <button
@@ -744,28 +746,28 @@ export default function SkriningDMGestasional() {
                 </button>
               </div>
 
-              {/* ========== TAMBAHKAN INI ========== */}
               {/* Banner peringatan di dalam form */}
               {(isEarlySkrining || isLateSkrining) && (
                 <div
                   className={`p-4 rounded-lg ${
                     isEarlySkrining
                       ? "bg-yellow-50 border border-yellow-200"
-                      : "bg-red-50 border border-red-200"
+                      : "border"
                   }`}
+                  style={isLateSkrining ? { backgroundColor: "#FAEEDA", borderColor: "#BA7517" } : undefined}
                 >
                   <div className="flex items-start gap-3">
                     <div className="flex-shrink-0">
                       {isEarlySkrining ? (
                         <AlertCircle size={18} className="text-yellow-600" />
                       ) : (
-                        <AlertCircle size={18} className="text-red-600" />
+                        <AlertCircle size={18} style={{ color: "#BA7517" }} />
                       )}
                     </div>
                     <div>
                       <p className="text-sm font-medium text-gray-800">
                         {isEarlySkrining
-                          ? "⚠️ Peringatan: Usia kehamilan masih terlalu dini untuk skrining DM Gestasional"
+                          ? "⚠️ Peringatan: Usia kehamilan masih terlalu dini untuk Skrining Diabetes Melitus Gestasional"
                           : "⚠️ Peringatan: Usia kehamilan sudah melewati waktu skrining optimal (24-28 minggu)"}
                       </p>
                       <p className="text-xs text-gray-600 mt-1">

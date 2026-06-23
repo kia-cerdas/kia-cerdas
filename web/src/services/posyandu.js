@@ -2,7 +2,11 @@ import api from "./api";
 
 const BASE = "/superadmin/posyandu-manage";
 
-const unwrap = (response) => response.data?.data ?? response.data;
+const unwrap = (response) => {
+	const data = response.data?.data ?? response.data;
+	// Ensure we always return an array, never null/undefined
+	return Array.isArray(data) ? data : [];
+};
 
 export const getAllPosyandu = async (params = {}) => {
 	const response = await api.get(BASE, { params });

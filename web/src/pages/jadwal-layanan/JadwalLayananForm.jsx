@@ -368,7 +368,7 @@ export default function JadwalLayananForm() {
     // Hanya validasi jika tanggal sudah diisi dan waktu lengkap (HH:MM)
     if (form.tanggal && value && /^\d{2}:\d{2}$/.test(value)) {
       if (!isTimeValidForToday(form.tanggal, value)) {
-        setError("Waktu mulai tidak boleh kurang dari jam sekarang untuk hari ini");
+        setError("Waktu mulai tidak boleh kurang dari jam sekarang untuk hari ini.\nSilakan pilih jam yang akan datang (mendatang) untuk hari ini.");
         return;
       }
       setError("");
@@ -461,13 +461,13 @@ export default function JadwalLayananForm() {
     }
 
     if (!isTimeValidForToday(form.tanggal, form.waktu_mulai)) {
-      setError("Waktu mulai tidak boleh kurang dari jam sekarang untuk hari ini");
+      setError("Waktu mulai tidak boleh kurang dari jam sekarang untuk hari ini.\nSilakan pilih jam yang akan datang (mendatang) untuk hari ini.");
       setSaving(false);
       Swal.fire({
         icon: "warning",
         title: "Waktu Tidak Valid",
-        text: "Waktu mulai tidak boleh kurang dari jam sekarang untuk hari ini!",
-        confirmButtonText: "OK",
+        html: "Waktu mulai tidak boleh kurang dari jam sekarang untuk hari ini!<br/><br/><small>Silakan pilih jam yang akan datang (mendatang) untuk hari ini.</small>",
+        confirmButtonText: "Pilih Waktu",
         confirmButtonColor: "#185FA5",
         background: "#fff",
         customClass: { popup: "rounded-2xl", confirmButton: "rounded-xl px-5 py-2.5 font-semibold" },
@@ -484,7 +484,7 @@ export default function JadwalLayananForm() {
           icon: "warning",
           title: "Waktu Tidak Valid",
           text: "Waktu selesai harus lebih besar dari waktu mulai!",
-          confirmButtonText: "OK",
+          confirmButtonText: "Pilih Waktu Kembali",
           confirmButtonColor: "#185FA5",
           background: "#fff",
           customClass: { popup: "rounded-2xl", confirmButton: "rounded-xl px-5 py-2.5 font-semibold" },
@@ -596,35 +596,7 @@ export default function JadwalLayananForm() {
 
   return (
     <MainLayout>
-      <div className="space-y-5 max-w-3xl">
-        {/* Back + header */}
-        <section className="bg-white rounded-2xl border border-slate-200 shadow-sm">
-          <div className="px-6 py-5 flex items-center gap-4">
-            <button
-              type="button"
-              onClick={() => navigate("/jadwal-layanan")}
-              className="p-2 rounded-xl hover:bg-slate-100 text-slate-500 hover:text-slate-700 transition-colors"
-            >
-              <ArrowLeft size={18} />
-            </button>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#185FA5]/10 flex items-center justify-center">
-                <Calendar size={20} className="text-[#185FA5]" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-slate-800 leading-tight">
-                  {isEdit ? "Edit Jadwal Layanan" : "Tambah Jadwal Layanan"}
-                </h1>
-                <p className="text-sm text-slate-400 mt-0.5">
-                  {isEdit
-                    ? "Perbarui informasi jadwal imunisasi."
-                    : "Buat sesi imunisasi baru untuk posyandu."}
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
+      <div className="space-y-4 sm:space-y-5">
         {/* Form */}
         <section className="bg-white rounded-2xl border border-slate-200 shadow-sm">
           {loading ? (
@@ -633,14 +605,26 @@ export default function JadwalLayananForm() {
               <p className="text-sm text-slate-400 font-medium">Memuat data...</p>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-5 sm:space-y-6">
+              {/* Back Button */}
+              <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => navigate("/jadwal-layanan")}
+                  className="flex items-center gap-2 text-sm text-slate-600 hover:text-[#185FA5] transition-colors"
+                >
+                  <ArrowLeft size={16} />
+                  Kembali ke Daftar Jadwal
+                </button>
+              </div>
+
               {/* Nama Layanan */}
               <FormField label="Nama Layanan" icon={Stethoscope}>
                 <input
                   name="layanan"
                   value={form.layanan}
                   onChange={handleChange}
-                  placeholder="cth. Imunisasi BCG, Polio, DPT-HB-Hib"
+                  placeholder="Contoh : Pelayanan Imunisasi Rutin..."
                   className={inputClass}
                   required
                 />
@@ -660,24 +644,25 @@ export default function JadwalLayananForm() {
                 />
               </FormField>
 
-              {/* Grid: Posyandu, Tanggal, Waktu */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <FormField label="Posyandu" icon={MapPin} hint="Kosongkan jika belum ditentukan">
-                  <select
-                    name="posyandu_id"
-                    value={form.posyandu_id}
-                    onChange={handleChange}
-                    className={inputClass}
-                  >
-                    <option value="">— Pilih posyandu (opsional) —</option>
-                    {posyanduOptions.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.nama || p.name || p.alamat || `Posyandu ${p.id}`}
-                      </option>
-                    ))}
-                  </select>
-                </FormField>
+              {/* Posyandu */}
+              <FormField label="Posyandu" icon={MapPin} hint="Kosongkan jika belum ditentukan">
+                <select
+                  name="posyandu_id"
+                  value={form.posyandu_id}
+                  onChange={handleChange}
+                  className={inputClass}
+                >
+                  <option value="">— Pilih posyandu (opsional) —</option>
+                  {posyanduOptions.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.nama || p.name || p.alamat || `Posyandu ${p.id}`}
+                    </option>
+                  ))}
+                </select>
+              </FormField>
 
+              {/* Grid: Tanggal & Waktu Pelayanan */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField label="Tanggal Pelayanan" icon={Calendar}>
                   <input
                     type="date"
@@ -691,13 +676,13 @@ export default function JadwalLayananForm() {
                 </FormField>
 
                 <FormField label="Waktu Pelayanan" icon={Clock} hint="Pilih rentang waktu: mulai dan selesai (HH:MM)">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5 sm:gap-2">
                     <input
                       type="time"
                       name="waktu_mulai"
                       value={form.waktu_mulai}
                       onChange={handleWaktuMulaiChange}
-                      className={`${inputClass} max-w-[140px]`}
+                      className={`${inputClass} flex-1`}
                       required
                     />
                     <span className="text-sm text-slate-400">—</span>
@@ -706,7 +691,7 @@ export default function JadwalLayananForm() {
                       name="waktu_selesai"
                       value={form.waktu_selesai}
                       onChange={handleWaktuSelesaiChange}
-                      className={`${inputClass} max-w-[140px]`}
+                      className={`${inputClass} flex-1`}
                     />
                   </div>
                 </FormField>
@@ -756,11 +741,11 @@ export default function JadwalLayananForm() {
               )}
 
               {/* Action buttons */}
-              <div className="flex items-center gap-3 pt-2 border-t border-slate-100">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 pt-2 border-t border-slate-100">
                 <button
                   type="submit"
                   disabled={saving}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-[#185FA5] hover:bg-[#0e4a84] disabled:bg-[#185FA5]/60 text-white text-sm font-semibold rounded-xl transition-colors"
+                  className="flex items-center justify-center gap-2 px-5 py-2.5 bg-[#185FA5] hover:bg-[#0e4a84] disabled:bg-[#185FA5]/60 text-white text-sm font-semibold rounded-xl transition-colors w-full sm:w-auto"
                 >
                   {saving ? (
                     <>
@@ -778,7 +763,7 @@ export default function JadwalLayananForm() {
                   type="button"
                   onClick={() => navigate("/jadwal-layanan")}
                   disabled={saving}
-                  className="px-5 py-2.5 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors disabled:opacity-50"
+                  className="px-5 py-2.5 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors disabled:opacity-50 w-full sm:w-auto text-center"
                 >
                   Batal
                 </button>
