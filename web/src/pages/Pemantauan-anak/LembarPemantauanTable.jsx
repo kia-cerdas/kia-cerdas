@@ -32,58 +32,58 @@ export default function LembarPemantauanTable({
   });
 
   return (
-    <div className="overflow-x-auto bg-white rounded-xl shadow-sm border border-gray-100">
+    <div className="overflow-x-auto -mx-3 sm:mx-0 bg-white rounded-none sm:rounded-xl shadow-sm border border-gray-100">
       <table className="w-full text-left border-collapse">
         <thead>
           <tr className="bg-amber-50">
-            <th className="p-4 border-b border-gray-200 text-xs font-bold text-gray-600 uppercase tracking-wider text-center w-24">
-              Minggu ke-
+            <th className="p-2 sm:p-4 border-b border-gray-200 text-[10px] sm:text-xs font-bold text-gray-600 uppercase tracking-wider text-center w-16 sm:w-24 sticky left-0 bg-amber-50 z-10">
+              Minggu
             </th>
             {kategoriList.map((kat) => (
-              <th key={kat.id} className="p-4 border-b border-gray-200 text-[10px] font-bold text-gray-700 leading-tight min-w-[120px] max-w-[200px]">
+              <th key={kat.id} className="p-2 sm:p-4 border-b border-gray-200 text-[9px] sm:text-[10px] font-bold text-gray-700 leading-tight min-w-[90px] sm:min-w-[120px] max-w-[160px] sm:max-w-[200px]">
                 {kat.gejala}
               </th>
             ))}
-            <th className="p-4 border-b border-gray-200 text-xs font-bold text-gray-600 uppercase tracking-wider text-center min-w-[150px]">
-              Tanggal & Paraf
+            <th className="p-2 sm:p-4 border-b border-gray-200 text-[10px] sm:text-xs font-bold text-gray-600 uppercase tracking-wider text-center min-w-[100px] sm:min-w-[150px]">
+              Paraf
             </th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100">
           {weekRange.map((week) => (
             <tr key={week} className="hover:bg-gray-50/50 transition-colors">
-              <td className="p-4 text-center font-bold text-gray-800 bg-gray-50/30">
+              <td className="p-2 sm:p-4 text-center font-bold text-gray-800 bg-gray-50/30 text-sm sticky left-0 z-10">
                 {week}
               </td>
               {kategoriList.map((kat) => {
                 const isTerjadi = historyMap[week]?.[kat.id] || false;
                 return (
-                  <td key={kat.id} className="p-4 text-center">
+                  <td key={kat.id} className="p-2 sm:p-4 text-center">
                     <button
                       onClick={() => onSaveCell(week, kat.id, !isTerjadi)}
-                      className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
+                      className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center transition-all mx-auto ${
                         isTerjadi 
                         ? "bg-red-100 text-red-600 border-2 border-red-200 shadow-sm" 
                         : "bg-white text-gray-200 border border-gray-200 hover:border-blue-300 hover:text-blue-300"
                       }`}
                     >
-                      {isTerjadi ? <Check size={20} strokeWidth={3} /> : <div className="w-2 h-2 rounded-full bg-current opacity-20" />}
+                      {isTerjadi ? <Check size={16} strokeWidth={3} /> : <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-current opacity-20" />}
                     </button>
                   </td>
                 );
               })}
-              <td className="p-4 text-center">
+              <td className="p-2 sm:p-4 text-center">
                 <div className="flex flex-col items-center justify-center gap-1">
-                  <div className="h-6 border-b border-dashed border-gray-300 flex items-end justify-center text-[10px] text-gray-500 w-full px-2">
-                    {history.find(r => r.periode_waktu === week)?.nama_pemeriksa || "...................."}
+                  <div className="h-5 sm:h-6 border-b border-dashed border-gray-300 flex items-end justify-center text-[9px] sm:text-[10px] text-gray-500 w-full px-1 sm:px-2">
+                    {history.find(r => r.periode_waktu === week)?.nama_pemeriksa || ".........."}
                   </div>
                   {history.find(r => r.periode_waktu === week) && (
-                    <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
+                    <span className={`text-[8px] sm:text-[9px] font-bold px-1.5 sm:px-2 py-0.5 rounded-full ${
                       history.find(r => r.periode_waktu === week)?.status === 'Diterima' ? 'bg-green-100 text-green-700' :
                       history.find(r => r.periode_waktu === week)?.status === 'Ditolak' ? 'bg-red-100 text-red-700' :
                       'bg-yellow-100 text-yellow-700'
                     }`}>
-                      {history.find(r => r.periode_waktu === week)?.status || "Menunggu Verifikasi"}
+                      {history.find(r => r.periode_waktu === week)?.status || "Menunggu"}
                     </span>
                   )}
                 </div>
@@ -92,14 +92,14 @@ export default function LembarPemantauanTable({
           ))}
         </tbody>
       </table>
-      <div className="p-4 bg-gray-50 border-t border-gray-100 flex items-center gap-6">
-        <div className="flex items-center gap-2 text-xs text-gray-500">
-           <div className="w-3 h-3 rounded bg-red-100 border border-red-200" />
-           <span>Terjadi Gejala / Centang (✔)</span>
+      <div className="p-3 sm:p-4 bg-gray-50 border-t border-gray-100 flex flex-wrap items-center gap-3 sm:gap-6">
+        <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-gray-500">
+           <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded bg-red-100 border border-red-200" />
+           <span>Terjadi Gejala (✔)</span>
         </div>
-        <div className="flex items-center gap-2 text-xs text-gray-500">
-           <div className="w-3 h-3 rounded bg-white border border-gray-200" />
-           <span>Kondisi Normal / Kosong</span>
+        <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-gray-500">
+           <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded bg-white border border-gray-200" />
+           <span>Normal / Kosong</span>
         </div>
       </div>
     </div>

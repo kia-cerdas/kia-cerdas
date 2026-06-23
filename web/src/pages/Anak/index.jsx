@@ -129,7 +129,7 @@ export default function AnakListNakes() {
           </div>
 
           {/* Dashboard Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
             {/* Total */}
             <DashCard
               label="Total Balita"
@@ -193,9 +193,9 @@ export default function AnakListNakes() {
           </div>
         </div>
 
-        <div className="bg-white rounded-t-2xl border-x border-t border-gray-100 p-6 sticky top-4 md:top-6 z-20">
-          <div className="flex flex-col md:flex-row justify-between gap-4">
-            <div className="relative w-full max-w-md">
+        <div className="bg-white rounded-t-2xl border-x border-t border-gray-100 p-3 sm:p-4 md:p-6 sticky top-0 md:top-6 z-20">
+          <div className="flex flex-col sm:flex-row justify-between gap-3">
+            <div className="relative w-full sm:max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
               <input
                 type="text"
@@ -207,8 +207,9 @@ export default function AnakListNakes() {
           </div>
         </div>
 
-        <div className="bg-white rounded-b-2xl shadow-sm border border-gray-100 overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+        {/* Desktop Table View */}
+        <div className="hidden md:block bg-white rounded-b-2xl shadow-sm border border-gray-100 overflow-x-auto">
+          <table className="w-full text-left border-collapse min-w-[640px]">
             <thead>
               <tr className="bg-gray-50 border-y border-gray-100">
                 <th className="px-6 py-3.5 text-xs font-semibold text-gray-500">Nama Anak</th>
@@ -278,44 +279,112 @@ export default function AnakListNakes() {
               )}
             </tbody>
           </table>
+        </div>
 
-          {/* Pagination */}
-          <div className="flex items-center justify-between px-6 py-4 bg-gray-50/50 border-t border-gray-100">
-            <p className="text-xs text-gray-500 font-medium">
-              {filteredChildren.length === 0
-                ? "Tidak ada data"
-                : `Menampilkan ${indexOfFirstItem + 1}-${Math.min(indexOfLastItem, filteredChildren.length)} dari ${filteredChildren.length} data`}
-            </p>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-                disabled={currentPage === 1}
-                className="p-2 rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <ChevronLeft size={16} />
-              </button>
-              <div className="flex gap-1">
-                {[...Array(totalPages)].map((_, i) => (
+        {/* Mobile Card View */}
+        <div className="md:hidden bg-white rounded-b-2xl shadow-sm border border-gray-100">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center gap-3 py-16">
+              <RefreshCw size={36} className="animate-spin text-blue-600" />
+              <p className="text-sm text-slate-500 font-medium">Memuat data anak...</p>
+            </div>
+          ) : children.length === 0 ? (
+            <div className="flex flex-col items-center justify-center gap-3 py-16 text-center px-4">
+              <p className="text-gray-500 font-semibold">Belum ada data Balita</p>
+              <p className="text-sm text-gray-400">Tambahkan data pertama untuk mulai pemantauan.</p>
+            </div>
+          ) : currentItems.length === 0 ? (
+            <div className="text-center py-16 px-4">
+              <p className="text-gray-500 text-sm">Tidak ada data yang sesuai dengan pencarian atau filter aktif.</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-gray-100">
+              {currentItems.map((child) => (
+                <div key={child.id} className="p-4 hover:bg-blue-50/20 transition-colors">
+                  <div className="flex items-start justify-between gap-3 mb-2">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-bold text-gray-800 truncate">{child.nama}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">Ibu: {child.kehamilan?.ibu?.nama_ibu || "-"}</p>
+                    </div>
+                    <StatusBadge status={child.status_prediksi} />
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-xs text-gray-500 mb-3">
+                    <div>
+                      <span className="text-[10px] font-bold uppercase text-gray-400 block">Kelamin</span>
+                      {child.jenis_kelamin || "-"}
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold uppercase text-gray-400 block">Tgl Lahir</span>
+                      {formatDate(child.tanggal_lahir)}
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold uppercase text-gray-400 block">Usia</span>
+                      {child.usia_teks || "-"}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Link
+                      to={`/data-anak/dashboard/${child.id}`}
+                      className="flex-1 inline-flex items-center justify-center px-3 py-2 bg-[#185FA5] hover:bg-[#185FA5]/90 text-white text-xs font-semibold rounded-xl transition-all active:scale-95 shadow-sm"
+                    >
+                      Lihat Detail
+                    </Link>
+                    <Link
+                      to={`/data-anak/edit/${child.id}`}
+                      className="p-2 rounded-lg text-gray-400 hover:text-amber-600 hover:bg-amber-50 transition-colors border border-gray-200"
+                      title="Edit"
+                    >
+                      <Pencil size={14} />
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Pagination */}
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 bg-white border border-gray-100 rounded-b-2xl md:rounded-none -mt-px">
+          <p className="text-[10px] sm:text-xs text-gray-500 font-medium">
+            {filteredChildren.length === 0
+              ? "Tidak ada data"
+              : `${indexOfFirstItem + 1}-${Math.min(indexOfLastItem, filteredChildren.length)} / ${filteredChildren.length}`}
+          </p>
+          <div className="flex items-center gap-1 sm:gap-2">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+              disabled={currentPage === 1}
+              className="p-1.5 sm:p-2 rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <ChevronLeft size={14} className="sm:hidden" />
+              <ChevronLeft size={16} className="hidden sm:block" />
+            </button>
+            <div className="flex gap-1">
+              {[...Array(totalPages)].map((_, i) => {
+                // On mobile, show limited page numbers
+                const showOnMobile = totalPages <= 5 || i === 0 || i === totalPages - 1 || Math.abs(i + 1 - currentPage) <= 1;
+                return (
                   <button
                     key={i}
                     onClick={() => setCurrentPage(i + 1)}
-                    className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${currentPage === i + 1
+                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg text-[10px] sm:text-xs font-bold transition-all ${!showOnMobile ? 'hidden sm:flex items-center justify-center' : ''} ${currentPage === i + 1
                       ? "bg-[#185FA5] text-white shadow-md shadow-blue-100"
                       : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
-                      }`}
+                    }`}
                   >
                     {i + 1}
                   </button>
-                ))}
-              </div>
-              <button
-                onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-                disabled={currentPage === totalPages || totalPages === 0}
-                className="p-2 rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <ChevronRight size={16} />
-              </button>
+                );
+              })}
             </div>
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+              disabled={currentPage === totalPages || totalPages === 0}
+              className="p-1.5 sm:p-2 rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <ChevronRight size={14} className="sm:hidden" />
+              <ChevronRight size={16} className="hidden sm:block" />
+            </button>
           </div>
         </div>
       </div>
@@ -330,15 +399,15 @@ function DashCard({ label, count, icon, active, colorActive, colorInactive, icon
     <button
       type="button"
       onClick={onClick}
-      className={`text-left rounded-2xl p-4 border shadow-lg transition-all ${active ? colorActive + " text-white" : colorInactive + " text-gray-700"}`}
+      className={`text-left rounded-xl sm:rounded-2xl p-2.5 sm:p-4 border shadow-lg transition-all ${active ? colorActive + " text-white" : colorInactive + " text-gray-700"}`}
     >
-      <div className="flex items-center gap-3">
-        <div className={`p-2 rounded-xl ${active ? iconBgActive : iconBgInactive}`}>
+      <div className="flex items-center gap-2 sm:gap-3">
+        <div className={`p-1.5 sm:p-2 rounded-lg sm:rounded-xl flex-shrink-0 ${active ? iconBgActive : iconBgInactive}`}>
           <span className={active ? iconColorActive : iconColorInactive}>{icon}</span>
         </div>
-        <div>
-          <p className={`text-[10px] font-bold uppercase tracking-wider ${active ? labelColorActive : "text-gray-500"}`}>{label}</p>
-          <p className="text-xl font-black">{count} <span className="text-sm font-semibold">Anak</span></p>
+        <div className="min-w-0">
+          <p className={`text-[8px] sm:text-[10px] font-bold uppercase tracking-wider truncate ${active ? labelColorActive : "text-gray-500"}`}>{label}</p>
+          <p className="text-base sm:text-xl font-black">{count} <span className="text-[10px] sm:text-sm font-semibold">Anak</span></p>
         </div>
       </div>
     </button>

@@ -121,28 +121,28 @@ export default function AnakDashboard() {
       <div className="p-4 md:p-8 bg-[#f8fafc] min-h-screen">
 
         {/* HEADER */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-6">
           <div>
             <Link
               to="/daftar-anak"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-[#185FA5] hover:bg-[#185FA5]/90 text-white rounded-xl font-semibold text-sm transition-all active:scale-95 shadow-sm mb-4 mt-2"
+              className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-[#185FA5] hover:bg-[#185FA5]/90 text-white rounded-xl font-semibold text-xs sm:text-sm transition-all active:scale-95 shadow-sm mb-3 sm:mb-4 mt-2"
             >
               <ArrowLeft size={16} /> Kembali
             </Link>
-            <h1 className="text-2xl font-bold text-gray-800 tracking-tight">{child.nama}</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800 tracking-tight">{child.nama}</h1>
           </div>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="bg-[#185FA5] hover:bg-[#185FA5]/90 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 text-sm font-semibold shadow-sm transition-all active:scale-95"
+            className="w-full sm:w-auto bg-[#185FA5] hover:bg-[#185FA5]/90 text-white px-4 sm:px-5 py-2.5 rounded-xl flex items-center justify-center sm:justify-start gap-2 text-sm font-semibold shadow-sm transition-all active:scale-95"
           >
             <Plus size={18} /> Input Data
           </button>
         </div>
 
         {/* INFO CARD: Data anak dalam satu card */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-6">
-          <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-4">Informasi Anak</h3>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 md:p-5 mb-6">
+          <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Informasi Anak</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <StatCard icon={<Calendar size={18} />} label="Usia" value={child.usia_teks || "-"} />
             <StatCard icon={<User size={18} />} label="Nama Ibu" value={child.kehamilan?.ibu?.nama_ibu || "-"} />
             <StatCard icon={<Activity size={18} />} label="Berat Badan" value={lastGrowth?.berat_badan ? `${lastGrowth.berat_badan} kg` : "- kg"} />
@@ -150,26 +150,26 @@ export default function AnakDashboard() {
           </div>
         </div>
 
-        {/* GRAFIK: Tampilkan 4 grafik kecil dalam tata letak seperti gambar pertama */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <ChartCard title="Grafik Berat Badan (kg)" dataKey="berat_badan" data={growthData} color={themeColor} />
-          <ChartCard title="Grafik Tinggi Badan (cm)" dataKey="tinggi_badan" data={growthData} color="#8b5cf6" />
-          <ChartCard title="Grafik LILA (cm)" dataKey="hasil_lila" data={growthData} color="#f59e0b" />
-          <ChartCard title="Grafik Lingkar Kepala (cm)" dataKey="lingkar_kepala" data={growthData} color="#10b981" />
+        {/* GRAFIK */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 md:gap-6 mb-6">
+          <ChartCard title="Berat Badan (kg)" dataKey="berat_badan" data={growthData} color={themeColor} />
+          <ChartCard title="Tinggi Badan (cm)" dataKey="tinggi_badan" data={growthData} color="#8b5cf6" />
+          <ChartCard title="LILA (cm)" dataKey="hasil_lila" data={growthData} color="#f59e0b" />
+          <ChartCard title="Lingkar Kepala (cm)" dataKey="lingkar_kepala" data={growthData} color="#10b981" />
         </div>
 
         {/* RIWAYAT KELUHAN & CATATAN KUNJUNGAN */}
-        <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm mb-6">
-          <div className="flex justify-between items-center mb-4">
+        <div className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-gray-100 shadow-sm mb-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0 mb-4">
             <div className="flex items-center gap-2">
-              <Stethoscope className="text-blue-600 animate-pulse" size={24} />
-              <h3 className="text-lg font-bold text-gray-800">Riwayat Keluhan & Catatan Kunjungan</h3>
+              <Stethoscope className="text-blue-600 animate-pulse" size={20} />
+              <h3 className="text-base sm:text-lg font-bold text-gray-800">Riwayat Keluhan & Catatan</h3>
             </div>
             <Link
               to={`/data-anak/keluhan/${id}`}
               className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 transition-colors"
             >
-              Lihat Detail & Kelola <ArrowRight size={14} />
+              Lihat Detail <ArrowRight size={14} />
             </Link>
           </div>
 
@@ -213,7 +213,7 @@ export default function AnakDashboard() {
 
         {/* MODAL: Versi Ringkas (Compact) */}
         {isModalOpen && (
-          <div className="fixed inset-0 z-[999] flex items-center justify-center p-6">
+          <div className="fixed inset-0 z-[999] flex items-end sm:items-center justify-center p-0 sm:p-6">
             {/* Overlay */}
             <div
               className="absolute inset-0 bg-black/20 backdrop-blur-[2px]"
@@ -221,40 +221,43 @@ export default function AnakDashboard() {
             ></div>
 
             {/* Container Modal */}
-            <div className="relative bg-[#F3F4F6] w-full max-w-lg rounded-[40px] p-8 shadow-2xl animate-in fade-in zoom-in duration-200">
+            <div className="relative bg-[#F3F4F6] w-full sm:max-w-lg rounded-t-[28px] sm:rounded-[40px] p-5 sm:p-8 shadow-2xl animate-in fade-in zoom-in duration-200 max-h-[85vh] overflow-y-auto">
 
-              {/* Tombol Close (Opsional, di gambar tidak ada tapi bagus untuk UX) */}
+              {/* Drag handle for mobile */}
+              <div className="sm:hidden w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-4" />
+
+              {/* Tombol Close */}
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="absolute -top-0 -right-0    z-[1000] bg-white text-gray-800 p-2 rounded-full shadow-lg border border-gray-100 hover:bg-gray-50 transition-all active:scale-90"
+                className="absolute top-3 right-3 sm:-top-0 sm:-right-0 z-[1000] bg-white text-gray-800 p-2 rounded-full shadow-lg border border-gray-100 hover:bg-gray-50 transition-all active:scale-90"
               >
                 <X size={20} strokeWidth={3} />
               </button>
 
               {/* Grid Menu */}
-              <div className="grid grid-cols-2 gap-5">
+              <div className="grid grid-cols-2 sm:grid-cols-2 gap-3 sm:gap-5">
                 {menuInput.map((item, idx) => (
                   <Link
                     key={idx}
                     to={item.link}
                     className={`
-              relative bg-white p-6 rounded-[28px] flex flex-col items-center text-center justify-center gap-3 
+              relative bg-white p-4 sm:p-6 rounded-[20px] sm:rounded-[28px] flex flex-col items-center text-center justify-center gap-2 sm:gap-3 
               transition-all duration-200 group shadow-sm hover:shadow-md active:scale-95
               ${item.active ? 'border-[3px] border-blue-400' : 'border-[3px] border-transparent'}
             `}
                   >
                     {/* Icon Box */}
                     <div className="text-blue-600 transition-transform group-hover:scale-110">
-                      {item.icon}
+                      {React.cloneElement(item.icon, { size: window.innerWidth < 640 ? 24 : 32 })}
                     </div>
 
                     {/* Text Box */}
                     <div className="flex flex-col items-center">
-                      <span className="text-[15px] font-bold text-gray-900 leading-tight">
+                      <span className="text-[13px] sm:text-[15px] font-bold text-gray-900 leading-tight">
                         {item.title}
                       </span>
                       {item.subtitle && (
-                        <span className="text-[14px] font-bold text-gray-900 mt-1">
+                        <span className="text-[12px] sm:text-[14px] font-bold text-gray-900 mt-1">
                           {item.subtitle}
                         </span>
                       )}
@@ -306,24 +309,24 @@ function ChartCard({ title, dataKey, data = [], color = "#3b82f6" }) {
   }
 
   return (
-    <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm h-[260px]">
-      <div className="flex items-center justify-between mb-3">
-        <h4 className="font-bold text-gray-700">{title}</h4>
-        <div className="text-xs text-gray-400">Standar Permenkes 2/2020</div>
+    <div className="bg-white p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-gray-100 shadow-sm h-[220px] sm:h-[260px]">
+      <div className="flex items-center justify-between mb-2 sm:mb-3">
+        <h4 className="font-bold text-gray-700 text-xs sm:text-base">{title}</h4>
+        <div className="text-[10px] sm:text-xs text-gray-400 hidden sm:block">Standar Permenkes 2/2020</div>
       </div>
-      <div className="h-[180px]">
+      <div className="h-[150px] sm:h-[180px]">
         {hasData ? (
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData} margin={{ top: 5, right: 12, left: 0, bottom: 5 }}>
+            <LineChart data={chartData} margin={{ top: 5, right: 8, left: -10, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-              <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-              <YAxis tick={{ fontSize: 10 }} />
+              <XAxis dataKey="name" tick={{ fontSize: 9 }} />
+              <YAxis tick={{ fontSize: 9 }} />
               <Tooltip />
-              <Line type="monotone" dataKey="value" stroke={color} strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} connectNulls />
+              <Line type="monotone" dataKey="value" stroke={color} strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} connectNulls />
             </LineChart>
           </ResponsiveContainer>
         ) : (
-          <div className="h-full flex items-center justify-center text-gray-300 font-medium italic">Belum ada data untuk ditampilkan</div>
+          <div className="h-full flex items-center justify-center text-gray-300 font-medium italic text-xs sm:text-base">Belum ada data</div>
         )}
       </div>
     </div>

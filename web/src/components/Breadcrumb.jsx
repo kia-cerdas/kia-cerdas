@@ -144,7 +144,7 @@ const Breadcrumb = () => {
 
     // Skip role-prefix segments
     if (skipSegments.includes(segment)) return;
-    
+
     // Special handling for preview pages: combine type + preview into one breadcrumb item
     if (isPreviewPage && segment !== "laporan" && segment !== "preview") {
       // This is the "ibu" or "balita" segment - skip it as we'll combine it with "preview"
