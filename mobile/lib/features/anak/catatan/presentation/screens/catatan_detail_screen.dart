@@ -10,11 +10,11 @@ class CatatanDetailScreen extends StatelessWidget {
     if (status == null) return const Color(0xFF9CA3AF);
     final lower = status.toLowerCase();
     if (lower == 'normal' || lower.contains('rendah') || lower.contains('tidak')) {
-      return const Color(0xFF10B981);
+      return const Color(0xFF0F6E56);
     } else if (lower.contains('perhatian') || lower.contains('sedang') || lower.contains('ada')) {
-      return const Color(0xFFF59E0B);
+      return const Color(0xFFBA7517);
     } else {
-      return const Color(0xFFEF4444);
+      return const Color(0xFFA32D2D);
     }
   }
 
@@ -26,7 +26,7 @@ class CatatanDetailScreen extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: const Color(0xFF2F80ED).withOpacity(0.08),
+            color: const Color(0xFF185FA5).withOpacity(0.08),
             borderRadius: BorderRadius.circular(6),
           ),
           child: Text(
@@ -34,7 +34,7 @@ class CatatanDetailScreen extends StatelessWidget {
             style: const TextStyle(
               fontWeight: FontWeight.w600,
               fontSize: 14,
-              color: Color(0xFF2F80ED),
+              color: Color(0xFF185FA5),
             ),
           ),
         ),
@@ -57,7 +57,7 @@ class CatatanDetailScreen extends StatelessWidget {
               label,
               style: const TextStyle(
                 fontWeight: FontWeight.w500,
-                color: Color(0xFF7B8798),
+                color: Color(0xFF486581),
               ),
             ),
           ),
@@ -66,7 +66,7 @@ class CatatanDetailScreen extends StatelessWidget {
               value ?? '-',
               style: TextStyle(
                 fontWeight: FontWeight.w600,
-                color: valueColor ?? const Color(0xFF172033),
+                color: valueColor ?? const Color(0xFF102A43),
               ),
             ),
           ),
@@ -87,7 +87,7 @@ class CatatanDetailScreen extends StatelessWidget {
               label,
               style: const TextStyle(
                 fontWeight: FontWeight.w500,
-                color: Color(0xFF7B8798),
+                color: Color(0xFF486581),
               ),
             ),
           ),
@@ -119,20 +119,20 @@ class CatatanDetailScreen extends StatelessWidget {
     bool isDentalRecord = data.containsKey('jumlahGigi');
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F5F9),
+      backgroundColor: const Color(0xFFF7FAFB),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFFF7FAFB),
         elevation: 0,
         title: Text(
           title,
           style: const TextStyle(
-            color: Color(0xFF172033),
+            color: Color(0xFF102A43),
             fontSize: 18,
             fontWeight: FontWeight.w600,
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF172033)),
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF102A43)),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -237,13 +237,13 @@ class CatatanDetailScreen extends StatelessWidget {
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        border: Border.all(color: const Color(0xFFE5E7EB)),
+                        border: Border.all(color: const Color(0xFFD9E2EC)),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
                         data['catatan'] ?? '-',
                         style: const TextStyle(
-                          color: Color(0xFF172033),
+                          color: Color(0xFF102A43),
                           height: 1.6,
                         ),
                       ),
@@ -262,16 +262,16 @@ class CatatanDetailScreen extends StatelessWidget {
                         width: double.infinity,
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF2F80ED).withOpacity(0.05),
+                          color: const Color(0xFF185FA5).withOpacity(0.05),
                           border: Border.all(
-                            color: const Color(0xFF2F80ED).withOpacity(0.3),
+                            color: const Color(0xFF185FA5).withOpacity(0.3),
                           ),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
                           data['rekomendasi'],
                           style: const TextStyle(
-                            color: Color(0xFF172033),
+                            color: Color(0xFF102A43),
                             height: 1.6,
                           ),
                         ),
@@ -300,7 +300,7 @@ class CatatanDetailScreen extends StatelessWidget {
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2F80ED),
+                        backgroundColor: const Color(0xFF185FA5),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
@@ -322,7 +322,7 @@ class CatatanDetailScreen extends StatelessWidget {
                       child: const Text(
                         'Kembali',
                         style: TextStyle(
-                          color: Color(0xFF172033),
+                          color: Color(0xFF102A43),
                           fontWeight: FontWeight.w600,
                         ),
                       ),
