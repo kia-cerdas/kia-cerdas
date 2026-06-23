@@ -148,6 +148,35 @@ export const getStatistikPenduduk = async (params = {}) => {
 };
 
 /**
+ * Bulk import penduduk dari array data (dipanggil satu per satu ke endpoint create)
+ * @param {Array} rows - Array objek penduduk yang sudah diparse dari Excel
+ * @param {Function} onProgress - Callback (done, total, errors) untuk update progress
+ */
+export const importBulkPenduduk = async (rows, onProgress, translateError) => {
+  let done = 0;
+  const errors = [];
+
+  for (const row of rows) {
+    try {
+      await createKependudukan(row);
+    } catch (err) {
+      const raw =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Gagal menyimpan baris";
+      const rawStr = Array.isArray(raw) ? raw.join(", ") : String(raw);
+      const msg = translateError ? translateError(rawStr) : rawStr;
+      errors.push({ row, message: msg });
+    } finally {
+      done += 1;
+      if (onProgress) onProgress(done, rows.length, errors);
+    }
+  }
+
+  return { total: rows.length, success: rows.length - errors.length, errors };
+};
+
+/**
  * Get all penduduk (tanpa pagination)
  */
 export const getAllPenduduk = async () => {
@@ -193,6 +222,9 @@ export default {
   getStatistikPenduduk,
   getAllPenduduk,
   
+  // Import
+  importBulkPenduduk,
+
   // Aliases
   listKependudukan,
 };
