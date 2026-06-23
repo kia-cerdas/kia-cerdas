@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import '../../../../pemantauan/data/models/perawatan_model.dart';
 import '../../../../pemantauan/data/services/perawatan_api_service.dart';
@@ -51,6 +51,7 @@ class _PerawatanPerkembanganScreenState
   };
 
   int _selectedAgeIndex = 0;
+  int _maxAllowedIndex = 9;
 
   // State per rentang usia
   Map<String, List<KategoriCapaianModel>> _kategoriByRange = {};
@@ -60,8 +61,7 @@ class _PerawatanPerkembanganScreenState
   Map<String, String> _errorByRange = {};
   Map<String, bool> _submittingByRange = {};
   Map<String, bool> _submittedByRange = {}; // sudah tersimpan?
-  Map<String, DateTime?> _tanggalPeriksaByRange =
-      {}; // tanggal pengisian per range
+  Map<String, DateTime?> _tanggalPeriksaByRange = {}; // tanggal pengisian per range
 
   // Tanggal periksa (sama untuk seluruh submit)
   DateTime _tanggalPeriksa = DateTime.now();
@@ -73,7 +73,44 @@ class _PerawatanPerkembanganScreenState
   void initState() {
     super.initState();
     _apiService = PerawatanApiService(dio: Dio());
+
+    final usiaText = widget.anak?['usia_teks']?.toString().toLowerCase() ?? '';
+    _maxAllowedIndex = _resolveMaxAgeIndex(usiaText);
+    _selectedAgeIndex = _maxAllowedIndex;
+
     _loadAllData();
+  }
+
+  int _resolveMaxAgeIndex(String usiaText) {
+    if (usiaText.isEmpty) return 9;
+
+    int years = 0;
+    int months = 0;
+    int days = 0;
+
+    final matches = RegExp(r'(\d+)\s*(tahun|bulan|hari|minggu)').allMatches(usiaText);
+    for (final match in matches) {
+      final value = int.tryParse(match.group(1) ?? '') ?? 0;
+      final unit = (match.group(2) ?? '').toLowerCase();
+
+      if (unit.contains('tahun')) years = value;
+      else if (unit.contains('bulan')) months = value;
+      else if (unit.contains('minggu')) days = value * 7;
+      else if (unit.contains('hari')) days += value;
+    }
+
+    final totalDays = (years * 365) + (months * 30) + days;
+
+    if (totalDays <= 90) return 0; // 0-3 bulan
+    if (totalDays <= 180) return 1; // 3-6 bulan
+    if (totalDays <= 270) return 2; // 6-9 bulan
+    if (totalDays <= 365) return 3; // 9-12 bulan
+    if (totalDays <= 547) return 4; // 12-18 bulan
+    if (totalDays <= 730) return 5; // 18-24 bulan
+    if (totalDays <= 1095) return 6; // 2-3 tahun
+    if (totalDays <= 1460) return 7; // 3-4 tahun
+    if (totalDays <= 1825) return 8; // 4-5 tahun
+    return 9; // 5-6 tahun
   }
 
   int get _anakId {
@@ -668,9 +705,8 @@ class _PerawatanPerkembanganScreenState
           // Tahapan Perkembangan Title
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.end,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: const [
                 Text(
                   'TAHAPAN PERKEMBANGAN',
@@ -679,8 +715,9 @@ class _PerawatanPerkembanganScreenState
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF64748B)),
                 ),
+                SizedBox(height: 4),
                 Text(
-                  'Pilih kuisioner berdasarkan usia anak',
+                  'Pilih kuesioner sesuai rentang usia',
                   style: TextStyle(
                       fontSize: 10,
                       fontStyle: FontStyle.italic,
@@ -699,55 +736,61 @@ class _PerawatanPerkembanganScreenState
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: _ageRanges.length,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 5,
+              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent: 85,
                 mainAxisSpacing: 8,
                 crossAxisSpacing: 8,
-                childAspectRatio: 1.1,
+                childAspectRatio: 1.0,
               ),
               itemBuilder: (context, i) {
+                final isAllowed = i <= _maxAllowedIndex;
                 final isSelected = i == _selectedAgeIndex;
                 final range = _ageRanges[i];
                 final isDone = _submittedByRange[range] == true;
                 final displayStr = _ageRangeDisplay[range] ?? range;
 
                 return GestureDetector(
-                  onTap: () => setState(() => _selectedAgeIndex = i),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color:
-                          isSelected ? const Color(0xFF1D4ED8) : Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: isSelected
-                            ? const Color(0xFF1D4ED8)
-                            : const Color(0xFFCBD5E1),
+                  onTap: isAllowed ? () => setState(() => _selectedAgeIndex = i) : null,
+                  child: Opacity(
+                    opacity: isAllowed ? 1.0 : 0.4,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color:
+                            isSelected ? const Color(0xFF1D4ED8) : Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: isSelected
+                              ? const Color(0xFF1D4ED8)
+                              : const Color(0xFFCBD5E1),
+                        ),
                       ),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          displayStr,
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            displayStr,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: isSelected
+                                  ? Colors.white
+                                  : const Color(0xFF64748B),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Icon(
+                            isDone ? Icons.check_circle : Icons.circle_outlined,
+                            size: 14,
                             color: isSelected
                                 ? Colors.white
-                                : const Color(0xFF64748B),
+                                : (isDone
+                                    ? const Color(0xFF1D4ED8)
+                                    : const Color(0xFFCBD5E1)),
                           ),
-                        ),
-                        const SizedBox(height: 4),
-                        Icon(
-                          isDone ? Icons.check_circle : Icons.circle_outlined,
-                          size: 14,
-                          color: isSelected
-                              ? Colors.white
-                              : (isDone
-                                  ? const Color(0xFF1D4ED8)
-                                  : const Color(0xFFCBD5E1)),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 );
