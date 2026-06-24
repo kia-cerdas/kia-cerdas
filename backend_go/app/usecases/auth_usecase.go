@@ -384,7 +384,7 @@ func (m *Main) Login(req *models.LoginRequest) (*models.LoginResponse, error) {
 	
 	// Untuk bidan, ambil desa dari posyandu tempat bertugas
 	if normalizeRoleName(user.Role.Name) == "Bidan" && posyanduID != nil {
-		posyandu, err := m.repository.Posyandu.FindByID(*posyanduID)
+		posyandu, err := m.repository.Kependudukan.FindPosyanduByID(*posyanduID)
 		if err == nil && posyandu != nil && posyandu.DesaID != nil {
 			desaID = posyandu.DesaID
 			desa, err := m.repository.Desa.FindByID(*posyandu.DesaID)
