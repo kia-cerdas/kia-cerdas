@@ -87,8 +87,9 @@ const emptyRingkasan = (ibuData) => ({
   bayi_anak_ke: "", bayi_berat_lahir_kg: "",
   bayi_panjang_badan_cm: "", bayi_lingkar_kepala_cm: "",
   nama_anak: "", anak_tanggal_lahir: "", anak_jenis_kelamin: "",
-  anak_nama_ibu: ibuData?.kependudukan?.nama_lengkap || "",
-  anak_nama_ayah: ibuData?.suami?.nama_lengkap || "",
+   tempat_lahir: "", 
+  anak_nama_ibu: ibuData?.kependudukan?.nama_anggota_keluarga || "",
+  anak_nama_ayah: ibuData?.suami?.nama_anggota_keluarga || "",
 });
 
 // ─── SuratKeteranganLahir ───────────────────────────────────────────────────
@@ -417,7 +418,10 @@ function RingkasanForm({ initial, onSubmit, onCancel, saving, title }) {
             <input name="nama_anak" value={form.nama_anak} onChange={handleChange} className="w-full border rounded-lg px-2 py-1.5 text-sm" /></div>
                       <div><label className="block text-xs font-medium mb-1">Tanggal Lahir Anak</label>
             <input type="date" name="anak_tanggal_lahir" value={form.anak_tanggal_lahir} readOnly disabled title="Otomatis mengikuti Tanggal Melahirkan" className="w-full bg-gray-100 border border-gray-200 text-gray-500 rounded-lg px-2 py-1.5 text-sm cursor-not-allowed" /></div>
-            
+             <div>
+      <label className="block text-xs font-medium mb-1">Tempat Lahir</label>  
+      <input name="tempat_lahir" value={form.tempat_lahir} onChange={handleChange} placeholder="Contoh: Balige" className="w-full border rounded-lg px-2 py-1.5 text-sm" />
+    </div>
           <div><label className="block text-xs font-medium mb-1">Jenis Kelamin</label>
             <select name="anak_jenis_kelamin" value={form.anak_jenis_kelamin} onChange={handleChange} className="w-full border rounded-lg px-2 py-1.5 text-sm">
               <option value="">-- Pilih --</option>
@@ -888,13 +892,14 @@ export default function PelayananPersalinan() {
           nama: form.nama_anak,
           jenis_kelamin: form.anak_jenis_kelamin || "",
           tanggal_lahir: form.anak_tanggal_lahir || "",
+           tempat_lahir: form.tempat_lahir || "", 
           anak_ke: parseInt(form.bayi_anak_ke) || 0,
           berat_lahir_kg: form.bayi_berat_lahir_kg ? parseFloat(form.bayi_berat_lahir_kg) : null,
           tinggi_lahir_cm: form.bayi_panjang_badan_cm ? parseFloat(form.bayi_panjang_badan_cm) : null,
           lingkar_kepala_cm: form.bayi_lingkar_kepala_cm ? parseFloat(form.bayi_lingkar_kepala_cm) : null,
           // Ambil langsung dari ibuData (state terbaru), bukan dari snapshot form, agar tidak pernah kosong
-          nama_ibu: ibuData?.kependudukan?.nama_lengkap || ibuData?.nama_ibu || ibuData?.nama_lengkap || "",
-          nama_ayah: ibuData?.suami?.nama_lengkap || ibuData?.nama_suami || ibuData?.nama_ayah || "",
+          nama_ibu: ibuData?.kependudukan?.nama_anggota_keluarga || ibuData?.nama_ibu || ibuData?.nama_anggota_keluarga || "",
+          nama_ayah: ibuData?.suami?.nama_anggota_keluarga || ibuData?.nama_suami || ibuData?.nama_anggota_keluarga || "",
         });
       }
 
@@ -957,13 +962,14 @@ export default function PelayananPersalinan() {
             nama: form.nama_anak,
             jenis_kelamin: form.anak_jenis_kelamin || "",
             tanggal_lahir: form.anak_tanggal_lahir || "",
+            tempat_lahir: form.tempat_lahir || "",
             anak_ke: parseInt(form.bayi_anak_ke) || 0,
             berat_lahir_kg: form.bayi_berat_lahir_kg ? parseFloat(form.bayi_berat_lahir_kg) : null,
             tinggi_lahir_cm: form.bayi_panjang_badan_cm ? parseFloat(form.bayi_panjang_badan_cm) : null,
             lingkar_kepala_cm: form.bayi_lingkar_kepala_cm ? parseFloat(form.bayi_lingkar_kepala_cm) : null,
             // Ambil langsung dari ibuData (state terbaru), bukan dari snapshot form, agar tidak pernah kosong
-            nama_ibu: ibuData?.kependudukan?.nama_lengkap || ibuData?.nama_ibu || ibuData?.nama_lengkap || "",
-            nama_ayah: ibuData?.suami?.nama_lengkap || ibuData?.nama_suami || ibuData?.nama_ayah || "",
+            nama_ibu: ibuData?.kependudukan?.nama_anggota_keluarga || ibuData?.nama_ibu || ibuData?.nama_anggota_keluarga || "",
+            nama_ayah: ibuData?.suami?.nama_anggota_keluarga || ibuData?.nama_suami || ibuData?.nama_ayah || "",
           });
         }
       }
@@ -1249,6 +1255,7 @@ export default function PelayananPersalinan() {
                     ...editTarget,
                     // Field tanggal harus diformat YYYY-MM-DD agar terbaca oleh <input type="date">
                     tanggal_melahirkan: editTarget.tanggal_melahirkan ? String(editTarget.tanggal_melahirkan).split("T")[0] : "",
+                    tempat_lahir: "",
                     umur_kehamilan_minggu: editTarget.umur_kehamilan_minggu ?? "",
                     penolong_proses_melahirkan: editTarget.penolong_proses_melahirkan ?? "",
                     cara_melahirkan: editTarget.cara_melahirkan ?? "",
@@ -1264,8 +1271,8 @@ export default function PelayananPersalinan() {
                     bayi_panjang_badan_cm: editTarget.bayi_panjang_badan_cm ?? "",
                     bayi_lingkar_kepala_cm: editTarget.bayi_lingkar_kepala_cm ?? "",
                     nama_anak: "", anak_tanggal_lahir: "", anak_jenis_kelamin: "",
-                    anak_nama_ibu: ibuData?.kependudukan?.nama_lengkap || editTarget.anak_nama_ibu || "",
-                    anak_nama_ayah: ibuData?.suami?.nama_lengkap || editTarget.anak_nama_ayah || "",
+                    anak_nama_ibu: ibuData?.kependudukan?.nama_anggota_keluarga || editTarget.anak_nama_ibu || "",
+                    anak_nama_ayah: ibuData?.suami?.nama_anggota_keluarga || editTarget.anak_nama_ayah || "",
                   }}
                   title={`Edit Kelahiran`}
                   onSubmit={handleSubmitEdit}

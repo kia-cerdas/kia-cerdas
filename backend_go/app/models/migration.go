@@ -93,7 +93,6 @@ func AutoMigrate(db *gorm.DB) error {
 		&PemeriksaanDokterTrimester1{},
 		&PemeriksaanDokterTrimester3{},
 		&PemeriksaanLaboratoriumJiwa{},
-		&PemeriksaanLanjutanTrimester3{},
 		// &CatatanPelayananTrimester1{},
 		&CatatanPelayananTrimester2{},
 		// &CatatanPelayananTrimester3{},

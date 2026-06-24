@@ -45,7 +45,6 @@ type Main struct {
 	PemeriksaanDokterTrimester1   PemeriksaanDokterTrimester1Usecase
 	PemeriksaanDokterTrimester3   PemeriksaanDokterTrimester3Usecase
 	PemeriksaanLaboratoriumJiwa   PemeriksaanLaboratoriumJiwaUsecase
-	PemeriksaanLanjutanTrimester3 PemeriksaanLanjutanTrimester3Usecase
 	CatatanPelayananTrimester2    CatatanPelayananTrimester2Usecase
 	CatatanPelayananNifas         CatatanPelayananNifasUsecase
 	CatatanPelayananKehamilan     CatatanPelayananKehamilanUsecase
@@ -234,7 +233,6 @@ func Init(opts Options) *Main {
 		opts.Repository.PemeriksaanLaboratoriumJiwa,
 	)
 	m.PemeriksaanLaboratoriumJiwa = NewPemeriksaanLaboratoriumJiwaUsecase(opts.Repository.PemeriksaanLaboratoriumJiwa)
-	m.PemeriksaanLanjutanTrimester3 = NewPemeriksaanLanjutanTrimester3Usecase(opts.Repository.PemeriksaanLanjutanTrimester3)
 	m.CatatanPelayananTrimester2 = NewCatatanPelayananTrimester2Usecase(opts.Repository.CatatanPelayananTrimester2)
 	m.CatatanPelayananNifas = NewCatatanPelayananNifasUsecase(opts.Repository.CatatanPelayananNifas)
 	m.CatatanPelayananKehamilan = NewCatatanPelayananKehamilanUsecase(opts.Repository.CatatanPelayananKehamilan)
