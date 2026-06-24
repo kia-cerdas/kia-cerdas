@@ -62,7 +62,7 @@ class _PedomanIbuBayiScreenState extends State<PedomanIbuBayiScreen> {
                     margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     decoration: BoxDecoration(
-                      color: isSelected ? const Color(0xFF2563EB) : Colors.white,
+                      color: isSelected ? const Color(0xFF185FA5) : Colors.white,
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(color: const Color(0xFFE5E7EB)),
                     ),

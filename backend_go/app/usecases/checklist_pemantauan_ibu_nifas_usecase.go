@@ -115,3 +115,11 @@ func (u *ChecklistPemantauanIbuNifasUsecase) Verify(id int32, namaKader string, 
  
 	return u.repo.UpdateVerifikasi(data)
 }
+
+func (u *ChecklistPemantauanIbuNifasUsecase) GetByKehamilanID(kehamilanID int32) ([]models.ChecklistPemantauanIbuNifas, error) {
+    return u.repo.FindByKehamilanID(kehamilanID)
+}
+
+func (u *ChecklistPemantauanIbuNifasUsecase) GetAllBidan() ([]models.ChecklistPemantauanIbuNifas, error) {
+    return u.repo.FindAllBidan()
+}

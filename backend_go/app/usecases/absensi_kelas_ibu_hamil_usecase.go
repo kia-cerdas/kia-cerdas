@@ -11,8 +11,11 @@ type AbsensiKelasIbuHamilUsecase interface {
 	GetMine(userID int32) ([]models.AbsensiKelasIbuHamil, error)
 	SaveMine(userID int32, req models.AbsensiKelasIbuHamil) (*models.AbsensiKelasIbuHamil, error)
 	// Kaader
-	GetAll(posyanduID *int32) ([]models.AbsensiKelasIbuHamil, error) 
+	GetAll() ([]models.AbsensiKelasIbuHamil, error) 
 	Verify(id int32, namaKader string, tanggalParaf *time.Time) error
+	// FIX: Reject WAJIB dideklarasikan di interface juga,
+	// karena controller memanggil c.usecase.Reject(...) lewat tipe interface ini.
+	Reject(id int32) error
 }
 
 type absensiKelasIbuHamilUsecase struct {
@@ -98,6 +101,16 @@ func (u *absensiKelasIbuHamilUsecase) SaveMine(
 		}
 	}
 
+	// Untuk atur duplikasi tanggal di absensi kelas ibu hamil
+	if req.Tanggal != nil {
+		reqDateStr := req.Tanggal.Format("2006-01-02")
+		for _, a := range existingList {
+			if a.Tanggal != nil && a.Tanggal.Format("2006-01-02") == reqDateStr {
+				return nil, errors.New("absensi untuk tanggal ini sudah pernah dicatat")
+			}
+		}
+	}
+
 	// Nomor pertemuan dihitung otomatis dari jumlah data yang sudah ada.
 	// Tidak ada lagi batas maksimal 9.
 	data := &models.AbsensiKelasIbuHamil{
@@ -119,8 +132,8 @@ func (u *absensiKelasIbuHamilUsecase) SaveMine(
 
 // BAGIAN KADER
 
-func (u *absensiKelasIbuHamilUsecase) GetAll(posyanduID *int32) ([]models.AbsensiKelasIbuHamil, error) {
-	return u.repo.FindAllWithIbu(posyanduID)
+func (u *absensiKelasIbuHamilUsecase) GetAll() ([]models.AbsensiKelasIbuHamil, error) {
+	return u.repo.FindAllWithIbu()
 }
  
 func (u *absensiKelasIbuHamilUsecase) Verify(id int32, namaKader string, tanggalParaf *time.Time) error {
@@ -138,4 +151,20 @@ func (u *absensiKelasIbuHamilUsecase) Verify(id int32, namaKader string, tanggal
 	data.Status = "Terverifikasi"
  
 	return u.repo.Update(data)
+}
+
+// Untuk absensi kelas ibu hamil
+func (u *absensiKelasIbuHamilUsecase) Reject(id int32) error {
+    data, err := u.repo.FindByID(id)
+    if err != nil {
+        return errors.New("data absensi tidak ditemukan")
+    }
+
+    if data.Status == "Terverifikasi" {
+        return errors.New("absensi ini sudah terverifikasi dan tidak dapat diubah kembali")
+    }
+
+    data.Status = "Ditolak"
+
+    return u.repo.Update(data)
 }

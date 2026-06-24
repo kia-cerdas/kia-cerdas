@@ -35,7 +35,6 @@ type Main struct {
 	PemeriksaanDokterTrimester1   *PemeriksaanDokterTrimester1Controller
 	PemeriksaanDokterTrimester3   *PemeriksaanDokterTrimester3Controller
 	PemeriksaanLaboratoriumJiwa   *PemeriksaanLaboratoriumJiwaController
-	PemeriksaanLanjutanTrimester3 *PemeriksaanLanjutanTrimester3Controller
 	CatatanPelayananTrimester2    *CatatanPelayananTrimester2Controller
 	CatatanPelayananNifas         *CatatanPelayananNifasController
 	CatatanPelayananKehamilan     *CatatanPelayananKehamilanController
@@ -164,7 +163,6 @@ func Init(opts Options) *Main {
 	m.PemeriksaanDokterTrimester1 = NewPemeriksaanDokterTrimester1Controller(opts.UseCases.PemeriksaanDokterTrimester1)
 	m.PemeriksaanDokterTrimester3 = NewPemeriksaanDokterTrimester3Controller(opts.UseCases.PemeriksaanDokterTrimester3)
 	m.PemeriksaanLaboratoriumJiwa = NewPemeriksaanLaboratoriumJiwaController(opts.UseCases.PemeriksaanLaboratoriumJiwa)
-	m.PemeriksaanLanjutanTrimester3 = NewPemeriksaanLanjutanTrimester3Controller(opts.UseCases.PemeriksaanLanjutanTrimester3)
 	m.CatatanPelayananTrimester2 = NewCatatanPelayananTrimester2Controller(opts.UseCases.CatatanPelayananTrimester2)
 	m.CatatanPelayananNifas = NewCatatanPelayananNifasController(opts.UseCases.CatatanPelayananNifas)
 	m.CatatanPelayananKehamilan = NewCatatanPelayananKehamilanController(opts.UseCases.CatatanPelayananKehamilan)

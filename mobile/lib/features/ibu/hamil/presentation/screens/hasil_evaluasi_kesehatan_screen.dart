@@ -1073,10 +1073,39 @@ class _HasilEvaluasiKesehatanScreenState
     return Scaffold(
       backgroundColor: const Color(0xFFF6F8FC),
       appBar: AppBar(
-        title: const Text("Hasil Evaluasi Kesehatan"),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF1E293B),
         elevation: 0,
+        centerTitle: false,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF1E293B)),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Hasil Evaluasi Kesehatan',
+              style: TextStyle(
+                color: Color.fromARGB(255, 0, 0, 0),
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+            Text(
+              'Evaluasi kesehatan dan faktor risiko kehamilan',
+              style: TextStyle(
+                color: Color(0xFF64748B),
+                fontWeight: FontWeight.normal,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1.0),
+          child: Container(color: Colors.grey.shade200, height: 1.0),
+        ),
       ),
       body: FutureBuilder<EvaluasiKesehatanIbuModel>(
         future: _future,
@@ -1383,19 +1412,44 @@ class _HeaderCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.primary,
-        borderRadius: BorderRadius.circular(22),
+        color: const Color(0xFFEFF6FF),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFBFDBFE)),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            "Evaluasi Kesehatan Ibu",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-            ),
+          Row(
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(13),
+                ),
+                child: const Icon(Icons.favorite_outline,
+                    color: Colors.white, size: 22),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Text(
+                  "Evaluasi Kesehatan Ibu",
+                  style: TextStyle(
+                    color: Color(0xFF1E3A5F),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 14),
           _HeaderRow("Tanggal Periksa", formatDate(data.tanggalPeriksa)),
@@ -1424,7 +1478,7 @@ class _HeaderRow extends StatelessWidget {
             child: Text(
               label,
               style: const TextStyle(
-                color: Colors.white70,
+                color: Color(0xFF4A6FA5),
                 fontSize: 12,
               ),
             ),
@@ -1433,7 +1487,7 @@ class _HeaderRow extends StatelessWidget {
             child: Text(
               value.isEmpty ? '-' : value,
               style: const TextStyle(
-                color: Colors.white,
+                color: Color(0xFF1E3A5F),
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
               ),

@@ -53,28 +53,32 @@ export default function MainLayout({ children }) {
 
   return (
     <div className="flex h-screen overflow-hidden">
+      {/* Overlay backdrop untuk mobile saat sidebar terbuka */}
+      {isSidebarOpen && !isDesktop && (
+        <div
+          className="fixed inset-0 bg-black/40 z-40 md:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
-      {/* Content - dengan margin left saat sidebar terbuka (hanya di desktop) */}
-      <div 
+      {/* Content */}
+      <div
         className="flex-1 flex flex-col overflow-hidden transition-all duration-300"
         style={{
-          // Margin left hanya di desktop saat sidebar terbuka
           marginLeft: isDesktop && isSidebarOpen ? '256px' : '0',
         }}
       >
-        <Header 
-          onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} 
+        <Header
+          onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
           isSidebarOpen={isSidebarOpen}
         />
 
-        {/* Breadcrumb Navigation */}
         <Breadcrumb />
 
-        {/* Main Content - Hanya area ini yang bisa scroll kebawah */}
         <main className="flex-1 overflow-y-auto px-4 pb-4 pt-2 md:px-8 md:pb-8 md:pt-3 custom-scrollbar">
-          {/* Container agar konten tidak terlalu lebar di layar ultra-wide */}
           <div className="max-w-7xl mx-auto">
             {children}
           </div>

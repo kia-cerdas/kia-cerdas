@@ -23,7 +23,7 @@ class _Pedoman1224BulanScreenState extends State<Pedoman1224BulanScreen> {
             "12 - 24 Bulan: Beri Makanan Bergizi dan Periksa Rutin ke Posyandu untuk Cegah Stunting",
             style: TextStyle(
               fontSize: 14,
-              color: Color(0xFF2563EB),
+              color: Color(0xFF185FA5),
               fontWeight: FontWeight.w600,
               height: 1.4,
             ),

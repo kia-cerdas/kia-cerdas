@@ -630,6 +630,52 @@ func (m *Main) GetPertumbuhanChart(anakID uint) (map[string]interface{}, error) 
 	}, nil
 }
 
+// GetPertumbuhanChartByCategory returns riwayat + standar data for a specific category.
+func (m *Main) GetPertumbuhanChartByCategory(anakID uint, kategori string) (map[string]interface{}, error) {
+	dataAnak, err := m.repository.GetAnakByID(anakID)
+	if err != nil {
+		return nil, err
+	}
+
+	_, rawGender, err := extractAnakTanggalLahirDanGender(dataAnak)
+	if err != nil {
+		return nil, err
+	}
+	gender := sanitizeGender(rawGender)
+	genderNorm := normalizeGenderStr(gender)
+
+	riwayat, _ := m.repository.GetRiwayatPertumbuhanByAnakID(anakID)
+
+	type RiwayatItem struct {
+		UsiaUkurBulan int     `json:"usia_ukur_bulan"`
+		BeratBadan    float64 `json:"berat_badan"`
+		TinggiBadan   float64 `json:"tinggi_badan"`
+		HasilLila     float64 `json:"hasil_lila"`
+		LingkarKepala float64 `json:"lingkar_kepala"`
+		IMT           float64 `json:"imt"`
+		TglUkur       string  `json:"tgl_ukur"`
+	}
+	riwayatList := make([]RiwayatItem, 0, len(riwayat))
+	for _, r := range riwayat {
+		riwayatList = append(riwayatList, RiwayatItem{
+			UsiaUkurBulan: r.UsiaUkurBulan,
+			BeratBadan:    r.BeratBadan,
+			TinggiBadan:   r.TinggiBadan,
+			HasilLila:     r.HasilLila,
+			LingkarKepala: r.LingkarKepala,
+			IMT:           r.HitungIMT(),
+			TglUkur:       r.TglUkur.Format("2006-01-02"),
+		})
+	}
+
+	standar, _ := m.repository.GetMasterStandarByFilter(kategori, genderNorm)
+
+	return map[string]interface{}{
+		"riwayat": riwayatList,
+		"standar": standar,
+	}, nil
+}
+
 func normalizeGenderStr(gender string) string {
 	v := strings.TrimSpace(strings.ToLower(gender))
 	if v == "m" || v == "male" || v == "l" || strings.Contains(v, "laki") {

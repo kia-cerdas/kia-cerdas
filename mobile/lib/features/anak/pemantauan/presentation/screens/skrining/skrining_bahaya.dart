@@ -120,7 +120,7 @@ class _SkriningBahayaScreenState extends State<SkriningBahayaScreen> {
                         style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFFDC2626),
+                          color: Color(0xFFA32D2D),
                         ),
                       ),
                     ),
@@ -200,7 +200,7 @@ class _SkriningBahayaScreenState extends State<SkriningBahayaScreen> {
                 child: ElevatedButton(
                   onPressed: _showResults,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFDC2626),
+                    backgroundColor: const Color(0xFFA32D2D),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -281,7 +281,7 @@ class _SkriningBahayaScreenState extends State<SkriningBahayaScreen> {
                           checkColor: Colors.white,
                           fillColor: MaterialStateProperty.all(
                             isChecked
-                                ? const Color(0xFF2563EB)
+                                ? const Color(0xFF185FA5)
                                 : Colors.grey.shade300,
                           ),
                         ),
@@ -303,7 +303,7 @@ class _SkriningBahayaScreenState extends State<SkriningBahayaScreen> {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFDC2626),
+                              color: const Color(0xFFA32D2D),
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: const Text(
@@ -350,7 +350,7 @@ class _SkriningBahayaScreenState extends State<SkriningBahayaScreen> {
           hasEmergency ? 'SEGERA KE FASILITAS' : 'Hasil Skrining',
           style: TextStyle(
             color: hasEmergency
-                ? const Color(0xFFDC2626)
+                ? const Color(0xFFA32D2D)
                 : const Color(0xFF059669),
             fontWeight: FontWeight.bold,
           ),

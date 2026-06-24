@@ -62,82 +62,79 @@ class _PertumbuhanInfoScreenState extends State<PertumbuhanInfoScreen> {
       backgroundColor: const Color(0xFFF1F5F9),
       appBar: AppBar(
         backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF1E293B),
         elevation: 0,
+        centerTitle: false,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF1E293B)),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Pertumbuhan',
-          style: TextStyle(
-              color: Colors.black87,
-              fontSize: 18,
-              fontWeight: FontWeight.bold),
+        title: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Pertumbuhan',
+              style: TextStyle(
+                color: Color(0xFF1E293B),
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+            Text(
+              'Informasi standar pertumbuhan anak',
+              style: TextStyle(
+                color: Color(0xFF64748B),
+                fontWeight: FontWeight.normal,
+                fontSize: 12,
+              ),
+            ),
+          ],
         ),
-        centerTitle: false,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1.0),
+          child: Container(color: Colors.grey.shade200, height: 1.0),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildBanner(),
-            const SizedBox(height: 14),
             _buildLihatGrafikButton(),
             const SizedBox(height: 20),
             _buildSectionTitle('3 Indikator Pertumbuhan',
-                color: const Color(0xFFF59E0B)),
+                color: const Color(0xFFBA7517)),
             const SizedBox(height: 10),
-            _buildIndikatorCard(
-              Icons.monitor_weight_outlined,
-              'Berat Badan (BB)',
-              'Ditimbang setiap bulan di Posyandu sampai usia 5 tahun. Kenaikan BB adalah tanda anak sehat.',
-              const Color(0xFF3B82F6),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.04), blurRadius: 8)
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildIndikatorItem('Berat Badan (BB)', 'Ditimbang setiap bulan di Posyandu sampai usia 5 tahun. Kenaikan BB adalah tanda anak sehat.'),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                    child: Divider(height: 1, color: Color(0xFFF1F5F9)),
+                  ),
+                  _buildIndikatorItem('Panjang/Tinggi Badan', 'Diukur tiap bulan untuk deteksi dini stunting. <2 tahun diukur berbaring, ≥2 tahun berdiri.'),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                    child: Divider(height: 1, color: Color(0xFFF1F5F9)),
+                  ),
+                  _buildIndikatorItem('Lingkar Kepala (LK)', 'Diukur tiap 3 bulan sampai 1 tahun, lalu tiap 6 bulan hingga 6 tahun untuk pantau perkembangan otak.'),
+                ],
+              ),
             ),
-            const SizedBox(height: 8),
-            _buildIndikatorCard(
-              Icons.straighten,
-              'Panjang/Tinggi Badan',
-              'Diukur tiap bulan untuk deteksi dini stunting. <2 tahun diukur berbaring, ≥2 tahun berdiri.',
-              const Color(0xFF8B5CF6),
-            ),
-            const SizedBox(height: 8),
-            _buildIndikatorCard(
-              Icons.circle_outlined,
-              'Lingkar Kepala (LK)',
-              'Diukur tiap 3 bulan sampai 1 tahun, lalu tiap 6 bulan hingga 6 tahun untuk pantau perkembangan otak.',
-              const Color(0xFF10B981),
-            ),
-            const SizedBox(height: 20),
-            _buildSectionTitle('Interpretasi Grafik KMS',
-                color: const Color(0xFF10B981)),
-            const SizedBox(height: 10),
-            _buildKMSBox(
-              color: const Color(0xFFDCFCE7),
-              textColor: const Color(0xFF15803D),
-              title: 'Naik (N) — Sehat ✓',
-              desc:
-                  'Garis BB naik mengikuti pita warna atau pindah ke pita di atasnya.',
-            ),
-            const SizedBox(height: 8),
-            _buildKMSBox(
-              color: const Color(0xFFFEF3C7),
-              textColor: const Color(0xFFB45309),
-              title: 'Tidak Naik (T) — Waspada',
-              desc:
-                  'Garis mendatar atau turun. Konsultasikan ke kader/Puskesmas.',
-            ),
-            const SizedBox(height: 8),
-            _buildKMSBox(
-              color: const Color(0xFFFEE2E2),
-              textColor: const Color(0xFFB91C1C),
-              title: 'Bawah Garis Merah (BGM)',
-              desc:
-                  'Tanda gizi buruk. Segera rujuk ke fasilitas kesehatan.',
-            ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
             _buildSectionTitle('Standar BB & TB Median (WHO)',
-                color: const Color(0xFF2563EB)),
+                color: const Color(0xFF185FA5)),
             const SizedBox(height: 10),
             _buildWhoTable(),
             const SizedBox(height: 24),
@@ -147,102 +144,108 @@ class _PertumbuhanInfoScreenState extends State<PertumbuhanInfoScreen> {
     );
   }
 
-  // ─── Widgets ────────────────────────────────────────────────────
-
-  Widget _buildBanner() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 16),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF1D4ED8), Color(0xFF2563EB)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        children: const [
-          CircleAvatar(
-            radius: 28,
-            backgroundColor: Colors.white24,
-            child: Icon(Icons.trending_up, color: Colors.white, size: 30),
-          ),
-          SizedBox(height: 12),
-          Text(
-            'Tumbuh Optimal',
-            style: TextStyle(
-                color: Colors.white,
-                fontSize: 22,
-                fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 6),
-          Text(
-            'Sesuai Buku KIA 2024 — Standar WHO',
-            style: TextStyle(color: Colors.white70, fontSize: 13),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildLihatGrafikButton() {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => GrafikPertumbuhanScreen(anak: widget.anak),
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(16),
+      elevation: 4,
+      shadowColor: const Color(0xFF185FA5).withValues(alpha: 0.4),
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => GrafikPertumbuhanScreen(anak: widget.anak),
+            ),
+          );
+        },
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          width: double.infinity,
+        height: 150,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: LinearGradient(
+              colors: [
+                const Color(0xFF185FA5).withValues(alpha: 1.0),   
+                const Color(0xFF185FA5).withValues(alpha: 0.85), 
+                const Color(0xFF185FA5).withValues(alpha: 0.35),
+              ],
+              stops: const [0.0, 0.5, 1.0],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ),
           ),
-        );
-      },
-      child: Container(
-        width: double.infinity,
-        padding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1E3A5F),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 42,
-              height: 42,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child:
-                  const Icon(Icons.show_chart, color: Colors.white, size: 22),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text(
-                    'Lihat Grafik Pertumbuhan',
-                    style: TextStyle(
+          child: Stack(
+            children: [
+              // Konten utama
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Ikon kiri
+                    Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.25),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(Icons.trending_up, color: Colors.white, size: 24),
+                    ),
+                    const SizedBox(width: 14),
+                    // Teks
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Lihat Grafik\nPertumbuhan',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              height: 1.25,
+                            ),
+                          ),
+                          SizedBox(height: 6),
+                          Text(
+                            'Ketahui status gizi anak sesuai standar WHO',
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Tombol panah kanan
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: const BoxDecoration(
                         color: Colors.white,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600),
-                  ),
-                  SizedBox(height: 3),
-                  Text(
-                    'BB/U, BB/PB, PB/U, LK/U, IMT/U dengan Z-score',
-                    style: TextStyle(color: Colors.white60, fontSize: 12),
-                  ),
-                ],
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.chevron_right,
+                        color: Color(0xFF185FA5),
+                        size: 22,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const Icon(Icons.arrow_forward_ios,
-                color: Colors.white60, size: 14),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
+  // ── AKHIR BAGIAN YANG DIUBAH ──────────────────────────────────
 
   Widget _buildSectionTitle(String title, {required Color color}) {
     return Row(
@@ -265,76 +268,34 @@ class _PertumbuhanInfoScreenState extends State<PertumbuhanInfoScreen> {
     );
   }
 
-  Widget _buildIndikatorCard(
-      IconData icon, String title, String desc, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04), blurRadius: 8)
-        ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(10),
+  Widget _buildIndikatorItem(String title, String desc) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              width: 8,
+              height: 8,
+              decoration: const BoxDecoration(
+                color: Color(0xFFBA7517),
+                shape: BoxShape.circle,
+              ),
             ),
-            child: Icon(icon, color: color, size: 20),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title,
-                    style: const TextStyle(
-                        fontSize: 13, fontWeight: FontWeight.w700)),
-                const SizedBox(height: 4),
-                Text(desc,
-                    style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey.shade600,
-                        height: 1.4)),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildKMSBox(
-      {required Color color,
-      required Color textColor,
-      required String title,
-      required String desc}) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-          color: color, borderRadius: BorderRadius.circular(10)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title,
+            const SizedBox(width: 8),
+            Text(title,
+                style: const TextStyle(
+                    fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87)),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Padding(
+          padding: const EdgeInsets.only(left: 16),
+          child: Text(desc,
               style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: textColor)),
-          const SizedBox(height: 4),
-          Text(desc,
-              style: TextStyle(
-                  fontSize: 12, color: textColor.withValues(alpha: 0.85))),
-        ],
-      ),
+                  fontSize: 13, color: Colors.grey.shade600, height: 1.4)),
+        ),
+      ],
     );
   }
 
@@ -355,7 +316,7 @@ class _PertumbuhanInfoScreenState extends State<PertumbuhanInfoScreen> {
         children: [
           // Header row
           Container(
-            color: const Color(0xFF1E3A5F),
+            color: const Color(0xFF185FA5),
             padding:
                 const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
             child: Row(
@@ -374,7 +335,7 @@ class _PertumbuhanInfoScreenState extends State<PertumbuhanInfoScreen> {
               padding: EdgeInsets.all(20),
               child: Center(
                   child: CircularProgressIndicator(
-                      color: Color(0xFF2563EB), strokeWidth: 2)),
+                      color: Color(0xFF185FA5), strokeWidth: 2)),
             )
           else
             ...List.generate(usiaList.length, (i) {
@@ -450,4 +411,26 @@ class _TCell extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Painter untuk grid lines dekoratif di background tombol grafik
+class _GridPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.08)
+      ..strokeWidth = 1;
+
+    // Garis horizontal
+    for (double y = 0; y < size.height; y += size.height / 4) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
+    }
+    // Garis vertikal
+    for (double x = 0; x < size.width; x += size.width / 6) {
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_GridPainter oldDelegate) => false;
 }

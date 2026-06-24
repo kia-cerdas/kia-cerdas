@@ -20,13 +20,13 @@ class DashboardMenuData {
   // Quick menu Hamil — 6 item, grid 3 kolom (sesuai desain lib_desain)
   static List<Map<String, dynamic>> hamilQuickMenuItems = [
     {
-      'label': 'Grafik BB Ibu',
+      'label': 'Grafik Berat Badan Ibu',
       'icon': Icons.show_chart,
       'color': Colors.blue,
       'key': 'bb_ibu',
     },
     {
-      'label': 'Grafik DJJ & TFU',
+      'label': 'Grafik Evaluasi kehamilan',
       'icon': Icons.monitor_heart_outlined,
       'color': Colors.purple,
       'key': 'djj_tfu',

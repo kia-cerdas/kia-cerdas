@@ -126,10 +126,39 @@ class _SkriningPreeklampsiaScreenState
         return Scaffold(
           backgroundColor: const Color(0xFFF6F8FC),
           appBar: AppBar(
-            title: const Text("Skrining Preeklampsia"),
-            backgroundColor: AppColors.primary,
-            foregroundColor: Colors.white,
+            backgroundColor: Colors.white,
+            foregroundColor: const Color(0xFF1E293B),
             elevation: 0,
+            centerTitle: false,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Color(0xFF1E293B)),
+              onPressed: () => Navigator.pop(context),
+            ),
+            title: const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Skrining Preeklampsia',
+                  style: TextStyle(
+                    color: Color.fromARGB(255, 0, 0, 0),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
+                ),
+                Text(
+                  'Deteksi dini risiko preeklampsia pada kehamilan',
+                  style: TextStyle(
+                    color: Color(0xFF64748B),
+                    fontWeight: FontWeight.normal,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(1.0),
+              child: Container(color: Colors.grey.shade200, height: 1.0),
+            ),
           ),
           body: Builder(
             builder: (context) {

@@ -20,6 +20,7 @@ import {
   Eye,
   EyeOff,
   AlertCircle,
+  ClipboardList,
 } from "lucide-react";
 
 export default function SkriningDMGestasional() {
@@ -105,7 +106,7 @@ export default function SkriningDMGestasional() {
       !form.gula_darah_puasa_hasil ||
       form.gula_darah_puasa_hasil.trim() === ""
     ) {
-      newErrors.gula_darah_puasa_hasil = "Hasil gula darah puasa wajib diisi";
+      newErrors.gula_darah_puasa_hasil = "Hasil gula darah puasa Wajib Diisi";
     } else if (isNaN(parseFloat(form.gula_darah_puasa_hasil))) {
       newErrors.gula_darah_puasa_hasil = "Hasil harus berupa angka";
     } else if (parseFloat(form.gula_darah_puasa_hasil) < 0) {
@@ -117,7 +118,7 @@ export default function SkriningDMGestasional() {
       form.gula_darah_2_jam_post_prandial_hasil.trim() === ""
     ) {
       newErrors.gula_darah_2_jam_post_prandial_hasil =
-        "Hasil gula darah 2 jam post prandial wajib diisi";
+        "Hasil gula darah 2 jam post prandial Wajib Diisi";
     } else if (isNaN(parseFloat(form.gula_darah_2_jam_post_prandial_hasil))) {
       newErrors.gula_darah_2_jam_post_prandial_hasil =
         "Hasil harus berupa angka";
@@ -332,7 +333,7 @@ export default function SkriningDMGestasional() {
       console.error(err);
       Swal.fire({
         icon: "error",
-        title: "Error",
+        title: "Kesalahan",
         text: "Gagal menyimpan data skrining DM. Silakan coba lagi.",
       });
     } finally {
@@ -495,14 +496,14 @@ export default function SkriningDMGestasional() {
     return (
       <MainLayout>
         <div className="min-h-screen bg-[#F7FAFB] flex items-center justify-center">
-          <div className="text-[#185FA5] text-base">Memuat data...</div>
+          <div className="text-[#185FA5] text-base font-sans">Memuat Data</div>
         </div>
       </MainLayout>
     );
 
   return (
     <MainLayout>
-      <div className="min-h-screen bg-[#F7FAFB]">
+      <div className="min-h-screen bg-[#F7FAFB] font-sans">
         <div className="max-w-5xl mx-auto p-5 space-y-6">
           {/* Header */}
           <div className="flex items-center gap-4">
@@ -513,9 +514,14 @@ export default function SkriningDMGestasional() {
               <ArrowLeft size={16} />
               <span>Kembali</span>
             </button>
-            <h1 className="text-lg sm:text-2xl md:text-[28px] font-bold text-gray-900">
-              Skrining Diabetes Melitus Gestasional
-            </h1>
+            <div>
+              <h1 className="text-lg sm:text-2xl md:text-[28px] font-bold text-gray-900">
+                Skrining Diabetes Melitus Gestasional
+              </h1>
+              <p className="text-sm text-gray-500 mt-0.5">
+                Pemeriksaan gula darah untuk mendeteksi diabetes melitus gestasional pada ibu hamil.
+              </p>
+            </div>
           </div>
 
           {/* Banner peringatan usia kehamilan */}
@@ -580,31 +586,26 @@ export default function SkriningDMGestasional() {
 
           {/* Jika belum ada data dan form tidak aktif */}
           {!data && !showForm && (
-            <div className="bg-white rounded-xl shadow-sm p-8 text-center">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center">
               <div className="flex flex-col items-center gap-4">
-                <div className="p-4 bg-[#185FA5]/10 rounded-full">
-                  <Save size={48} className="text-[#185FA5]" />
+                <div className="p-5 rounded-full" style={{ backgroundColor: "#EBF3FC" }}>
+                  <ClipboardList size={40} style={{ color: "#185FA5" }} />
                 </div>
-                <h3 className="text-[22px] font-semibold text-[#185FA5]">
-                  Belum Ada Data Skrining Diabetes Melitus Gestasional
-                </h3>
-                <p className="text-gray-500 text-base max-w-md">
-                  Silakan lakukan skrining diabetes melitus gestasional (DMG)
-                  untuk ibu hamil ini.
+                <h3 className="text-lg font-bold text-gray-800">Tidak Ada Data Skrining Diabetes Melitus Gestasional</h3>
+                <p className="text-sm text-gray-500 max-w-sm">
+                  Belum ada data skrining diabetes melitus gestasional untuk kehamilan ini. Tambahkan data untuk memulai pemantauan kesehatan ibu hamil.
                 </p>
                 {canEdit && (
                   <button
                     onClick={handleAdd}
-                    className="bg-[#185FA5] text-white rounded-lg px-5 py-2.5 font-semibold flex items-center gap-2 text-base"
+                    className="text-white px-6 py-2.5 rounded-full font-semibold flex items-center gap-2 text-sm transition hover:opacity-90"
+                    style={{ backgroundColor: "#185FA5" }}
                   >
-                    <Plus size={18} /> Buat Skrining DM
+                    Tambah Skrining DM
                   </button>
                 )}
-                {!canEdit && !isActive && (
-                  <p className="text-gray-400 text-sm mt-2">
-                    Kehamilan sudah selesai (NON-AKTIF), tidak dapat menambahkan
-                    data baru.
-                  </p>
+                {!canEdit && (
+                  <p className="text-xs text-gray-400 mt-1">Hanya Dokter yang dapat menambahkan data Skrining Diabetes Melitus Gestasional.</p>
                 )}
               </div>
             </div>
@@ -620,9 +621,9 @@ export default function SkriningDMGestasional() {
                 {canEdit && (
                   <button
                     onClick={handleEdit}
-                    className="border border-[#185FA5] text-[#185FA5] rounded-lg px-4 py-1.5 flex items-center gap-1 text-base font-semibold hover:bg-[#185FA5]/5"
+                    className="border border-[#BA7517] text-[#BA7517] rounded-lg px-4 py-1.5 flex items-center gap-1 text-base font-semibold hover:bg-[#BA7517]/5"
                   >
-                    <Edit size={16} /> Edit Data
+                    <Edit size={16} /> Ubah Data
                   </button>
                 )}
               </div>
@@ -719,10 +720,10 @@ export default function SkriningDMGestasional() {
                 </div>
               </div>
               <div className="mt-4 text-sm text-gray-400 border-t pt-3">
-                Terakhir diperbarui:{" "}
+                Terakhir Diperbarui:{" "}
                 {data.updated_at
                   ? new Date(data.updated_at).toLocaleString()
-                  : "Belum diperbarui"}
+                  : "Belum Diperbarui"}
               </div>
             </div>
           )}
@@ -735,7 +736,7 @@ export default function SkriningDMGestasional() {
             >
               <div className="flex justify-between items-center">
                 <h2 className="text-[22px] font-semibold text-[#185FA5]">
-                  {data ? "Edit Skrining DM" : "Buat Skrining DM Baru"}
+                  {data ? "Ubah Skrining DM" : "Tambah Skrining DM"}
                 </h2>
                 <button
                   type="button"
@@ -827,7 +828,7 @@ export default function SkriningDMGestasional() {
                     </div>
                     <div>
                       <label className="block text-base font-medium mb-1">
-                        Rencana Tindak Lanjut (opsional)
+                        Rencana Tindak Lanjut (Opsional)
                       </label>
                       <input
                         type="text"
@@ -874,7 +875,7 @@ export default function SkriningDMGestasional() {
                     </div>
                     <div>
                       <label className="block text-base font-medium mb-1">
-                        Rencana Tindak Lanjut (opsional)
+                        Rencana Tindak Lanjut (Opsional)
                       </label>
                       <input
                         type="text"
@@ -893,25 +894,27 @@ export default function SkriningDMGestasional() {
               </div>
 
               {canEdit && (
-                <div className="flex gap-4 justify-end pt-4 border-t">
+                <div className="flex justify-end gap-3 pt-4 border-t">
                   <button
                     type="button"
                     onClick={handleCancelForm}
-                    className="px-5 py-2.5 border border-[#185FA5] text-[#185FA5] rounded-lg font-semibold text-base"
+                    className="px-7 py-2.5 rounded-full border-2 text-sm font-semibold transition hover:bg-gray-50"
+                    style={{ borderColor: "#185FA5", color: "#185FA5" }}
                   >
                     Batal
                   </button>
                   <button
                     type="submit"
                     disabled={saving}
-                    className="bg-[#185FA5] text-white px-6 py-2.5 rounded-lg flex items-center gap-2 text-base font-semibold hover:bg-[#185FA5]/90"
+                    className="text-white rounded-full px-8 py-2.5 text-sm font-semibold flex items-center gap-2 transition hover:opacity-90 shadow-sm disabled:opacity-50"
+                    style={{ backgroundColor: "#3B6D11" }}
                   >
                     {saving ? (
-                      <Loader2 className="animate-spin" size={18} />
+                      <Loader2 className="animate-spin" size={16} />
                     ) : (
-                      <Save size={18} />
+                      <Save size={16} />
                     )}
-                    {saving ? "Menyimpan..." : "Simpan Skrining DM"}
+                    {saving ? "Menyimpan" : "Simpan"}
                   </button>
                 </div>
               )}

@@ -156,100 +156,164 @@ func (u *AnakUseCase) CreateAnak(req models.CreateAnakRequest) (*models.AnakResp
 
 	return &resp, nil
 }
-
-// CreateAnakDenganPenduduk: create anak + auto-create kependudukan jika diperlukan
+// usecases/anak.go
 func (u *AnakUseCase) CreateAnakDenganPenduduk(req models.CreateAnakDenganPendudukRequest) (*models.AnakResponse, error) {
-	// Validasi input
-	if req.KehamilanID == 0 {
-		return nil, errors.New("kehamilan_id wajib diisi")
-	}
-	if req.IbuID == 0 {
-		return nil, errors.New("ibu_id wajib diisi")
-	}
-	if req.Nama == "" {
-		return nil, errors.New("nama anak wajib diisi")
-	}
-	if req.TanggalLahir == "" {
-		return nil, errors.New("tanggal_lahir anak wajib diisi")
-	}
-	if req.JenisKelamin == "" {
-		return nil, errors.New("jenis_kelamin wajib diisi")
-	}
+    // 1. Validasi input
+    if req.KehamilanID == 0 {
+        return nil, errors.New("kehamilan_id wajib diisi")
+    }
+    if req.IbuID == 0 {
+        return nil, errors.New("ibu_id wajib diisi")
+    }
+    if req.Nama == "" {
+        return nil, errors.New("nama anak wajib diisi")
+    }
+    if req.TanggalLahir == "" {
+        return nil, errors.New("tanggal_lahir anak wajib diisi")
+    }
+    if req.JenisKelamin == "" {
+        return nil, errors.New("jenis_kelamin wajib diisi")
+    }
 
-	// Parse tanggal lahir
-	tanggalLahir, err := time.Parse("2006-01-02", req.TanggalLahir)
-	if err != nil {
-		return nil, errors.New("format tanggal_lahir harus YYYY-MM-DD")
-	}
+    // 2. Parse tanggal lahir
+    tanggalLahir, err := time.Parse("2006-01-02", req.TanggalLahir)
+    if err != nil {
+        return nil, errors.New("format tanggal_lahir harus YYYY-MM-DD")
+    }
 
-	var desaID *int32
-	var posyanduID *int32
-	ibuRecord, errIbuTable := u.ibuRepo.FindByID(req.IbuID)
-	if errIbuTable == nil && ibuRecord != nil && ibuRecord.Kependudukan != nil {
-		desaID = ibuRecord.Kependudukan.DesaID
-		posyanduID = ibuRecord.Kependudukan.PosyanduID
-	}
+    // 3. Deklarasi variabel untuk semua field
+    var (
+        // Data Alamat
+        rw, rt, dusun, alamat string
+        // Data Keluarga
+        kodeKeluarga, namaKepalaKeluarga string
+        // Data Opsional
+        agama, kewarganegaraan, etnisSuku string
+        // Foreign Keys
+        desaID, posyanduID *int32
+    )
 
-	nikSementara := fmt.Sprintf("A%d", time.Now().UnixNano())
+    // 4. Ambil data ibu
+    ibuRecord, err := u.ibuRepo.FindByID(req.IbuID)
+    if err != nil {
+        return nil, fmt.Errorf("gagal mengambil data ibu: %w", err)
+    }
+    if ibuRecord == nil {
+        return nil, errors.New("data ibu tidak ditemukan")
+    }
 
-	newPenduduk := &models.Kependudukan{
-		NIK:                 &nikSementara,
-		NamaAnggotaKeluarga: req.Nama,
-		JenisKelamin:        req.JenisKelamin,
-		TanggalLahir:        tanggalLahir,
-		TempatLahir:         req.TempatLahir,
-		GolonganDarah:       req.GolonganDarah,
-		DesaID:              desaID,     // ✅ otomatis dari ibu
-		PosyanduID:          posyanduID, // ✅ otomatis dari ibu
-	}
+    // 5. Ambil semua data dari kependudukan ibu
+    if ibuRecord.Kependudukan != nil {
+        k := ibuRecord.Kependudukan
+        
+        // Data Alamat
+        rw = k.RW
+        rt = k.RT
+        dusun = k.Dusun
+        alamat = k.Alamat
+        
+        // Data Keluarga
+        kodeKeluarga = k.KodeKeluarga
+        namaKepalaKeluarga = k.NamaKepalaKeluarga
+        
+        // Data Opsional
+        agama = k.Agama
+        kewarganegaraan = k.Kewarganegaraan
+        etnisSuku = k.EtnisSuku
+       
+        
+        // Foreign Keys
+        desaID = k.DesaID
+        posyanduID = k.PosyanduID
+    }
 
-	if err := u.kependudukanRepo.Create(newPenduduk); err != nil {
-		return nil, fmt.Errorf("gagal membuat data penduduk anak: %w", err)
-	}
+    // 6. NIK = NULL
+    var nik *string = nil
 
-	// Buat anak dengan penduduk_id dari kependudukan yang baru dibuat
-	anak := &models.Anak{
-		KehamilanID:     req.KehamilanID,
-		PendudukID:      newPenduduk.IDKependudukan,
-		BeratLahirKg:    req.BeratLahirKg,
-		TinggiLahirCm:   req.TinggiLahirCm,
-		AnakKe:          req.AnakKe,
-		LingkarKepalaCm: req.LingkarKepalaCm,
-		NamaIbu:         req.NamaIbu,
-		NamaAyah:        req.NamaAyah,
-		IbuID:           req.IbuID,
-	}
+    // 7. Buat data penduduk anak LENGKAP
+    newPenduduk := &models.Kependudukan{
+        // Data Alamat (dari ibu)
+        RW:    rw,
+        RT:    rt,
+        Dusun: dusun,
+        Alamat: alamat,
+        
+        // Data Keluarga (dari ibu)
+        KodeKeluarga:       kodeKeluarga,
+        NamaKepalaKeluarga: namaKepalaKeluarga,
+        
+        // NIK = NULL
+        NIK: nik,
+        
+        // Data Pribadi Anak (dari request)
+        NamaAnggotaKeluarga: req.Nama,
+        JenisKelamin:        req.JenisKelamin,
+        Hubungan:            "Anak",
+        TempatLahir:         req.TempatLahir,
+        TanggalLahir:        tanggalLahir,
+        Status:              "anak",
+        
+        // Data Opsional (dari ibu)
+        Agama:           agama,
+        GolonganDarah:   req.GolonganDarah,
+        Kewarganegaraan: kewarganegaraan,
+        EtnisSuku:       etnisSuku,
+        Pendidikan:      "", // Anak belum sekolah
+        Pekerjaan:       "", // Anak belum bekerja
+        
+        // Foreign Keys (dari ibu)
+        DesaID:     desaID,
+        PosyanduID: posyanduID,
+    }
 
-	if err := u.anakRepo.Create(anak); err != nil {
-		return nil, fmt.Errorf("gagal membuat data anak: %w", err)
-	}
+    // 8. Save penduduk
+    if err := u.kependudukanRepo.Create(newPenduduk); err != nil {
+        return nil, fmt.Errorf("gagal membuat data penduduk anak: %w", err)
+    }
 
-	// ✅ Auto-generate catatan pertumbuhan pertama dan prediksi stunting (sinkron)
-	if u.onAnakCreatedSync != nil {
-		if err := u.onAnakCreatedSync(anak.ID); err != nil {
-			fmt.Printf("Warning: gagal membuat catatan pertumbuhan awal: %v\n", err)
-		}
-	}
+    // 9. Buat data anak
+    anak := &models.Anak{
+        KehamilanID:     req.KehamilanID,
+        PendudukID:      newPenduduk.IDKependudukan,
+        BeratLahirKg:    req.BeratLahirKg,
+        TinggiLahirCm:   req.TinggiLahirCm,
+        AnakKe:          req.AnakKe,
+        LingkarKepalaCm: req.LingkarKepalaCm,
+        NamaIbu:         req.NamaIbu,
+        NamaAyah:        req.NamaAyah,
+        IbuID:           req.IbuID,
+    }
 
-	// Fetch complete data with relations
-	createdAnak, err := u.anakRepo.FindByID(anak.ID)
-	if err != nil {
-		return nil, err
-	}
+    if err := u.anakRepo.Create(anak); err != nil {
+        return nil, fmt.Errorf("gagal membuat data anak: %w", err)
+    }
 
-	resp := u.toAnakResponse(createdAnak)
-	pred, predErr := u.prediksiStuntingRepo.GetLatestPredictionByAnakID(anak.ID)
-	if predErr == nil && pred != nil {
-		resp.StatusPrediksi = pred.StatusPrediksi
-	}
+    // 10. Auto-generate catatan pertumbuhan
+    if u.onAnakCreatedSync != nil {
+        if err := u.onAnakCreatedSync(anak.ID); err != nil {
+            fmt.Printf("Warning: gagal membuat catatan pertumbuhan awal: %v\n", err)
+        }
+    }
 
-	// ✅ Auto-generate jadwal imunisasi (non-blocking, tidak memblokir response)
-	if u.onAnakCreated != nil {
-		anakID := anak.ID
-		go u.onAnakCreated(anakID)
-	}
+    // 11. Fetch complete data with relations
+    createdAnak, err := u.anakRepo.FindByID(anak.ID)
+    if err != nil {
+        return nil, err
+    }
 
-	return &resp, nil
+    resp := u.toAnakResponse(createdAnak)
+    pred, predErr := u.prediksiStuntingRepo.GetLatestPredictionByAnakID(anak.ID)
+    if predErr == nil && pred != nil {
+        resp.StatusPrediksi = pred.StatusPrediksi
+    }
+
+    // 12. Auto-generate jadwal imunisasi (non-blocking)
+    if u.onAnakCreated != nil {
+        anakID := anak.ID
+        go u.onAnakCreated(anakID)
+    }
+
+    return &resp, nil
 }
 
 // ====================== UPDATE ======================

@@ -49,7 +49,6 @@ type Main struct {
 	SkriningDMGestasional         *SkriningDMGestasionalRepository
 	CatatanPelayananTrimester2    *CatatanPelayananTrimester2Repository
 	PemeriksaanDokterTrimester3   *PemeriksaanDokterTrimester3Repository
-	PemeriksaanLanjutanTrimester3 *PemeriksaanLanjutanTrimester3Repository
 	GrafikEvaluasiKehamilan       *GrafikEvaluasiKehamilanRepository
 	GrafikPeningkatanBB           *GrafikPeningkatanBBRepository
 	PenjelasanHasilGrafik         *PenjelasanHasilGrafikRepository
@@ -168,7 +167,6 @@ func Init(opts Options) *Main {
 	m.SkriningDMGestasional = NewSkriningDMGestasionalRepository(opts.Postgres)
 	m.CatatanPelayananTrimester2 = NewCatatanPelayananTrimester2Repository(opts.Postgres)
 	m.PemeriksaanDokterTrimester3 = NewPemeriksaanDokterTrimester3Repository(opts.Postgres)
-	m.PemeriksaanLanjutanTrimester3 = NewPemeriksaanLanjutanTrimester3Repository(opts.Postgres)
 	m.GrafikEvaluasiKehamilan = NewGrafikEvaluasiKehamilanRepository(opts.Postgres)
 	m.GrafikPeningkatanBB = NewGrafikPeningkatanBBRepository(opts.Postgres)
 	m.PenjelasanHasilGrafik = NewPenjelasanHasilGrafikRepository(opts.Postgres)

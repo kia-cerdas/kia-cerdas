@@ -946,7 +946,7 @@ export default function Dashboard() {
                         >
                           <div>
                             <div style={{ fontWeight: 600 }}>
-                              {p.nama_anggota_keluarga}
+                              {p.nama_lengkap}
                               {p.nik && (
                                 <span style={{ fontSize: 11, fontWeight: "normal", color: "#6c757d", marginLeft: 6 }}>
                                   ({p.nik})

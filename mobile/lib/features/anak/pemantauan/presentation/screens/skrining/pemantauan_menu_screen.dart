@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ta_pa2_pa3_project/features/anak/pemantauan/presentation/screens/skrining/lembar_pemantauan_screen.dart';
 import 'package:ta_pa2_pa3_project/features/anak/pemantauan/presentation/screens/skrining/riwayat_skrining_tanda_bahaya_screen.dart';
+import 'package:ta_pa2_pa3_project/core/widgets/child_profile_card.dart';
 
 class PemantauanMenuScreen extends StatefulWidget {
   final Map<String, dynamic>? anak;
@@ -22,7 +23,7 @@ class _PemantauanMenuScreenState extends State<PemantauanMenuScreen> {
       rentangNama: '0-28 Hari',
       label: '0 - 28 Hari',
       detail: 'Pemantauan harian bayi baru lahir dan tanda bahaya awal.',
-      accent: Color(0xFF2563EB),
+      accent: Color(0xFF185FA5),
       icon: Icons.child_care_rounded,
     ),
     _AgeCardSpec(
@@ -43,7 +44,7 @@ class _PemantauanMenuScreenState extends State<PemantauanMenuScreen> {
       rentangNama: '6-12 Bulan',
       label: '6 - 12 Bulan',
       detail: 'Cek tanda bahaya, makan, tidur, dan kemampuan duduk/merangkak.',
-      accent: Color(0xFFF59E0B),
+      accent: Color(0xFFBA7517),
       icon: Icons.sports_handball_rounded,
     ),
     _AgeCardSpec(
@@ -57,7 +58,7 @@ class _PemantauanMenuScreenState extends State<PemantauanMenuScreen> {
       rentangNama: '2-6 Tahun',
       label: '2 - 6 Tahun',
       detail: 'Pemantauan perkembangan balita dan kesiapan aktivitas harian.',
-      accent: Color(0xFFEF4444),
+      accent: Color(0xFFA32D2D),
       icon: Icons.school_rounded,
     ),
   ];
@@ -104,85 +105,43 @@ class _PemantauanMenuScreenState extends State<PemantauanMenuScreen> {
   PreferredSizeWidget _buildHeader() {
     return AppBar(
       backgroundColor: Colors.white,
-      elevation: 1,
+      foregroundColor: const Color(0xFF1E293B),
+      elevation: 0,
+      centerTitle: false,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: Colors.black),
+        icon: const Icon(Icons.arrow_back, color: Color(0xFF1E293B)),
         onPressed: () => Navigator.pop(context),
       ),
-      title: const Text(
-        'Skrining Tanda Bahaya Anak',
-        style: TextStyle(
-          color: Colors.black,
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-        ),
+      title: const Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Skrining Tanda Bahaya',
+            style: TextStyle(
+              color: Color(0xFF1E293B),
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+          ),
+          Text(
+            'Pemantauan tanda bahaya anak',
+            style: TextStyle(
+              color: Color(0xFF64748B),
+              fontWeight: FontWeight.normal,
+              fontSize: 12,
+            ),
+          ),
+        ],
       ),
-      centerTitle: false, // biar rata kiri seperti gambar
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1.0),
+        child: Container(color: Colors.grey.shade200, height: 1.0),
+      ),
     );
   }
 
   Widget _buildAgeInfoCard() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(22),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-          )
-        ],
-      ),
-      child: Row(
-        children: [
-          const CircleAvatar(
-            radius: 26,
-            backgroundColor: Color(0xFFD7ECFF),
-            child: Icon(
-              Icons.person_outline,
-              size: 30,
-              color: Color(0xFF185FA5),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  namaAnak,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE0F2FE),
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: Text(
-                    'Usia: $usiaAnak',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF0284C7),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
+    return ChildProfileCard(nama: namaAnak, usia: usiaAnak);
   }
 
   Widget _buildSummaryStrip() {
@@ -198,16 +157,17 @@ class _PemantauanMenuScreenState extends State<PemantauanMenuScreen> {
         border: Border.all(color: const Color(0xFFDBEAFE)),
       ),
       child: const Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.info_outline_rounded, size: 18, color: Color(0xFF2563EB)),
+          Icon(Icons.info_outline_rounded, size: 18, color: Color(0xFF185FA5)),
           SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Kelompok usia yang sesuai, lalu ketuk Skrining sekarang untuk mulai.',
+              'Sistem akan otomatis menyesuaikan lembar pemantauan dengan usia anak Anda saat ini.',
               style: TextStyle(
                 fontSize: 12.5,
                 height: 1.45,
-                color: Color(0xFF334155),
+                color: Color(0xFF1E3A8A),
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -224,7 +184,7 @@ class _PemantauanMenuScreenState extends State<PemantauanMenuScreen> {
           width: 10,
           height: 10,
           decoration: const BoxDecoration(
-            color: Color(0xFF2563EB),
+            color: Color(0xFF185FA5),
             shape: BoxShape.circle,
           ),
         ),
@@ -350,17 +310,18 @@ class _PemantauanMenuScreenState extends State<PemantauanMenuScreen> {
         borderRadius: BorderRadius.circular(22),
         border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
-      child: Row(
+      child: const Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.auto_awesome_rounded, color: Color(0xFF2563EB)),
-          const SizedBox(width: 12),
+          Icon(Icons.touch_app_rounded, color: Color(0xFF185FA5)),
+          SizedBox(width: 12),
           Expanded(
             child: Text(
-              'Setelah memilih kelompok usia, Anda langsung masuk ke lembar pemantauan yang sesuai.',
+              'Ketuk tombol "Skrining sekarang" di bawah ini untuk mulai mengisi.',
               style: TextStyle(
                 fontSize: 12.5,
                 height: 1.4,
-                color: Colors.grey.shade700,
+                color: Color(0xFF334155),
               ),
             ),
           ),

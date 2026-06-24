@@ -1159,6 +1159,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
         // ),
         // const SizedBox(height: 32),
 
+        const Text('MENU PEMANTAUAN',
+            style: TextStyle(
+                fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
+        const SizedBox(height: 12),
+
         DashboardQuickMenu(
           crossAxisCount: 3,
           childAspectRatio: 1.0,
@@ -1394,7 +1399,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'Kenali Tanda Bahaya — Segera ke faskes jika ada gejala ini',
+                    'Kenali Tanda Darurat — Segera tindak lanjuti jika ada gejala ini',
                     style: TextStyle(fontSize: 12),
                   ),
                 ),

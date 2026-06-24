@@ -37,7 +37,7 @@ class ChildInfoBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isMale = anak.jenisKelamin.toLowerCase().contains('laki');
-    final avatarColor = isMale ? const Color(0xFF2563EB) : const Color(0xFFEC4899);
+    final avatarColor = isMale ? const Color(0xFF185FA5) : const Color(0xFFEC4899);
     final genderText = isMale ? 'Laki-laki' : 'Perempuan';
 
     return Container(

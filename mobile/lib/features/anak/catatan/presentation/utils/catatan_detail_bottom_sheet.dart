@@ -99,28 +99,28 @@ void showCatatanDetailLila(BuildContext ctx, PengukuranLilaModel item) {
 Color _getPlakColor(String status) {
   final lower = status.toLowerCase();
   if (lower == 'bersih' || lower.contains('tidak'))
-    return const Color(0xFF10B981);
-  if (lower == 'kotor' || lower.contains('ada')) return const Color(0xFFF59E0B);
+    return const Color(0xFF0F6E56);
+  if (lower == 'kotor' || lower.contains('ada')) return const Color(0xFFBA7517);
   return const Color(0xFF9CA3AF);
 }
 
 Color _getRisikoColor(String risiko) {
   final lower = risiko.toLowerCase();
-  if (lower == 'rendah') return const Color(0xFF10B981);
-  if (lower == 'sedang') return const Color(0xFFF59E0B);
-  if (lower == 'tinggi') return const Color(0xFFEF4444);
+  if (lower == 'rendah') return const Color(0xFF0F6E56);
+  if (lower == 'sedang') return const Color(0xFFBA7517);
+  if (lower == 'tinggi') return const Color(0xFFA32D2D);
   return const Color(0xFF9CA3AF);
 }
 
 Color _getKategoriRisikoColor(String kategori) {
   final lower = kategori.toLowerCase();
   if (lower.contains('normal') || lower.contains('hijau'))
-    return const Color(0xFF10B981);
+    return const Color(0xFF0F6E56);
   if (lower.contains('risiko') || lower.contains('kuning'))
-    return const Color(0xFFF59E0B);
+    return const Color(0xFFBA7517);
   if (lower.contains('buruk') ||
       lower.contains('merah') ||
-      lower.contains('kurang gizi')) return const Color(0xFFEF4444);
+      lower.contains('kurang gizi')) return const Color(0xFFA32D2D);
   return const Color(0xFF9CA3AF);
 }
 
@@ -282,9 +282,8 @@ class _TextBox extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: const Color(0xFFF8F9FA),
+          color: const Color(0xFFF1F5F9),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: const Color(0xFFE5E7EB)),
         ),
         child: Text(text,
             style: const TextStyle(fontSize: 14, color: Color(0xFF172033))),
@@ -298,8 +297,8 @@ class _SpinnerField extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
+          color: const Color(0xFFF1F5F9),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: const Color(0xFFE5E7EB)),
         ),
         child: Row(
           children: [
@@ -318,8 +317,8 @@ class _SpinnerFieldWithUnit extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
+          color: const Color(0xFFF1F5F9),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: const Color(0xFFE5E7EB)),
         ),
         child: Row(
           children: [
@@ -341,9 +340,8 @@ class _StatusBadge extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
+          color: color.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
         child: Text(
           text,

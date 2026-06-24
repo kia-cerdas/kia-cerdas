@@ -24,7 +24,7 @@ class _Pedoman612BulanScreenState extends State<Pedoman612BulanScreen> {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFF3B82F6), Color(0xFF2563EB)],
+                colors: [Color(0xFF185FA5), Color(0xFF185FA5)],
               ),
               borderRadius: BorderRadius.circular(16),
             ),
@@ -171,7 +171,7 @@ class _Pedoman612BulanScreenState extends State<Pedoman612BulanScreen> {
         ),
         title: Row(
           children: [
-            Icon(icon, size: 20, color: const Color(0xFF2563EB)),
+            Icon(icon, size: 20, color: const Color(0xFF185FA5)),
             const SizedBox(width: 10),
             Text(
               title,
@@ -205,7 +205,7 @@ class _Pedoman612BulanScreenState extends State<Pedoman612BulanScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 18, color: const Color(0xFF2563EB)),
+          Icon(icon, size: 18, color: const Color(0xFF185FA5)),
           const SizedBox(width: 10),
           Expanded(child: Text(text)),
         ],

@@ -103,69 +103,129 @@ class _ProfilKeluargaScreenState extends State<ProfilKeluargaScreen> {
     );
   }
 
-  // ── HEADER ────────────────────────────────────────────────────────
+  // // ── HEADER ────────────────────────────────────────────────────────
+  // Widget _buildHeader() {
+  //   return Container(
+  //     width: double.infinity,
+  //     decoration: BoxDecoration(
+  //       color: AppColors.primary,
+  //       boxShadow: [
+  //         BoxShadow(
+  //           color: AppColors.primary.withOpacity(0.3),
+  //           blurRadius: 8,
+  //           offset: const Offset(0, 3),
+  //         ),
+  //       ],
+  //     ),
+  //     child: SafeArea(
+  //       bottom: false,
+  //       child: Padding(
+  //         padding: const EdgeInsets.fromLTRB(4, 8, 20, 20),
+  //         child: Row(
+  //           children: [
+  //             IconButton(
+  //               icon: const Icon(Icons.arrow_back_ios_new,
+  //                   color: Colors.white, size: 20),
+  //               onPressed: () => Navigator.pop(context),
+  //             ),
+  //             Container(
+  //               width: 52,
+  //               height: 52,
+  //               decoration: BoxDecoration(
+  //                 shape: BoxShape.circle,
+  //                 color: Colors.white.withOpacity(0.2),
+  //                 border: Border.all(color: Colors.white38, width: 1.5),
+  //               ),
+  //               child: const Icon(Icons.people_outline,
+  //                   color: Colors.white, size: 28),
+  //             ),
+  //             const SizedBox(width: 12),
+  //             const Expanded(
+  //               child: Column(
+  //                 crossAxisAlignment: CrossAxisAlignment.start,
+  //                 children: [
+  //                   Text(
+  //                     'Profil Keluarga',
+  //                     style: TextStyle(
+  //                       color: Colors.white,
+  //                       fontSize: 17,
+  //                       fontWeight: FontWeight.w700,
+  //                       letterSpacing: 0.2,
+  //                     ),
+  //                   ),
+  //                   SizedBox(height: 2),
+  //                   Text(
+  //                     'Data anggota dalam satu kartu keluarga',
+  //                     style: TextStyle(
+  //                       color: Colors.white70,
+  //                       fontSize: 12,
+  //                     ),
+  //                   ),
+  //                 ],
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
+
+    // ── HEADER PUTIH (konsisten dengan profil ibu) ───────────────
   Widget _buildHeader() {
     return Container(
       width: double.infinity,
-      decoration: BoxDecoration(
-        color: AppColors.primary,
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withOpacity(0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
+      color: Colors.white,
       child: SafeArea(
         bottom: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(4, 8, 20, 20),
-          child: Row(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new,
-                    color: Colors.white, size: 20),
-                onPressed: () => Navigator.pop(context),
-              ),
-              Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.2),
-                  border: Border.all(color: Colors.white38, width: 1.5),
-                ),
-                child: const Icon(Icons.people_outline,
-                    color: Colors.white, size: 28),
-              ),
-              const SizedBox(width: 12),
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Profil Keluarga',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.2,
-                      ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(4, 8, 20, 12),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back,
+                        color: Color(0xFF1E293B)),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withOpacity(0.10),
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    SizedBox(height: 2),
-                    Text(
-                      'Data anggota dalam satu kartu keluarga',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 12,
+                    child: const Icon(Icons.people_outline,
+                        color: AppColors.primary, size: 22),
+                  ),
+                  const SizedBox(width: 12),
+                  const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Profil Keluarga',
+                        style: TextStyle(
+                          color: Color(0xFF1E293B),
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
+                      Text(
+                        'Data anggota dalam satu kartu keluarga',
+                        style: TextStyle(
+                          color: Color(0xFF64748B),
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+            Divider(height: 1, thickness: 1, color: Colors.grey.shade200),
+          ],
         ),
       ),
     );

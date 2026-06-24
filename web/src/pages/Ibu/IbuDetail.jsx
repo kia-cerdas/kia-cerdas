@@ -312,7 +312,7 @@ const handleNonAktif = async () => {
 
   // 🔧 PERBAIKAN: Ambil data kependudukan dan ayah dari response
   const kependudukan = ibu.kependudukan || {};
-  const ayah = ibu.ayah;
+  const ayah = ibu.suami;
   
   // 🔧 PERBAIKAN: Hitung usia dari tanggal lahir menggunakan fungsi yang sudah dibuat
   const usiaIbu = hitungUsia(kependudukan.tanggal_lahir);
@@ -432,7 +432,7 @@ const handleNonAktif = async () => {
                   <span className="font-medium text-gray-800 text-sm font-sans">{ayah.nama_anggota_keluarga || "-"}</span>
                   
                   <span className="text-gray-500 text-xs">NIK</span>
-                  <span className="text-gray-800 text-sm break-all">{suami.nik || "-"}</span>
+                  <span className="text-gray-800 text-sm break-all">{ayah.nik || "-"}</span>
                   
                   <span className="text-gray-500 text-xs font-sans">Pekerjaan</span>
                   <span className="text-gray-800 text-sm font-sans">{ayah.pekerjaan || "-"}</span>

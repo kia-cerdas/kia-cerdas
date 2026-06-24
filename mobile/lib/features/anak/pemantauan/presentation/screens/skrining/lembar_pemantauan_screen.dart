@@ -3,6 +3,7 @@ import 'package:ta_pa2_pa3_project/features/anak/pemantauan/data/services/lembar
 import 'package:ta_pa2_pa3_project/features/anak/pemantauan/data/models/lembar_pemantauan_dynamic_model.dart';
 import 'package:ta_pa2_pa3_project/features/anak/pemantauan/presentation/screens/skrining/riwayat_skrining_tanda_bahaya_screen.dart';
 import 'package:ta_pa2_pa3_project/core/widgets/verification_popup.dart';
+import 'package:ta_pa2_pa3_project/core/widgets/child_profile_card.dart';
 
 class LembarPemantauanScreen extends StatefulWidget {
   final Map<String, dynamic>? anak;
@@ -57,40 +58,53 @@ class _LembarPemantauanScreenState extends State<LembarPemantauanScreen> {
     try {
       final rentang = await _service.getRentangUsia();
 
-      // Auto-select rentang usia berdasarkan usia anak
+      // Auto-select rentang usia berdasarkan initialRentangNama dari Menu yang sudah dihitung akurat
       int? selectedId;
-      if (rentang.isNotEmpty) {
-        final usiaText =
-            widget.anak?['usia_teks']?.toString().toLowerCase() ?? '';
-        selectedId = _determineRentangUsiaByAge(usiaText, rentang);
+      int? maxAllowedIndex;
 
-        // Jika tidak bisa determine dari usia, coba dari initial nama
-        if (selectedId == null) {
-          final initialNama = widget.initialRentangNama?.toLowerCase().trim();
-          if (initialNama != null && initialNama.isNotEmpty) {
-            for (final item in rentang) {
-              if (item.namaRentang.toLowerCase().trim() == initialNama) {
-                selectedId = item.id;
-                break;
-              }
+      if (rentang.isNotEmpty) {
+        final initialNama = widget.initialRentangNama?.toLowerCase().replaceAll(' ', '');
+        if (initialNama != null && initialNama.isNotEmpty) {
+          for (int i = 0; i < rentang.length; i++) {
+            if (rentang[i].namaRentang.toLowerCase().replaceAll(' ', '') == initialNama) {
+              selectedId = rentang[i].id;
+              maxAllowedIndex = i;
+              break;
             }
+          }
+        }
+
+        // Fallback ke hitungan manual jika initial tidak ada
+        if (selectedId == null) {
+          final usiaText =
+              widget.anak?['usia_teks']?.toString().toLowerCase() ?? '';
+          selectedId = _determineRentangUsiaByAge(usiaText, rentang);
+          if (selectedId != null) {
+            maxAllowedIndex = rentang.indexWhere((r) => r.id == selectedId);
           }
         }
 
         // Fallback ke yang pertama
         if (selectedId == null) {
           selectedId = rentang.first.id;
+          maxAllowedIndex = 0;
         }
+      }
+
+      // Filter the list to only include ages up to the child's max age
+      List<RentangUsiaModel> filteredRentang = rentang;
+      if (maxAllowedIndex != null && maxAllowedIndex >= 0) {
+        filteredRentang = rentang.sublist(0, maxAllowedIndex + 1);
       }
 
       if (!mounted) return;
       setState(() {
-        _rentangUsia = rentang;
+        _rentangUsia = filteredRentang;
         _selectedRentangId = selectedId;
-        _selectedRentang = rentang.isNotEmpty
-            ? rentang.firstWhere(
+        _selectedRentang = filteredRentang.isNotEmpty
+            ? filteredRentang.firstWhere(
                 (item) => item.id == selectedId,
-                orElse: () => rentang.first,
+                orElse: () => filteredRentang.first,
               )
             : null;
         _selectedPeriode = 1;
@@ -356,9 +370,12 @@ class _LembarPemantauanScreenState extends State<LembarPemantauanScreen> {
       if (!mounted) return;
       _isDirty = false;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content:
-              Text('Data pantauan berhasil disimpan. Kader akan diberitahu.'),
+              const Text('Data pantauan berhasil disimpan. Kader akan diberitahu.'),
+          backgroundColor: const Color(0xFF0F6E56),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
 
@@ -388,8 +405,14 @@ class _LembarPemantauanScreenState extends State<LembarPemantauanScreen> {
 
   void _showError(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red.shade600,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
   }
 
   @override
@@ -397,23 +420,38 @@ class _LembarPemantauanScreenState extends State<LembarPemantauanScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF1F5F9),
       appBar: AppBar(
-        title: const Text(
-          'Lembar Pemantauan',
-          style: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
         backgroundColor: Colors.white,
-        elevation: 1,
-        shadowColor: Colors.black12,
+        foregroundColor: const Color(0xFF1E293B),
+        elevation: 0,
         centerTitle: false,
-        iconTheme: const IconThemeData(
-          color: Colors.black,
-        ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF1E293B)),
           onPressed: _handleBack,
+        ),
+        title: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Lembar Pemantauan',
+              style: TextStyle(
+                color: Color(0xFF1E293B),
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+            Text(
+              'Skrining dan pemantauan anak',
+              style: TextStyle(
+                color: Color(0xFF64748B),
+                fontWeight: FontWeight.normal,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1.0),
+          child: Container(color: Colors.grey.shade200, height: 1.0),
         ),
       ),
       body: PopScope(
@@ -477,14 +515,20 @@ class _LembarPemantauanScreenState extends State<LembarPemantauanScreen> {
               width: double.infinity,
               height: 52,
               child: FilledButton(
+                style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xFF185FA5),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
                 onPressed: _submitting ? null : _showSavePopup,
                 child: _submitting
                     ? const SizedBox(
                         width: 20,
                         height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                       )
-                    : const Text('Simpan Data'),
+                    : const Text('Simpan', style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),
           ],
@@ -498,76 +542,7 @@ class _LembarPemantauanScreenState extends State<LembarPemantauanScreen> {
     final usia =
         (widget.anak?['usia_teks'] ?? 'Usia belum tersedia').toString();
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          // Avatar
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              color: const Color(0xFF1D4ED8).withOpacity(0.12),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.person_outline,
-              color: Color(0xFF1D4ED8),
-              size: 32,
-            ),
-          ),
-          const SizedBox(width: 12),
-
-          // Nama + usia
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  nama,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 6),
-
-                // Badge usia
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFDBEAFE),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    usia,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFF1D4ED8),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
+    return ChildProfileCard(nama: nama, usia: usia);
   }
 
   Widget _buildFormCard() {
@@ -779,17 +754,17 @@ class _LembarPemantauanScreenState extends State<LembarPemantauanScreen> {
     }
 
     if (satuan == 'hari') {
-      return 'Hari ke-$displayNumber';
+      return '$displayNumber Hari';
     }
     if (satuan == 'minggu') {
-      return 'Minggu ke-$displayNumber';
+      return '$displayNumber Minggu';
     }
     if (satuan == 'bulan') {
-      return 'Bulan ke-$displayNumber';
+      return '$displayNumber Bulan';
     }
     if (satuan == 'tahun') {
-      return 'Tahun ke-$displayNumber';
+      return '$displayNumber Tahun';
     }
-    return 'Periode ke-$displayNumber';
+    return '$displayNumber Periode';
   }
 }

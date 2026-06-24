@@ -43,7 +43,7 @@ class InformasiLilaScreen extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.straighten, size: 64, color: Color(0xFF16A34A)),
+                    Icon(Icons.straighten, size: 64, color: Color(0xFF0F6E56)),
                     SizedBox(height: 12),
                     Text(
                       'Lingkar Lengan Atas',
@@ -57,7 +57,7 @@ class InformasiLilaScreen extends StatelessWidget {
                       '(LiLA)',
                       style: TextStyle(
                         fontSize: 16,
-                        color: Color(0xFF16A34A),
+                        color: Color(0xFF0F6E56),
                       ),
                     ),
                   ],
@@ -70,7 +70,7 @@ class InformasiLilaScreen extends StatelessWidget {
             _sectionCard(
               title: 'Apa itu LiLA?',
               icon: Icons.info_outline,
-              iconColor: const Color(0xFF16A34A),
+              iconColor: const Color(0xFF0F6E56),
               content:
                   'Lingkar Lengan Atas (LiLA) adalah salah satu indikator untuk menilai status gizi anak, khususnya untuk mendeteksi gizi buruk. Pengukuran dilakukan pada lengan atas kiri, di tengah antara bahu dan siku.',
             ),
@@ -82,34 +82,34 @@ class InformasiLilaScreen extends StatelessWidget {
 
             _lilaCategoryCard(
               color: const Color(0xFFDCFCE7),
-              borderColor: const Color(0xFF16A34A),
+              borderColor: const Color(0xFF0F6E56),
               title: 'Gizi Baik',
               value: '> 13,5 cm',
               desc:
                   'Status gizi anak dalam kondisi baik. Lanjutkan pola makan sehat.',
-              iconColor: const Color(0xFF16A34A),
+              iconColor: const Color(0xFF0F6E56),
             ),
             const SizedBox(height: 10),
 
             _lilaCategoryCard(
               color: const Color(0xFFFEF3C7),
-              borderColor: const Color(0xFFD97706),
+              borderColor: const Color(0xFFBA7517),
               title: 'Gizi Kurang',
               value: '11,5 - 13,5 cm',
               desc:
                   'Anak perlu perhatian lebih. Tingkatkan asupan gizi seimbang.',
-              iconColor: const Color(0xFFD97706),
+              iconColor: const Color(0xFFBA7517),
             ),
             const SizedBox(height: 10),
 
             _lilaCategoryCard(
               color: const Color(0xFFFEE2E2),
-              borderColor: const Color(0xFFDC2626),
+              borderColor: const Color(0xFFA32D2D),
               title: 'Gizi Buruk',
               value: '< 11,5 cm',
               desc:
                   'Segera bawa anak ke puskesmas untuk penanganan lebih lanjut!',
-              iconColor: const Color(0xFFDC2626),
+              iconColor: const Color(0xFFA32D2D),
               isDanger: true,
             ),
             const SizedBox(height: 24),
@@ -151,14 +151,14 @@ class InformasiLilaScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 color: const Color(0xFFFEF3C7),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFD97706)),
+                border: Border.all(color: const Color(0xFFBA7517)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: const [
                   Row(
                     children: [
-                      Icon(Icons.warning_amber, color: Color(0xFFD97706)),
+                      Icon(Icons.warning_amber, color: Color(0xFFBA7517)),
                       SizedBox(width: 8),
                       Text(
                         'Catatan Penting',
@@ -347,7 +347,7 @@ class InformasiLilaScreen extends StatelessWidget {
             width: 32,
             height: 32,
             decoration: const BoxDecoration(
-              color: Color(0xFF16A34A),
+              color: Color(0xFF0F6E56),
               shape: BoxShape.circle,
             ),
             child: Center(

@@ -175,9 +175,9 @@ class _PerawatanScreenIntegratedState extends State<PerawatanScreenIntegrated>
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
-          labelColor: const Color(0xFFD97706),
+          labelColor: const Color(0xFFBA7517),
           unselectedLabelColor: Colors.grey,
-          indicatorColor: const Color(0xFFD97706),
+          indicatorColor: const Color(0xFFBA7517),
           labelStyle:
               const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
           tabs: _ageRanges.map((range) => Tab(text: range)).toList(),
@@ -275,7 +275,7 @@ class _PerawatanScreenIntegratedState extends State<PerawatanScreenIntegrated>
         children: [
           _buildHeaderBanner(
             'Perawatan Anak\nUmur $rentangUsia',
-            const Color(0xFFD97706),
+            const Color(0xFFBA7517),
           ),
           const SizedBox(height: 16),
           _buildChecklistTable(kategori, rentangUsia),
@@ -288,11 +288,11 @@ class _PerawatanScreenIntegratedState extends State<PerawatanScreenIntegrated>
                 ? const SizedBox(
                     width: 20,
                     height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                   )
-                : const Text('Simpan Perawatan'),
+                : const Text('Simpan', style: TextStyle(fontWeight: FontWeight.bold)),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFD97706),
+              backgroundColor: const Color(0xFF185FA5),
               foregroundColor: Colors.white,
               minimumSize: const Size.fromHeight(48),
               shape: RoundedRectangleBorder(
@@ -364,7 +364,7 @@ class _PerawatanScreenIntegratedState extends State<PerawatanScreenIntegrated>
             ),
           ),
           Container(
-            color: const Color(0xFFD97706).withOpacity(0.12),
+            color: const Color(0xFFBA7517).withOpacity(0.12),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: Row(
               children: [
@@ -389,7 +389,7 @@ class _PerawatanScreenIntegratedState extends State<PerawatanScreenIntegrated>
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
-                        color: const Color(0xFFD97706),
+                        color: const Color(0xFFBA7517),
                       ),
                     ),
                   ),
@@ -451,7 +451,7 @@ class _PerawatanScreenIntegratedState extends State<PerawatanScreenIntegrated>
                           item.pertanyaanCeklist,
                           style: const TextStyle(
                             fontSize: 12,
-                            color: Color(0xFF1E40AF),
+                            color: Color(0xFF185FA5),
                             height: 1.4,
                           ),
                         ),
@@ -460,7 +460,7 @@ class _PerawatanScreenIntegratedState extends State<PerawatanScreenIntegrated>
                         width: 40,
                         child: Checkbox(
                           value: jawaban == true,
-                          activeColor: const Color(0xFFD97706),
+                          activeColor: const Color(0xFFBA7517),
                           onChanged: (v) {
                             setState(() {
                               if (v == true) {

@@ -197,11 +197,11 @@ class _RiwayatSkriningTandaBahayaScreenState
       }
     }
 
-    if (satuan == 'hari') return 'Hari ke-$displayNumber';
-    if (satuan == 'minggu') return 'Minggu ke-$displayNumber';
-    if (satuan == 'bulan') return 'Bulan ke-$displayNumber';
-    if (satuan == 'tahun') return 'Tahun ke-$displayNumber';
-    return 'Periode ke-$displayNumber';
+    if (satuan == 'hari') return '$displayNumber Hari';
+    if (satuan == 'minggu') return '$displayNumber Minggu';
+    if (satuan == 'bulan') return '$displayNumber Bulan';
+    if (satuan == 'tahun') return '$displayNumber Tahun';
+    return '$displayNumber Periode';
   }
 
   String _examinerLabel(String value) {
@@ -310,7 +310,7 @@ class _RiwayatSkriningTandaBahayaScreenState
                 onConfirm();
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2563EB),
+                backgroundColor: const Color(0xFF185FA5),
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -345,15 +345,37 @@ class _RiwayatSkriningTandaBahayaScreenState
       backgroundColor: const Color(0xFFF1F5F9),
       appBar: AppBar(
         backgroundColor: Colors.white,
-        elevation: 1,
+        foregroundColor: const Color(0xFF1E293B),
+        elevation: 0,
         centerTitle: false,
-        iconTheme: const IconThemeData(color: Colors.black),
-        title: Text(
-          'Riwayat Skrining',
-          style: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.w600,
-          ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF1E293B)),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Riwayat Skrining',
+              style: TextStyle(
+                color: Color(0xFF1E293B),
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+            Text(
+              'Pemantauan tanda bahaya bayi',
+              style: TextStyle(
+                color: Color(0xFF64748B),
+                fontWeight: FontWeight.normal,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1.0),
+          child: Container(color: Colors.grey.shade200, height: 1.0),
         ),
       ),
       body: RefreshIndicator(
@@ -363,13 +385,15 @@ class _RiwayatSkriningTandaBahayaScreenState
             : ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
-                  _buildPrimaryActionCard(),
-                  const SizedBox(height: 16),
                   if (_records.isEmpty)
                     _buildEmptyState(context)
                   else ...[
                     _buildHeaderCard(),
                     const SizedBox(height: 16),
+                  _buildPrimaryActionCard(),
+                  const SizedBox(height: 16),
+                    // _buildInfoCard(),
+                    // const SizedBox(height: 16),
                     if (filteredRecords.isEmpty)
                       const Center(
                         child: Padding(
@@ -446,15 +470,6 @@ class _RiwayatSkriningTandaBahayaScreenState
                     color: Color(0xFF475569),
                   ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  'Ini adalah catatan pemantauan bayimu. Tap untuk lihat detail atau tambah catatan baru.',
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    height: 1.4,
-                    color: Colors.grey.shade700,
-                  ),
-                ),
               ],
             ),
           ),
@@ -462,6 +477,34 @@ class _RiwayatSkriningTandaBahayaScreenState
       ),
     );
   }
+
+    // Widget _buildInfoCard() {
+    //   return Container(
+    //     padding: const EdgeInsets.all(14),
+    //     decoration: BoxDecoration(
+    //       color: const Color(0xFFEFF6FF),
+    //       borderRadius: BorderRadius.circular(16),
+    //       border: Border.all(color: const Color(0xFFBFDBFE)),
+    //     ),
+    //     child: const Row(
+    //       crossAxisAlignment: CrossAxisAlignment.start,
+    //       children: [
+    //         Icon(Icons.info_outline_rounded, color: Color(0xFF185FA5)),
+    //         SizedBox(width: 12),
+    //         Expanded(
+    //           child: Text(
+    //             'Berikut adalah riwayat gejala yang ditemukan. Ketuk tombol "Isi Pemantauan Hari Ini" di atas untuk menambah data baru.',
+    //             style: TextStyle(
+    //               fontSize: 12.5,
+    //               height: 1.4,
+    //               color: Color(0xFF1E3A8A),
+    //             ),
+    //           ),
+    //         ),
+    //       ],
+    //     ),
+    //   );
+    // }
 
   Widget _buildPrimaryActionCard() {
     return Container(
@@ -476,7 +519,7 @@ class _RiwayatSkriningTandaBahayaScreenState
         children: [
           const Row(
             children: [
-              Icon(Icons.play_circle_fill_rounded, color: Color(0xFF2563EB)),
+              Icon(Icons.info_outline_rounded, color: Color(0xFF185FA5)),
               SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -524,7 +567,7 @@ class _RiwayatSkriningTandaBahayaScreenState
               color: Color(0xFFDBEAFE),
             ),
             child: const Icon(Icons.pending_actions_rounded,
-                color: Color(0xFF2563EB)),
+                color: Color(0xFF185FA5)),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -723,7 +766,7 @@ class _RiwayatSkriningTandaBahayaScreenState
             ),
             child: const Icon(
               Icons.history_rounded,
-              color: Color(0xFFDC2626),
+              color: Color(0xFFA32D2D),
               size: 32,
             ),
           ),

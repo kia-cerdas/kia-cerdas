@@ -17,6 +17,7 @@ class _AbsensiKelasIbuBalitaScreenState
 
   List<AbsensiKelasIbuBalitaModel> _absensiList = [];
   bool _isLoading = false;
+  bool _isBottomSheetOpen = false;
 
   // ── Pagination ──
   static const int _pageSize = 10;
@@ -72,6 +73,8 @@ class _AbsensiKelasIbuBalitaScreenState
     DateTime? selectedDate;
     final dateController = TextEditingController();
     bool isSaving = false;
+
+    setState(() => _isBottomSheetOpen = true);
 
     showModalBottomSheet(
       context: context,
@@ -191,7 +194,7 @@ class _AbsensiKelasIbuBalitaScreenState
                         SizedBox(width: 10),
                         Expanded(
                           child: Text(
-                            'Data kehadiran yang Anda kirimkan akan diverifikasi secara berkala oleh petugas kesehatan puskesmas setempat untuk validasi riwayat kesehatan.',
+                            'Data kehadiran yang Anda kirim akan diverifikasi oleh kader. Anda dapat menambah absensi baru setelah absensi sebelumnya diverifikasi.',
                             style: TextStyle(
                               fontSize: 12,
                               color: Color(0xFF92400E),
@@ -289,7 +292,11 @@ class _AbsensiKelasIbuBalitaScreenState
           },
         );
       },
-    );
+    ).whenComplete(() {
+      if (mounted) {
+        setState(() => _isBottomSheetOpen = false);
+      }
+    });
   }
 
   String _formatTanggal(String raw) {
@@ -339,7 +346,6 @@ class _AbsensiKelasIbuBalitaScreenState
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: borderColor),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -386,10 +392,13 @@ class _AbsensiKelasIbuBalitaScreenState
       ),
       body: _isLoading
             ? const Center(child: CircularProgressIndicator())
-            : RefreshIndicator(
-                onRefresh: _loadAbsensi,
-                child: ListView(
-                  padding: const EdgeInsets.all(16),
+            : ExcludeSemantics(
+                excluding: _isBottomSheetOpen,
+                child: RepaintBoundary(
+                  child: RefreshIndicator(
+                    onRefresh: _loadAbsensi,
+                  child: ListView(
+                    padding: const EdgeInsets.all(16),
                   children: [
                     // Info banner
                     Container(
@@ -407,7 +416,7 @@ class _AbsensiKelasIbuBalitaScreenState
                           SizedBox(width: 10),
                           Expanded(
                             child: Text(
-                              'Diisi oleh ibu pada setiap pertemuan. Kader memverifikasi kehadiran dengan paraf pada kolom yang tersedia.',
+                            'Tekan tombol "Tambah Absensi" untuk mencatat kehadiran. Setiap absensi akan diverifikasi oleh kader.',
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Color(0xFF92400E),
@@ -658,7 +667,7 @@ class _AbsensiKelasIbuBalitaScreenState
                         ),
                         child: Row(
                           children: const [
-                            Icon(Icons.lock_clock_rounded,
+                            Icon(Icons.hourglass_top_rounded,
                                 size: 16, color: Color(0xFFEA580C)),
                             SizedBox(width: 8),
                             Expanded(
@@ -709,6 +718,8 @@ class _AbsensiKelasIbuBalitaScreenState
                   ],
                 ),
               ),
+            ),
+            ),
     );
   }
 }

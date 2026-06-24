@@ -481,7 +481,8 @@ const NeonatusIndex = () => {
           </div>
         ) : viewMode === 'LIST' ? (
           <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-            <table className="w-full text-left">
+            <div className="overflow-x-auto">
+            <table className="w-full text-left min-w-[560px]">
               <thead>
                 <tr className="bg-slate-100 border-b border-slate-200">
                   <th className="p-5 pl-8 text-xs font-semibold text-slate-600">Periode Pemeriksaan</th>
@@ -532,6 +533,7 @@ const NeonatusIndex = () => {
                 })}
               </tbody>
             </table>
+            </div>
           </div>
         ) : (
           <div className="space-y-6">

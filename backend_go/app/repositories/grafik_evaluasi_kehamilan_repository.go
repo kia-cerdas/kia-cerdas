@@ -271,7 +271,7 @@ func (r *GrafikEvaluasiKehamilanRepository) FindKehamilanAktifByUserID(userID in
 		Joins("JOIN penduduk pd ON pd.id = i.penduduk_id").
 		Joins("JOIN pengguna u ON u.penduduk_id = pd.id").
 		Where("u.id = ?", userID).
-		Where("kehamilan.status_kehamilan LIKE ?", "%TRIMESTER%").
+		Where("kehamilan.status_kehamilan IN ?", []string{"aktif", "TRIMESTER 1", "TRIMESTER 2", "TRIMESTER 3"}).
 		Where("kehamilan.deleted_at IS NULL").
 		Order("kehamilan.created_at DESC").
 		First(&kehamilan).Error
@@ -335,7 +335,7 @@ func (r *GrafikEvaluasiKehamilanRepository) FindUrinReduksiForGrafik(kehamilanID
 	var result []UrinReduksiGrafikRaw
 
 	err := r.db.
-		Table("pemeriksaan_lanjutan_trimester_3").
+		Table("pemeriksaan_dokter_trimester_3").
 		Select("kehamilan_id, tanggal_lab, lab_urin_reduksi_hasil").
 		Where("kehamilan_id = ?", kehamilanID).
 		Where("tanggal_lab IS NOT NULL").

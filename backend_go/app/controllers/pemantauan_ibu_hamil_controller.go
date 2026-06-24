@@ -206,3 +206,27 @@ func (c *PemantauanIbuHamilController) Verify(ctx echo.Context) error {
 		Message:    "Berhasil memverifikasi pemantauan ibu hamil",
 	})
 }
+
+func (c *PemantauanIbuHamilController) GetByKehamilanIDBidan(ctx echo.Context) error {
+    idParam := ctx.QueryParam("kehamilan_id")
+    kehamilanID, err := strconv.Atoi(idParam)
+    if err != nil || kehamilanID <= 0 {
+        return ctx.JSON(http.StatusBadRequest, models.Response{
+            StatusCode: http.StatusBadRequest,
+            Message:    "kehamilan_id wajib diisi dan harus valid",
+        })
+    }
+
+    data, err := c.usecase.GetByKehamilanIDOnly(int32(kehamilanID))
+    if err != nil {
+        return ctx.JSON(http.StatusInternalServerError, models.Response{
+            StatusCode: http.StatusInternalServerError,
+            Message:    err.Error(),
+        })
+    }
+
+    return ctx.JSON(http.StatusOK, models.Response{
+        StatusCode: http.StatusOK,
+        Data:       data,
+    })
+}

@@ -141,27 +141,57 @@ class _GrafikEvaluasiKehamilanScreenState
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      // backgroundColor: _C.primary,
-      backgroundColor: AppColors.primary,
-      foregroundColor: Colors.white,
+      backgroundColor: Colors.white,
+      foregroundColor: const Color(0xFF1E293B),
       elevation: 0,
-      title: const Text(
-        'Evaluasi Kehamilan',
-        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 17),
+      centerTitle: false,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back, color: Color(0xFF1E293B)),
+        onPressed: () => Navigator.pop(context),
       ),
-      bottom: TabBar(
-        controller: _tabController,
-        indicatorColor: Colors.white,
-        indicatorWeight: 3,
-        indicatorSize: TabBarIndicatorSize.tab,
-        labelColor: Colors.white,
-        unselectedLabelColor: Colors.white.withOpacity(0.55),
-        labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
-        unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
-        tabs: const [
-          Tab(text: 'Tinggi Fundus (TFU)'),
-          Tab(text: 'Denyut Jantung (DJJ)'),
+      title: const Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Evaluasi Kehamilan',
+            style: TextStyle(
+              color: Color(0xFF1E293B),
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+          ),
+          Text(
+            'Pemantauan Tinggi Rahim dan Denyut Jantung Janin',
+            style: TextStyle(
+              color: Color(0xFF64748B),
+              fontWeight: FontWeight.normal,
+              fontSize: 12,
+            ),
+          ),
         ],
+      ),
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(49.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(color: Colors.grey.shade200, height: 1.0),
+            TabBar(
+              controller: _tabController,
+              indicatorColor: AppColors.primary,
+              indicatorWeight: 3,
+              indicatorSize: TabBarIndicatorSize.tab,
+              labelColor: AppColors.primary,
+              unselectedLabelColor: const Color(0xFF94A3B8),
+              labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+              unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
+              tabs: const [
+                Tab(text: 'Tinggi Rahim'),
+                Tab(text: 'Denyut Jantung Janin'),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -175,7 +205,7 @@ class _GrafikEvaluasiKehamilanScreenState
     if (points.isEmpty) {
       return const _EmptyState(
         icon: Icons.show_chart_rounded,
-        title: 'Belum ada data TFU',
+        title: 'Belum ada data Tinggi Rahim',
         message: 'Data Tinggi Fundus Uteri akan muncul setelah\npemeriksaan kehamilan dilakukan.',
       );
     }
@@ -580,7 +610,7 @@ class _GrafikEvaluasiKehamilanScreenState
     final allDJJ = points.map((e) => e.djj.toDouble()).toList();
     final dataMin = allDJJ.reduce((a, b) => a < b ? a : b);
     final dataMax = allDJJ.reduce((a, b) => a > b ? a : b);
-    final minY = (dataMin - 20).clamp(60.0, 110.0);
+    final minY = (dataMin - 20).clamp(40.0, 110.0);
     final maxY = (dataMax + 20).clamp(160.0, 220.0);
 
     return LineChartData(

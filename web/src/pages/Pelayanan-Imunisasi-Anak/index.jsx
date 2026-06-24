@@ -609,43 +609,44 @@ const PelayananImunisasi = () => {
   // ─── RENDER ────────────────────────────────────
   return (
     <MainLayout>
-      <div className="p-4 md:p-6 bg-gray-50 min-h-screen">
+      <div className="p-3 sm:p-4 md:p-6 bg-gray-50 min-h-screen">
         <div className="max-w-7xl mx-auto">
 
           {/* ═══════════ HEADER ═══════════ */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-6">
-            <div className="w-full md:w-auto">
-              <Link
-                to={`/data-anak/dashboard/${id}`}
-                className="flex items-center gap-2 text-gray-500 hover:text-blue-600 text-sm mb-2 transition-colors"
-              >
-                <ArrowLeft size={16} /> Kembali
-              </Link>
-            
-              {dataAnak && (
-                <div className="mt-2 space-y-1">
-                  <p className="text-gray-500 text-sm">
-                    {dataAnak.nama_anak} &bull; Lahir {formatTanggal(dataAnak.tanggal_lahir)}
-                  </p>
-                  {(() => {
-                    const umurHari = getUmurAnakHariIni();
-                    if (umurHari !== null) {
-                      const umurBulan = Math.floor(umurHari / 30);
-                      const sisaHari = umurHari % 30;
-                      return (
-                        <p className="text-blue-600 text-sm font-semibold">
-                          Umur saat ini: {umurBulan} bulan {sisaHari} hari
-                        </p>
-                      );
-                    }
-                    return null;
-                  })()}
-                </div>
-              )}
-            </div>
+          <div className="mb-4">
+            <Link
+              to={`/data-anak/dashboard/${id}`}
+              className="inline-flex items-center gap-2 text-gray-500 hover:text-blue-600 text-sm mb-3 transition-colors"
+            >
+              <ArrowLeft size={16} /> Kembali
+            </Link>
 
-            <div className="flex items-center gap-3">
-             
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="space-y-0.5">
+                {dataAnak && (
+                  <>
+                    <p className="text-gray-700 font-semibold text-sm sm:text-base">
+                      {dataAnak.nama_anak}
+                    </p>
+                    <p className="text-gray-500 text-xs sm:text-sm">
+                      Lahir {formatTanggal(dataAnak.tanggal_lahir)}
+                    </p>
+                    {(() => {
+                      const umurHari = getUmurAnakHariIni();
+                      if (umurHari !== null) {
+                        const umurBulan = Math.floor(umurHari / 30);
+                        const sisaHari = umurHari % 30;
+                        return (
+                          <p className="text-blue-600 text-xs sm:text-sm font-semibold">
+                            Umur saat ini: {umurBulan} bulan {sisaHari} hari
+                          </p>
+                        );
+                      }
+                      return null;
+                    })()}
+                  </>
+                )}
+              </div>
 
               <button
                 onClick={() => {
@@ -661,27 +662,34 @@ const PelayananImunisasi = () => {
                   setIsModalOpen(true);
                 }}
                 disabled={allAvailableJadwal.length === 0}
-                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-bold text-sm shadow-md transition-all active:scale-95 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-bold text-sm shadow-md transition-all active:scale-95 disabled:bg-gray-300 disabled:cursor-not-allowed w-full sm:w-auto"
               >
                 <Syringe size={16} /> PARAF IMUNISASI
               </button>
             </div>
           </div>
-                  {/* Title - Centered */}
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-800 text-center mb-2">Pelayanan Imunisasi</h1>
+
+          {/* Title - Centered */}
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800 text-center mb-3">Pelayanan Imunisasi</h1>
+
+          {/* Hint scroll — hanya tampil di mobile */}
+          <p className="hidden max-[640px]:flex text-xs text-gray-400 text-center mb-2 items-center justify-center gap-1">
+            <span>←</span> Geser untuk melihat semua kolom <span>→</span>
+          </p>
+
           {/* ═══════════ TABEL IMUNISASI KIA ═══════════ */}
           <div key={refreshKey} className="bg-white shadow-xl border border-gray-300 rounded overflow-hidden mb-4">
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse text-[11px]">
+              <table className="w-full border-collapse text-[11px]" style={{ minWidth: '680px' }}>
                 <thead>
-                  {/* Row 1: Umur | Bulan */}
+                  {/* Row 1: Jenis Vaksin | Bulan */}
                   <tr className="bg-gray-800 text-white">
                     <th
                       rowSpan={2}
-                      className="border border-gray-500 p-2 text-center font-bold text-[11px] uppercase"
-                      style={{ width: '200px', minWidth: '200px' }}
+                      className="border border-gray-500 p-2 text-center font-bold text-[11px] uppercase sticky left-0 bg-gray-800 z-10"
+                      style={{ width: '160px', minWidth: '120px' }}
                     >
-                      Umur
+                      Jenis Vaksin
                     </th>
                     <th
                       colSpan={MONTHS.length}
@@ -696,20 +704,16 @@ const PelayananImunisasi = () => {
                       <th
                         key={i}
                         className="border border-gray-500 p-1 text-center font-bold text-[9px]"
-                        style={{ width: '44px', minWidth: '44px' }}
+                        style={{ width: `${Math.floor(100 / MONTHS.length)}%` }}
                       >
                         {m}
                       </th>
                     ))}
                   </tr>
-                  {/* Row 3: Jenis Vaksin | Tanggal Pemberian dan Paraf Petugas */}
+                  {/* Row 3: Umur | Tanggal Pemberian dan Paraf Petugas */}
                   <tr className="bg-gray-200 text-gray-800">
-                    <th
-                    
-
-                       className="border border-gray-500 p-2 text-center font-bold text-[11px] uppercase"
-                    >
-                      Jenis Vaksin
+                    <th className="border border-gray-500 p-2 text-center font-bold text-[11px] uppercase sticky left-0 bg-gray-200 z-10">
+                      Umur
                     </th>
                     <th
                       colSpan={MONTHS.length}
@@ -725,7 +729,6 @@ const PelayananImunisasi = () => {
                     .map(([namaDosis, group], vIdx) => {
                     const doneItem = group.done;
                     const dosisVaksinId = group.dosisVaksinId;
-                    // Calculate which month column the ✓ belongs in (uses aturan min_usia_hari)
                     const doneBulan = doneItem ? getJadwalBulan(doneItem.tanggal_estimasi, dosisVaksinId) : null;
 
                     return (
@@ -735,8 +738,12 @@ const PelayananImunisasi = () => {
                           vIdx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
                         }`}
                       >
-                        {/* Vaccine Name Cell (Jenis Vaksin) */}
-                        <td className="border border-gray-300 p-2 font-semibold text-gray-700 text-[10px] leading-tight">
+                        {/* Vaccine Name Cell - sticky left so it stays visible on mobile scroll */}
+                        <td
+                          className={`border border-gray-300 p-2 font-semibold text-gray-700 text-[10px] leading-tight sticky left-0 z-10 ${
+                            vIdx % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                          }`}
+                        >
                           <span>{namaDosis}</span>
                         </td>
 
@@ -761,15 +768,15 @@ const PelayananImunisasi = () => {
                           return (
                             <td
                               key={mIdx}
-                              className={`border border-gray-300 text-center p-0.5 ${colorClass}`}
+                              className={`border border-gray-300 text-center p-0 overflow-hidden ${colorClass}`}
                               style={colorStyle}
                             >
                               {cell.show === 'done' ? (
-                                <div className="flex flex-col items-center justify-center py-0.5">
-                                  <span className="text-green-700 font-bold text-sm leading-none">
+                                <div className="flex flex-col items-center justify-center py-0.5 px-0.5 w-full">
+                                  <span className="text-green-700 font-bold text-xs leading-none">
                                     ✓
                                   </span>
-                                  <span className="text-green-600 font-medium text-[7px] leading-none mt-0.5">
+                                  <span className="text-green-600 font-medium text-[7px] leading-none mt-0.5 truncate w-full text-center">
                                     {cell.date}
                                   </span>
                                 </div>
@@ -844,31 +851,18 @@ const PelayananImunisasi = () => {
                 </p>
               </div>
 
-              <div className="overflow-x-auto">
+              {/* Desktop table */}
+              <div className="hidden sm:block overflow-x-auto">
                 <table className="w-full">
                   <thead>
                     <tr className="bg-gray-100 border-b border-gray-300">
-                      <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                        No
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                        Jenis Vaksin
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                        Tanggal Pemberian
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                        No. Batch
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                        Nama Bidan/Petugas
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                        Catatan
-                      </th>
-                      <th className="px-4 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">
-                        Aksi
-                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">No</th>
+                      <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Jenis Vaksin</th>
+                      <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Tanggal Pemberian</th>
+                      <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">No. Batch</th>
+                      <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Nama Bidan/Petugas</th>
+                      <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Catatan</th>
+                      <th className="px-4 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">Aksi</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
@@ -877,44 +871,25 @@ const PelayananImunisasi = () => {
                       .sort((a, b) => new Date(a.tanggal_pemberian) - new Date(b.tanggal_pemberian))
                       .map((pencatatan, index) => {
                         const namaDosis = pencatatan.jadwal_imunisasi_anak?.dosis_vaksin?.nama_dosis || '-';
-                        const namaBidan = pencatatan.bidan_petugas?.name || 'Tidak tersedia';  // Changed from 'nama' to 'name'
-                        
+                        const namaBidan = pencatatan.bidan_petugas?.name || 'Tidak tersedia';
                         return (
-                          <tr 
-                            key={pencatatan.id} 
-                            className="hover:bg-blue-50 transition-colors"
-                          >
-                            <td className="px-4 py-3 text-sm text-gray-700 font-medium">
-                              {index + 1}
-                            </td>
-                            <td className="px-4 py-3 text-sm text-gray-900 font-semibold">
-                              {namaDosis}
-                            </td>
-                            <td className="px-4 py-3 text-sm text-gray-700">
-                              {formatTanggal(pencatatan.tanggal_pemberian)}
-                            </td>
-                            <td className="px-4 py-3 text-sm text-gray-700">
-                              {pencatatan.nomor_batch || '-'}
-                            </td>
+                          <tr key={pencatatan.id} className="hover:bg-blue-50 transition-colors">
+                            <td className="px-4 py-3 text-sm text-gray-700 font-medium">{index + 1}</td>
+                            <td className="px-4 py-3 text-sm text-gray-900 font-semibold">{namaDosis}</td>
+                            <td className="px-4 py-3 text-sm text-gray-700">{formatTanggal(pencatatan.tanggal_pemberian)}</td>
+                            <td className="px-4 py-3 text-sm text-gray-700">{pencatatan.nomor_batch || '-'}</td>
                             <td className="px-4 py-3 text-sm text-gray-900">
                               <div className="flex items-center gap-2">
                                 <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                                  <span className="text-blue-700 font-bold text-xs">
-                                    {namaBidan.charAt(0).toUpperCase()}
-                                  </span>
+                                  <span className="text-blue-700 font-bold text-xs">{namaBidan.charAt(0).toUpperCase()}</span>
                                 </div>
                                 <span className="font-medium">{namaBidan}</span>
                               </div>
                             </td>
-                            <td className="px-4 py-3 text-sm text-gray-600">
-                              {pencatatan.catatan || '-'}
-                            </td>
+                            <td className="px-4 py-3 text-sm text-gray-600">{pencatatan.catatan || '-'}</td>
                             <td className="px-4 py-3 text-center">
                               <button
-                                onClick={() => handleBatalParaf(
-                                  pencatatan.id_jadwal_imunisasi_anak,
-                                  namaDosis
-                                )}
+                                onClick={() => handleBatalParaf(pencatatan.id_jadwal_imunisasi_anak, namaDosis)}
                                 className="inline-flex items-center gap-1.5 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 border border-red-200 hover:border-red-300 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all active:scale-95"
                                 title="Batalkan paraf imunisasi"
                               >
@@ -927,6 +902,62 @@ const PelayananImunisasi = () => {
                       })}
                   </tbody>
                 </table>
+              </div>
+
+              {/* Mobile cards */}
+              <div className="sm:hidden divide-y divide-gray-200">
+                {pencatatanList
+                  .filter(p => p.is_selesai)
+                  .sort((a, b) => new Date(a.tanggal_pemberian) - new Date(b.tanggal_pemberian))
+                  .map((pencatatan, index) => {
+                    const namaDosis = pencatatan.jadwal_imunisasi_anak?.dosis_vaksin?.nama_dosis || '-';
+                    const namaBidan = pencatatan.bidan_petugas?.name || 'Tidak tersedia';
+                    return (
+                      <div key={pencatatan.id} className="p-4 space-y-3">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <span className="w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">
+                              {index + 1}
+                            </span>
+                            <span className="font-bold text-sm text-gray-900">{namaDosis}</span>
+                          </div>
+                          <span className="text-xs text-gray-500 font-medium whitespace-nowrap">
+                            {formatTanggal(pencatatan.tanggal_pemberian)}
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          <div>
+                            <span className="text-gray-400 font-semibold uppercase tracking-wide text-[10px]">No. Batch</span>
+                            <p className="text-gray-700 mt-0.5">{pencatatan.nomor_batch || '-'}</p>
+                          </div>
+                          <div>
+                            <span className="text-gray-400 font-semibold uppercase tracking-wide text-[10px]">Petugas</span>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              <div className="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                <span className="text-blue-700 font-bold text-[10px]">{namaBidan.charAt(0).toUpperCase()}</span>
+                              </div>
+                              <span className="text-gray-700 truncate">{namaBidan}</span>
+                            </div>
+                          </div>
+                          {pencatatan.catatan && (
+                            <div className="col-span-2">
+                              <span className="text-gray-400 font-semibold uppercase tracking-wide text-[10px]">Catatan</span>
+                              <p className="text-gray-600 mt-0.5">{pencatatan.catatan}</p>
+                            </div>
+                          )}
+                        </div>
+
+                        <button
+                          onClick={() => handleBatalParaf(pencatatan.id_jadwal_imunisasi_anak, namaDosis)}
+                          className="w-full inline-flex items-center justify-center gap-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-3 py-2 rounded-lg text-xs font-semibold transition-all active:scale-95"
+                        >
+                          <XCircle size={14} />
+                          Batalkan Paraf
+                        </button>
+                      </div>
+                    );
+                  })}
               </div>
 
               {pencatatanList.filter(p => p.is_selesai).length === 0 && (
@@ -943,8 +974,8 @@ const PelayananImunisasi = () => {
 
       {/* ═══════════ MODAL PARAF IMUNISASI ═══════════ */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg max-h-[85vh] overflow-hidden shadow-2xl border-t-4 border-blue-600 flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm sm:p-4">
+          <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[92vh] sm:max-h-[85vh] overflow-hidden shadow-2xl border-t-4 border-blue-600 flex flex-col">
             {/* Modal Header */}
             <div className="bg-gray-800 px-4 py-3 text-white flex justify-between items-center flex-shrink-0">
               <span className="flex items-center gap-2 font-bold text-sm uppercase tracking-wider">
@@ -1006,7 +1037,7 @@ const PelayananImunisasi = () => {
                     </div>
                   )}
 
-                  <div className="space-y-2 max-h-52 overflow-y-auto pr-1.5">
+                  <div className="space-y-2 max-h-60 sm:max-h-52 overflow-y-auto pr-1.5">
                     {allAvailableJadwal.map((jadwal) => {
                       const isSelected = formData.selectedJadwalIds.includes(
                         jadwal.jadwal_id

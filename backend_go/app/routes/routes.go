@@ -228,6 +228,14 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	bidan.GET("/pencatatan-imunisasi/anak/:anak_id", controller.PencatatanImunisasi.GetByAnakID)
 	bidan.PUT("/pencatatan-imunisasi/:id/selesai", controller.PencatatanImunisasi.SetSelesai)
 
+
+	// GET data ceklis pemantauan ibu hamil dan nifas
+	bidan.GET("/checklist-nifas", controller.ChecklistPemantauanIbuNifas.GetByKehamilanID)
+	bidan.GET("/pemantauan-hamil", controller.PemantauanIbuHamil.GetByKehamilanIDBidan)
+
+	// bidan.GET("/checklist-nifas/all", controller.ChecklistPemantauanIbuNifas.GetAll)
+	bidan.GET("/checklist-nifas/all", controller.ChecklistPemantauanIbuNifas.GetAllBidan)
+
 	// Kader Management dipindahkan ke superadmin
 
 	// ==================== MODUL Anak ====================
@@ -811,9 +819,9 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	// ibuk.GET("/pemeriksaan-dokter-trimester-3/me", controller.PemeriksaanDokterTrimester3.GetMine)
 
 	ibuk.GET("/pemeriksaan-dokter-trimester-1/me", controller.PemeriksaanDokterTrimester1.GetMine)
-	ibuk.GET("/pemeriksaan-dokter-trimester-1/all", controller.PemeriksaanDokterTrimester1.GetAllMine) // BARU: list semua kunjungan
+	ibuk.GET("/pemeriksaan-dokter-trimester-1/all", controller.PemeriksaanDokterTrimester1.GetAllMine) 
 	ibuk.GET("/pemeriksaan-dokter-trimester-3/me", controller.PemeriksaanDokterTrimester3.GetMine)
-	ibuk.GET("/pemeriksaan-dokter-trimester-3/all", controller.PemeriksaanDokterTrimester3.GetAllMine) // BARU: list semua kunjungan
+	ibuk.GET("/pemeriksaan-dokter-trimester-3/all", controller.PemeriksaanDokterTrimester3.GetAllMine) 
 
 	ibuk.GET("/riwayat-proses-melahirkan/me", controller.RiwayatProsesMelahirkan.GetMine)
 
@@ -963,6 +971,7 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	// Absensi kelas ibu hamil (kader)
 	kader.GET("/absensi-kelas-ibu-hamil", controller.AbsensiKelasIbuHamil.GetAll)
 	kader.PUT("/absensi-kelas-ibu-hamil/:id/verifikasi", controller.AbsensiKelasIbuHamil.Verify)
+	kader.PUT("/absensi-kelas-ibu-hamil/:id/reject", controller.AbsensiKelasIbuHamil.Reject)
 
 	// Pemantauan Ibu Hamil (kader)
 	kader.GET("/pemantauan-ibu-hamil", controller.PemantauanIbuHamil.GetAll)
@@ -1087,3 +1096,8 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	puskesmas.PUT("/dosis-vaksin/:id", controller.DosisVaksin.Update)
 	puskesmas.DELETE("/dosis-vaksin/:id", controller.DosisVaksin.Delete)
 }
+
+
+
+
+
