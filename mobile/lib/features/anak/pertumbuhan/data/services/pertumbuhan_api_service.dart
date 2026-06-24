@@ -152,10 +152,17 @@ class PertumbuhanApiService {
     return [];
   }
 
+  static final Map<String, List<MasterStandarModel>> _masterCache = {};
+
   Future<List<MasterStandarModel>> getMasterStandar({
     required String parameter,
     required String jenisKelamin,
   }) async {
+    final cacheKey = '${parameter}_$jenisKelamin';
+    if (_masterCache.containsKey(cacheKey)) {
+      return _masterCache[cacheKey]!;
+    }
+
     final uri = Uri.parse(
       '${ApiConstants.baseUrl}${ApiConstants.masterStandar}',
     ).replace(
@@ -175,10 +182,12 @@ class PertumbuhanApiService {
     final dynamic rawData = decoded['data'];
 
     if (rawData is List) {
-      return rawData
+      final list = rawData
           .whereType<Map<String, dynamic>>()
           .map(MasterStandarModel.fromJson)
           .toList();
+      _masterCache[cacheKey] = list;
+      return list;
     }
 
     return const [];

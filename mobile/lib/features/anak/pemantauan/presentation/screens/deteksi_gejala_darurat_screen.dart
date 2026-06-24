@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ta_pa2_pa3_project/core/widgets/child_profile_card.dart';
+import 'package:ta_pa2_pa3_project/core/widgets/verification_popup.dart';
 import 'package:ta_pa2_pa3_project/features/anak/pemantauan/data/services/gejala_darurat_anak_api_service.dart';
 
 class DeteksiGejalaDaruratScreen extends StatefulWidget {
@@ -105,6 +106,36 @@ class _DeteksiGejalaDaruratScreenState extends State<DeteksiGejalaDaruratScreen>
         });
       }
     }
+  }
+
+  void _showSavePopup() {
+    final checkedCount = _checks.values.where((v) => v).length;
+    if (checkedCount == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Minimal pilih satu gejala untuk disimpan.'),
+          backgroundColor: Colors.red.shade600,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      );
+      return;
+    }
+
+    showVerificationPopup(
+      context: context,
+      type: VerificationPopupType.save,
+      title: 'Konfirmasi Simpan',
+      content:
+          'Apakah Anda yakin data skrining/pemantauan sudah benar? Data yang sudah disimpan tidak dapat diubah kembali.',
+      onConfirm: () {
+        Navigator.pop(context);
+        _evaluasiGejala();
+      },
+      onCancel: () => Navigator.pop(context),
+    );
   }
 
   Future<void> _evaluasiGejala() async {
@@ -400,7 +431,7 @@ class _DeteksiGejalaDaruratScreenState extends State<DeteksiGejalaDaruratScreen>
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                onPressed: _isLoading ? null : _evaluasiGejala,
+                onPressed: _isLoading ? null : _showSavePopup,
                 child: _isLoading
                     ? const SizedBox(
                         width: 20,

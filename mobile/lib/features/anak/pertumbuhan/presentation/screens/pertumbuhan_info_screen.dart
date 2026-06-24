@@ -100,8 +100,6 @@ class _PertumbuhanInfoScreenState extends State<PertumbuhanInfoScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildBanner(),
-            const SizedBox(height: 14),
             _buildLihatGrafikButton(),
             const SizedBox(height: 20),
             _buildSectionTitle('3 Indikator Pertumbuhan',
@@ -146,45 +144,11 @@ class _PertumbuhanInfoScreenState extends State<PertumbuhanInfoScreen> {
     );
   }
 
-  // ─── Widgets ────────────────────────────────────────────────────
-
-  Widget _buildBanner() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF185FA5),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        children: const [
-          CircleAvatar(
-            radius: 28,
-            backgroundColor: Colors.white24,
-            child: Icon(Icons.trending_up, color: Colors.white, size: 30),
-          ),
-          SizedBox(height: 12),
-          Text(
-            'Tumbuh Optimal',
-            style: TextStyle(
-                color: Colors.white,
-                fontSize: 22,
-                fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 6),
-          Text(
-            'Sesuai Buku KIA — Standar WHO',
-            style: TextStyle(color: Colors.white70, fontSize: 13),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildLihatGrafikButton() {
     return Material(
-      color: const Color(0xFF185FA5), // Biru khas tombol primer
-      borderRadius: BorderRadius.circular(12),
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(16),
       elevation: 4,
       shadowColor: const Color(0xFF185FA5).withValues(alpha: 0.4),
       child: InkWell(
@@ -196,49 +160,84 @@ class _PertumbuhanInfoScreenState extends State<PertumbuhanInfoScreen> {
             ),
           );
         },
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          child: Row(
+        height: 150,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: LinearGradient(
+              colors: [
+                const Color(0xFF185FA5).withValues(alpha: 1.0),   
+                const Color(0xFF185FA5).withValues(alpha: 0.85), 
+                const Color(0xFF185FA5).withValues(alpha: 0.35),
+              ],
+              stops: const [0.0, 0.5, 1.0],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ),
+          ),
+          child: Stack(
             children: [
-              Container(
-                width: 46,
-                height: 46,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.trending_up, color: Colors.white, size: 24),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text(
-                      'Lihat Grafik Pertumbuhan',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold),
+              // Konten utama
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Ikon kiri
+                    Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.25),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(Icons.trending_up, color: Colors.white, size: 24),
                     ),
-                    SizedBox(height: 4),
-                    Text(
-                      'BB/U, TB/U, LK/U, IMT/U & Z-Score',
-                      style: TextStyle(color: Colors.white70, fontSize: 13),
+                    const SizedBox(width: 14),
+                    // Teks
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Lihat Grafik\nPertumbuhan',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              height: 1.25,
+                            ),
+                          ),
+                          SizedBox(height: 6),
+                          Text(
+                            'Ketahui status gizi anak sesuai standar WHO',
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Tombol panah kanan
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.chevron_right,
+                        color: Color(0xFF185FA5),
+                        size: 22,
+                      ),
                     ),
                   ],
                 ),
-              ),
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.arrow_forward_ios,
-                    color: Color(0xFF185FA5), size: 14),
               ),
             ],
           ),
@@ -246,6 +245,7 @@ class _PertumbuhanInfoScreenState extends State<PertumbuhanInfoScreen> {
       ),
     );
   }
+  // ── AKHIR BAGIAN YANG DIUBAH ──────────────────────────────────
 
   Widget _buildSectionTitle(String title, {required Color color}) {
     return Row(
@@ -411,4 +411,26 @@ class _TCell extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Painter untuk grid lines dekoratif di background tombol grafik
+class _GridPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.08)
+      ..strokeWidth = 1;
+
+    // Garis horizontal
+    for (double y = 0; y < size.height; y += size.height / 4) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
+    }
+    // Garis vertikal
+    for (double x = 0; x < size.width; x += size.width / 6) {
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_GridPainter oldDelegate) => false;
 }

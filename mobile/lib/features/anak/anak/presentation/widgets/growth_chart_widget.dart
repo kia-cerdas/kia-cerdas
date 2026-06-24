@@ -281,7 +281,7 @@ class _GrowthChartWidgetState extends State<GrowthChartWidget> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'KMS / WHO • ${widget.selectedTab}',
+                      '${_getTabLabel(widget.selectedTab)}',
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey.shade600,
@@ -555,6 +555,17 @@ class _GrowthChartWidgetState extends State<GrowthChartWidget> {
     
     return 'Usia: $years Tahun $months Bulan';
   }
+
+  String _getTabLabel(String tab) {
+  const labels = {
+    'BB/U':  'Berat Badan menurut Umur',
+    'BB/TB': 'Berat Badan menurut Tinggi Badan',
+    'TB/U':  'Panjang/Tinggi Badan menurut Umur',
+    'LK/U':  'Lingkar Kepala menurut Umur',
+    'IMT/U': 'Indeks Massa Tubuh menurut Umur',
+  };
+  return labels[tab] ?? tab;
+}
 
   Widget _buildLegendItem(String label, Color color, bool isActive, VoidCallback onTap) {
     return InkWell(

@@ -12,9 +12,9 @@ import 'package:ta_pa2_pa3_project/features/anak/catatan/data/services/neonatus_
 import 'package:ta_pa2_pa3_project/features/anak/catatan/presentation/utils/catatan_detail_neonatus_bottom_sheet.dart';
 import 'package:ta_pa2_pa3_project/core/widgets/child_profile_card.dart';
 
-const _kBlue = Color(0xFF1565C0);
-const _kBlueDark = Color(0xFF0D47A1);
-const _kBlueLight = Color(0xFF1E88E5);
+const _kBlue = Color(0xFF185FA5);
+const _kBlueDark = Color(0xFF185FA5);
+const _kBlueLight = Color(0xFF2178C4);
 
 class CatatanMenuScreen extends StatefulWidget {
   final int anakId;
@@ -404,7 +404,7 @@ Widget _buildTabChips() {
                     child: Container(
                       width: 36, height: 36,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFE3F2FD),
+                        color: const Color(0xFFD7ECFF),
                         borderRadius: BorderRadius.circular(18),
                       ),
                       child: Icon(icon, size: 18, color: _kBlue),
@@ -427,7 +427,7 @@ Widget _buildTabChips() {
                                 margin: const EdgeInsets.only(left: 8),
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFE3F2FD),
+                                  color: const Color(0xFFD7ECFF),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Text(date, style: const TextStyle(fontSize: 11, color: _kBlue, fontWeight: FontWeight.w600)),

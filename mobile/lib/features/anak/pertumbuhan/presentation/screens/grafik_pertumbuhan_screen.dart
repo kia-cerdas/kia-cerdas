@@ -29,7 +29,8 @@ class _GrafikPertumbuhanScreenState
   bool _showAll = false;
   bool _isPreloading = false;
 
-  static const _tabs = ['BB/U', 'BB/PB', 'PB/U', 'LK/U', 'IMT/U'];
+  static const _tabs = ['BB/U', 'PB/U', 'BB/PB', 'LK/U', 'IMT/U'];
+
 
 
   static const _klasifikasi = {
@@ -224,11 +225,71 @@ class _GrafikPertumbuhanScreenState
     }
   }
 
+
   Color _statusColor(String s) {
-    final l = s.toLowerCase();
-    if (l.contains('baik') || l.contains('normal')) return const Color(0xFF0F6E56);
-    if (l.contains('buruk') || l.contains('sangat') || l.contains('obesi') || l.contains('mikro') || l.contains('makro')) return const Color(0xFFA32D2D);
-    return const Color(0xFFBA7517);
+  final l = s.toLowerCase();
+  if (l.contains('baik') || l.contains('normal')) return const Color(0xFF0F6E56);
+  if (l.contains('aman') || l.contains('lengkap')) return const Color(0xFF3B6D11);
+  if (l.contains('buruk') || l.contains('sangat') || l.contains('obesi') || l.contains('mikro') || l.contains('makro')) return const Color(0xFFA32D2D);
+  return const Color(0xFFBA7517);
+}
+
+  String _getStatusKalimat(String status) {
+  final s = status.toLowerCase();
+
+    // BB/U
+    if (s.contains('bb sangat kurang'))
+      return 'Berat badan anak jauh di bawah normal. Segera bawa ke dokter atau bidan.';
+    if (s.contains('bb kurang'))
+      return 'Berat badan anak kurang dari normal. Disarankan konsultasi ke bidan terdekat.';
+    if (s.contains('bb normal'))
+      return 'Berat badan anak normal sesuai usianya. Pertahankan pola makan yang baik.';
+    if (s.contains('risiko bb lebih'))
+      return 'Berat badan anak berisiko berlebih. Perhatikan asupan makan anak.';
+
+    // PB/U
+    if (s.contains('sangat pendek'))
+      return 'Tinggi badan anak jauh di bawah normal. Segera bawa ke dokter atau bidan.';
+    if (s.contains('pendek') && !s.contains('sangat'))
+      return 'Tinggi badan anak kurang dari normal. Disarankan konsultasi ke bidan terdekat.';
+    if (s == 'normal')
+      return 'Tinggi badan anak normal sesuai usianya. Pertahankan asupan gizi yang baik.';
+    if (s == 'tinggi')
+      return 'Tinggi badan anak di atas normal. Tidak perlu khawatir, tetap pantau rutin.';
+
+    // BB/PB
+    if (s.contains('gizi buruk') && s.contains('severely wasted'))
+      return 'Berat badan anak jauh di bawah panjang/tinggi badannya. Segera bawa ke dokter atau puskesmas.';
+    if (s.contains('gizi kurang') && s.contains('wasted'))
+      return 'Berat badan anak kurang dibanding panjang/tinggi badannya. Konsultasi ke bidan atau ahli gizi.';
+    if (s.contains('gizi baik') && s.contains('normal'))
+      return 'Berat badan anak sesuai dengan panjang/tinggi badannya. Pertahankan pola makan yang baik.';
+    if (s.contains('berisiko gizi lebih'))
+      return 'Berat badan anak berisiko berlebih dibanding panjang/tinggi badannya. Perhatikan asupan makan anak.';
+    if (s.contains('gizi lebih') || s.contains('obesitas'))
+      return 'Berat badan anak berlebih dibanding panjang/tinggi badannya. Konsultasi ke dokter atau ahli gizi.';
+
+    // LK/U
+    if (s.contains('mikrosefali'))
+      return 'Lingkar kepala anak lebih kecil dari normal. Segera konsultasi ke dokter.';
+    if (s.contains('makrosefali'))
+      return 'Lingkar kepala anak lebih besar dari normal. Segera konsultasi ke dokter.';
+    if (s.contains('normal') && _tab == 'LK/U')
+      return 'Lingkar kepala anak normal sesuai usianya. Perkembangan otak terpantau baik.';
+
+    // IMT/U
+    if (s.contains('gizi buruk'))
+      return 'Indeks massa tubuh anak jauh di bawah normal. Segera bawa ke dokter atau puskesmas.';
+    if (s.contains('gizi kurang'))
+      return 'Indeks massa tubuh anak kurang dari normal. Konsultasi ke bidan atau ahli gizi.';
+    if (s.contains('gizi baik'))
+      return 'Indeks massa tubuh anak normal sesuai usianya. Pertahankan pola makan dan aktivitas anak.';
+    if (s.contains('berisiko gizi lebih'))
+      return 'Indeks massa tubuh anak berisiko berlebih. Perhatikan asupan makan dan aktivitas anak.';
+    if (s.contains('gizi lebih') || s.contains('obesitas'))
+      return 'Indeks massa tubuh anak melebihi batas normal. Konsultasi ke dokter atau ahli gizi.';
+
+    return 'Pantau terus pertumbuhan anak secara rutin di Posyandu.';
   }
 
   @override
@@ -340,7 +401,7 @@ class _GrafikPertumbuhanScreenState
               }).toList(),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
 
           // ── Child card ──
           ChildProfileCard(
@@ -348,6 +409,10 @@ class _GrafikPertumbuhanScreenState
             usia: _hitungUmur(),
           ),
           const SizedBox(height: 14),
+
+          // ── Status card ──
+          if (latest != null) _buildStatusCard(latest),
+          const SizedBox(height: 18),
 
           // ── Chart ──
           if (master.isNotEmpty && _riwayat.isNotEmpty)
@@ -366,9 +431,7 @@ class _GrafikPertumbuhanScreenState
             _buildEmptyChart(),
           const SizedBox(height: 14),
 
-          // ── Status card ──
-          if (latest != null) _buildStatusCard(latest),
-          const SizedBox(height: 18),
+          
 
           // ── Klasifikasi ──
           _buildKlasifikasi(),
@@ -421,12 +484,8 @@ class _GrafikPertumbuhanScreenState
 
   Widget _buildStatusCard(PertumbuhanModel d) {
     final status = _getStatus(d);
-    final z = _getZ(d);
     final color = _statusColor(status);
-    final zLabel = _tab == 'BB/U'
-        ? 'Z-score: ${z.toStringAsFixed(2)} (-2 SD s/d +1 SD)'
-        : 'Z-score: ${z.toStringAsFixed(2)}';
-    final whoLabel = 'Status WHO: $status';
+    final kalimat = _getStatusKalimat(status);
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -449,10 +508,8 @@ class _GrafikPertumbuhanScreenState
                         fontSize: 14,
                         fontWeight: FontWeight.bold)),
                 const SizedBox(height: 3),
-                Text(zLabel,
+                Text(kalimat,
                     style: TextStyle(fontSize: 12, color: color.withValues(alpha: 0.8))),
-                Text(whoLabel,
-                    style: TextStyle(fontSize: 12, color: color.withValues(alpha: 0.7))),
               ],
             ),
           ),
@@ -524,6 +581,18 @@ class _GrafikPertumbuhanScreenState
   Widget _buildKlasifikasi() {
     final rows = _klasifikasi[_tab] ?? [];
     if (rows.isEmpty) return const SizedBox.shrink();
+
+    const tabLabel = {
+      'BB/U': 'Berat Badan/Umur',
+      'PB/U': 'Panjang Badan/Umur',
+      'BB/PB': 'Berat Badan/Panjang Badan',
+      'BB/TB': 'Berat Badan/Tinggi Badan',
+      'TB/U': 'Tinggi Badan/Umur',
+      'LK/U': 'Lingkar Kepala/Umur',
+      'IMT/U': 'Indeks Massa Tubuh/Umur',
+    };
+    final judulTab = tabLabel[_tab] ?? _tab;
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -539,33 +608,44 @@ class _GrafikPertumbuhanScreenState
             const SizedBox(width: 6),
             Expanded(
               child: Text(
-                'Klasifikasi $_tab (Permenkes No. 2/2020)',
+                'Klasifikasi $judulTab (Permenkes No. 2/2020)',
                 style: const TextStyle(
                     fontSize: 13, fontWeight: FontWeight.w700),
               ),
             ),
           ]),
           const SizedBox(height: 10),
-          ...rows.map((r) => Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4),
-            child: Row(
-              children: [
-                SizedBox(
-                  width: 110,
-                  child: Text(r[0],
-                      style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF185FA5))),
-                ),
-                Expanded(
-                  child: Text(r[1],
-                      style: TextStyle(
-                          fontSize: 12, color: Colors.grey.shade700)),
-                ),
-              ],
-            ),
-          )),
+          ...rows.map((r) {
+            final labelRange = r[0].replaceAll('SD', 'Standar Deviasi');
+            final labelDeskripsi = r[1]
+                .replaceAll('IMT', 'Indeks Massa Tubuh')
+                .replaceAll('BB', 'Berat Badan')
+                .replaceAll('TB', 'Tinggi Badan')
+                .replaceAll('PB', 'Panjang Badan')
+                .replaceAll('LK', 'Lingkar Kepala');
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    width: 145,
+                    child: Text(labelRange,
+                        style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF185FA5))),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(labelDeskripsi,
+                        style: TextStyle(
+                            fontSize: 12, color: Colors.grey.shade700)),
+                  ),
+                ],
+              ),
+            );
+          }),
         ],
       ),
     );
