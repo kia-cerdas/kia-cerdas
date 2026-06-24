@@ -16,6 +16,7 @@ type PemantauanIbuHamilUsecase interface {
 	Verify(id int32, namaKader string, tanggalVerifikasi *time.Time) error
 	// Untuk profil pemantauan ibu
 	GetByKehamilanID(userID int32, kehamilanID int32) ([]models.PemantauanIbuHamil, error)
+	GetByKehamilanIDOnly(kehamilanID int32) ([]models.PemantauanIbuHamil, error)
 }
 
 type pemantauanIbuHamilUsecase struct {
@@ -140,4 +141,8 @@ func (u *pemantauanIbuHamilUsecase) Verify(id int32, namaKader string, tanggalVe
 	data.TanggalVerifikasi = tanggalVerifikasi
 
 	return u.repo.UpdateVerifikasi(data)
+}
+
+func (u *pemantauanIbuHamilUsecase) GetByKehamilanIDOnly(kehamilanID int32) ([]models.PemantauanIbuHamil, error) {
+    return u.repo.FindByKehamilanID(kehamilanID)
 }

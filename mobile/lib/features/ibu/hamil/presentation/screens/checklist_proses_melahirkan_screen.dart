@@ -16,12 +16,15 @@ class _ChecklistProsesMelahirkanScreenState
   // ─── Colors (konsisten dengan modul ibu) ─────────────────────────────────
   static const Color _primary = AppColors.primary;
   static const Color _bgColor = Color(0xFFF5F7FB);
-  static const Color _cardBorder = Color(0xFFB7DBFF);
-  static const Color _checkedColor = Color(0xFF1A7A3F);
-  static const Color _checkedBg = Color(0xFFECFDF5);
-  static const Color _checkedBorder = Color(0xFF86EFAC);
+  static const Color _cardBorder = Color(0xFFE5ECF6);
+  static const Color _checkedColor = AppColors.primary;
+  static const Color _checkedBg = Color(0xFFEFF6FF);
+  static const Color _checkedBorder = Color(0xFFBFDBFE);
   static const Color _uncheckedBg = Color(0xFFF9FAFB);
   static const Color _uncheckedBorder = Color(0xFFE5E7EB);
+  static const Color _successColor = Color(0xFF1A7A3F);
+  static const Color _successBg = Color(0xFFECFDF5);
+  static const Color _successBorder = Color(0xFF86EFAC);
 
   final _service = ChecklistProsesMelahirkanApiService();
 
@@ -143,7 +146,7 @@ class _ChecklistProsesMelahirkanScreenState
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Checklist berhasil disimpan ✓'),
-            backgroundColor: _checkedColor,
+            backgroundColor: _successColor,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -169,15 +172,38 @@ class _ChecklistProsesMelahirkanScreenState
     return Scaffold(
       backgroundColor: _bgColor,
       appBar: AppBar(
-        title: const Text(
-          'Proses Melahirkan',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: _primary,
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF1E293B),
         elevation: 0,
+        centerTitle: false,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF1E293B)),
           onPressed: () => Navigator.pop(context),
+        ),
+        title: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Proses Melahirkan',
+              style: TextStyle(
+                color: Color.fromARGB(255, 0, 0, 0),
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+            Text(
+              'Checklist pemahaman proses persalinan',
+              style: TextStyle(
+                color: Color(0xFF64748B),
+                fontWeight: FontWeight.normal,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1.0),
+          child: Container(color: Colors.grey.shade200, height: 1.0),
         ),
       ),
       body: _isLoading
@@ -191,7 +217,7 @@ class _ChecklistProsesMelahirkanScreenState
                     children: [
                       _buildHeader(),
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
+                        padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
                         child: Column(children: [
                           _buildProgressCard(),
                           const SizedBox(height: 16),
@@ -214,57 +240,54 @@ class _ChecklistProsesMelahirkanScreenState
   // ─── Header ───────────────────────────────────────────────────────────────
   Widget _buildHeader() {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(24, 8, 24, 28),
-      decoration: const BoxDecoration(
-        color: _primary,
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(30),
-          bottomRight: Radius.circular(30),
-        ),
+      margin: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: _checkedBg,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: _checkedBorder),
+        boxShadow: [
+          BoxShadow(
+              color: _primary.withValues(alpha: 0.06),
+              blurRadius: 12,
+              offset: const Offset(0, 4))
+        ],
       ),
-      child: Container(
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.16),
-          borderRadius: BorderRadius.circular(22),
+      child: Row(children: [
+        Container(
+          width: 50,
+          height: 50,
+          decoration: BoxDecoration(
+            color: _primary,
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: const Icon(Icons.pregnant_woman_outlined,
+              color: Colors.white, size: 26),
         ),
-        child: Row(children: [
-          Container(
-            width: 54,
-            height: 54,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.22),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.pregnant_woman_outlined,
-                color: Colors.white, size: 30),
+        const SizedBox(width: 14),
+        const Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Checklist Proses Melahirkan',
+                style: TextStyle(
+                    color: Color(0xFF1E3A5F),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800),
+              ),
+              SizedBox(height: 4),
+              Text(
+                'Pemahaman sebelum dan saat proses persalinan',
+                style: TextStyle(
+                    color: Color(0xFF4A6FA5), fontSize: 11.5, height: 1.35),
+              ),
+              SizedBox(height: 8),
+              // _SelfFillBadge(),
+            ],
           ),
-          const SizedBox(width: 14),
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Checklist Proses Melahirkan',
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w900),
-                ),
-                SizedBox(height: 6),
-                Text(
-                  'Centang item yang sudah dipahami sebelum dan saat proses persalinan',
-                  style: TextStyle(
-                      color: Colors.white70, fontSize: 11, height: 1.35),
-                ),
-                SizedBox(height: 10),
-                _SelfFillBadge(),
-              ],
-            ),
-          ),
-        ]),
-      ),
+        ),
+      ]),
     );
   }
 
@@ -323,17 +346,17 @@ class _ChecklistProsesMelahirkanScreenState
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: _checkedBg,
+              color: _successBg,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: _checkedBorder),
+              border: Border.all(color: _successBorder),
             ),
             child: const Row(mainAxisSize: MainAxisSize.min, children: [
-              Icon(Icons.check_circle, color: _checkedColor, size: 15),
+              Icon(Icons.check_circle, color: _successColor, size: 15),
               SizedBox(width: 6),
               Text(
                 'Semua materi sudah dipahami!',
                 style: TextStyle(
-                    color: _checkedColor,
+                    color: _successColor,
                     fontSize: 11,
                     fontWeight: FontWeight.w700),
               ),
@@ -479,23 +502,23 @@ class _ChecklistProsesMelahirkanScreenState
 }
 
 // ─── Badge "Diisi oleh Ibu" ──────────────────────────────────────────────────
-class _SelfFillBadge extends StatelessWidget {
-  const _SelfFillBadge();
+// class _SelfFillBadge extends StatelessWidget {
+//   const _SelfFillBadge();
 
-  @override
-  Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        decoration: BoxDecoration(
-          color: const Color(0xFF2FA84F),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: const Text(
-          'Diisi oleh Ibu Hamil',
-          style: TextStyle(
-              color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-        ),
-      );
-}
+//   @override
+//   Widget build(BuildContext context) => Container(
+//         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+//         decoration: BoxDecoration(
+//           color: const Color(0xFF2FA84F),
+//           borderRadius: BorderRadius.circular(20),
+//         ),
+//         child: const Text(
+//           'Diisi oleh Ibu Hamil',
+//           style: TextStyle(
+//               color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+//         ),
+//       );
+// }
 
 // ─── Data class for checklist item ───────────────────────────────────────────
 class _CheckItem {

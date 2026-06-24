@@ -96,25 +96,25 @@ export default function LihatDataPemantauan() {
 
   return (
     <MainLayout>
-      <div className="p-6 space-y-6 bg-[#F8FAFC] min-h-screen">
+      <div className="p-4 md:p-6 space-y-6 bg-[#F8FAFC] min-h-screen">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-800">Data Pemantauan Anak</h1>
-            <p className="text-slate-500">Pantau kondisi anak berdasarkan laporan checklist harian ibu.</p>
+            <h1 className="text-xl md:text-2xl font-bold text-slate-800">Data Pemantauan Anak</h1>
+            <p className="text-sm text-slate-500">Pantau kondisi anak berdasarkan laporan checklist harian ibu.</p>
           </div>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-3 gap-3 md:gap-6">
           <StatCard icon={<FileText className="text-blue-600" />} label="TOTAL ANAK" value={stats.total} color="bg-blue-50" />
           <StatCard icon={<TriangleAlert className="text-red-600" />} label="KASUS BAHAYA" value={stats.bahaya} color="bg-red-50" />
           <StatCard icon={<AlertCircle className="text-orange-600" />} label="KASUS WASPADA" value={stats.waspada} color="bg-orange-50" />
         </div>
 
         {/* Filter Section */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex flex-wrap items-center gap-6">
+        <div className="bg-white p-4 md:p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-4">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-3">
               <div className="flex flex-col gap-1.5">
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">CARI NAMA</label>
                 <div className="relative">
@@ -122,7 +122,7 @@ export default function LihatDataPemantauan() {
                   <input
                     type="text"
                     placeholder="Cari Anak..."
-                    className="pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-blue-500 w-64"
+                    className="pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-[#185FA5] w-full sm:w-56"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
@@ -130,13 +130,12 @@ export default function LihatDataPemantauan() {
               </div>
               <div className="flex flex-col gap-1.5">
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">STATUS</label>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   {["Semua", "Bahaya", "Waspada", "Normal"].map((s) => (
                     <button
                       key={s}
                       onClick={() => setStatusFilter(s)}
-                      className={`px-4 py-1.5 rounded-full text-sm border transition-all ${statusFilter === s ? "bg-slate-800 text-white" : "bg-white text-slate-600 border-slate-200"
-                        }`}
+                      className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${statusFilter === s ? "bg-slate-800 text-white border-slate-800" : "bg-white text-slate-600 border-slate-200"}`}
                     >
                       {s}
                     </button>
@@ -144,43 +143,43 @@ export default function LihatDataPemantauan() {
                 </div>
               </div>
             </div>
-            <button onClick={() => { setStatusFilter("Semua"); setSearchTerm(""); }} className="text-blue-600 text-sm font-semibold flex items-center gap-1">
+            <button onClick={() => { setStatusFilter("Semua"); setSearchTerm(""); }} className="text-[#185FA5] text-sm font-semibold flex items-center gap-1 self-start sm:self-auto">
               <RotateCcw size={14} /> Reset Filter
             </button>
           </div>
 
           {/* Table */}
-          <div className="mt-8 overflow-x-auto">
-            <table className="w-full text-left">
+          <div className="overflow-x-auto -mx-4 md:mx-0">
+            <table className="w-full text-left min-w-[560px]">
               <thead>
-                <tr className="text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
-                  <th className="pb-4 px-2">IDENTITAS</th>
-                  <th className="pb-4 px-2">USIA</th>
-                  <th className="pb-4 px-2 text-center">GEJALA TERDETEKSI</th>
-                  <th className="pb-4 px-2 text-center">STATUS</th>
-                  <th className="pb-4 px-2 text-right">AKSI</th>
+                <tr className="text-xs font-semibold text-slate-500 border-b border-slate-100 bg-slate-50">
+                  <th className="pb-3 px-4 py-3">Identitas</th>
+                  <th className="pb-3 px-4 py-3">Usia</th>
+                  <th className="pb-3 px-4 py-3 text-center">Gejala Terdeteksi</th>
+                  <th className="pb-3 px-4 py-3 text-center">Status</th>
+                  <th className="pb-3 px-4 py-3 text-right">Aksi</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-50">
+              <tbody className="divide-y divide-slate-100">
                 {dataBayi
                   .filter(item => statusFilter === "Semua" || item.status === statusFilter.toUpperCase())
                   .filter(item => item.nama.toLowerCase().includes(searchTerm.toLowerCase()))
                   .map((item) => (
-                    <tr key={item.id} className="group hover:bg-slate-50/50 transition-colors">
-                      <td className="py-5 px-2">
-                        <div className="font-bold text-slate-800">{item.nama}</div>
-                        <div className="text-xs text-slate-400">Ibu: {item.ibu}</div>
+                    <tr key={item.id} className="hover:bg-slate-50 transition-colors">
+                      <td className="py-4 px-4">
+                        <div className="font-semibold text-slate-800 text-sm">{item.nama}</div>
+                        <div className="text-xs text-slate-400 mt-0.5">Ibu: {item.ibu}</div>
                       </td>
-                      <td className="py-5 px-2">
-                        <div className="text-sm font-medium text-slate-700">{item.usia}</div>
-                        <div className="text-[11px] text-slate-400">{item.tanggal}</div>
+                      <td className="py-4 px-4">
+                        <div className="text-sm text-slate-700">{item.usia}</div>
+                        <div className="text-xs text-slate-400">{item.tanggal}</div>
                       </td>
-                      <td className="py-5 px-2 text-center">
+                      <td className="py-4 px-4 text-center">
                         <div className="flex flex-wrap justify-center gap-1">
                           {item.kondisi.length > 0 ? (
                             item.kondisi.map((c, i) => (
-                              <span key={i} className="px-2 py-0.5 bg-red-50 text-red-600 text-[10px] font-bold rounded">
-                                {c.toUpperCase()}
+                              <span key={i} className="px-2 py-0.5 bg-red-50 text-red-600 text-xs font-semibold rounded">
+                                {c}
                               </span>
                             ))
                           ) : (
@@ -188,17 +187,17 @@ export default function LihatDataPemantauan() {
                           )}
                         </div>
                       </td>
-                      <td className="py-5 px-2 text-center">
+                      <td className="py-4 px-4 text-center">
                         <StatusBadge status={item.status} />
                       </td>
-                      <td className="py-5 px-2">
-                        <div className="flex justify-end gap-2">
+                      <td className="py-4 px-4">
+                        <div className="flex justify-end">
                           <Link
                             to={`/data-anak/pemantauan/${item.id}`}
-                            className="p-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-blue-600 hover:text-white transition-all"
+                            className="p-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-[#185FA5] hover:text-white transition-all"
                             title="Lihat Lembar Pemantauan"
                           >
-                            <Eye size={18} />
+                            <Eye size={16} />
                           </Link>
                         </div>
                       </td>
@@ -207,7 +206,7 @@ export default function LihatDataPemantauan() {
               </tbody>
             </table>
             {dataBayi.length === 0 && !loading && (
-              <div className="py-20 text-center text-slate-400">Belum ada data anak yang terdaftar.</div>
+              <div className="py-16 text-center text-slate-400 text-sm">Belum ada data anak yang terdaftar.</div>
             )}
           </div>
         </div>
@@ -219,11 +218,11 @@ export default function LihatDataPemantauan() {
 // Reusable Components for the UI
 function StatCard({ icon, label, value, color }) {
   return (
-    <div className={`p-6 rounded-2xl border border-slate-100 bg-white shadow-sm flex items-center gap-4`}>
-      <div className={`p-4 rounded-xl ${color}`}>{icon}</div>
-      <div>
-        <p className="text-[10px] font-bold text-slate-400 tracking-wider">{label}</p>
-        <p className="text-3xl font-bold text-slate-800">{value}</p>
+    <div className={`p-3 md:p-6 rounded-2xl border border-slate-100 bg-white shadow-sm flex items-center gap-2 md:gap-4`}>
+      <div className={`p-2 md:p-4 rounded-xl ${color} flex-shrink-0`}>{icon}</div>
+      <div className="min-w-0">
+        <p className="text-[9px] md:text-[10px] font-bold text-slate-400 tracking-wider truncate">{label}</p>
+        <p className="text-xl md:text-3xl font-bold text-slate-800">{value}</p>
       </div>
     </div>
   );

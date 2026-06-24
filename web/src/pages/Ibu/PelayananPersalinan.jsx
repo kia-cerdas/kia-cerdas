@@ -33,7 +33,7 @@ import { getCurrentUser, isBidanUser, isDokterUser } from "../../services/auth";
 const DetailItem = ({ label, value }) => (
   <div className="flex flex-col">
     <span className="text-xs text-gray-500 font-medium uppercase tracking-wide">{label}</span>
-    <span className="text-sm text-gray-800 font-semibold mt-0.5">{value ?? "-"}</span>
+    <span className="text-sm text-gray-800 font-semibold mt-0.5 break-all">{value ?? "-"}</span>
   </div>
 );
 
@@ -197,9 +197,9 @@ function KelahiranCard({ index, ringkasan, anakList, kehamilanId, ibuId, onEdit,
             <p className="font-bold text-gray-800 text-sm md:text-base">
               Kelahiran ke-{index + 1}
             </p>
-            <p className="text-xs text-gray-500">
-              {ringkasan.tanggal_melahirkan || "-"} &bull; {ringkasan.cara_melahirkan || "-"} &bull; {anakList.length} anak
-            </p>
+            <p className="text-xs text-gray-500 break-all">
+  {ringkasan.tanggal_melahirkan || "-"} &bull; {ringkasan.cara_melahirkan || "-"} &bull; {anakList.length} anak
+</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -272,15 +272,13 @@ function KelahiranCard({ index, ringkasan, anakList, kehamilanId, ibuId, onEdit,
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {anakList.map((anak) => (
                   <div key={anak.id} className="rounded-xl border border-indigo-100 bg-indigo-50/40 p-4">
-                    <div className="flex justify-between items-start gap-2">
-                      <div>
-                        <p className="font-bold text-gray-800">{anak.nama || "Tanpa Nama"}</p>
-                        <p className="text-xs text-gray-500 mt-0.5">
-                          Anak ke-{anak.anak_ke ?? "-"} &bull; {anak.jenis_kelamin || "-"}
-                        </p>
-                      </div>
-                      <p className="text-xs text-gray-400 whitespace-nowrap">Lahir: {anak.tanggal_lahir || "-"}</p>
-                    </div>
+                    <div className="flex flex-col gap-1">
+  <p className="font-bold text-gray-800">{anak.nama || "Tanpa Nama"}</p>
+  <p className="text-xs text-gray-500">
+    Anak ke-{anak.anak_ke ?? "-"} &bull; {anak.jenis_kelamin || "-"}
+  </p>
+  <p className="text-xs text-gray-400">Lahir: {anak.tanggal_lahir || "-"}</p>
+</div>
                     <div className="mt-3 grid grid-cols-3 gap-2 text-xs text-gray-600">
                       <div className="rounded-lg bg-white px-2 py-1.5 border text-center">
                         <p className="text-gray-400 text-[10px]">BB</p>

@@ -278,13 +278,13 @@ class _NifasScreenState extends State<NifasScreen> {
         title: const Text(
           'Pemantauan Nifas',
           style: TextStyle(
-            color: Colors.white,
+            color: Colors.black87,
             fontWeight: FontWeight.bold,
             fontSize: 18,
           ),
         ),
-        backgroundColor: AppColors.primary,
-        iconTheme: const IconThemeData(color: Colors.white),
+        backgroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: Colors.black87),
         elevation: 0,
       ),
       body: RefreshIndicator(

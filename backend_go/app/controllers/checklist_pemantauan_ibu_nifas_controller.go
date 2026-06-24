@@ -243,3 +243,50 @@ func (ctrl *ChecklistPemantauanIbuNifasController) Verify(c echo.Context) error 
 		"message": "Berhasil memverifikasi checklist pemantauan ibu nifas",
 	})
 }
+
+
+func (ctrl *ChecklistPemantauanIbuNifasController) GetByKehamilanID(c echo.Context) error {
+    kehamilanIDStr := c.QueryParam("kehamilan_id")
+    if kehamilanIDStr == "" {
+        return c.JSON(http.StatusBadRequest, models.Response{
+            StatusCode: http.StatusBadRequest,
+            Message:    "kehamilan_id wajib diisi",
+        })
+    }
+    kehamilanID, err := strconv.ParseInt(kehamilanIDStr, 10, 32)
+    if err != nil {
+        return c.JSON(http.StatusBadRequest, models.Response{
+            StatusCode: http.StatusBadRequest,
+            Message:    "kehamilan_id tidak valid",
+        })
+    }
+    data, err := ctrl.usecase.GetByKehamilanID(int32(kehamilanID))
+    if err != nil {
+        return c.JSON(http.StatusInternalServerError, models.Response{
+            StatusCode: http.StatusInternalServerError,
+            Message:    err.Error(),
+        })
+    }
+    return c.JSON(http.StatusOK, models.Response{
+        StatusCode: http.StatusOK,
+        Data:       data,
+    })
+}
+
+
+
+
+func (ctrl *ChecklistPemantauanIbuNifasController) GetAllBidan(c echo.Context) error {
+    data, err := ctrl.usecase.GetAllBidan()
+    if err != nil {
+        return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+            "message": "Gagal mengambil data checklist pemantauan ibu nifas",
+            "error":   err.Error(),
+        })
+    }
+ 
+    return c.JSON(http.StatusOK, map[string]interface{}{
+        "message": "Berhasil mengambil data checklist pemantauan ibu nifas",
+        "data":    data,
+    })
+}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import {
   Plus, Trash2, Edit, Search, X, Filter,
-  ChevronLeft, ChevronRight, RefreshCw
+  ChevronLeft, ChevronRight, RefreshCw, FileSpreadsheet,
 } from "lucide-react";
 import Swal from "sweetalert2";
 import MainLayout from "../../components/Layout/MainLayout";
@@ -15,6 +15,7 @@ import {
 import { listDesa } from "../../services/desa";
 import { getAllPosyandu } from "../../services/posyandu";
 import FormPendudukAccordion from "./components/FormPendudukAccordion";
+import ImportExcelModal from "./components/ImportExcelModal";
 import { formatNik, formatKodeKeluarga } from "../../utils/format";
 
 const STATUS_OPTIONS = ["", "Kawin", "Belum Kawin", "Cerai Hidup", "Cerai Mati"];
@@ -40,8 +41,8 @@ const sortPenduduk = (a, b) => {
 const Modal = ({ isOpen, onClose, title, children }) => {
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm md:pl-64">
+      <div className="bg-white rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto mx-4">
         <div className="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between z-10">
           <h2 className="text-xl font-semibold text-slate-800">{title}</h2>
           <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
@@ -62,6 +63,7 @@ const AdminPendudukList = () => {
   const [desasList, setDesasList] = useState([]);
   const [posyanduList, setPosyanduList] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [editingData, setEditingData] = useState(null);
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState({
@@ -342,6 +344,13 @@ const AdminPendudukList = () => {
             Refresh
           </button>
           <button
+            onClick={() => setShowImportModal(true)}
+            className="inline-flex items-center gap-2 rounded-xl bg-green-600 text-white px-4 py-2 text-sm font-medium hover:bg-green-700 transition-colors"
+          >
+            <FileSpreadsheet size={16} />
+            Import Excel
+          </button>
+          <button
             onClick={handleCreate}
             className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 text-white px-4 py-2 text-sm font-medium hover:bg-indigo-700 transition-colors"
           >
@@ -478,6 +487,14 @@ const AdminPendudukList = () => {
           )}
         </div>
       </div>
+
+      {/* Modal Import Excel */}
+      <ImportExcelModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onSuccess={() => fetchData({ page: 1 })}
+        desasList={desasList}
+      />
 
       {/* Modal Create / Edit */}
       <Modal

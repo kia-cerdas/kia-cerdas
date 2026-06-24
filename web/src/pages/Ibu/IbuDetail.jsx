@@ -6,7 +6,6 @@ import { getIbuById } from "../../services/ibu";
 import { getKehamilanByIbuId } from "../../services/kehamilan";
 import { updateStatusKehamilan } from "../../services/kehamilan";
 import { getCurrentUser, isDokterUser, isBidanUser } from "../../services/auth";
-import { XCircle } from "lucide-react";
 import Swal from "sweetalert2";
 import { getDokterT1CompleteByKehamilanId } from "../../services/pemeriksaanDokter";
 import { 
@@ -28,7 +27,15 @@ import {
   UserPlus,
   Info,
   Venus,
-  Mars
+  Mars,
+  FileEdit,
+  FileCheck,
+  Eye,
+  List,
+  ArrowRight,
+  Sparkles,
+  Sprout,
+  Flower2
 } from "lucide-react";
 
 // Fungsi helper untuk menghitung usia
@@ -103,7 +110,7 @@ const handleNonAktif = async () => {
     text: "Kehamilan ini akan ditandai sebagai abortus dan dinonaktifkan.",
     iconHtml: '<div style="display:flex;align-items:center;justify-content:center;width:80px;height:80px;margin:20px auto;background:#ffffff;border-radius:50%;border:4px solid #ffffff;box-shadow:0 0 0 4px #fecaca"><svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>',
     showCancelButton: true,
-    confirmButtonColor: "#ef4444",
+    confirmButtonColor: "#A32D2D",
     cancelButtonColor: "#6b7280",
     confirmButtonText: "Ya, Tandai Abortus",
     cancelButtonText: "Batal",
@@ -257,7 +264,7 @@ const handleNonAktif = async () => {
       <MainLayout>
         <div className="min-h-screen flex items-center justify-center bg-[#F7FAFB]">
           <Loader2 className="animate-spin text-[#185FA5]" size={32} />
-          <span className="ml-2 text-gray-500">Memuat data...</span>
+          <span className="ml-2 text-gray-500 font-sans">Memuat Data</span>
         </div>
       </MainLayout>
     );
@@ -267,7 +274,7 @@ const handleNonAktif = async () => {
     return (
       <MainLayout>
         <div className="min-h-screen flex items-center justify-center bg-[#F7FAFB]">
-          <div className="text-[#A32D2D] text-sm">Data ibu tidak ditemukan</div>
+          <div className="text-[#A32D2D] text-sm font-sans">Data ibu tidak ditemukan</div>
         </div>
       </MainLayout>
     );
@@ -277,11 +284,11 @@ const handleNonAktif = async () => {
     return (
       <MainLayout>
         <div className="min-h-screen bg-[#F7FAFB] p-4">
-          <div className="bg-red-50 border-l-4 border-red-500 p-3 mb-3 text-red-700 text-sm">
+          <div className="bg-red-50 border-l-4 border-[#A32D2D] p-3 mb-3 text-[#A32D2D] text-sm font-sans">
             {error}
           </div>
-          <Link to="/data-ibu" className="text-[#185FA5] flex items-center gap-2 text-sm">
-            <ArrowLeft size={16} /> Kembali ke daftar
+          <Link to="/data-ibu" className="text-[#185FA5] flex items-center gap-2 text-sm font-sans">
+            <ArrowLeft size={16} /> Kembali ke Daftar
           </Link>
         </div>
       </MainLayout>
@@ -292,10 +299,10 @@ const handleNonAktif = async () => {
     return (
       <MainLayout>
         <div className="min-h-screen bg-[#F7FAFB] p-4">
-          <div className="bg-yellow-50 border-l-4 border-yellow-500 p-3 text-yellow-700 text-sm">
+          <div className="bg-yellow-50 border-l-4 border-[#BA7517] p-3 text-[#BA7517] text-sm font-sans">
             {error || "Belum ada data kehamilan."}
           </div>
-          <Link to="/data-ibu" className="text-[#185FA5] flex items-center gap-2 mt-3 text-sm">
+          <Link to="/data-ibu" className="text-[#185FA5] flex items-center gap-2 mt-3 text-sm font-sans">
             <ArrowLeft size={16} /> Kembali
           </Link>
         </div>
@@ -303,9 +310,9 @@ const handleNonAktif = async () => {
     );
   }
 
-  // 🔧 PERBAIKAN: Ambil data kependudukan dan suami dari response
+  // 🔧 PERBAIKAN: Ambil data kependudukan dan ayah dari response
   const kependudukan = ibu.kependudukan || {};
-  const suami = ibu.suami;
+  const ayah = ibu.suami;
   
   // 🔧 PERBAIKAN: Hitung usia dari tanggal lahir menggunakan fungsi yang sudah dibuat
   const usiaIbu = hitungUsia(kependudukan.tanggal_lahir);
@@ -326,85 +333,88 @@ const handleNonAktif = async () => {
             <div className="flex flex-wrap items-center gap-3">
               <Link
                 to="/data-ibu"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#185FA5] text-[#185FA5] text-sm font-semibold hover:bg-[#185FA5]/5 transition"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#185FA5] text-[#185FA5] text-sm font-semibold hover:bg-[#185FA5]/5 transition font-sans"
               >
                 <ArrowLeft size={16} />
-                <span>Kembali</span>
+                <span className="font-sans">Kembali</span>
               </Link>
 
               {kehamilan.status_kehamilan !== "NON-AKTIF" && (
                 <button
                   onClick={handleNonAktif}
                   disabled={nonAktifLoading}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-red-400 text-red-500 text-sm font-semibold hover:bg-red-50 transition disabled:opacity-50"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#A32D2D] text-[#A32D2D] text-sm font-semibold hover:bg-red-50 transition disabled:opacity-50 font-sans"
                 >
-                  <XCircle size={16} />
+                  <AlertTriangle size={16} />
                   {nonAktifLoading ? "Memproses..." : "Tandai Abortus"}
                 </button>
               )}
 
               {kehamilan.status_kehamilan === "NON-AKTIF" && (
-                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-100 text-red-600 text-sm font-semibold">
-                  <XCircle size={14} /> Abortus
+                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-100 text-[#A32D2D] text-sm font-semibold font-sans">
+                  <AlertTriangle size={14} /> Abortus
                 </span>
               )}
             </div>
 
             {/* Grup kanan - Data Points */}
-            <div className="flex flex-wrap items-center gap-4 lg:gap-6 text-xs md:text-sm">
-              <div className="flex items-center gap-2">
-                <Calendar size={16} className="text-[#0F6E56]" />
-                <span className="text-gray-600">HPHT:</span>
-                <span className="font-semibold text-gray-800">{hphtFormatted}</span>
+            <div className="flex flex-nowrap items-center gap-1 sm:gap-2 lg:gap-4 text-[10px] sm:text-xs md:text-sm font-sans overflow-x-auto">
+              <div className="flex items-center gap-1 sm:gap-2 whitespace-nowrap">
+                <Calendar size={14} className="text-[#0F6E56] flex-shrink-0" />
+                <span className="text-gray-600 font-sans hidden sm:inline">Hari Pertama Haid Terakhir:</span>
+                <span className="text-gray-600 font-sans sm:hidden">HPHT:</span>
+                <span className="font-semibold text-gray-800 font-sans">{hphtFormatted}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Target size={16} className="text-[#BA7517]" />
-                <span className="text-gray-600">HPL:</span>
-                <span className="font-semibold text-gray-800">{hplFormatted}</span>
+              <div className="flex items-center gap-1 sm:gap-2 whitespace-nowrap">
+                <Target size={14} className="text-[#BA7517] flex-shrink-0" />
+                <span className="text-gray-600 font-sans hidden sm:inline">Hari Perkiraan Lahir:</span>
+                <span className="text-gray-600 font-sans sm:hidden">HPL:</span>
+                <span className="font-semibold text-gray-800 font-sans">{hplFormatted}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <Baby size={16} className="text-[#085041]" />
-                <span className="text-gray-600">Usia Kehamilan:</span>
-                <span className="font-semibold text-[#085041]">{usiaKehamilan}</span>
+              <div className="flex items-center gap-1 sm:gap-2 whitespace-nowrap">
+                <Baby size={14} className="text-[#085041] flex-shrink-0" />
+                <span className="text-gray-600 font-sans hidden sm:inline">Usia Kehamilan:</span>
+                <span className="text-gray-600 font-sans sm:hidden">UK:</span>
+                <span className="font-semibold text-[#085041] font-sans">{usiaKehamilan}</span>
               </div>
             </div>
           </div>
 
-          {/* Kartu Identitas Ibu dan Suami */}
+          {/* Kartu Identitas Ibu dan Ayah */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {/* Card Data Ibu */}
             <div className="bg-white shadow-sm rounded-xl p-4 border-2 border-gray-100">
-              <h2 className="text-base font-semibold text-[#185FA5] flex items-center gap-2 mb-3">
+              <h2 className="text-base font-semibold text-[#185FA5] flex items-center gap-2 mb-3 font-sans">
                 <Venus size={18} /> Data Ibu
               </h2>
-              <div className="grid grid-cols-2 gap-y-2 gap-x-3 text-sm">
+              <div className="grid gap-y-2 gap-x-3 text-sm" style={{gridTemplateColumns: "auto 1fr"}}>
                 <span className="text-gray-500 text-xs">Nama Lengkap</span>
                 <span className="font-medium text-gray-800 text-sm">{kependudukan.nama_anggota_keluarga || "-"}</span>
                 
                 <span className="text-gray-500 text-xs">NIK</span>
-                <span className="text-gray-800 text-sm">{kependudukan.nik || "-"}</span>
+                <span className="text-gray-800 text-sm break-all">{kependudukan.nik || "-"}</span>
                 
-                <span className="text-gray-500 text-xs">Tanggal Lahir</span>
-                <span className="text-gray-800 text-sm">
+                <span className="text-gray-500 text-xs font-sans">Tanggal Lahir</span>
+                <span className="text-gray-800 text-sm font-sans">
                   {tanggalLahirFormatted}
                   {usiaIbu > 0 && (
-                    <span className="ml-1 text-gray-500 text-xs">({usiaIbu} tahun)</span>
+                    <span className="ml-1 text-gray-500 text-xs font-sans">({usiaIbu} tahun)</span>
                   )}
                   {usiaIbu === 0 && tanggalLahirFormatted !== "-" && (
-                    <span className="ml-1 text-yellow-600 text-xs flex items-center gap-1">
+                    <span className="ml-1 text-yellow-600 text-xs flex items-center gap-1 font-sans">
                       <Info size={12} /> Periksa tanggal lahir
                     </span>
                   )}
                 </span>
                 
-                <span className="text-gray-500 text-xs">Golongan Darah</span>
-                <span className="text-gray-800 text-sm">{kependudukan.golongan_darah || "-"}</span>
+                <span className="text-gray-500 text-xs font-sans">Golongan Darah</span>
+                <span className="text-gray-800 text-sm font-sans">{kependudukan.golongan_darah || "-"}</span>
                 
-                <span className="text-gray-500 text-xs">Pekerjaan</span>
-                <span className="text-gray-800 text-sm">{kependudukan.pekerjaan || "-"}</span>
+                <span className="text-gray-500 text-xs font-sans">Pekerjaan</span>
+                <span className="text-gray-800 text-sm font-sans">{kependudukan.pekerjaan || "-"}</span>
                 
-                <span className="text-gray-500 text-xs">Alamat</span>
-                <span className="text-gray-800 text-sm">{kependudukan.dusun || "-"}</span>
+                <span className="text-gray-500 text-xs font-sans">Alamat</span>
+                <span className="text-gray-800 text-sm font-sans">{kependudukan.dusun || "-"}</span>
                 
                 {/* <span className="text-gray-500 text-xs">Gravida / Paritas</span>
                 <span className="text-gray-800 text-sm">G{ibu.gravida || 0} P{ibu.paritas || 0}</span> */}
@@ -413,148 +423,152 @@ const handleNonAktif = async () => {
 
             {/* Card Data Ayah */}
             <div className="bg-white shadow-sm rounded-xl p-4 border-2 border-gray-100">
-              <h2 className="text-base font-semibold text-[#0F6E56] flex items-center gap-2 mb-3">
+              <h2 className="text-base font-semibold text-[#0F6E56] flex items-center gap-2 mb-3 font-sans">
                 <Mars size={18} /> Data Ayah
               </h2>
-              {suami ? (
-                <div className="grid grid-cols-2 gap-y-2 gap-x-3 text-sm">
-                  <span className="text-gray-500 text-xs">Nama Lengkap</span>
-                  <span className="font-medium text-gray-800 text-sm">{suami.nama_anggota_keluarga || "-"}</span>
+              {ayah ? (
+                <div className="grid grid-cols-2 gap-y-2 gap-x-3 text-sm font-sans">
+                  <span className="text-gray-500 text-xs font-sans">Nama Lengkap</span>
+                  <span className="font-medium text-gray-800 text-sm font-sans">{ayah.nama_anggota_keluarga || "-"}</span>
                   
                   <span className="text-gray-500 text-xs">NIK</span>
-                  <span className="text-gray-800 text-sm">{suami.nik || "-"}</span>
+                  <span className="text-gray-800 text-sm break-all">{ayah.nik || "-"}</span>
                   
-                  <span className="text-gray-500 text-xs">Pekerjaan</span>
-                  <span className="text-gray-800 text-sm">{suami.pekerjaan || "-"}</span>
+                  <span className="text-gray-500 text-xs font-sans">Pekerjaan</span>
+                  <span className="text-gray-800 text-sm font-sans">{ayah.pekerjaan || "-"}</span>
                   
-                  <span className="text-gray-500 text-xs">Golongan Darah</span>
-                  <span className="text-gray-800 text-sm">{suami.golongan_darah || "-"}</span>
+                  <span className="text-gray-500 text-xs font-sans">Golongan Darah</span>
+                  <span className="text-gray-800 text-sm font-sans">{ayah.golongan_darah || "-"}</span>
 
-                  <span className="text-gray-500 text-xs">Alamat</span>
-                  <span className="text-gray-800 text-sm">{suami.dusun || "-"}</span>
+                  <span className="text-gray-500 text-xs font-sans">Alamat</span>
+                  <span className="text-gray-800 text-sm font-sans">{ayah.dusun || "-"}</span>
                 </div>
               ) : (
-                <div className="text-center py-4 text-gray-400 text-sm italic">
-                  Data suami tidak tersedia
+                <div className="text-center py-4 text-gray-400 text-sm italic font-sans">
+                  Data ayah tidak tersedia
                 </div>
               )}
             </div>
           </div>
 
-          {/* Jalur Pelayanan KIA - tetap sama */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            {/* Skrining & Evaluasi */}
-            <div className="bg-white shadow-sm rounded-xl overflow-hidden border-2 border-gray-100">
-              <div className="bg-transparent px-4 py-3 border-b-2 border-gray-200">
-                <h3 className="text-sm font-semibold text-[#185FA5] uppercase tracking-wide flex items-center gap-2">
-                  <ClipboardList size={16} /> Skrining & Pemeriksaan
+          {/* Jalur Pelayanan Generasi Sehat */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Column 1: Routine Services - Soft Clinical Blue */}
+            <div className="bg-white shadow-sm rounded-xl overflow-hidden border border-gray-200" style={{ borderRadius: '12px' }}>
+              <div className="bg-transparent px-4 py-3 border-b border-gray-200">
+                <h3 className="text-sm font-semibold text-gray-800 uppercase tracking-wide flex items-center gap-2 font-sans">
+                  <ClipboardList size={16} className="text-[#4A90E2]" /> Skrining & Pemeriksaan
                 </h3>
               </div>
               <div className="p-4 space-y-2">
                 <Link 
                   to={withKehamilan(`/data-ibu/${id}/evaluasi-kesehatan`)}
-                  className="flex items-center gap-2 w-full text-left p-2.5 rounded-lg border-2 border-[#0F6E56]/30 hover:bg-[#0F6E56]/5 text-gray-700 text-sm font-medium transition"
+                  className="flex items-center gap-3 w-full text-left p-3 rounded-lg border border-[#4A90E2] hover:bg-[#4A90E2]/5 text-gray-700 text-sm font-medium transition font-sans"
                 >
-                  <Activity size={16} className="text-[#0F6E56] flex-shrink-0" /> Evaluasi Kesehatan
+                   <FileCheck size={18} className="text-[#4A90E2] flex-shrink-0" />Evaluasi Kesehatan
                 </Link>
                 <Link 
                   to={withKehamilan(`/data-ibu/${id}/pemeriksaan-rutin`)}
-                  className="flex items-center gap-2 w-full text-left p-2.5 rounded-lg border-2 border-[#BA7517]/30 hover:bg-[#BA7517]/5 text-gray-700 text-sm font-medium transition"
+                  className="flex items-center gap-3 w-full text-left p-3 rounded-lg border border-[#4A90E2] hover:bg-[#4A90E2]/5 text-gray-700 text-sm font-medium transition font-sans"
                 >
-                  <Activity size={16} className="text-[#BA7517] flex-shrink-0" /> Input ANC Rutin
+                   <Activity size={18} className="text-[#4A90E2] flex-shrink-0" />Antenatal Care
                 </Link>
                 <Link 
                   to={withKehamilan(`/data-ibu/${id}/Skrining-Diabetes-Melitus-Gestasional`)}
-                  className="flex items-center gap-2 w-full text-left p-2.5 rounded-lg border-2 border-[#185FA5]/30 hover:bg-[#185FA5]/5 text-gray-700 text-sm font-medium transition"
+                  className="flex items-center gap-3 w-full text-left p-3 rounded-lg border border-[#4A90E2] hover:bg-[#4A90E2]/5 text-gray-700 text-sm font-medium transition font-sans"
                 >
-                  <Droplet size={16} className="text-[#185FA5] flex-shrink-0" /> Skrining DMG
+                  <Droplet size={18} className="text-[#4A90E2] flex-shrink-0" />Diabetes gestasional 
                 </Link>
               </div>
             </div>
 
-            {/* Pemantauan Trimester */}
-            <div className="bg-white shadow-sm rounded-xl overflow-hidden border-2 border-gray-100">
-              <div className="bg-transparent px-4 py-3 border-b-2 border-gray-200">
-                <h3 className="text-sm font-semibold text-[#0F6E56] uppercase tracking-wide flex items-center gap-2">
-                  <Stethoscope size={16} /> Pemantauan Trimester
+            {/* Column 2: Pregnancy Phases - Soft Growth Green */}
+            <div className="bg-white shadow-sm rounded-xl overflow-hidden border border-gray-200" style={{ borderRadius: '12px' }}>
+              <div className="bg-transparent px-4 py-3 border-b border-gray-200">
+                <h3 className="text-sm font-semibold text-gray-800 uppercase tracking-wide flex items-center gap-2 font-sans">
+                  <Stethoscope size={16} className="text-[#6B8E23]" /> Pemantauan Trimester
                 </h3>
               </div>
               <div className="p-4 space-y-2">
-                <div className="flex flex-col gap-1.5">
-                  <button 
-                    onClick={handleT1Click} 
-                    disabled={checkingT1}
-                    className="flex items-center gap-2 w-full text-left p-2.5 rounded-lg border-2 border-[#185FA5]/30 hover:bg-[#185FA5]/5 text-gray-700 text-sm font-medium transition disabled:opacity-50"
-                  >
-                    {checkingT1 ? <Loader2 size={16} className="animate-spin text-[#185FA5] flex-shrink-0" /> : <UserPlus size={16} className="text-[#185FA5] flex-shrink-0" />} 
-                    Trimester 1
-                  </button>
-                  <Link 
-                    to={withKehamilan(`/data-ibu/${id}/skrining-preeklampsia`)}
-                    className="flex items-center gap-2 w-full text-left p-2.5 rounded-lg border-2 border-[#185FA5]/30 hover:bg-[#185FA5]/5 text-gray-700 text-sm font-medium transition"
-                  >
-                    <UserPlus size={16} className="text-[#185FA5] flex-shrink-0" /> Trimester 2
-                  </Link>
-                  <button 
-                    onClick={handleT3Click} 
-                    disabled={checkingT3}
-                    className="flex items-center gap-2 w-full text-left p-2.5 rounded-lg border-2 border-[#185FA5]/30 hover:bg-[#185FA5]/5 text-gray-700 text-sm font-medium transition disabled:opacity-50"
-                  >
-                    {checkingT3 ? <Loader2 size={16} className="animate-spin text-[#185FA5] flex-shrink-0" /> : <UserPlus size={16} className="text-[#185FA5] flex-shrink-0" />} 
-                    Trimester 3
-                  </button>
-                </div>
+                <button 
+                  onClick={handleT1Click} 
+                  disabled={checkingT1}
+                  className="flex items-center gap-3 w-full text-left p-3 rounded-lg border border-[#6B8E23] hover:bg-[#6B8E23]/5 text-gray-700 text-sm font-medium transition disabled:opacity-50 font-sans"
+                >
+                  {checkingT1 ? <Loader2 size={18} className="animate-spin text-[#6B8E23] flex-shrink-0" /> : <Sparkles size={18} className="text-[#6B8E23] flex-shrink-0" />} 
+                  Trimester 1
+                </button>
+                <Link 
+                  to={withKehamilan(`/data-ibu/${id}/skrining-preeklampsia`)}
+                  className="flex items-center gap-3 w-full text-left p-3 rounded-lg border border-[#6B8E23] hover:bg-[#6B8E23]/5 text-gray-700 text-sm font-medium transition font-sans"
+                >
+                  <Sprout size={18} className="text-[#6B8E23] flex-shrink-0" /> Trimester 2
+                </Link>
+                <button 
+                  onClick={handleT3Click} 
+                  disabled={checkingT3}
+                  className="flex items-center gap-3 w-full text-left p-3 rounded-lg border border-[#6B8E23] hover:bg-[#6B8E23]/5 text-gray-700 text-sm font-medium transition disabled:opacity-50 font-sans"
+                >
+                  {checkingT3 ? <Loader2 size={18} className="animate-spin text-[#6B8E23] flex-shrink-0" /> : <Flower2 size={18} className="text-[#6B8E23] flex-shrink-0" />} 
+                  Trimester 3
+                </button>
               </div>
             </div>
 
-            {/* Persalinan & Nifas */}
-            <div className="bg-white shadow-sm rounded-xl overflow-hidden border-2 border-gray-100">
-              <div className="bg-transparent px-4 py-3 border-b-2 border-gray-200">
-                <h3 className="text-sm font-semibold text-[#BA7517] uppercase tracking-wide flex items-center gap-2">
-                  <Hospital size={16} /> Persalinan & Nifas
+            {/* Column 3: Delivery & Postpartum - Warm Gold/Orange */}
+            <div className="bg-white shadow-sm rounded-xl overflow-hidden border border-gray-200" style={{ borderRadius: '12px' }}>
+              <div className="bg-transparent px-4 py-3 border-b border-gray-200">
+                <h3 className="text-sm font-semibold text-gray-800 uppercase tracking-wide flex items-center gap-2 font-sans">
+                  <Hospital size={16} className="text-[#DAA520]" /> Persalinan & Nifas
                 </h3>
               </div>
               <div className="p-4 space-y-2">
                 <Link 
                   to={withKehamilan(`/data-ibu/${id}/rencana-persalinan`)}
-                  className="flex items-center gap-2 w-full text-left p-2.5 rounded-lg border-2 border-[#BA7517]/30 hover:bg-[#BA7517]/5 text-gray-700 text-sm font-medium transition"
+                  className="flex items-center gap-3 w-full text-left p-3 rounded-lg border border-[#DAA520] hover:bg-[#DAA520]/5 text-gray-700 text-sm font-medium transition font-sans"
                 >
-                  <FileText size={16} className="text-[#BA7517] flex-shrink-0" /> Rencana Persalinan
+                  <FileEdit size={18} className="text-[#DAA520] flex-shrink-0" /> Rencana Persalinan
                 </Link>
                 <Link 
                   to={withKehamilan(`/data-ibu/${id}/pelayanan-persalinan`)}
-                  className="flex items-center gap-2 w-full text-left p-2.5 rounded-lg border-2 border-[#0F6E56]/30 hover:bg-[#0F6E56]/5 text-gray-700 text-sm font-medium transition"
+                  className="flex items-center gap-3 w-full text-left p-3 rounded-lg border border-[#DAA520] hover:bg-[#DAA520]/5 text-gray-700 text-sm font-medium transition font-sans"
                 >
-                  <Baby size={16} className="text-[#0F6E56] flex-shrink-0" /> Pelayanan Persalinan
+                  <Baby size={18} className="text-[#DAA520] flex-shrink-0" /> Pelayanan Persalinan
                 </Link>
                 <Link 
                   to={withKehamilan(`/data-ibu/${id}/pelayanan-nifas`)}
-                  className="flex items-center gap-2 w-full text-left p-2.5 rounded-lg border-2 border-[#185FA5]/30 hover:bg-[#185FA5]/5 text-gray-700 text-sm font-medium transition"
+                  className="flex items-center gap-3 w-full text-left p-3 rounded-lg border border-[#DAA520] hover:bg-[#DAA520]/5 text-gray-700 text-sm font-medium transition font-sans"
                 >
-                  <Heart size={16} className="text-[#185FA5] flex-shrink-0" /> Pelayanan Nifas
+                  <Heart size={18} className="text-[#DAA520] flex-shrink-0" /> Pelayanan Nifas
                 </Link>
               </div>
             </div>
 
-            {/* Rujukan Medis */}
-            <div className="bg-white shadow-sm rounded-xl overflow-hidden border-2 border-gray-100">
-              <div className="bg-transparent px-4 py-3 border-b-2 border-gray-200">
-                <h3 className="text-sm font-semibold text-[#A32D2D] uppercase tracking-wide flex items-center gap-2">
-                  <AlertTriangle size={16} /> Rujukan Medis
+            {/* Column 4: Referral Management - Soft Maroon/Crimson */}
+            <div className="bg-white shadow-sm rounded-xl overflow-hidden border border-gray-200" style={{ borderRadius: '12px' }}>
+              <div className="bg-transparent px-4 py-3 border-b border-gray-200">
+                <h3 className="text-sm font-semibold text-gray-800 uppercase tracking-wide flex items-center gap-2 font-sans">
+                  <FileText size={16} className="text-[#800020]" /> Rujukan Medis
                 </h3>
               </div>
               <div className="p-4 space-y-2">
                 <Link 
                   to={withKehamilan(`/data-ibu/${id}/rujukan`)}
-                  className="flex items-center gap-2 w-full text-left p-2.5 rounded-lg border-2 border-[#A32D2D]/30 hover:bg-[#A32D2D]/5 text-gray-700 text-sm font-medium transition"
+                  className="flex items-center gap-3 w-full text-left p-3 rounded-lg border border-[#800020] hover:bg-[#800020]/5 text-gray-700 text-sm font-medium transition font-sans"
                 >
-                  <AlertTriangle size={16} className="text-[#A32D2D] flex-shrink-0" /> {isDokter ? 'Lihat Rujukan' : 'Buat / Lihat Rujukan'}
+                  <ArrowRight size={18} className="text-[#800020] flex-shrink-0" /> Buat Rujukan
                 </Link>
+                {/* <Link 
+                  to={withKehamilan(`/data-ibu/${id}/rujukan`)}
+                  className="flex items-center gap-3 w-full text-left p-3 rounded-lg border border-[#800020] hover:bg-[#800020]/5 text-gray-700 text-sm font-medium transition font-sans"
+                >
+                  <Eye size={18} className="text-[#800020] flex-shrink-0" /> Lihat Rujukan
+                </Link> */}
                 <Link 
                   to="/daftar-rujukan"
-                  className="flex items-center gap-2 w-full text-left p-2.5 rounded-lg border-2 border-[#185FA5]/30 hover:bg-[#185FA5]/5 text-gray-700 text-sm font-medium transition"
+                  className="flex items-center gap-3 w-full text-left p-3 rounded-lg border border-[#800020] hover:bg-[#800020]/5 text-gray-700 text-sm font-medium transition font-sans"
                 >
-                  <AlertTriangle size={16} className="text-[#185FA5] flex-shrink-0" /> Daftar Semua Rujukan
+                  <List size={18} className="text-[#800020] flex-shrink-0" /> Daftar Semua Rujukan
                 </Link>
               </div>
             </div>

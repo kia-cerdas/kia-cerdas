@@ -71,13 +71,24 @@ func (r *PelayananIbuNifasRepository) FindMineByUserID(
 	var list []models.PelayananIbuNifas
 
 	err := r.db.
-		Table("pelayanan_ibu_nifas").
-		Joins("JOIN kehamilan k ON k.id = pelayanan_ibu_nifas.kehamilan_id").
-		Joins("JOIN ibu i ON i.id = k.ibu_id").
-		Joins("JOIN penduduk pd ON pd.id = i.penduduk_id").
-		Joins("JOIN pengguna u ON u.penduduk_id = pd.id").
+		// Table("pelayanan_ibu_nifas").
+		// Joins("JOIN kehamilan k ON k.id = pelayanan_ibu_nifas.kehamilan_id").
+		// Joins("JOIN ibu i ON i.id = k.ibu_id").
+		// Joins("JOIN penduduk pd ON pd.id = i.penduduk_id").
+		// Joins("JOIN pengguna u ON u.penduduk_id = pd.id").
+		// Where("u.id = ?", userID).
+		// Order("pelayanan_ibu_nifas.created_at DESC").
+		// Find(&list).Error
+
+		// Test dulu
+		Table("pelayanan_ibu_nifas AS pin").
+		Select("pin.*").
+		Joins("JOIN kehamilan AS k ON k.id = pin.kehamilan_id").
+		Joins("JOIN ibu AS i ON i.id = k.ibu_id").
+		Joins("JOIN penduduk AS pd ON pd.id = i.penduduk_id").
+		Joins("JOIN pengguna AS u ON u.penduduk_id = pd.id").
 		Where("u.id = ?", userID).
-		Order("pelayanan_ibu_nifas.created_at DESC").
+		Order("pin.created_at DESC").
 		Find(&list).Error
 
 	return list, err

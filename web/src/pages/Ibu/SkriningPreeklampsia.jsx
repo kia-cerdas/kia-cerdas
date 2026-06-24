@@ -508,7 +508,7 @@ export default function SkriningPreeklampsia() {
           </div>
         </div>
 
-        <div className="flex gap-3 justify-end">
+        <div className="flex flex-wrap gap-3 justify-end">
           {canEdit && (
             <button
               onClick={() => setIsEditing(true)}
@@ -560,7 +560,7 @@ export default function SkriningPreeklampsia() {
 
         {/* Risiko Sedang (hanya satu blok) */}
         <div className="bg-white rounded-xl shadow-sm p-5">
-          <h3 className="font-bold text-[22px] text-[#BA7517] border-b pb-2 flex items-center gap-2">
+          <h3 className="font-bold text-base sm:text-lg md:text-[22px] text-[#BA7517] border-b pb-2 flex items-center gap-2">
             <AlertCircle size={20} /> Anamnesis - Risiko Sedang
             <span className="text-sm font-normal text-gray-400 ml-2">(Opsional)</span>
           </h3>
@@ -609,7 +609,7 @@ export default function SkriningPreeklampsia() {
 
         {/* Risiko Tinggi */}
         <div className="bg-white rounded-xl shadow-sm p-5">
-          <h3 className="font-bold text-[22px] text-[#A32D2D] border-b pb-2 flex items-center gap-2">
+          <h3 className="font-bold text-base sm:text-lg md:text-[22px] text-[#A32D2D] border-b pb-2 flex items-center gap-2">
             <ShieldAlert size={20} /> Anamnesis - Risiko Tinggi
             <span className="text-sm font-normal text-gray-400 ml-2">(Opsional)</span>
           </h3>
@@ -673,7 +673,7 @@ export default function SkriningPreeklampsia() {
 
         {/* Pemeriksaan Fisik */}
         <div className="bg-white rounded-xl shadow-sm p-5">
-          <h3 className="font-bold text-[22px] text-[#185FA5] border-b pb-2 flex items-center gap-2">
+          <h3 className="font-bold text-base sm:text-lg md:text-[22px] text-[#185FA5] border-b pb-2 flex items-center gap-2">
             Pemeriksaan Fisik Khusus
             <span className="text-sm font-normal text-gray-400 ml-2">(Opsional)</span>
           </h3>
@@ -760,7 +760,7 @@ export default function SkriningPreeklampsia() {
               <ArrowLeft size={16} />
               <span>Kembali</span>
             </button>
-            <h1 className="text-[28px] font-bold text-gray-900">Skrining Preeklampsia</h1>
+            <h1 className="text-lg sm:text-2xl md:text-[28px] font-bold text-gray-900">Skrining Preeklampsia</h1>
           </div>
 
           <div className="bg-[#E1F5EE] border-2 border-[#0F6E56]/20 rounded-xl p-4 flex items-start gap-3">

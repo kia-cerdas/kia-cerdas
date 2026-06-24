@@ -165,7 +165,8 @@ func (r *PemeriksaanDokterTrimester3Repository) FindMineByUserID(userID int32) (
 		Joins("JOIN penduduk pd ON pd.id = i.penduduk_id").
 		Joins("JOIN pengguna u ON u.penduduk_id = pd.id").
 		Where("u.id = ?", userID).
-		Order("p.tanggal_periksa DESC").
+		// Order("p.tanggal_periksa DESC").
+		Order("p.tanggal_periksa_stamp_paraf DESC").
 		First(&data).Error
 
 	return &data, err
@@ -181,7 +182,8 @@ func (r *PemeriksaanDokterTrimester3Repository) FindAllMineByUserID(userID int32
 		Joins("JOIN penduduk pd ON pd.id = i.penduduk_id").
 		Joins("JOIN pengguna u ON u.penduduk_id = pd.id").
 		Where("u.id = ?", userID).
-		Order("p.tanggal_periksa DESC").
+		// Order("p.tanggal_periksa DESC").
+		Order("p.tanggal_periksa_stamp_paraf DESC").
 		Find(&list).Error
 
 	return list, err

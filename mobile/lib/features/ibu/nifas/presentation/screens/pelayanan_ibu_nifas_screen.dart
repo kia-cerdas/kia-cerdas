@@ -194,12 +194,12 @@ class _PelayananIbuNifasScreenState
         title: const Text(
           'Pelayanan Ibu Nifas',
           style: TextStyle(
-            color: Colors.white,
+            color: Colors.black87,
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black87,
         elevation: 0,
       ),
       body: isLoading

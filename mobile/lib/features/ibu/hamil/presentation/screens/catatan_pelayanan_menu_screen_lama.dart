@@ -297,7 +297,6 @@ import 'package:flutter/material.dart';
 import 'package:ta_pa2_pa3_project/core/themes/app_colors.dart';
 
 import 'package:ta_pa2_pa3_project/features/ibu/hamil/presentation/screens/catatan_pelayanan_t1_screen.dart';
-import 'package:ta_pa2_pa3_project/features/ibu/hamil/presentation/screens/catatan_pelayanan_t2_screen.dart';
 import 'package:ta_pa2_pa3_project/features/ibu/hamil/presentation/screens/catatan_pelayanan_t3_screen.dart';
 
 class CatatanPelayananMenuScreen extends StatefulWidget {
@@ -316,7 +315,7 @@ class _CatatanPelayananMenuScreenState
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 2, vsync: this);
   }
 
   @override
@@ -343,14 +342,13 @@ class _CatatanPelayananMenuScreenState
           indicatorWeight: 3,
           indicatorSize: TabBarIndicatorSize.tab,
           labelColor: Colors.white,
-          unselectedLabelColor: Colors.white.withOpacity(0.55),
+          unselectedLabelColor: Colors.white.withValues(alpha: 0.55),
           labelStyle: const TextStyle(
               fontWeight: FontWeight.w700, fontSize: 13),
           unselectedLabelStyle: const TextStyle(
               fontWeight: FontWeight.w500, fontSize: 13),
           tabs: const [
             Tab(text: 'Trimester 1'),
-            Tab(text: 'Trimester 2'),
             Tab(text: 'Trimester 3'),
           ],
         ),
@@ -359,7 +357,6 @@ class _CatatanPelayananMenuScreenState
         controller: _tabController,
         children: const [
           CatatanPelayananT1Screen(),
-          CatatanPelayananT2Screen(),
           CatatanPelayananT3Screen(),
         ],
       ),

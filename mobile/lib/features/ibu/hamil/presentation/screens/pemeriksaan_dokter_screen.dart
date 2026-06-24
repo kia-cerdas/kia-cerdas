@@ -536,10 +536,39 @@ class _PemeriksaanDokterScreenState extends State<PemeriksaanDokterScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F8FC),
       appBar: AppBar(
-        title: Text(_title),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF1E293B),
         elevation: 0,
+        centerTitle: false,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF1E293B)),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              _title,
+              style: const TextStyle(
+                color: Color.fromARGB(255, 0, 0, 0),
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+            const Text(
+              'Riwayat pemeriksaan oleh dokter',
+              style: TextStyle(
+                color: Color(0xFF64748B),
+                fontWeight: FontWeight.normal,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1.0),
+          child: Container(color: Colors.grey.shade200, height: 1.0),
+        ),
       ),
       body: FutureBuilder<dynamic>(
         future: _future,
@@ -638,22 +667,30 @@ class _HeaderCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.primary,
-        borderRadius: BorderRadius.circular(22),
+        color: const Color(0xFFEFF6FF),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFBFDBFE)),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         children: [
           Container(
-            width: 54,
-            height: 54,
+            width: 50,
+            height: 50,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.18),
-              shape: BoxShape.circle,
+              color: AppColors.primary,
+              borderRadius: BorderRadius.circular(14),
             ),
             child: const Icon(
               Icons.medical_information_outlined,
               color: Colors.white,
-              size: 30,
+              size: 26,
             ),
           ),
           const SizedBox(width: 14),
@@ -664,7 +701,7 @@ class _HeaderCard extends StatelessWidget {
                 const Text(
                   'Pemeriksaan Dokter',
                   style: TextStyle(
-                    color: Colors.white70,
+                    color: Color(0xFF4A6FA5),
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                   ),
@@ -673,8 +710,8 @@ class _HeaderCard extends StatelessWidget {
                 Text(
                   'Pemeriksaan Dokter $trimesterLabel',
                   style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 17,
+                    color: Color(0xFF1E3A5F),
+                    fontSize: 15,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -863,10 +900,39 @@ class PemeriksaanDokterDetailScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF6F8FC),
       appBar: AppBar(
-        title: Text(_title),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF1E293B),
         elevation: 0,
+        centerTitle: false,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF1E293B)),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              _title,
+              style: const TextStyle(
+                color: Color.fromARGB(255, 0, 0, 0),
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+            const Text(
+              'Detail hasil pemeriksaan dokter',
+              style: TextStyle(
+                color: Color(0xFF64748B),
+                fontWeight: FontWeight.normal,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1.0),
+          child: Container(color: Colors.grey.shade200, height: 1.0),
+        ),
       ),
       body: trimester == 1
           ? _buildTrimester1(itemT1!)
@@ -1041,19 +1107,27 @@ class _SummaryCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.primary,
-        borderRadius: BorderRadius.circular(22),
+        color: const Color(0xFFEFF6FF),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFBFDBFE)),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         children: [
           Container(
-            width: 54,
-            height: 54,
+            width: 50,
+            height: 50,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.18),
-              shape: BoxShape.circle,
+              color: AppColors.primary,
+              borderRadius: BorderRadius.circular(14),
             ),
-            child: Icon(icon, color: Colors.white, size: 30),
+            child: Icon(icon, color: Colors.white, size: 26),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -1063,7 +1137,7 @@ class _SummaryCard extends StatelessWidget {
                 Text(
                   title,
                   style: const TextStyle(
-                    color: Colors.white70,
+                    color: Color(0xFF4A6FA5),
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                   ),
@@ -1072,8 +1146,8 @@ class _SummaryCard extends StatelessWidget {
                 Text(
                   safeSubtitle,
                   style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 17,
+                    color: Color(0xFF1E3A5F),
+                    fontSize: 15,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -1081,7 +1155,7 @@ class _SummaryCard extends StatelessWidget {
                 Text(
                   date,
                   style: const TextStyle(
-                    color: Colors.white70,
+                    color: Color(0xFF4A6FA5),
                     fontSize: 12,
                   ),
                 ),

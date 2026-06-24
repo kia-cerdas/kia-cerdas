@@ -58,12 +58,10 @@ class _EdukasiTrimesterScreenState extends State<EdukasiTrimesterScreen>
   late TabController _tabController;
   late Future<List<EdukasiTrimesterModel>> _futureData;
 
-  // Tab index 0 = Semua, 1 = TM1, 2 = TM2, 3 = TM3
+  // Tab index 0 = Semua (filter trimester dihapus)
+  // Tab filter trimester dihapus — hanya tampilkan semua
   final _tabLabels = const [
     'Semua',
-    'Trimester I',
-    'Trimester II',
-    'Trimester III',
   ];
 
   String _selectedKategori = 'Semua';
@@ -71,7 +69,7 @@ class _EdukasiTrimesterScreenState extends State<EdukasiTrimesterScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 1, vsync: this);
     _futureData =
         EdukasiTrimesterRepository(EdukasiTrimesterService()).getAll();
   }
@@ -160,31 +158,7 @@ class _EdukasiTrimesterScreenState extends State<EdukasiTrimesterScreen>
 
               return Column(
                 children: [
-                  // ---- FILTER TAB TRIMESTER (pill, gaya menu utama) ----
-                  Container(
-                    color: Colors.white,
-                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
-                    child: SizedBox(
-                      height: 38,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: _tabLabels.length,
-                        itemBuilder: (context, i) {
-                          final isSelected = _tabController.index == i;
-                          return _FilterPill(
-                            label: _tabLabels[i],
-                            selected: isSelected,
-                            onTap: () {
-                              setState(() {
-                                _tabController.index = i;
-                                _selectedKategori = 'Semua';
-                              });
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                  ),
+                  // Filter tab trimester dihapus
 
                   // ---- LIST ARTIKEL ----
                   Expanded(
@@ -220,13 +194,13 @@ class _ArticleCard extends StatelessWidget {
   const _ArticleCard({required this.item});
 
   // Label tampilan dari nilai DB apapun
-  String get _trimesterLabel {
-    final n = normalizeTrimester(item.trimester);
-    if (n == '1') return 'Trimester I';
-    if (n == '2') return 'Trimester II';
-    if (n == '3') return 'Trimester III';
-    return item.trimester; // fallback
-  }
+  // String get _trimesterLabel {
+  //   final n = normalizeTrimester(item.trimester);
+  //   if (n == '1') return 'Trimester I';
+  //   if (n == '2') return 'Trimester II';
+  //   if (n == '3') return 'Trimester III';
+  //   return item.trimester; // fallback
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -275,25 +249,25 @@ class _ArticleCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Badge trimester + kategori
-                  Row(
-                    children: [
-                      if (item.trimester.trim().isNotEmpty)
-                        _Badge(
-                          text: _trimesterLabel,
-                          bgColor: const Color(0xFF1F5EA8),
-                          textColor: Colors.white,
-                        ),
-                      if (item.trimester.trim().isNotEmpty &&
-                          item.kategori.trim().isNotEmpty)
-                        const SizedBox(width: 8),
-                      if (item.kategori.trim().isNotEmpty)
-                        _Badge(
-                          text: item.kategori,
-                          bgColor: const Color(0xFFE8F1FD),
-                          textColor: const Color(0xFF1F5EA8),
-                        ),
-                    ],
-                  ),
+                  // Row(
+                  //   children: [
+                  //     if (item.trimester.trim().isNotEmpty)
+                  //       _Badge(
+                  //         text: _trimesterLabel,
+                  //         bgColor: const Color(0xFF1F5EA8),
+                  //         textColor: Colors.white,
+                  //       ),
+                  //     if (item.trimester.trim().isNotEmpty &&
+                  //         item.kategori.trim().isNotEmpty)
+                  //       const SizedBox(width: 8),
+                  //     if (item.kategori.trim().isNotEmpty)
+                  //       _Badge(
+                  //         text: item.kategori,
+                  //         bgColor: const Color(0xFFE8F1FD),
+                  //         textColor: const Color(0xFF1F5EA8),
+                  //       ),
+                  //   ],
+                  // ),
                   const SizedBox(height: 12),
 
                   // Judul

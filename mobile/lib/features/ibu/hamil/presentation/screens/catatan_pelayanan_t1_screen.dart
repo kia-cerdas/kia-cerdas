@@ -7,8 +7,6 @@ import 'package:ta_pa2_pa3_project/core/services/auth_session.dart';
 import 'package:ta_pa2_pa3_project/core/themes/app_colors.dart';
 import 'package:ta_pa2_pa3_project/core/constants/api_constants.dart';
 
-import 'package:ta_pa2_pa3_project/features/ibu/hamil/data/services/kehamilan_api_service.dart';
-
 class CatatanPelayananT1Screen extends StatefulWidget {
   const CatatanPelayananT1Screen({super.key});
 
@@ -19,9 +17,6 @@ class CatatanPelayananT1Screen extends StatefulWidget {
 
 class _CatatanPelayananT1ScreenState
     extends State<CatatanPelayananT1Screen> {
-  final _kehamilanService =
-      KehamilanApiService();
-
   bool isLoading = true;
 
   List<dynamic> catatan = [];
@@ -42,15 +37,9 @@ class _CatatanPelayananT1ScreenState
         );
       }
 
-      final kehamilan =
-          await _kehamilanService
-              .getKehamilanAktif();
-
       final response = await http.get(
         Uri.parse(
-          ApiConstants.catatanPelayananT1(
-            kehamilan.id,
-          ),
+          ApiConstants.catatanPelayananT1,
         ),
 
         headers: {
@@ -194,7 +183,7 @@ class _CatatanPelayananT1ScreenState
             boxShadow: [
               BoxShadow(
                 color: Colors.black
-                    .withOpacity(0.04),
+                    .withValues(alpha: 0.04),
 
                 blurRadius: 10,
 
@@ -236,7 +225,7 @@ class _CatatanPelayananT1ScreenState
 
                       decoration: BoxDecoration(
                         color: AppColors.primary
-                            .withOpacity(0.12),
+                            .withValues(alpha: 0.12),
 
                         borderRadius:
                             BorderRadius.circular(

@@ -283,45 +283,71 @@ class _LogTTDMMSScreenState extends State<LogTTDMMSScreen>
     return Scaffold(
       backgroundColor: const Color(0xFFF6F8FC),
       appBar: AppBar(
-        title: const Text('Log TTD/MMS'),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF1E293B),
         elevation: 0,
+        centerTitle: false,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF1E293B)),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Log TTD / MMS',
+              style: TextStyle(
+                color: Color.fromARGB(255, 0, 0, 0),
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+            Text(
+              'Catatan konsumsi Tablet Tambah Darah',
+              style: TextStyle(
+                color: Color(0xFF64748B),
+                fontWeight: FontWeight.normal,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
         actions: [
           // Badge pending di AppBar
           if (_pendingCount > 0)
             Padding(
               padding: const EdgeInsets.only(right: 12),
-              child: Center(
-                child: GestureDetector(
-                  onTap: _tryFlushPending,
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.orange,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.cloud_upload_outlined,
-                            size: 14, color: Colors.white),
-                        const SizedBox(width: 4),
-                        Text(
-                          '$_pendingCount pending',
-                          style: const TextStyle(
-                              fontSize: 11,
-                              color: Colors.white,
-                              fontWeight: FontWeight.w700),
-                        ),
-                      ],
-                    ),
+              child: GestureDetector(
+                onTap: _tryFlushPending,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.orange,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.cloud_upload_outlined,
+                          size: 14, color: Colors.white),
+                      const SizedBox(width: 4),
+                      Text(
+                        '$_pendingCount pending',
+                        style: const TextStyle(
+                            fontSize: 11,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700),
+                      ),
+                    ],
                   ),
                 ),
               ),
             ),
         ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1.0),
+          child: Container(color: Colors.grey.shade200, height: 1.0),
+        ),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -390,36 +416,42 @@ class _LogTTDMMSScreenState extends State<LogTTDMMSScreen>
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-            colors: [AppColors.primary, Color(0xFF56CCF2)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight),
-        borderRadius: BorderRadius.circular(24),
+        color: const Color(0xFFEFF6FF),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFBFDBFE)),
         boxShadow: [
           BoxShadow(
-              color: AppColors.primary.withOpacity(0.22),
-              blurRadius: 16,
-              offset: const Offset(0, 8))
+              color: AppColors.primary.withOpacity(0.08),
+              blurRadius: 12,
+              offset: const Offset(0, 4))
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(children: [
-            Icon(Icons.medication_liquid_outlined, color: Colors.white),
-            SizedBox(width: 10),
-            Expanded(
+          Row(children: [
+            Container(
+              padding: const EdgeInsets.all(9),
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.medication_liquid_outlined,
+                  color: Colors.white, size: 22),
+            ),
+            const SizedBox(width: 12),
+            const Expanded(
                 child: Text('Tablet Tambah Darah / MMS',
                     style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 17,
+                        color: Color(0xFF1E3A5F),
+                        fontSize: 16,
                         fontWeight: FontWeight.w800))),
           ]),
           const SizedBox(height: 10),
           const Text('Centang setiap hari setelah ibu meminum TTD/MMS.',
-              style:
-                  TextStyle(color: Colors.white70, fontSize: 13, height: 1.35)),
-          const SizedBox(height: 18),
+              style: TextStyle(
+                  color: Color(0xFF4A6FA5), fontSize: 13, height: 1.4)),
+          const SizedBox(height: 16),
           Row(children: [
             _buildStatPill(
                 label: 'Bulan $_selectedBulan',
@@ -427,15 +459,15 @@ class _LogTTDMMSScreenState extends State<LogTTDMMSScreen>
             const SizedBox(width: 10),
             _buildStatPill(label: 'Total', value: '$_checkedTotal hari'),
           ]),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           ClipRRect(
             borderRadius: BorderRadius.circular(999),
             child: LinearProgressIndicator(
                 value: _monthProgress,
-                backgroundColor: Colors.white24,
+                backgroundColor: const Color(0xFFBFDBFE),
                 valueColor:
-                    const AlwaysStoppedAnimation<Color>(Colors.white),
-                minHeight: 8),
+                    const AlwaysStoppedAnimation<Color>(AppColors.primary),
+                minHeight: 7),
           ),
         ],
       ),
@@ -447,19 +479,19 @@ class _LogTTDMMSScreenState extends State<LogTTDMMSScreen>
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.16),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white24)),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFFBFDBFE))),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(label,
-                style:
-                    const TextStyle(color: Colors.white70, fontSize: 11)),
+                style: const TextStyle(
+                    color: Color(0xFF4A6FA5), fontSize: 11)),
             const SizedBox(height: 3),
             Text(value,
                 style: const TextStyle(
-                    color: Colors.white,
+                    color: Color(0xFF1E3A5F),
                     fontSize: 13,
                     fontWeight: FontWeight.w800)),
           ],

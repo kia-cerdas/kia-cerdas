@@ -166,7 +166,7 @@ class _CatatanPelayananNifasScreenState
           'Catatan Pelayanan Nifas',
 
           style: TextStyle(
-            color: Colors.white,
+            color: Colors.black87,
             fontWeight:
                 FontWeight.bold,
           ),
@@ -174,11 +174,9 @@ class _CatatanPelayananNifasScreenState
 
         centerTitle: true,
 
-        backgroundColor:
-            AppColors.primary,
+        backgroundColor: Colors.white,
 
-        foregroundColor:
-            Colors.white,
+        foregroundColor: Colors.black87,
 
         elevation: 0,
       ),

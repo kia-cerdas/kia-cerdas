@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useCallback } from "react";
+﻿import React, { useEffect, useMemo, useState, useCallback } from "react";
 import Swal from "sweetalert2";
 import ImageUploader from "../../components/ImageUploader";
 import MainLayout from "../../components/Layout/MainLayout";
@@ -699,7 +699,7 @@ export default function EdukasiDigitalCrudPage({
         onClose={handleAlertClose} 
         onRetry={notification?.type === "error" ? () => setNotification(null) : null}
       />
-      <div className="space-y-6 font-['Noto_Sans',_sans-serif]">
+      <div className="space-y-4 md:space-y-6 font-['Noto_Sans',_sans-serif]">
         
         {/* Header — hanya tampilkan judul tanpa card saat view=form, hilangkan card di list view */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -911,7 +911,7 @@ export default function EdukasiDigitalCrudPage({
                 {filteredRows.length > 0 && (
                   <div className="flex items-center justify-between mt-6 text-[14px] text-slate-500">
                     <p>Menampilkan {paginationStart}-{paginationEnd} dari {filteredRows.length} data</p>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 hidden sm:flex">
                       <button 
                         onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                         disabled={currentPage === 1}

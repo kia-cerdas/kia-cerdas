@@ -144,7 +144,7 @@ const Breadcrumb = () => {
 
     // Skip role-prefix segments
     if (skipSegments.includes(segment)) return;
-    
+
     // Special handling for preview pages: combine type + preview into one breadcrumb item
     if (isPreviewPage && segment !== "laporan" && segment !== "preview") {
       // This is the "ibu" or "balita" segment - skip it as we'll combine it with "preview"
@@ -157,19 +157,23 @@ const Breadcrumb = () => {
     if (!isId) {
       // Kontekstual: "form" tampilkan sebagai "Tambah" atau "Ubah" tergantung apakah ada ID setelahnya
       let label;
+       const nextSegment = pathSegments[index + 1];
+    const hasId = nextSegment && /^[0-9a-f-]{36}$|^\d+$/.test(nextSegment);
+    
       if (segment === "form") {
         const nextSegment = pathSegments[index + 1];
         const hasId = nextSegment && /^[0-9a-f-]{36}$|^\d+$/.test(nextSegment);
-<<<<<<< HEAD
+      
         label = hasId ? "Ubah Konten" : "Tambah Konten";
       } else if (isPreviewPage && segment === "preview") {
         // Combine with previous type (ibu/balita) to make "Preview Ibu" or "Preview Balita"
         const typeSegment = pathSegments[pathSegments.indexOf("preview") - 1];
         const typeLabel = breadcrumbLabels[typeSegment] || formatLabel(typeSegment);
+      
         label = `Preview ${typeLabel}`;
-=======
+      
         label = hasId ? "Ubah Konten" : "Form Tambah Jadwal Posyandu";
->>>>>>> 2ac4102 (redesign jadwal layanan posyandu)
+
       } else {
         label = breadcrumbLabels[segment] || formatLabel(segment);
       }
@@ -179,6 +183,16 @@ const Breadcrumb = () => {
         path: itemPath,
         segment,
       });
+    } else {
+      // Special handling for ID segments - add "Detail" breadcrumb for certain paths
+      const prevSegment = pathSegments[index - 1];
+      if (prevSegment === "data-ibu") {
+        breadcrumbItems.push({
+          label: "Detail Ibu",
+          path: currentPath,
+          segment: "detail",
+        });
+      }
     }
   });
 

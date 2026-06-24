@@ -158,7 +158,7 @@ func (r *pemeriksaanRepository) GetPendudukByRisk(kategori string, risiko string
             )
             SELECT 
                 k.id,
-                k.nama_lengkap,
+                k.nama_anggota_keluarga as nama_lengkap,
                 k.nik,
                 k.dusun,
                 EXTRACT(YEAR FROM AGE(CURRENT_DATE, k.tanggal_lahir)) as usia,
@@ -170,7 +170,7 @@ func (r *pemeriksaanRepository) GetPendudukByRisk(kategori string, risiko string
         `
         args = []interface{}{kategori}
         if !hasFullAccess && PosyanduID != nil {
-            query += " AND k.desa_id = $2"
+            query += " AND k.posyandu_id = $2"
             args = append(args, *PosyanduID)
         }
     } else {
@@ -187,7 +187,7 @@ func (r *pemeriksaanRepository) GetPendudukByRisk(kategori string, risiko string
             )
             SELECT 
                 k.id,
-                k.nama_lengkap,
+                k.nama_anggota_keluarga as nama_lengkap,
                 k.nik,
                 k.dusun,
                 EXTRACT(YEAR FROM AGE(CURRENT_DATE, k.tanggal_lahir)) as usia,
@@ -199,7 +199,7 @@ func (r *pemeriksaanRepository) GetPendudukByRisk(kategori string, risiko string
         `
         args = []interface{}{kategori, risiko}
         if !hasFullAccess && PosyanduID != nil {
-            query += " AND k.desa_id = $3"
+            query += " AND k.posyandu_id = $3"
             args = append(args, *PosyanduID)
         }
     }
