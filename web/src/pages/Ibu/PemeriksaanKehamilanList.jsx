@@ -33,6 +33,8 @@ import {
   Eye,
   CheckCircle,
   AlertCircle,
+  Stethoscope,
+  CalendarDays,
 } from "lucide-react";
 import Swal from "sweetalert2";
 
@@ -46,49 +48,35 @@ ChartJS.register(
   Filler
 );
 
-// ── Helper: Parse alasan_klinis dari string JSON ──
+// ─── Palet Generasi Sehat ─────────────────────────────────────────────────────
+// Primary  : #185FA5
+// Success  : #3B6D11
+// Warning  : #BA7517
+// Danger   : #A32D2D
+// Secondary: #0F6E56
+// Background: #F7FAFB
+
+// ── Helper: Parse alasan_klinis ──
 const parseAlasanKlinis = (alasanString) => {
   if (!alasanString) return [];
-  try {
-    return JSON.parse(alasanString);
-  } catch {
-    return [];
-  }
+  try { return JSON.parse(alasanString); } catch { return []; }
 };
 
-// ── Helper: Parse risk_types dari string JSON ──
+// ── Helper: Parse risk_types ──
 const parseRiskTypes = (riskTypesString) => {
   if (!riskTypesString) return [];
-  try {
-    return JSON.parse(riskTypesString);
-  } catch {
-    return [];
-  }
+  try { return JSON.parse(riskTypesString); } catch { return []; }
 };
 
 // ── Helper: Batas kenaikan BB berdasarkan Buku KIA ──
 const getBatasBB = (minggu, kategoriIMT) => {
-  let rateMin = 0.35,
-    rateMax = 0.5,
-    t1Min = 0.5,
-    t1Max = 2.0;
+  let rateMin = 0.35, rateMax = 0.5, t1Min = 0.5, t1Max = 2.0;
   const kat = kategoriIMT?.toLowerCase() || "";
-
-  if (kat.includes("kurang")) {
-    rateMin = 0.44; rateMax = 0.58; t1Min = 1.0; t1Max = 2.0;
-  } else if (kat.includes("overweight")) {
-    rateMin = 0.23; rateMax = 0.33; t1Min = 0.5; t1Max = 1.0;
-  } else if (kat.includes("obesitas")) {
-    rateMin = 0.17; rateMax = 0.27; t1Min = 0.2; t1Max = 0.5;
-  }
-
-  if (minggu <= 12) {
-    return { min: (t1Min / 12) * minggu, max: (t1Max / 12) * minggu };
-  }
-  return {
-    min: t1Min + (minggu - 12) * rateMin,
-    max: t1Max + (minggu - 12) * rateMax,
-  };
+  if (kat.includes("kurang")) { rateMin = 0.44; rateMax = 0.58; t1Min = 1.0; t1Max = 2.0; }
+  else if (kat.includes("overweight")) { rateMin = 0.23; rateMax = 0.33; t1Min = 0.5; t1Max = 1.0; }
+  else if (kat.includes("obesitas")) { rateMin = 0.17; rateMax = 0.27; t1Min = 0.2; t1Max = 0.5; }
+  if (minggu <= 12) return { min: (t1Min / 12) * minggu, max: (t1Max / 12) * minggu };
+  return { min: t1Min + (minggu - 12) * rateMin, max: t1Max + (minggu - 12) * rateMax };
 };
 
 // ── Helper: Normalisasi status risiko ──
@@ -104,55 +92,35 @@ const normalizeDisplayStatus = (status) => {
 // ── Helper: Hitung status risiko dari data klinis (fallback frontend) ──
 const hitungStatusRisiko = (exam) => {
   if (!exam) return null;
-
   const faktorRujukan = [];
   const faktorTindakan = [];
 
-  // 1. Tekanan darah
   const { sistole, diastole } = exam;
-  if (sistole >= 140 || diastole >= 90) {
+  if (sistole >= 140 || diastole >= 90)
     faktorRujukan.push(`Tekanan darah tinggi (${sistole}/${diastole} mmHg)`);
-  } else if (sistole >= 130 || diastole >= 80) {
+  else if (sistole >= 130 || diastole >= 80)
     faktorTindakan.push(`Tekanan darah batas waspada (${sistole}/${diastole} mmHg)`);
-  }
 
-  // 2. DJJ
   const djj = exam.denyut_jantung_janin;
-  if (djj && (djj < 100 || djj > 180)) {
-    faktorRujukan.push(`DJJ tidak normal (${djj} bpm)`);
-  } else if (djj && (djj < 120 || djj > 160)) {
-    faktorTindakan.push(`DJJ di luar batas normal (${djj} bpm)`);
-  }
+  if (djj && (djj < 100 || djj > 180)) faktorRujukan.push(`DJJ tidak normal (${djj} bpm)`);
+  else if (djj && (djj < 120 || djj > 160)) faktorTindakan.push(`DJJ di luar batas normal (${djj} bpm)`);
 
-  // 3. Hemoglobin
   const hb = exam.tes_lab_hb;
-  if (hb && hb < 7) {
-    faktorRujukan.push(`Anemia berat, Hb ${hb} g/dL`);
-  } else if (hb && hb < 10) {
-    faktorTindakan.push(`Anemia sedang, Hb ${hb} g/dL`);
-  }
+  if (hb && hb < 7) faktorRujukan.push(`Anemia berat, Hb ${hb} g/dL`);
+  else if (hb && hb < 10) faktorTindakan.push(`Anemia sedang, Hb ${hb} g/dL`);
 
-  // 4. Gula darah
   const gds = exam.tes_lab_gula_darah;
-  if (gds && gds > 200) {
-    faktorRujukan.push(`Gula darah sangat tinggi (${gds} mg/dL)`);
-  } else if (gds && gds > 140) {
-    faktorTindakan.push(`Gula darah meningkat (${gds} mg/dL)`);
-  }
+  if (gds && gds > 200) faktorRujukan.push(`Gula darah sangat tinggi (${gds} mg/dL)`);
+  else if (gds && gds > 140) faktorTindakan.push(`Gula darah meningkat (${gds} mg/dL)`);
 
-  // 5. Protein urine
   const protein = exam.tes_lab_protein_urine?.toLowerCase() || "";
-  if (protein.includes("positif") || protein === "++" || protein === "+++") {
+  if (protein.includes("positif") || protein === "++" || protein === "+++")
     faktorRujukan.push(`Protein urine positif (${exam.tes_lab_protein_urine})`);
-  } else if (protein === "+" || protein.includes("trace")) {
+  else if (protein === "+" || protein.includes("trace"))
     faktorTindakan.push(`Protein urine trace/+1 (${exam.tes_lab_protein_urine})`);
-  }
 
-  // 6. LILA
   const lila = exam.lingkar_lengan_atas;
-  if (lila && lila < 23.5) {
-    faktorTindakan.push(`LILA kurang dari normal (${lila} cm)`);
-  }
+  if (lila && lila < 23.5) faktorTindakan.push(`LiLA kurang dari normal (${lila} cm)`);
 
   let status_risiko, ringkasan;
   if (faktorRujukan.length > 0) {
@@ -160,30 +128,71 @@ const hitungStatusRisiko = (exam) => {
     ringkasan = `Ditemukan ${faktorRujukan.length} indikator risiko tinggi: ${faktorRujukan.join("; ")}.`;
   } else if (faktorTindakan.length > 0) {
     status_risiko = "PERLU TINDAKAN";
-    ringkasan = `Ditemukan ${faktorTindakan.length} indikator perlu perhatian: ${faktorTindakan.join("; ")}.`;
+    ringkasan = `Ditemukan ${faktorTindakan.length} indikator yang perlu perhatian: ${faktorTindakan.join("; ")}.`;
   } else {
     status_risiko = "NORMAL";
     ringkasan = "Semua parameter klinis dalam batas normal. Pantau secara rutin sesuai jadwal ANC.";
   }
-
   return { status_risiko, ringkasan, faktorRujukan, faktorTindakan };
 };
 
-// ── Opsi grafik (konstan, didefinisikan di luar komponen) ──
+// ── Opsi grafik ──
 const commonOptions = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
-    legend: {
-      position: "bottom",
-      labels: { boxWidth: 12, font: { size: 11 } },
-    },
+    legend: { position: "bottom", labels: { boxWidth: 12, font: { size: 11, family: "sans-serif" } } },
   },
   scales: {
-    y: { beginAtZero: false, grid: { color: "#f3f4f6" } },
+    y: { beginAtZero: false, grid: { color: "#F3F4F6" } },
     x: { grid: { display: false } },
   },
 };
+
+// ── Komponen kartu ringkasan ──
+const SummaryCard = ({ icon: Icon, iconColor, bgColor, label, value, unit, badge }) => (
+  <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-2">
+    <div className="flex items-center gap-2">
+      <div className="p-2 rounded-lg" style={{ backgroundColor: bgColor }}>
+        <Icon size={16} style={{ color: iconColor }} />
+      </div>
+      <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">{label}</span>
+    </div>
+    <div className="flex items-end gap-1.5">
+      <span className="text-2xl font-black text-gray-800">{value}</span>
+      {unit && <span className="text-sm text-gray-400 mb-0.5">{unit}</span>}
+    </div>
+    {badge && (
+      <span
+        className="self-start text-xs font-semibold px-2 py-0.5 rounded-lg"
+        style={{ backgroundColor: bgColor, color: iconColor }}
+      >
+        {badge}
+      </span>
+    )}
+  </div>
+);
+
+// ── Komponen grafik wrapper ──
+const ChartCard = ({ icon: Icon, iconColor, title, empty, emptyMsg, children }) => (
+  <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+    <div className="flex items-center gap-2 mb-4">
+      <Icon size={18} style={{ color: iconColor }} />
+      <h2 className="font-bold text-gray-800 text-sm">{title}</h2>
+    </div>
+    {empty ? (
+      <div
+        className="h-56 flex flex-col items-center justify-center rounded-xl gap-2"
+        style={{ backgroundColor: "#F7FAFB" }}
+      >
+        <FileText size={36} strokeWidth={1.5} className="text-gray-300" />
+        <p className="text-sm text-gray-400">{emptyMsg || "Tidak Ada Data"}</p>
+      </div>
+    ) : (
+      <div className="h-56">{children}</div>
+    )}
+  </div>
+);
 
 // ── Komponen utama ──
 export default function PemeriksaanKehamilanList() {
@@ -203,7 +212,6 @@ export default function PemeriksaanKehamilanList() {
   const [error, setError] = useState(null);
   const [expandedRisks, setExpandedRisks] = useState({});
 
-  // ── Pengambilan data ──
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -245,7 +253,7 @@ export default function PemeriksaanKehamilanList() {
         setGrafik(grafikRes?.data || grafikRes || null);
       } catch (err) {
         console.error(err);
-        setError("Gagal memuat data pemeriksaan kehamilan");
+        setError("Gagal memuat data pemeriksaan kehamilan.");
       } finally {
         setLoading(false);
       }
@@ -259,10 +267,8 @@ export default function PemeriksaanKehamilanList() {
   const td = grafik?.grafik_tekanan_darah ?? [];
   const bb = grafik?.grafik_berat_badan ?? [];
   const kategoriIMT = grafik?.kategori_imt;
-
   const hasExaminations = examinations.length > 0;
 
-  // Pemeriksaan terakhir berdasarkan tanggal
   const latestExam = useMemo(() => {
     if (!hasExaminations) return null;
     return [...examinations].sort(
@@ -270,20 +276,11 @@ export default function PemeriksaanKehamilanList() {
     )[0];
   }, [examinations, hasExaminations]);
 
-  // Status risiko dari backend (detail_risiko dari grafik)
   const riskFromBackend = grafik?.detail_risiko;
+  const riskFromFrontend = useMemo(() => hitungStatusRisiko(latestExam), [latestExam]);
 
-  // Fallback frontend
-  const riskFromFrontend = useMemo(
-    () => hitungStatusRisiko(latestExam),
-    [latestExam]
-  );
-
-  // Obyek risiko final
   const risk = useMemo(() => {
     if (!hasExaminations) return null;
-
-    // 1. Prediksi ML dari backend (ada di pemeriksaan terakhir)
     if (latestExam?.overall_label) {
       return {
         status_risiko: latestExam.overall_label,
@@ -295,173 +292,65 @@ export default function PemeriksaanKehamilanList() {
         is_ml_prediction: true,
       };
     }
-
-    // 2. Data dari grafik (backend) bila ada status yang valid
-    if (riskFromBackend?.status_risiko && riskFromBackend.status_risiko !== "") {
-      return riskFromBackend;
-    }
-
-    // 3. Hitung manual di frontend
+    if (riskFromBackend?.status_risiko && riskFromBackend.status_risiko !== "") return riskFromBackend;
     return riskFromFrontend;
   }, [hasExaminations, riskFromBackend, riskFromFrontend, latestExam]);
 
-  // ── Helper untuk styling ──
-  const getRiskStyles = (status) => {
-    const s = status?.toUpperCase() || "";
-    if (s === "PERLU RUJUKAN" || s === "TINGGI") return "bg-danger/10 border-danger/30 text-danger";
-    if (s === "PERLU TINDAKAN" || s === "SEDANG") return "bg-warning/10 border-warning/30 text-warning";
-    return "bg-success/10 border-success/30 text-success";
+  // ── Styling risiko ──
+  const getRiskConfig = (status) => {
+    const s = normalizeDisplayStatus(status);
+    if (s === "PERLU RUJUKAN") return {
+      bg: "#FBE9E9", border: "#A32D2D", text: "#A32D2D",
+      labelBg: "#A32D2D", icon: AlertTriangle, borderLeft: "#A32D2D",
+    };
+    if (s === "PERLU TINDAKAN") return {
+      bg: "#FEF3CD", border: "#BA7517", text: "#BA7517",
+      labelBg: "#BA7517", icon: AlertCircle, borderLeft: "#BA7517",
+    };
+    return {
+      bg: "#EDF7E6", border: "#3B6D11", text: "#3B6D11",
+      labelBg: "#3B6D11", icon: CheckCircle, borderLeft: "#3B6D11",
+    };
   };
 
-  // ── Data grafik (memoized) ──
-  const chartTFU = useMemo(
-    () => ({
-      labels: tfu.map((d) => `Mgg ${d.minggu}`),
-      datasets: [
-        {
-          label: "Batas Atas (+2cm)",
-          data: tfu.map((d) => d.minggu + 2),
-          borderColor: "#10b981",
-          borderDash: [5, 5],
-          borderWidth: 1,
-          pointRadius: 0,
-          fill: false,
-        },
-        {
-          label: "Batas Bawah (-2cm)",
-          data: tfu.map((d) => d.minggu - 2),
-          borderColor: "#10b981",
-          borderDash: [5, 5],
-          borderWidth: 1,
-          pointRadius: 0,
-          fill: "-1",
-          backgroundColor: "rgba(16,185,129,0.15)",
-        },
-        {
-          label: "TFU Pasien (cm)",
-          data: tfu.map((d) => d.value),
-          borderColor: "#185FA5",
-          backgroundColor: "#185FA5",
-          borderWidth: 3,
-          pointRadius: 5,
-        },
-      ],
-    }),
-    [tfu]
-  );
+  // ── Dataset grafik ──
+  const chartTFU = useMemo(() => ({
+    labels: tfu.map((d) => `Mgg ${d.minggu}`),
+    datasets: [
+      { label: "Batas Atas (+2cm)", data: tfu.map((d) => d.minggu + 2), borderColor: "#3B6D11", borderDash: [5, 5], borderWidth: 1, pointRadius: 0, fill: false },
+      { label: "Batas Bawah (-2cm)", data: tfu.map((d) => d.minggu - 2), borderColor: "#3B6D11", borderDash: [5, 5], borderWidth: 1, pointRadius: 0, fill: "-1", backgroundColor: "rgba(59,109,17,0.10)" },
+      { label: "TFU Pasien (cm)", data: tfu.map((d) => d.value), borderColor: "#185FA5", backgroundColor: "#185FA5", borderWidth: 2.5, pointRadius: 4 },
+    ],
+  }), [tfu]);
 
-  const chartDJJ = useMemo(
-    () => ({
-      labels: djj.map((d) => `Mgg ${d.minggu}`),
-      datasets: [
-        {
-          label: "Batas Atas (160)",
-          data: djj.map(() => 160),
-          borderColor: "#ef4444",
-          borderWidth: 1,
-          pointRadius: 0,
-          fill: false,
-        },
-        {
-          label: "Batas Bawah (120)",
-          data: djj.map(() => 120),
-          borderColor: "#ef4444",
-          borderWidth: 1,
-          pointRadius: 0,
-          fill: "-1",
-          backgroundColor: "rgba(16,185,129,0.15)",
-        },
-        {
-          label: "DJJ Pasien (bpm)",
-          data: djj.map((d) => d.value),
-          borderColor: "#06b6d4",
-          backgroundColor: "#06b6d4",
-          borderWidth: 3,
-          pointRadius: 5,
-        },
-      ],
-    }),
-    [djj]
-  );
+  const chartDJJ = useMemo(() => ({
+    labels: djj.map((d) => `Mgg ${d.minggu}`),
+    datasets: [
+      { label: "Batas Atas (160)", data: djj.map(() => 160), borderColor: "#A32D2D", borderWidth: 1, pointRadius: 0, fill: false },
+      { label: "Batas Bawah (120)", data: djj.map(() => 120), borderColor: "#A32D2D", borderWidth: 1, pointRadius: 0, fill: "-1", backgroundColor: "rgba(59,109,17,0.10)" },
+      { label: "DJJ Pasien (bpm)", data: djj.map((d) => d.value), borderColor: "#0F6E56", backgroundColor: "#0F6E56", borderWidth: 2.5, pointRadius: 4 },
+    ],
+  }), [djj]);
 
-  const chartTD = useMemo(
-    () => ({
-      labels: td.map((d) => `Mgg ${d.minggu}`),
-      datasets: [
-        {
-          label: "Batas Waspada Sistole (130)",
-          data: td.map(() => 130),
-          borderColor: "#ef4444",
-          borderDash: [10, 5],
-          borderWidth: 2,
-          pointRadius: 0,
-        },
-        {
-          label: "Batas Waspada Diastole (80)",
-          data: td.map(() => 80),
-          borderColor: "#f59e0b",
-          borderDash: [10, 5],
-          borderWidth: 2,
-          pointRadius: 0,
-        },
-        {
-          label: "Sistole Pasien",
-          data: td.map((d) => d.sistole),
-          borderColor: "#185FA5",
-          backgroundColor: "#185FA5",
-          borderWidth: 3,
-          pointRadius: 4,
-        },
-        {
-          label: "Diastole Pasien",
-          data: td.map((d) => d.diastole),
-          borderColor: "#06b6d4",
-          backgroundColor: "#06b6d4",
-          borderWidth: 3,
-          pointRadius: 4,
-        },
-      ],
-    }),
-    [td]
-  );
+  const chartTD = useMemo(() => ({
+    labels: td.map((d) => `Mgg ${d.minggu}`),
+    datasets: [
+      { label: "Batas Waspada Sistole (130)", data: td.map(() => 130), borderColor: "#A32D2D", borderDash: [8, 4], borderWidth: 1.5, pointRadius: 0 },
+      { label: "Batas Waspada Diastole (80)", data: td.map(() => 80), borderColor: "#BA7517", borderDash: [8, 4], borderWidth: 1.5, pointRadius: 0 },
+      { label: "Sistole Pasien", data: td.map((d) => d.sistole), borderColor: "#185FA5", backgroundColor: "#185FA5", borderWidth: 2.5, pointRadius: 4 },
+      { label: "Diastole Pasien", data: td.map((d) => d.diastole), borderColor: "#0F6E56", backgroundColor: "#0F6E56", borderWidth: 2.5, pointRadius: 4 },
+    ],
+  }), [td]);
 
-  const chartBB = useMemo(
-    () => ({
-      labels: bb.map((d) => `Mgg ${d.minggu}`),
-      datasets: [
-        {
-          label: "Batas Atas PBB",
-          data: bb.map((d) => getBatasBB(d.minggu, kategoriIMT).max),
-          borderColor: "#ec4899",
-          borderDash: [5, 5],
-          borderWidth: 1,
-          pointRadius: 0,
-          fill: false,
-        },
-        {
-          label: "Batas Bawah PBB",
-          data: bb.map((d) => getBatasBB(d.minggu, kategoriIMT).min),
-          borderColor: "#ec4899",
-          borderDash: [5, 5],
-          borderWidth: 1,
-          pointRadius: 0,
-          fill: "-1",
-          backgroundColor: "rgba(236,72,153,0.15)",
-        },
-        {
-          label: "Kenaikan BB Pasien (kg)",
-          data: bb.map((d) => d.berat),
-          borderColor: "#f59e0b",
-          backgroundColor: "#f59e0b",
-          borderWidth: 3,
-          pointRadius: 5,
-        },
-      ],
-    }),
-    [bb, kategoriIMT]
-  );
+  const chartBB = useMemo(() => ({
+    labels: bb.map((d) => `Mgg ${d.minggu}`),
+    datasets: [
+      { label: "Batas Atas PBB", data: bb.map((d) => getBatasBB(d.minggu, kategoriIMT).max), borderColor: "#BA7517", borderDash: [5, 5], borderWidth: 1, pointRadius: 0, fill: false },
+      { label: "Batas Bawah PBB", data: bb.map((d) => getBatasBB(d.minggu, kategoriIMT).min), borderColor: "#BA7517", borderDash: [5, 5], borderWidth: 1, pointRadius: 0, fill: "-1", backgroundColor: "rgba(186,117,23,0.10)" },
+      { label: "Kenaikan BB Pasien (kg)", data: bb.map((d) => d.berat), borderColor: "#BA7517", backgroundColor: "#BA7517", borderWidth: 2.5, pointRadius: 4 },
+    ],
+  }), [bb, kategoriIMT]);
 
-  // ── Handler rujukan ──
   const withKehamilan = useCallback(
     (path) => `${path}?kehamilan_id=${kehamilan.id}`,
     [kehamilan]
@@ -472,40 +361,40 @@ export default function PemeriksaanKehamilanList() {
       e.preventDefault();
       Swal.fire({
         title: "Konfirmasi Rujukan",
-        text: `Ibu ini memiliki status "${normalizeDisplayStatus(
-          risk?.status_risiko
-        )}". Lanjutkan ke form rujukan?`,
+        text: `Ibu ini memiliki status "${normalizeDisplayStatus(risk?.status_risiko)}". Lanjutkan ke form rujukan?`,
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#A32D2D",
-        cancelButtonColor: "#6b7280",
+        cancelButtonColor: "#6B7280",
         confirmButtonText: "Ya, Rujuk",
         cancelButtonText: "Batal",
         reverseButtons: true,
       }).then((result) => {
-        if (result.isConfirmed) {
-          navigate(withKehamilan(`/data-ibu/${ibuId}/rujukan`));
-        }
+        if (result.isConfirmed) navigate(withKehamilan(`/data-ibu/${ibuId}/rujukan`));
       });
     },
     [risk, navigate, withKehamilan, ibuId]
   );
 
-  // ── Toggle expanded untuk detail risiko ML ──
   const toggleRiskExpand = useCallback((riskName) => {
     setExpandedRisks((prev) => ({ ...prev, [riskName]: !prev[riskName] }));
   }, []);
 
-  // ── Ikon status ──
   const displayStatus = hasExaminations && risk ? normalizeDisplayStatus(risk.status_risiko) : "NORMAL";
-  const StatusIcon =
-    displayStatus === "NORMAL" ? CheckCircle : displayStatus === "PERLU TINDAKAN" ? AlertCircle : AlertTriangle;
 
-  // ── Render ──
+  // ── Loading state ──
   if (loading) {
     return (
       <MainLayout>
-        <div className="p-10 text-center text-gray-500">Memuat Data...</div>
+        <div className="flex items-center justify-center min-h-screen" style={{ backgroundColor: "#F7FAFB" }}>
+          <div className="flex flex-col items-center gap-3">
+            <div
+              className="w-8 h-8 border-4 border-t-transparent rounded-full animate-spin"
+              style={{ borderColor: "#185FA5", borderTopColor: "transparent" }}
+            />
+            <p className="text-sm text-gray-500 font-medium">Memuat Data...</p>
+          </div>
+        </div>
       </MainLayout>
     );
   }
@@ -513,7 +402,19 @@ export default function PemeriksaanKehamilanList() {
   if (error) {
     return (
       <MainLayout>
-        <div className="p-10 text-center text-danger">{error}</div>
+        <div className="flex items-center justify-center min-h-screen" style={{ backgroundColor: "#F7FAFB" }}>
+          <div className="text-center space-y-3">
+            <AlertTriangle size={40} className="mx-auto" style={{ color: "#A32D2D" }} />
+            <p className="font-semibold text-gray-700">{error}</p>
+            <button
+              onClick={() => navigate(-1)}
+              className="text-sm font-semibold px-5 py-2 rounded-full border"
+              style={{ borderColor: "#185FA5", color: "#185FA5" }}
+            >
+              Kembali
+            </button>
+          </div>
+        </div>
       </MainLayout>
     );
   }
@@ -521,177 +422,203 @@ export default function PemeriksaanKehamilanList() {
   if (!kehamilan) {
     return (
       <MainLayout>
-        <div className="p-10 text-center text-gray-500">Data kehamilan tidak tersedia</div>
+        <div className="p-10 text-center text-gray-500">Data kehamilan tidak tersedia.</div>
       </MainLayout>
     );
   }
 
+  const riskConfig = risk ? getRiskConfig(risk.status_risiko) : getRiskConfig("NORMAL");
+  const RiskIcon = riskConfig.icon;
+
   return (
     <MainLayout>
-      <div className="min-h-screen bg-background p-6">
-        <div className="max-w-6xl mx-auto space-y-6">
+      <div className="min-h-screen font-sans" style={{ backgroundColor: "#F7FAFB" }}>
+        <div className="max-w-6xl mx-auto px-4 py-6 space-y-5">
+
           {/* ── Header ── */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div className="flex-1">
-              <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-3 flex-wrap mb-1">
                 <Link
                   to={`/data-ibu/${ibuId}?kehamilan_id=${kehamilan.id}`}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-primary text-primary text-sm font-semibold hover:bg-primary/5 transition"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-semibold transition hover:bg-white"
+                  style={{ borderColor: "#185FA5", color: "#185FA5" }}
                 >
-                  <ArrowLeft size={16} />
-                  <span>Kembali</span>
+                  <ArrowLeft size={15} /> Kembali
                 </Link>
-                <h1 className="text-[28px] font-bold text-gray-900">Pemantauan Antenatal Care</h1>
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+                  Pemantauan Antenatal Care (ANC)
+                </h1>
               </div>
-              <p className="text-gray-500 italic mt-1">
-                Berdasarkan Standar Buku KIA & Prediksi Machine Learning
+              <p className="text-sm text-gray-500 ml-0 sm:ml-[108px]">
+                Grafik dan riwayat pemeriksaan kehamilan berdasarkan standar Buku KIA dan Prediksi ML.
               </p>
             </div>
 
-            <div className="flex gap-3 flex-shrink-0">
+            <div className="flex gap-2.5 flex-shrink-0 sm:mt-0.5">
               {canEdit && (
                 <Link
                   to={withKehamilan(`/data-ibu/${ibuId}/pemeriksaan-rutin/baru`)}
-                  className="bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 transition-all shadow-md hover:shadow-lg"
+                  className="text-white px-5 py-2.5 rounded-full flex items-center gap-2 text-sm font-semibold transition hover:opacity-90 shadow-sm"
+                  style={{ backgroundColor: "#185FA5" }}
                 >
-                  <Plus size={20} /> Tambah Pemeriksaan
+ Tambah Pemeriksaan
                 </Link>
               )}
-
-              {hasExaminations &&
-                normalizeDisplayStatus(risk?.status_risiko) === "PERLU RUJUKAN" &&
-                canEdit && (
-                  <button
-                    onClick={handleRujukClick}
-                    className="bg-danger hover:bg-danger/90 text-white px-5 py-2.5 rounded-xl flex items-center gap-2 transition-all shadow-md hover:shadow-lg"
-                  >
-                    <AlertTriangle size={18} /> Rujuk Segera
-                  </button>
-                )}
+              {hasExaminations && displayStatus === "PERLU RUJUKAN" && canEdit && (
+                <button
+                  onClick={handleRujukClick}
+                  className="text-white px-5 py-2.5 rounded-full flex items-center gap-2 text-sm font-semibold transition hover:opacity-90 shadow-sm"
+                  style={{ backgroundColor: "#A32D2D" }}
+                >
+                  <AlertTriangle size={15} /> Rujuk Segera
+                </button>
+              )}
             </div>
           </div>
 
-          {/* ── Mode baca dokter ── */}
+          {/* ── Banner mode baca dokter ── */}
           {!canEdit && (
-            <div className="bg-secondary/10 border border-secondary/30 text-secondary p-3 rounded-lg text-base flex items-center gap-2">
-              <Eye size={16} /> Anda dalam mode baca (Dokter). Data hanya dapat dilihat, tidak dapat diubah.
+            <div
+              className="flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm font-medium"
+              style={{ backgroundColor: "#EBF3FC", border: "1px solid #C3D9F0", color: "#185FA5" }}
+            >
+              <Eye size={15} />
+              Anda masuk sebagai Dokter — mode baca saja. Hanya Bidan yang dapat mengubah data ini.
             </div>
           )}
 
           {/* ── Banner status risiko ── */}
           {hasExaminations && risk && (
             <div
-              className={`border-l-4 p-5 rounded-r-2xl shadow-sm flex gap-4 ${getRiskStyles(risk.status_risiko)}`}
+              className="rounded-2xl p-5 flex gap-4"
+              style={{
+                backgroundColor: riskConfig.bg,
+                border: `1px solid ${riskConfig.border}`,
+                borderLeft: `5px solid ${riskConfig.borderLeft}`,
+              }}
             >
-              <StatusIcon className="flex-shrink-0" size={28} />
-              <div className="flex-1">
-                <h3 className="font-bold text-lg uppercase tracking-wide">
-                  Status: {normalizeDisplayStatus(risk.status_risiko)}
-                </h3>
-                <p className="text-sm leading-relaxed mt-1">{risk.ringkasan}</p>
+              <div
+                className="p-2 rounded-xl flex-shrink-0 self-start mt-0.5"
+                style={{ backgroundColor: riskConfig.border + "20" }}
+              >
+                <RiskIcon size={22} style={{ color: riskConfig.text }} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap mb-1.5">
+                  <span
+                    className="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full text-white"
+                    style={{ backgroundColor: riskConfig.labelBg }}
+                  >
+                    {displayStatus}
+                  </span>
+                  {/* {risk.is_ml_prediction && (
+                    <span
+                      className="text-xs font-semibold px-2 py-0.5 rounded-full"
+                      style={{ backgroundColor: "#185FA520", color: "#185FA5" }}
+                    >
+                      Hasil Prediksi ML
+                    </span>
+                  )} */}
+                </div>
+                <p className="text-sm leading-relaxed" style={{ color: riskConfig.text }}>
+                  {risk.ringkasan}
+                </p>
 
                 {/* Risiko yang terdeteksi (ML) */}
-                {risk.is_ml_prediction && risk.risk_types && risk.risk_types.length > 0 && (
+                {risk.is_ml_prediction && risk.risk_types?.length > 0 && (
                   <div className="mt-3">
-                    <p className="text-xs font-semibold opacity-80 mb-3">Risiko yang Terdeteksi:</p>
+                    <p className="text-xs font-bold mb-2" style={{ color: riskConfig.text, opacity: 0.8 }}>
+                      Risiko yang Terdeteksi:
+                    </p>
                     {risk.risk_types.filter((rt) => rt.detected).length > 0 ? (
-                      <div className="space-y-2">
+                      <div className="space-y-1.5">
                         {risk.risk_types
                           .filter((rt) => rt.detected)
                           .sort((a, b) => b.probability - a.probability)
                           .map((riskType) => (
                             <div
                               key={riskType.name}
-                              className="bg-white rounded-lg border border-danger/30 shadow-sm"
+                              className="bg-white rounded-xl overflow-hidden"
+                              style={{ border: `1px solid ${riskConfig.border}40` }}
                             >
                               <button
                                 onClick={() => toggleRiskExpand(riskType.name)}
-                                className="w-full p-2 flex items-center justify-between hover:bg-danger/5 transition-colors"
+                                className="w-full px-3 py-2.5 flex items-center justify-between transition-colors hover:bg-black/5"
                               >
                                 <div className="flex items-center gap-2">
-                                  <span className="font-semibold text-xs text-gray-800">
-                                    {riskType.name}
-                                  </span>
-                                  <span className="text-xs px-2 py-0.5 rounded-full bg-danger/10 text-danger font-medium">
+                                  <span className="text-sm font-semibold text-gray-800">{riskType.name}</span>
+                                  <span
+                                    className="text-xs px-2 py-0.5 rounded-full font-bold"
+                                    style={{ backgroundColor: riskConfig.bg, color: riskConfig.text }}
+                                  >
                                     {(riskType.probability * 100).toFixed(1)}%
                                   </span>
                                 </div>
-                                {expandedRisks[riskType.name] ? (
-                                  <ChevronUp size={14} />
-                                ) : (
-                                  <ChevronDown size={14} />
-                                )}
+                                {expandedRisks[riskType.name]
+                                  ? <ChevronUp size={14} className="text-gray-400" />
+                                  : <ChevronDown size={14} className="text-gray-400" />}
                               </button>
-                              {expandedRisks[riskType.name] &&
-                                riskType.tindakan &&
-                                riskType.tindakan.length > 0 && (
-                                  <div className="p-2 pt-0 border-t border-danger/20">
-                                    <p className="text-xs font-semibold text-gray-700 mb-1 mt-2">
-                                      Tindakan yang Disarankan:
-                                    </p>
-                                    <ul className="text-xs text-gray-600 space-y-0.5">
-                                      {riskType.tindakan.map((t, idx) => (
-                                        <li key={idx} className="flex items-start gap-2">
-                                          <span className="text-danger mt-0.5">•</span>
-                                          <span>{t}</span>
-                                        </li>
-                                      ))}
-                                    </ul>
-                                  </div>
-                                )}
+                              {expandedRisks[riskType.name] && riskType.tindakan?.length > 0 && (
+                                <div
+                                  className="px-3 py-2.5 border-t"
+                                  style={{ borderColor: riskConfig.border + "30", backgroundColor: riskConfig.bg + "80" }}
+                                >
+                                  <p className="text-xs font-bold text-gray-600 mb-1.5">Tindakan yang Disarankan:</p>
+                                  <ul className="space-y-1">
+                                    {riskType.tindakan.map((t, idx) => (
+                                      <li key={idx} className="flex items-start gap-2 text-xs text-gray-700">
+                                        <span className="mt-0.5 flex-shrink-0" style={{ color: riskConfig.text }}>•</span>
+                                        {t}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
                             </div>
                           ))}
                       </div>
                     ) : (
-                      <div className="p-3 rounded-xl border border-success/30 bg-success/10">
-                        <p className="text-xs text-success font-medium">
-                          ✅ Tidak Ada Risiko yang Terdeteksi
-                        </p>
+                      <div
+                        className="px-3 py-2 rounded-xl text-xs font-semibold"
+                        style={{ backgroundColor: "#EDF7E6", color: "#3B6D11", border: "1px solid #3B6D1130" }}
+                      >
+                        ✓ Tidak ada risiko yang terdeteksi
                       </div>
                     )}
                   </div>
                 )}
 
-                {/* Alasan klinis (ML) */}
-                {risk.is_ml_prediction &&
-                  risk.alasan_klinis &&
-                  risk.alasan_klinis.length > 0 && (
-                    <div className="mt-3">
-                      <p className="text-xs font-semibold opacity-80 mb-1">Alasan Klinis:</p>
-                      <ul className="text-xs space-y-0.5 list-disc list-inside opacity-80">
-                        {risk.alasan_klinis.map((alasan, i) => (
-                          <li key={i}>{alasan}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+                {/* Alasan klinis */}
+                {risk.is_ml_prediction && risk.alasan_klinis?.length > 0 && (
+                  <div className="mt-3">
+                    <p className="text-xs font-bold mb-1" style={{ color: riskConfig.text, opacity: 0.8 }}>
+                      Alasan Klinis:
+                    </p>
+                    <ul className="text-xs space-y-0.5 list-disc list-inside" style={{ color: riskConfig.text, opacity: 0.75 }}>
+                      {risk.alasan_klinis.map((alasan, i) => <li key={i}>{alasan}</li>)}
+                    </ul>
+                  </div>
+                )}
 
-                {/* Faktor risiko fallback (frontend) */}
+                {/* Faktor risiko fallback */}
                 {!risk.is_ml_prediction && risk.faktorRujukan?.length > 0 && (
-                  <ul className="mt-2 text-xs space-y-0.5 list-disc list-inside opacity-80">
-                    {risk.faktorRujukan.map((f, i) => (
-                      <li key={i}>{f}</li>
-                    ))}
+                  <ul className="mt-2 text-xs space-y-0.5 list-disc list-inside" style={{ color: riskConfig.text, opacity: 0.8 }}>
+                    {risk.faktorRujukan.map((f, i) => <li key={i}>{f}</li>)}
                   </ul>
                 )}
                 {!risk.is_ml_prediction && risk.faktorTindakan?.length > 0 && (
-                  <ul className="mt-2 text-xs space-y-0.5 list-disc list-inside opacity-80">
-                    {risk.faktorTindakan.map((f, i) => (
-                      <li key={i}>{f}</li>
-                    ))}
+                  <ul className="mt-2 text-xs space-y-0.5 list-disc list-inside" style={{ color: riskConfig.text, opacity: 0.8 }}>
+                    {risk.faktorTindakan.map((f, i) => <li key={i}>{f}</li>)}
                   </ul>
                 )}
 
-                {/* Sumber data */}
                 {latestExam && (
-                  <p className="text-xs mt-2 opacity-60">
-                    Berdasarkan kunjungan ke-{latestExam.kunjungan_ke} (
+                  <p className="text-xs mt-2.5" style={{ color: riskConfig.text, opacity: 0.6 }}>
+                    Berdasarkan kunjungan ke-{latestExam.kunjungan_ke} —{" "}
                     {new Date(latestExam.tanggal_periksa).toLocaleDateString("id-ID", {
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
+                      day: "numeric", month: "long", year: "numeric",
                     })}
-                    )
                   </p>
                 )}
               </div>
@@ -699,182 +626,155 @@ export default function PemeriksaanKehamilanList() {
           )}
 
           {/* ── Kartu ringkasan ── */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
-              <div className="flex items-center gap-3 text-primary mb-2">
-                <Activity size={18} />
-                <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                  IMT Awal
-                </span>
-              </div>
-              <p className="text-2xl font-black text-gray-800">
-                {grafik?.imt_awal?.toFixed(2) || "-"}
-              </p>
-              <span className="text-xs font-medium px-2 py-1 bg-primary/10 text-primary rounded-lg">
-                {kategoriIMT || "-"}
-              </span>
-            </div>
-
-            <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
-              <div className="flex items-center gap-3 text-success mb-2">
-                <Heart size={18} />
-                <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                  DJJ Terakhir
-                </span>
-              </div>
-              <p className="text-2xl font-black text-gray-800">
-                {djj.at(-1)?.value || latestExam?.denyut_jantung_janin || "-"}
-                <span className="text-sm font-normal text-gray-400"> bpm</span>
-              </p>
-            </div>
-
-            <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
-              <div className="flex items-center gap-3 text-warning mb-2">
-                <Scale size={18} />
-                <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                  Kenaikan BB
-                </span>
-              </div>
-              <p className="text-2xl font-black text-gray-800">
-                {bb.length > 0 ? bb.at(-1)?.berat ?? "0" : "-"}
-                <span className="text-sm font-normal text-gray-400"> kg</span>
-              </p>
-            </div>
-
-            <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
-              <div className="flex items-center gap-3 text-secondary mb-2">
-                <Droplets size={18} />
-                <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                  Total Kunjungan
-                </span>
-              </div>
-              <p className="text-2xl font-black text-gray-800">
-                {examinations.length}
-                <span className="text-sm font-normal text-gray-400"> Kali</span>
-              </p>
-            </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <SummaryCard
+              icon={Activity} iconColor="#185FA5" bgColor="#EBF3FC"
+              label="IMT Awal"
+              value={grafik?.imt_awal?.toFixed(2) || "-"}
+              badge={kategoriIMT || undefined}
+            />
+            <SummaryCard
+              icon={Heart} iconColor="#3B6D11" bgColor="#EDF7E6"
+              label="DJJ Terakhir"
+              value={djj.at(-1)?.value || latestExam?.denyut_jantung_janin || "-"}
+              unit="bpm"
+            />
+            <SummaryCard
+              icon={Scale} iconColor="#BA7517" bgColor="#FEF3CD"
+              label="Kenaikan BB"
+              value={bb.length > 0 ? bb.at(-1)?.berat ?? "0" : "-"}
+              unit="kg"
+            />
+            <SummaryCard
+              icon={CalendarDays} iconColor="#0F6E56" bgColor="#E6F4F1"
+              label="Total Kunjungan"
+              value={examinations.length}
+              unit="kali"
+            />
           </div>
 
           {/* ── Grafik ── */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-200">
-              <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <TrendingUp size={20} className="text-primary" /> Tinggi Fundus (TFU)
-              </h2>
-              {tfu.length === 0 ? (
-                <div className="h-64 flex flex-col items-center justify-center text-gray-400 bg-gray-50 rounded-xl">
-                  <FileText size={48} strokeWidth={1.5} />
-                  <p className="mt-2 text-sm">Belum ada data TFU</p>
-                </div>
-              ) : (
-                <div className="h-64">
-                  <Line data={chartTFU} options={commonOptions} />
-                </div>
-              )}
-            </div>
-
-            <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-200">
-              <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <Heart size={20} className="text-danger" /> Detak Jantung Janin
-              </h2>
-              {djj.length === 0 ? (
-                <div className="h-64 flex flex-col items-center justify-center text-gray-400 bg-gray-50 rounded-xl">
-                  <FileText size={48} strokeWidth={1.5} />
-                  <p className="mt-2 text-sm">Belum ada data DJJ</p>
-                </div>
-              ) : (
-                <div className="h-64">
-                  <Line data={chartDJJ} options={commonOptions} />
-                </div>
-              )}
-            </div>
-
-            <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-200">
-              <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <Droplets size={20} className="text-danger" /> Tekanan Darah
-              </h2>
-              {td.length === 0 ? (
-                <div className="h-64 flex flex-col items-center justify-center text-gray-400 bg-gray-50 rounded-xl">
-                  <FileText size={48} strokeWidth={1.5} />
-                  <p className="mt-2 text-sm">Belum ada data tekanan darah</p>
-                </div>
-              ) : (
-                <div className="h-64">
-                  <Line data={chartTD} options={commonOptions} />
-                </div>
-              )}
-            </div>
-
-            <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-200">
-              <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <Scale size={20} className="text-warning" /> Grafik Berat Badan (PBB)
-              </h2>
-              {bb.length === 0 ? (
-                <div className="h-64 flex flex-col items-center justify-center text-gray-400 bg-gray-50 rounded-xl">
-                  <FileText size={48} strokeWidth={1.5} />
-                  <p className="mt-2 text-sm">Belum ada data berat badan</p>
-                </div>
-              ) : (
-                <div className="h-64">
-                  <Line data={chartBB} options={commonOptions} />
-                </div>
-              )}
-            </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <ChartCard icon={TrendingUp} iconColor="#185FA5" title="Tinggi Fundus Uteri (TFU)" empty={tfu.length === 0} emptyMsg="Belum ada data TFU">
+              <Line data={chartTFU} options={commonOptions} />
+            </ChartCard>
+            <ChartCard icon={Heart} iconColor="#A32D2D" title="Detak Jantung Janin (DJJ)" empty={djj.length === 0} emptyMsg="Belum ada data DJJ">
+              <Line data={chartDJJ} options={commonOptions} />
+            </ChartCard>
+            <ChartCard icon={Droplets} iconColor="#A32D2D" title="Tekanan Darah" empty={td.length === 0} emptyMsg="Belum ada data tekanan darah">
+              <Line data={chartTD} options={commonOptions} />
+            </ChartCard>
+            <ChartCard icon={Scale} iconColor="#BA7517" title="Grafik Berat Badan (PBB)" empty={bb.length === 0} emptyMsg="Belum ada data berat badan">
+              <Line data={chartBB} options={commonOptions} />
+            </ChartCard>
           </div>
 
           {/* ── Riwayat Pemeriksaan ── */}
-          <div className="space-y-4">
-            <h2 className="text-xl font-bold text-gray-800">Riwayat Pemeriksaan</h2>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-bold text-gray-900">Riwayat Pemeriksaan</h2>
+                <p className="text-xs text-gray-400 mt-0.5">Daftar seluruh kunjungan ANC yang telah dicatat</p>
+              </div>
+              {/* {canEdit && hasExaminations && (
+                // <Link
+                //   to={withKehamilan(`/data-ibu/${ibuId}/pemeriksaan-rutin/baru`)}
+                //   className="text-white px-4 py-2 rounded-full text-xs font-semibold flex items-center gap-1.5 transition hover:opacity-90"
+                //   style={{ backgroundColor: "#185FA5" }}
+                // >
+                //   <Plus size={13} /> Tambah
+                // </Link>
+              )} */}
+            </div>
 
             {!hasExaminations ? (
-              <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center">
-                <FileText size={64} className="mx-auto text-gray-300 mb-4" strokeWidth={1.5} />
-                <p className="text-gray-500">Tidak Ada Pemeriksaan yang Tercatat</p>
+              <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
+                <div
+                  className="mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4"
+                  style={{ backgroundColor: "#F7FAFB" }}
+                >
+                  <Stethoscope size={32} strokeWidth={1.5} className="text-gray-300" />
+                </div>
+                <p className="font-semibold text-gray-600 mb-1">Tidak Ada Data Pemeriksaan</p>
+                <p className="text-sm text-gray-400 mb-5">Belum ada kunjungan ANC yang tercatat untuk kehamilan ini.</p>
                 {canEdit && (
                   <Link
                     to={withKehamilan(`/data-ibu/${ibuId}/pemeriksaan-rutin/baru`)}
-                    className="inline-block mt-4 bg-primary hover:bg-primary/90 text-white px-5 py-2 rounded-xl text-sm transition-all"
+                    className="inline-flex items-center gap-2 text-white px-6 py-2.5 rounded-full text-sm font-semibold transition hover:opacity-90"
+                    style={{ backgroundColor: "#185FA5" }}
                   >
-                    + Tambah Pemeriksaan Pertama
+                    <Plus size={15} /> Tambah Pemeriksaan Pertama
                   </Link>
                 )}
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {examinations.map((exam) => (
-                  <div
-                    key={exam.id_periksa}
-                    className="group bg-white p-5 rounded-2xl shadow-sm border border-gray-200 hover:border-primary/30 transition-all"
-                  >
-                    <div className="flex justify-between items-start mb-3">
-                      <span className="bg-gray-100 text-gray-600 text-[10px] font-bold px-2 py-1 rounded-md uppercase">
-                        Kunjungan {exam.kunjungan_ke}
-                      </span>
-                      {latestExam?.id_periksa === exam.id_periksa && (
-                        <span className="flex items-center gap-1 text-[10px] font-bold bg-success/10 text-success px-2 py-1 rounded-md">
-                          <div className="w-1.5 h-1.5 bg-success rounded-full animate-pulse"></div> TERBARU
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-gray-500 text-xs mb-1">Tanggal Periksa</p>
-                    <p className="font-bold text-gray-800 mb-4">
-                      {new Date(exam.tanggal_periksa).toLocaleDateString("id-ID", {
-                        day: "numeric",
-                        month: "long",
-                        year: "numeric",
-                      })}
-                    </p>
-                    <Link
-                      to={withKehamilan(`/data-ibu/${ibuId}/pemeriksaan-rutin/${exam.id_periksa}`)}
-                      className="w-full block text-center py-2 bg-gray-50 group-hover:bg-primary group-hover:text-white text-primary rounded-xl text-sm font-semibold transition-all"
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {examinations.map((exam) => {
+                  const isLatest = latestExam?.id_periksa === exam.id_periksa;
+                  return (
+                    <div
+                      key={exam.id_periksa}
+                      className="group bg-white rounded-2xl border transition-all hover:shadow-md"
+                      style={{ borderColor: isLatest ? "#185FA5" : "#E5E7EB" }}
                     >
-                      Detail
-                    </Link>
-                  </div>
-                ))}
+                      <div className="p-5">
+                        <div className="flex items-center justify-between mb-3">
+                          <span
+                            className="text-xs font-bold px-2.5 py-1 rounded-lg uppercase"
+                            style={{ backgroundColor: "#EBF3FC", color: "#185FA5" }}
+                          >
+                            Kunjungan {exam.kunjungan_ke}
+                          </span>
+                          {isLatest && (
+                            <span
+                              className="flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full"
+                              style={{ backgroundColor: "#EDF7E6", color: "#3B6D11" }}
+                            >
+                              <span
+                                className="w-1.5 h-1.5 rounded-full animate-pulse"
+                                style={{ backgroundColor: "#3B6D11" }}
+                              />
+                              Terbaru
+                            </span>
+                          )}
+                        </div>
+                        <div className="mb-4">
+                          <p className="text-xs text-gray-400 mb-0.5">Tanggal Pemeriksaan</p>
+                          <p className="font-bold text-gray-800 text-sm">
+                            {new Date(exam.tanggal_periksa).toLocaleDateString("id-ID", {
+                              day: "numeric", month: "long", year: "numeric",
+                            })}
+                          </p>
+                        </div>
+                        <Link
+                          to={withKehamilan(`/data-ibu/${ibuId}/pemeriksaan-rutin/${exam.id_periksa}`)}
+                          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all"
+                          style={{
+                            backgroundColor: "#F7FAFB",
+                            color: "#185FA5",
+                            border: "1px solid #E5E7EB",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = "#185FA5";
+                            e.currentTarget.style.color = "#fff";
+                            e.currentTarget.style.borderColor = "#185FA5";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = "#F7FAFB";
+                            e.currentTarget.style.color = "#185FA5";
+                            e.currentTarget.style.borderColor = "#E5E7EB";
+                          }}
+                        >
+                          <Eye size={14} /> Detail
+                        </Link>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
+
         </div>
       </div>
     </MainLayout>

@@ -281,17 +281,17 @@ function downloadBlob(blob, filename) {
 }
 
 // ─── Komponen UI kecil ────────────────────────────────────────────────────
-const Badge = ({ children, color = "indigo" }) => {
+const Badge = ({ children, color = "primary" }) => {
   const colors = {
-    indigo: "bg-indigo-100 text-indigo-800",
-    green: "bg-green-100 text-green-800",
-    amber: "bg-amber-100 text-amber-800",
-    red: "bg-red-100 text-red-800",
-    blue: "bg-blue-100 text-blue-800",
+    primary: "bg-[#185FA5]/10 text-[#185FA5]",
+    success: "bg-[#3B6D11]/10 text-[#3B6D11]",
+    warning: "bg-[#BA7517]/10 text-[#BA7517]",
+    danger: "bg-[#A32D2D]/10 text-[#A32D2D]",
+    secondary: "bg-[#0F6E56]/10 text-[#0F6E56]",
     gray: "bg-gray-100 text-gray-600",
   };
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${colors[color] || colors.indigo}`}>
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold font-sans ${colors[color] || colors.primary}`}>
       {children}
     </span>
   );
@@ -299,16 +299,16 @@ const Badge = ({ children, color = "indigo" }) => {
 
 const InfoItem = ({ label, value, className = "" }) => (
   <div className={`flex flex-col gap-0.5 ${className}`}>
-    <span className="text-xs text-gray-500 font-medium uppercase tracking-wide">{label}</span>
-    <span className="text-sm text-gray-800 font-semibold mt-0.5">{value || <span className="text-gray-400 italic">—</span>}</span>
+    <span className="text-xs text-gray-500 font-medium uppercase tracking-wide font-sans">{label}</span>
+    <span className="text-sm text-gray-800 font-semibold mt-0.5 font-sans">{value || <span className="text-gray-400 italic">—</span>}</span>
   </div>
 );
 
-const SectionCard = ({ icon: Icon, title, iconColor = "text-indigo-500", bgColor = "bg-indigo-50", children }) => (
-  <div className="bg-white rounded-xl shadow-sm p-5 border border-gray-100 overflow-hidden">
+const SectionCard = ({ icon: Icon, title, iconColor = "text-[#185FA5]", bgColor = "bg-[#185FA5]/10", children }) => (
+  <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 font-sans">
     <div className={`flex items-center gap-3 px-5 py-3 ${bgColor}`}>
-      <Icon size={18} className={iconColor} />
-      <h4 className={`text-lg font-semibold text-gray-800`}>{title}</h4>
+      {Icon && <Icon size={18} className={iconColor} />}
+      <h4 className="text-lg font-semibold text-gray-800 font-sans">{title}</h4>
     </div>
     <div className="px-5 py-4">{children}</div>
   </div>
@@ -317,16 +317,240 @@ const SectionCard = ({ icon: Icon, title, iconColor = "text-indigo-500", bgColor
 // Field yang dikunci otomatis dari data ibu — tampil abu-abu dengan ikon gembok
 const LockedField = ({ label, value }) => (
   <div className="flex flex-col gap-1">
-    <label className="flex items-center gap-1 text-sm font-semibold text-gray-500">
+    <label className="flex items-center gap-1 text-sm font-semibold text-gray-500 font-sans">
       {label}
       <Lock size={11} className="text-gray-400" />
     </label>
-    <div className="w-full border border-gray-200 rounded-lg px-4 py-2 bg-gray-50 text-gray-600 text-sm select-none">
+    <div className="w-full border border-gray-200 rounded-lg px-4 py-2 bg-gray-50 text-gray-600 text-sm select-none font-sans">
       {value || <span className="italic text-gray-400">—</span>}
     </div>
-    <p className="text-xs text-gray-400">Diambil otomatis dari data ibu</p>
+    <p className="text-xs text-gray-400 font-sans">Diambil otomatis dari data ibu</p>
   </div>
 );
+
+// ─── FormView Component (moved outside to prevent remounting) ─────────────────────────────
+const FormView = React.memo(({ 
+  form, handleChange, canEdit, autoNamaIbu, autoAlamat, autoNamaSuami, autoGolDarah, 
+  availableMonths, availableYears, t3Tanggal, handleSubmit, saving, existingRencana, setIsEditing 
+}) => {
+  // Use refs to track which input is focused to prevent focus loss
+  const focusedInputRef = React.useRef(null);
+  
+  return (
+  <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm p-8 space-y-8 border border-gray-100 font-sans">
+
+    {/* ── Informasi auto-fill (banner) ── */}
+    <div className="flex items-start gap-3 p-4 bg-[#185FA5]/10 border border-[#185FA5]/20 rounded-xl font-sans">
+      <Lock size={16} className="text-[#185FA5] mt-0.5 shrink-0" />
+      <div>
+        <p className="text-sm font-semibold text-[#185FA5] font-sans">Data Ibu Diambil Otomatis</p>
+        <p className="text-xs text-[#185FA5]/80 mt-0.5 font-sans">
+          Nama ibu, alamat, nama suami, dan golongan darah diisi otomatis dari data yang sudah ada. Field tersebut tidak perlu diisi ulang.
+        </p>
+      </div>
+    </div>
+
+    {/* ── Data Diri (readonly preview) ── */}
+    <div className="border-b pb-6">
+      <h3 className="text-base font-bold text-gray-800 mb-4 flex items-center gap-2 font-sans">
+        <User size={16} className="text-[#185FA5]" /> Data Diri Ibu
+      </h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <LockedField label="Nama Ibu (Saya)" value={autoNamaIbu} />
+        <LockedField label="Alamat" value={autoAlamat} />
+        <LockedField label="Persetujuan Ibu Hamil (TTD)" value={autoNamaIbu} />
+        <LockedField label="Persetujuan Ayah/Keluarga (TTD)" value={autoNamaSuami || "Belum ada data suami"} />
+      </div>
+      <div className="mt-4 p-3 bg-gray-50 rounded-lg italic text-gray-600 text-sm font-sans">
+        Memberikan kepercayaan kepada nama-nama ini untuk membantu proses melahirkan saya agar aman dan selamat, yang diperkirakan pada,
+        <div className="flex flex-wrap gap-4 mt-2 not-italic">
+          <div className="flex items-center gap-2">
+            <span className="font-sans">Bulan:</span>
+            <select
+              name="perkiraan_bulan_persalinan"
+              value={form.perkiraan_bulan_persalinan}
+              onChange={handleChange}
+              disabled={!canEdit}
+              className="border rounded-lg px-3 py-2 w-40 bg-white border-gray-300 focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] font-sans"
+            >
+              <option value="">Pilih Bulan</option>
+              {availableMonths.map((month) => (
+                <option key={month.value} value={month.value}>
+                  {month.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="font-sans">Tahun:</span>
+            <select
+              name="perkiraan_tahun_persalinan"
+              value={form.perkiraan_tahun_persalinan}
+              onChange={handleChange}
+              disabled={!canEdit}
+              className="border rounded-lg px-3 py-2 w-32 bg-white border-gray-300 focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] font-sans"
+            >
+              <option value="">Pilih Tahun</option>
+              {availableYears.map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+        {t3Tanggal && (
+          <p className="text-xs text-[#185FA5] mt-2 font-sans">
+            ℹ️ Berdasarkan data Trimester 3 (dicatat pada {t3Tanggal.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}), perkiraan persalinan hanya dapat dipilih hingga 3 bulan ke depan.
+          </p>
+        )}
+        {!t3Tanggal && (
+          <p className="text-xs text-[#BA7517] mt-2 font-sans">
+            ⚠️ Data Trimester 3 belum tersedia. Dropdown akan muncul setelah data T3 dicatat.
+          </p>
+        )}
+      </div>
+    </div>
+
+    {/* ── Tenaga Kesehatan ── */}
+    <div className="border-b pb-6">
+      <h3 className="text-base font-bold text-gray-800 mb-4 flex items-center gap-2 font-sans">
+        <ShieldCheck size={16} className="text-[#0F6E56]" /> Diisi oleh Tenaga Kesehatan
+      </h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-1 font-sans">Bidan/Dokter 1</label>
+          <input name="fasyankes_1_nama_tenaga" value={form.fasyankes_1_nama_tenaga} onChange={handleChange} disabled={!canEdit} className="w-full border rounded-lg px-4 py-2 border-gray-300 focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] font-sans" placeholder="Nama tenaga kesehatan" />
+        </div>
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-1 font-sans">Nama Fasilitas Kesehatan 1</label>
+          <input name="fasyankes_1_nama_fasilitas" value={form.fasyankes_1_nama_fasilitas} onChange={handleChange} disabled={!canEdit} className="w-full border rounded-lg px-4 py-2 border-gray-300 focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] font-sans" placeholder="Puskesmas, Klinik, RS" />
+        </div>
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-1 font-sans">Bidan/Dokter 2</label>
+          <input name="fasyankes_2_nama_tenaga" value={form.fasyankes_2_nama_tenaga} onChange={handleChange} disabled={!canEdit} className="w-full border rounded-lg px-4 py-2 border-gray-300 focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] font-sans" placeholder="Nama tenaga kesehatan" />
+        </div>
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-1 font-sans">Nama Fasilitas Kesehatan 2</label>
+          <input name="fasyankes_2_nama_fasilitas" value={form.fasyankes_2_nama_fasilitas} onChange={handleChange} disabled={!canEdit} className="w-full border rounded-lg px-4 py-2 border-gray-300 focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] font-sans" placeholder="Puskesmas, Klinik, RS" />
+        </div>
+      </div>
+      <div className="mt-4">
+        <label className="block text-sm font-semibold text-gray-700 mb-1 font-sans">Sumber Dana Persalinan</label>
+        <select name="sumber_dana_persalinan" value={form.sumber_dana_persalinan} onChange={handleChange} disabled={!canEdit} className="w-full md:w-64 border rounded-lg px-4 py-2 border-gray-300 focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] font-sans">
+          <option>JKN/BPJS</option>
+          <option>Jamkesda</option>
+          <option>Asuransi Swasta</option>
+          <option>Biaya sendiri</option>
+          <option>Lainnya</option>
+        </select>
+      </div>
+    </div>
+
+    {/* ── Kendaraan ── */}
+    <div className="border-b pb-6">
+      <h3 className="text-base font-bold text-gray-800 mb-3 flex items-center gap-2 font-sans">
+        <Car size={16} className="text-[#BA7517]" /> Untuk kendaraan/ambulan desa oleh:
+      </h3>
+      {[1, 2, 3].map((idx) => (
+        <div key={idx} className="grid grid-cols-2 gap-4 mb-3">
+          <input name={`kendaraan_${idx}_nama`} value={form[`kendaraan_${idx}_nama`]} onChange={handleChange} disabled={!canEdit} className="border rounded-lg px-4 py-2 border-gray-300 focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] font-sans" placeholder={`Nama ${idx}`} />
+          <input name={`kendaraan_${idx}_hp`}   value={form[`kendaraan_${idx}_hp`]}   onChange={handleChange} disabled={!canEdit} className="border rounded-lg px-4 py-2 border-gray-300 focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] font-sans" placeholder={`No. HP ${idx}`} />
+        </div>
+      ))}
+    </div>
+
+    {/* ── Kontrasepsi ── */}
+    <div className="border-b pb-6">
+      <label className="flex items-center gap-2 text-sm font-bold text-gray-800 mb-2 font-sans">
+        <Heart size={15} className="text-[#A32D2D]" /> Metode kontrasepsi setelah melahirkan yang dipilih:
+      </label>
+      <input name="metode_kontrasepsi_pilihan" value={form.metode_kontrasepsi_pilihan} onChange={handleChange} disabled={!canEdit} className="w-full md:w-96 border rounded-lg px-4 py-2 border-gray-300 focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] font-sans" placeholder="Contoh: IUD, Implan, Suntik, Pil" />
+    </div>
+
+    {/* ── Donor Darah ── */}
+    <div className="border-b pb-6">
+      <h3 className="text-base font-bold text-gray-800 mb-3 flex items-center gap-2 font-sans">
+        <Droplets size={16} className="text-[#A32D2D]" /> Untuk sumbangan darah
+      </h3>
+      <div className="flex flex-wrap gap-4 mb-4">
+        {/* Golongan darah — readonly dari data ibu */}
+        <div className="flex flex-col gap-1">
+          <label className="flex items-center gap-1 text-sm font-semibold text-gray-500 font-sans">
+            Golongan darah <Lock size={11} className="text-gray-400" />
+          </label>
+          <div className="border border-gray-200 rounded px-3 py-1.5 w-28 bg-gray-50 text-gray-600 text-sm font-sans">
+            {autoGolDarah || <span className="italic text-gray-400">—</span>}
+          </div>
+          <p className="text-xs text-gray-400 font-sans">Dari data ibu</p>
+        </div>
+        {/* Rhesus — bisa diisi manual */}
+        <div className="flex flex-col gap-1">
+          <label className="block text-sm font-semibold text-gray-700 font-sans">Rhesus</label>
+          <input name="donor_rhesus" value={form.donor_rhesus} onChange={handleChange} disabled={!canEdit} className="border rounded px-3 py-1.5 w-28 border-gray-300 focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] font-sans" placeholder="+/−" />
+        </div>
+      </div>
+      <p className="text-sm font-semibold text-gray-600 mb-2 font-sans">Dibantu oleh:</p>
+      {[1, 2, 3, 4].map((idx) => (
+        <div key={idx} className="grid grid-cols-2 gap-4 mb-2">
+          <input name={`donor_${idx}_nama`} value={form[`donor_${idx}_nama`]} onChange={handleChange} disabled={!canEdit} className="border rounded-lg px-4 py-2 border-gray-300 focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] font-sans" placeholder={`Nama pendamping ${idx}`} />
+          <input name={`donor_${idx}_hp`}   value={form[`donor_${idx}_hp`]}   onChange={handleChange} disabled={!canEdit} className="border rounded-lg px-4 py-2 border-gray-300 focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] font-sans" placeholder={`No. HP ${idx}`} />
+        </div>
+      ))}
+    </div>
+
+    {/* ── Tanggal & Persetujuan ── */}
+    <div>
+      <h3 className="text-base font-bold text-gray-800 mb-4 flex items-center gap-2 font-sans">
+        <Calendar size={16} className="text-[#185FA5]" /> Tanggal & Persetujuan
+      </h3>
+      <div className="mb-5">
+        <label className="block text-sm font-semibold text-gray-700 mb-1 font-sans">Tanggal</label>
+        <input type="date" name="tanggal_pernyataan" value={form.tanggal_pernyataan} onChange={handleChange} disabled={!canEdit} className="border rounded-lg px-4 py-2 w-56 border-gray-300 focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] font-sans" />
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        {/* Suami — readonly */}
+        <div>
+          <label className="flex items-center gap-1 text-sm font-semibold text-gray-500 mb-1 font-sans">
+            Persetujuan Ayah/Orang Tua/Keluarga <Lock size={11} className="text-gray-400" />
+          </label>
+          <div className="w-full border border-gray-200 rounded px-3 py-2 bg-gray-50 text-gray-600 text-sm font-sans">
+            {autoNamaSuami || <span className="italic text-gray-400">Belum ada data suami</span>}
+          </div>
+          <p className="text-xs text-gray-400 mt-1 font-sans">Dari data ibu</p>
+        </div>
+        {/* Ibu hamil — readonly */}
+        <div>
+          <label className="flex items-center gap-1 text-sm font-semibold text-gray-500 mb-1 font-sans">
+            Persetujuan Ibu Hamil <Lock size={11} className="text-gray-400" />
+          </label>
+          <div className="w-full border border-gray-200 rounded px-3 py-2 bg-gray-50 text-gray-600 text-sm font-sans">
+            {autoNamaIbu || <span className="italic text-gray-400">—</span>}
+          </div>
+          <p className="text-xs text-gray-400 mt-1 font-sans">Dari data ibu</p>
+        </div>
+        {/* Bidan/Dokter — bisa diisi */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-1 font-sans">Bidan/Dokter</label>
+          <input name="nama_bidan_dokter_ttd" value={form.nama_bidan_dokter_ttd} onChange={handleChange} disabled={!canEdit} className="w-full border rounded px-3 py-2 border-gray-300 focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] font-sans" placeholder="Nama tenaga kesehatan" />
+        </div>
+      </div>
+    </div>
+
+    {canEdit && (
+      <div className="flex gap-4 justify-end pt-6 border-t mt-4">
+        <button type="button" onClick={() => setIsEditing(false)} className="px-6 py-2.5 rounded-full border border-[#185FA5] text-[#185FA5] font-semibold text-base hover:bg-[#185FA5]/5 transition font-sans">
+          Batal
+        </button>
+        <button type="submit" disabled={saving} className="px-6 py-2.5 rounded-full bg-[#3B6D11] text-white font-semibold flex items-center gap-2 text-base hover:opacity-90 disabled:opacity-50 transition font-sans">
+          <Save size={18} />
+          {saving ? "Menyimpan..." : "Simpan"}
+        </button>
+      </div>
+    )}
+  </form>
+  );
+});
 
 // ─── Komponen utama ───────────────────────────────────────────────────────
 export default function RencanaPersalinan() {
@@ -380,7 +604,15 @@ export default function RencanaPersalinan() {
     nama_bidan_dokter_ttd: "",
   };
 
-  const [form, setForm] = useState(emptyForm);
+  // Isi otomatis field Bidan/Dokter dengan nama user yang sedang login
+  const currentUserName = user?.nama || user?.name || "";
+  const initialForm = { ...emptyForm, nama_bidan_dokter_ttd: currentUserName };
+
+  const [form, setForm] = useState(initialForm);
+  const formRef = React.useRef(form);
+  React.useEffect(() => {
+    formRef.current = form;
+  }, [form]);
 
   // ── Derive auto-filled values dari ibuData ──────────────────────────────
   // Nilai-nilai ini SELALU diambil dari data ibu (tidak dari form state)
@@ -417,8 +649,8 @@ export default function RencanaPersalinan() {
     tanggal_pernyataan:         data.tanggal_pernyataan
       ? data.tanggal_pernyataan.substring(0, 10)
       : "",
-    nama_bidan_dokter_ttd:      data.nama_bidan_dokter_ttd || "",
-  }), []);
+    nama_bidan_dokter_ttd:      currentUserName,
+  }), [currentUserName]);
 
   // ── Fetch data saat mount ────────────────────────────────────────────────
   useEffect(() => {
@@ -469,7 +701,7 @@ export default function RencanaPersalinan() {
           setForm(mapDataToForm(data));
         } else {
           setExistingRencana(null);
-          setForm(emptyForm);
+          setForm(initialForm);
         }
 
         setIsEditing(false);
@@ -487,6 +719,12 @@ export default function RencanaPersalinan() {
   // Memoize available months and years to prevent recalculation
   const availableMonths = useMemo(() => generateAvailableMonths(t3Tanggal), [t3Tanggal]);
   const availableYears = useMemo(() => generateAvailableYears(t3Tanggal), [t3Tanggal]);
+  
+  // Use ref to keep availableMonths stable for handleChange
+  const availableMonthsRef = React.useRef(availableMonths);
+  React.useEffect(() => {
+    availableMonthsRef.current = availableMonths;
+  }, [availableMonths]);
 
   const handleChange = useCallback((e) => {
     if (!canEdit) return;
@@ -494,7 +732,7 @@ export default function RencanaPersalinan() {
     
     // Auto-set year when month is selected
     if (name === "perkiraan_bulan_persalinan" && value) {
-      const selectedMonth = availableMonths.find(m => m.value === value);
+      const selectedMonth = availableMonthsRef.current.find(m => m.value === value);
       if (selectedMonth) {
         setForm((prev) => ({ 
           ...prev, 
@@ -505,8 +743,16 @@ export default function RencanaPersalinan() {
       }
     }
     
+    // Hanya angka untuk field nomor HP
+    const hpFields = ["kendaraan_1_hp", "kendaraan_2_hp", "kendaraan_3_hp", "donor_1_hp", "donor_2_hp", "donor_3_hp", "donor_4_hp"];
+    if (hpFields.includes(name)) {
+      const numericValue = value.replace(/\D/g, "");
+      setForm((prev) => ({ ...prev, [name]: numericValue }));
+      return;
+    }
+    
     setForm((prev) => ({ ...prev, [name]: value }));
-  }, [canEdit, availableMonths]);
+  }, [canEdit]);
 
   // VALIDASI: Cek apakah perkiraan bulan/tahun persalinan valid (berdasarkan T3)
   const validatePerkiraanPersalinan = useCallback(() => {
@@ -642,7 +888,7 @@ export default function RencanaPersalinan() {
       text: "Data yang dihapus tidak dapat dikembalikan.",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#EF4444",
+      confirmButtonColor: "#A32D2D",
       cancelButtonColor: "#6B7280",
       confirmButtonText: "Ya, Hapus",
       cancelButtonText: "Batal",
@@ -651,7 +897,7 @@ export default function RencanaPersalinan() {
     try {
       await deleteRencana(existingRencana.id_rencana_persalinan);
       setExistingRencana(null);
-      setForm(emptyForm);
+      setForm(initialForm);
       setIsEditing(false);
       Swal.fire({ icon: "success", title: "Berhasil", text: "Rencana persalinan telah dihapus.", timer: 2000, showConfirmButton: false });
     } catch (err) {
@@ -687,31 +933,31 @@ export default function RencanaPersalinan() {
   const EvaluationView = () => {
     if (!existingRencana) {
       return (
-        <div className="bg-white rounded-xl shadow-sm p-10 text-center border border-gray-100">
+        <div className="bg-white rounded-xl shadow-sm p-10 text-center border border-gray-100 font-sans">
           <div className="flex flex-col items-center gap-4">
-            <div className="p-5 bg-indigo-50 rounded-full">
-              <ClipboardList size={52} className="text-indigo-400" />
+            <div className="p-5 rounded-full" style={{ backgroundColor: "#EBF3FC" }}>
+              <ClipboardList size={52} style={{ color: "#185FA5" }} />
             </div>
-            <h3 className="text-[22px] font-semibold text-[#185FA5]">Belum Ada Rencana Persalinan</h3>
-            <p className="text-gray-400 max-w-md text-sm">Belum ada rencana persalinan yang dibuat untuk ibu hamil ini.</p>
+            <h3 className="text-[22px] font-bold text-[#185FA5] font-sans">Belum Ada Rencana Persalinan</h3>
+            <p className="text-gray-500 max-w-md text-sm font-sans">Belum ada rencana persalinan yang dibuat untuk ibu hamil ini.</p>
             {canEdit && (
               <>
                 {!t3Complete && (
-                  <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg text-amber-700 text-sm max-w-md">
-                    <AlertCircle size={16} className="inline mr-2" />
-                    Data Trimester 3 belum lengkap. Rencana Persalinan hanya dapat diisi setelah pemeriksaan Trimester 3 selesai.
+                  <div className="bg-[#BA7517]/10 border border-[#BA7517]/30 p-4 rounded-lg text-[#BA7517] text-sm max-w-md font-sans flex items-start gap-2">
+                    <AlertCircle size={16} className="mt-0.5 flex-shrink-0" />
+                    <span>Data Trimester 3 belum lengkap. Rencana Persalinan hanya dapat diisi setelah pemeriksaan Trimester 3 selesai.</span>
                   </div>
                 )}
                 <button 
                   onClick={() => setIsEditing(true)} 
                   disabled={!t3Complete}
-                  className={`mt-2 px-6 py-2.5 rounded-lg font-semibold flex items-center gap-2 transition ${
+                  className={`mt-2 px-6 py-2.5 rounded-full font-semibold flex items-center gap-2 text-base transition font-sans ${
                     !t3Complete 
                       ? "bg-gray-300 text-gray-500 cursor-not-allowed" 
-                      : "bg-indigo-600 text-white hover:bg-indigo-700"
+                      : "bg-[#185FA5] text-white hover:opacity-90"
                   }`}
                 >
-                  <Plus size={18} /> Buat Rencana Persalinan
+ Tambah Rencana Persalinan
                 </button>
               </>
             )}
@@ -730,7 +976,7 @@ export default function RencanaPersalinan() {
     return (
       <div className="space-y-5">
         {/* ── Identitas Ibu (auto) ── */}
-        <SectionCard icon={User} title="Identitas Ibu" iconColor="text-indigo-600" bgColor="bg-indigo-50">
+        <SectionCard icon={User} title="Identitas Ibu" iconColor="text-[#185FA5]" bgColor="bg-[#EBF3FC]">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <InfoItem label="Nama Ibu" value={autoNamaIbu || r.nama_ibu_pernyataan} />
             <InfoItem label="Alamat" value={autoAlamat || r.alamat_ibu_pernyataan} />
@@ -739,12 +985,12 @@ export default function RencanaPersalinan() {
                 ? `${r.perkiraan_bulan_persalinan}${r.perkiraan_tahun_persalinan ? ` ${r.perkiraan_tahun_persalinan}` : ""}`
                 : "—"}
             />
-            <InfoItem label="Suami/Keluarga" value={autoNamaSuami || r.nama_suami_keluarga_ttd} />
+            <InfoItem label="Ayah/Keluarga" value={autoNamaSuami || r.nama_suami_keluarga_ttd} />
           </div>
         </SectionCard>
 
         {/* ── Tenaga Kesehatan ── */}
-        <SectionCard icon={ShieldCheck} title="Diisi oleh Tenaga Kesehatan" iconColor="text-green-700" bgColor="bg-green-50">
+        <SectionCard icon={ShieldCheck} title="Diisi oleh Tenaga Kesehatan" iconColor="text-[#0F6E56]" bgColor="bg-[#E1F5EE]">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <InfoItem label="Bidan/Dokter 1" value={r.fasyankes_1_nama_tenaga} />
             <InfoItem label="Fasilitas Kesehatan 1" value={r.fasyankes_1_nama_fasilitas} />
@@ -752,14 +998,14 @@ export default function RencanaPersalinan() {
             <InfoItem label="Fasilitas Kesehatan 2" value={r.fasyankes_2_nama_fasilitas} />
           </div>
           <div className="flex items-center gap-2">
-            <Banknote size={15} className="text-green-600" />
-            <span className="text-xs text-gray-500 font-medium">Sumber Dana:</span>
-            <Badge color="green">{r.sumber_dana_persalinan || "—"}</Badge>
+            <Banknote size={15} className="text-[#0F6E56]" />
+            <span className="text-xs text-gray-500 font-medium font-sans">Sumber Dana:</span>
+            <Badge color="success">{r.sumber_dana_persalinan || "—"}</Badge>
           </div>
         </SectionCard>
 
         {/* ── Kendaraan ── */}
-        <SectionCard icon={Car} title="Kendaraan / Ambulan Desa" iconColor="text-amber-600" bgColor="bg-amber-50">
+        <SectionCard icon={Car} title="Kendaraan / Ambulan Desa" iconColor="text-[#BA7517]" bgColor="bg-[#FEF3CD]">
           <div className="divide-y divide-gray-100">
             {[1, 2, 3].map((i) => {
               const nama = r[`kendaraan_${i}_nama`];
@@ -768,38 +1014,38 @@ export default function RencanaPersalinan() {
               return (
                 <div key={i} className="py-2.5 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-amber-100 text-amber-700 text-xs font-bold">{i}</span>
-                    <span className="text-sm text-gray-800">{nama || "—"}</span>
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#BA7517]/20 text-[#BA7517] text-xs font-bold">{i}</span>
+                    <span className="text-sm text-gray-800 font-sans">{nama || "—"}</span>
                   </div>
-                  {hp && <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-md">{hp}</span>}
+                  {hp && <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-md font-sans">{hp}</span>}
                 </div>
               );
             })}
             {!r.kendaraan_1_nama && !r.kendaraan_2_nama && !r.kendaraan_3_nama && (
-              <p className="text-sm text-gray-400 italic">Belum diisi</p>
+              <p className="text-sm text-gray-400 italic font-sans">Belum diisi</p>
             )}
           </div>
         </SectionCard>
 
         {/* ── Kontrasepsi ── */}
-        <SectionCard icon={Heart} title="Metode Kontrasepsi Setelah Melahirkan" iconColor="text-pink-500" bgColor="bg-pink-50">
-          <Badge color="indigo">{r.metode_kontrasepsi_pilihan || "Belum ditentukan"}</Badge>
+        <SectionCard icon={Heart} title="Metode Kontrasepsi Setelah Melahirkan" iconColor="text-[#A32D2D]" bgColor="bg-[#FBE9E9]">
+          <Badge color="primary">{r.metode_kontrasepsi_pilihan || "Belum ditentukan"}</Badge>
         </SectionCard>
 
         {/* ── Donor Darah ── */}
-        <SectionCard icon={Droplets} title="Sumbangan Darah" iconColor="text-red-500" bgColor="bg-red-50">
+        <SectionCard icon={Droplets} title="Sumbangan Darah" iconColor="text-[#A32D2D]" bgColor="bg-[#FBE9E9]">
           <div className="flex gap-4 mb-4">
-            <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-lg px-4 py-2">
-              <span className="text-xs text-gray-500">Golongan Darah</span>
-              <span className="text-lg font-bold text-red-600">{autoGolDarah || r.donor_golongan_darah || "—"}</span>
+            <div className="flex items-center gap-2 bg-[#A32D2D]/10 border border-[#A32D2D]/20 rounded-lg px-4 py-2">
+              <span className="text-xs text-gray-500 font-sans">Golongan Darah</span>
+              <span className="text-lg font-bold text-[#A32D2D] font-sans">{autoGolDarah || r.donor_golongan_darah || "—"}</span>
               <Lock size={11} className="text-gray-400" />
             </div>
-            <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-lg px-4 py-2">
-              <span className="text-xs text-gray-500">Rhesus</span>
-              <span className="text-lg font-bold text-red-600">{r.donor_rhesus || "—"}</span>
+            <div className="flex items-center gap-2 bg-[#A32D2D]/10 border border-[#A32D2D]/20 rounded-lg px-4 py-2">
+              <span className="text-xs text-gray-500 font-sans">Rhesus</span>
+              <span className="text-lg font-bold text-[#A32D2D] font-sans">{r.donor_rhesus || "—"}</span>
             </div>
           </div>
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Dibantu oleh:</p>
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2 font-sans">Dibantu oleh:</p>
           <div className="divide-y divide-gray-100">
             {[1, 2, 3, 4].map((i) => {
               const nama = r[`donor_${i}_nama`];
@@ -808,295 +1054,78 @@ export default function RencanaPersalinan() {
               return (
                 <div key={i} className="py-2.5 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-red-100 text-red-700 text-xs font-bold">{i}</span>
-                    <span className="text-sm text-gray-800">{nama || "—"}</span>
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#A32D2D]/20 text-[#A32D2D] text-xs font-bold">{i}</span>
+                    <span className="text-sm text-gray-800 font-sans">{nama || "—"}</span>
                   </div>
-                  {hp && <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-md">{hp}</span>}
+                  {hp && <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-md font-sans">{hp}</span>}
                 </div>
               );
             })}
             {!r.donor_1_nama && !r.donor_2_nama && !r.donor_3_nama && !r.donor_4_nama && (
-              <p className="text-sm text-gray-400 italic">Belum diisi</p>
+              <p className="text-sm text-gray-400 italic font-sans">Belum diisi</p>
             )}
           </div>
         </SectionCard>
 
         {/* ── Persetujuan ── */}
-        <SectionCard icon={Calendar} title="Tanggal & Persetujuan" iconColor="text-blue-600" bgColor="bg-blue-50">
+        <SectionCard icon={Calendar} title="Tanggal & Persetujuan" iconColor="text-[#185FA5]" bgColor="bg-[#EBF3FC]">
           <div className="mb-4">
             <InfoItem label="Tanggal" value={formatTanggal(r.tanggal_pernyataan)} />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="rounded-lg border border-gray-200 p-4 text-center bg-gray-50">
-              <p className="text-xs font-semibold text-gray-400 mb-2">Persetujuan Suami/Keluarga</p>
+              <p className="text-xs font-semibold text-gray-400 mb-2 font-sans">Persetujuan Ayah/Keluarga</p>
               <div className="h-12 flex items-end justify-center border-b border-gray-400">
-                <span className="text-sm text-gray-800">( {autoNamaSuami || r.nama_suami_keluarga_ttd || "—"} )</span>
+                <span className="text-sm text-gray-800 font-sans">( {autoNamaSuami || r.nama_suami_keluarga_ttd || "—"} )</span>
               </div>
             </div>
             <div className="rounded-lg border border-gray-200 p-4 text-center bg-gray-50">
-              <p className="text-xs font-semibold text-gray-400 mb-2">Persetujuan Ibu Hamil</p>
+              <p className="text-xs font-semibold text-gray-400 mb-2 font-sans">Persetujuan Ibu Hamil</p>
               <div className="h-12 flex items-end justify-center border-b border-gray-400">
-                <span className="text-sm text-gray-800">( {autoNamaIbu || r.nama_ibu_hamil_ttd || "—"} )</span>
+                <span className="text-sm text-gray-800 font-sans">( {autoNamaIbu || r.nama_ibu_hamil_ttd || "—"} )</span>
               </div>
             </div>
             <div className="rounded-lg border border-gray-200 p-4 text-center bg-gray-50">
-              <p className="text-xs font-semibold text-gray-400 mb-2">Bidan/Dokter</p>
+              <p className="text-xs font-semibold text-gray-400 mb-2 font-sans">Bidan/Dokter</p>
               <div className="h-12 flex items-end justify-center border-b border-gray-400">
-                <span className="text-sm text-gray-800">( {r.nama_bidan_dokter_ttd || "—"} )</span>
+                <span className="text-sm text-gray-800 font-sans">( {r.nama_bidan_dokter_ttd || "—"} )</span>
               </div>
             </div>
           </div>
         </SectionCard>
 
         {/* ── Tombol Aksi ── */}
-        <div className="flex flex-wrap gap-3 justify-end pt-2">
-          {canEdit && (
-            <>
-              <button onClick={handleDelete} className="bg-red-50 border border-red-200 text-red-600 px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 hover:bg-red-100 transition">
-                <Trash2 size={16} /> Hapus
-              </button>
-              <button onClick={() => setIsEditing(true)} className="bg-indigo-600 text-white px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 hover:bg-indigo-700 transition">
-                <Edit size={16} /> Edit Rencana
-              </button>
-            </>
-          )}
-          <button onClick={handleExport} disabled={exporting} className="bg-green-600 text-white px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 hover:bg-green-700 disabled:opacity-50 transition">
-            <FileDown size={16} /> {exporting ? "Mengekspor..." : "Export DOCX"}
+        <div className="flex flex-wrap gap-3 justify-between items-center pt-2">
+          <button onClick={() => navigate(`/data-ibu/${id}`)} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#185FA5] text-[#185FA5] text-sm font-semibold hover:bg-[#185FA5]/5 transition font-sans">
+            <ArrowLeft size={16} />
+            Kembali
           </button>
-          <button onClick={() => navigate(`/data-ibu/${id}`)} className="bg-gray-100 text-gray-700 px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 hover:bg-gray-200 transition">
-            <Eye size={16} /> Kembali ke Detail Ibu
-          </button>
+          <div className="flex flex-wrap gap-3">
+            {canEdit && (
+              <>
+                <button onClick={handleDelete} className="bg-[#A32D2D] text-white px-5 py-2.5 rounded-full font-semibold flex items-center gap-2 text-base hover:opacity-90 transition font-sans">
+                  <Trash2 size={18} /> Hapus
+                </button>
+                <button onClick={() => setIsEditing(true)} className="bg-[#BA7517] text-white px-5 py-2.5 rounded-full font-semibold flex items-center gap-2 text-base hover:opacity-90 transition font-sans">
+                  <Edit size={18} /> Ubah
+                </button>
+              </>
+            )}
+            <button onClick={handleExport} disabled={exporting} className="bg-[#0F6E56] text-white px-5 py-2.5 rounded-full font-semibold flex items-center gap-2 text-base hover:opacity-90 disabled:opacity-50 transition font-sans">
+              <FileDown size={18} /> {exporting ? "Mengekspor..." : "Unduh DOCX"}
+            </button>
+          </div>
         </div>
       </div>
     );
   };
 
-  // ── FormView (moved outside to prevent remounting) ─────────────────────────────
-  const FormView = React.memo(({ 
-    form, handleChange, canEdit, autoNamaIbu, autoAlamat, autoNamaSuami, autoGolDarah, 
-    availableMonths, availableYears, t3Tanggal, handleSubmit, saving, existingRencana, setIsEditing 
-  }) => (
-    <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm p-8 space-y-8 border border-gray-100">
-
-      {/* ── Informasi auto-fill (banner) ── */}
-      <div className="flex items-start gap-3 p-4 bg-indigo-50 border border-indigo-200 rounded-xl">
-        <Lock size={16} className="text-indigo-500 mt-0.5 shrink-0" />
-        <div>
-          <p className="text-sm font-semibold text-indigo-800">Data Ibu Diambil Otomatis</p>
-          <p className="text-xs text-indigo-600 mt-0.5">
-            Nama ibu, alamat, nama suami, dan golongan darah diisi otomatis dari data yang sudah ada. Field tersebut tidak perlu diisi ulang.
-          </p>
-        </div>
-      </div>
-
-      {/* ── Data Diri (readonly preview) ── */}
-      <div className="border-b pb-6">
-        <h3 className="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
-          <User size={16} className="text-indigo-500" /> Data Diri Ibu
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <LockedField label="Nama Ibu (Saya)" value={autoNamaIbu} />
-          <LockedField label="Alamat" value={autoAlamat} />
-          <LockedField label="Persetujuan Ibu Hamil (TTD)" value={autoNamaIbu} />
-          <LockedField label="Persetujuan Suami/Keluarga (TTD)" value={autoNamaSuami || "Belum ada data suami"} />
-        </div>
-        <div className="mt-4 p-3 bg-gray-50 rounded-lg italic text-gray-600 text-sm">
-          Memberikan kepercayaan kepada nama-nama ini untuk membantu proses melahirkan saya agar aman dan selamat, yang diperkirakan pada,
-          <div className="flex flex-wrap gap-4 mt-2">
-            <div className="flex items-center gap-2">
-              <span>Bulan:</span>
-              <select
-                name="perkiraan_bulan_persalinan"
-                value={form.perkiraan_bulan_persalinan}
-                onChange={handleChange}
-                disabled={!canEdit}
-                className="border rounded px-2 py-1 w-40 not-italic bg-white"
-              >
-                <option value="">Pilih Bulan</option>
-                {availableMonths.map((month) => (
-                  <option key={month.value} value={month.value}>
-                    {month.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="flex items-center gap-2">
-              <span>Tahun:</span>
-              <select
-                name="perkiraan_tahun_persalinan"
-                value={form.perkiraan_tahun_persalinan}
-                onChange={handleChange}
-                disabled={!canEdit}
-                className="border rounded px-2 py-1 w-32 not-italic bg-white"
-              >
-                <option value="">Pilih Tahun</option>
-                {availableYears.map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-          {t3Tanggal && (
-            <p className="text-xs text-indigo-600 mt-2">
-              ℹ️ Berdasarkan data Trimester 3 (dicatat pada {t3Tanggal.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}), perkiraan persalinan hanya dapat dipilih hingga 3 bulan ke depan.
-            </p>
-          )}
-          {!t3Tanggal && (
-            <p className="text-xs text-amber-600 mt-2">
-              ⚠️ Data Trimester 3 belum tersedia. Dropdown akan muncul setelah data T3 dicatat.
-            </p>
-          )}
-        </div>
-      </div>
-
-      {/* ── Tenaga Kesehatan ── */}
-      <div className="border-b pb-6">
-        <h3 className="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
-          <ShieldCheck size={16} className="text-green-600" /> Diisi oleh Tenaga Kesehatan
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">Bidan/Dokter 1</label>
-            <input name="fasyankes_1_nama_tenaga" value={form.fasyankes_1_nama_tenaga} onChange={handleChange} disabled={!canEdit} className="w-full border rounded-lg px-4 py-2 border-gray-300" placeholder="Nama tenaga kesehatan" />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">Nama Fasilitas Kesehatan 1</label>
-            <input name="fasyankes_1_nama_fasilitas" value={form.fasyankes_1_nama_fasilitas} onChange={handleChange} disabled={!canEdit} className="w-full border rounded-lg px-4 py-2 border-gray-300" placeholder="Puskesmas, Klinik, RS" />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">Bidan/Dokter 2</label>
-            <input name="fasyankes_2_nama_tenaga" value={form.fasyankes_2_nama_tenaga} onChange={handleChange} disabled={!canEdit} className="w-full border rounded-lg px-4 py-2 border-gray-300" placeholder="Nama tenaga kesehatan" />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">Nama Fasilitas Kesehatan 2</label>
-            <input name="fasyankes_2_nama_fasilitas" value={form.fasyankes_2_nama_fasilitas} onChange={handleChange} disabled={!canEdit} className="w-full border rounded-lg px-4 py-2 border-gray-300" placeholder="Puskesmas, Klinik, RS" />
-          </div>
-        </div>
-        <div className="mt-4">
-          <label className="block text-sm font-semibold text-gray-700 mb-1">Sumber Dana Persalinan</label>
-          <select name="sumber_dana_persalinan" value={form.sumber_dana_persalinan} onChange={handleChange} disabled={!canEdit} className="w-full md:w-64 border rounded-lg px-4 py-2 border-gray-300">
-            <option>JKN/BPJS</option>
-            <option>Jamkesda</option>
-            <option>Asuransi Swasta</option>
-            <option>Biaya sendiri</option>
-            <option>Lainnya</option>
-          </select>
-        </div>
-      </div>
-
-      {/* ── Kendaraan ── */}
-      <div className="border-b pb-6">
-        <h3 className="text-base font-bold text-gray-800 mb-3 flex items-center gap-2">
-          <Car size={16} className="text-amber-500" /> Untuk kendaraan/ambulan desa oleh:
-        </h3>
-        {[1, 2, 3].map((idx) => (
-          <div key={idx} className="grid grid-cols-2 gap-4 mb-3">
-            <input name={`kendaraan_${idx}_nama`} value={form[`kendaraan_${idx}_nama`]} onChange={handleChange} disabled={!canEdit} className="border rounded-lg px-4 py-2 border-gray-300" placeholder={`Nama ${idx}`} />
-            <input name={`kendaraan_${idx}_hp`}   value={form[`kendaraan_${idx}_hp`]}   onChange={handleChange} disabled={!canEdit} className="border rounded-lg px-4 py-2 border-gray-300" placeholder={`No. HP ${idx}`} />
-          </div>
-        ))}
-      </div>
-
-      {/* ── Kontrasepsi ── */}
-      <div className="border-b pb-6">
-        <label className="flex items-center gap-2 text-sm font-bold text-gray-800 mb-2">
-          <Heart size={15} className="text-pink-500" /> Metode kontrasepsi setelah melahirkan yang dipilih:
-        </label>
-        <input name="metode_kontrasepsi_pilihan" value={form.metode_kontrasepsi_pilihan} onChange={handleChange} disabled={!canEdit} className="w-full md:w-96 border rounded-lg px-4 py-2 border-gray-300" placeholder="Contoh: IUD, Implan, Suntik, Pil" />
-      </div>
-
-      {/* ── Donor Darah ── */}
-      <div className="border-b pb-6">
-        <h3 className="text-base font-bold text-gray-800 mb-3 flex items-center gap-2">
-          <Droplets size={16} className="text-red-500" /> Untuk sumbangan darah
-        </h3>
-        <div className="flex flex-wrap gap-4 mb-4">
-          {/* Golongan darah — readonly dari data ibu */}
-          <div className="flex flex-col gap-1">
-            <label className="flex items-center gap-1 text-sm font-semibold text-gray-500">
-              Golongan darah <Lock size={11} className="text-gray-400" />
-            </label>
-            <div className="border border-gray-200 rounded px-3 py-1.5 w-28 bg-gray-50 text-gray-600 text-sm">
-              {autoGolDarah || <span className="italic text-gray-400">—</span>}
-            </div>
-            <p className="text-xs text-gray-400">Dari data ibu</p>
-          </div>
-          {/* Rhesus — bisa diisi manual */}
-          <div className="flex flex-col gap-1">
-            <label className="block text-sm font-semibold text-gray-700">Rhesus</label>
-            <input name="donor_rhesus" value={form.donor_rhesus} onChange={handleChange} disabled={!canEdit} className="border rounded px-3 py-1.5 w-28 border-gray-300" placeholder="+/−" />
-          </div>
-        </div>
-        <p className="text-sm font-semibold text-gray-600 mb-2">Dibantu oleh:</p>
-        {[1, 2, 3, 4].map((idx) => (
-          <div key={idx} className="grid grid-cols-2 gap-4 mb-2">
-            <input name={`donor_${idx}_nama`} value={form[`donor_${idx}_nama`]} onChange={handleChange} disabled={!canEdit} className="border rounded-lg px-4 py-2 border-gray-300" placeholder={`Nama pendamping ${idx}`} />
-            <input name={`donor_${idx}_hp`}   value={form[`donor_${idx}_hp`]}   onChange={handleChange} disabled={!canEdit} className="border rounded-lg px-4 py-2 border-gray-300" placeholder={`No. HP ${idx}`} />
-          </div>
-        ))}
-      </div>
-
-      {/* ── Tanggal & Persetujuan ── */}
-      <div>
-        <h3 className="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
-          <Calendar size={16} className="text-blue-500" /> Tanggal & Persetujuan
-        </h3>
-        <div className="mb-5">
-          <label className="block text-sm font-semibold text-gray-700 mb-1">Tanggal</label>
-          <input type="date" name="tanggal_pernyataan" value={form.tanggal_pernyataan} onChange={handleChange} disabled={!canEdit} className="border rounded-lg px-4 py-2 w-56 border-gray-300" />
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {/* Suami — readonly */}
-          <div>
-            <label className="flex items-center gap-1 text-sm font-semibold text-gray-500 mb-1">
-              Persetujuan Suami/Orang Tua/Keluarga <Lock size={11} className="text-gray-400" />
-            </label>
-            <div className="w-full border border-gray-200 rounded px-3 py-2 bg-gray-50 text-gray-600 text-sm">
-              {autoNamaSuami || <span className="italic text-gray-400">Belum ada data suami</span>}
-            </div>
-            <p className="text-xs text-gray-400 mt-1">Dari data ibu</p>
-          </div>
-          {/* Ibu hamil — readonly */}
-          <div>
-            <label className="flex items-center gap-1 text-sm font-semibold text-gray-500 mb-1">
-              Persetujuan Ibu Hamil <Lock size={11} className="text-gray-400" />
-            </label>
-            <div className="w-full border border-gray-200 rounded px-3 py-2 bg-gray-50 text-gray-600 text-sm">
-              {autoNamaIbu || <span className="italic text-gray-400">—</span>}
-            </div>
-            <p className="text-xs text-gray-400 mt-1">Dari data ibu</p>
-          </div>
-          {/* Bidan/Dokter — bisa diisi */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">Bidan/Dokter</label>
-            <input name="nama_bidan_dokter_ttd" value={form.nama_bidan_dokter_ttd} onChange={handleChange} disabled={!canEdit} className="w-full border rounded px-3 py-2 border-gray-300" placeholder="Nama tenaga kesehatan" />
-          </div>
-        </div>
-      </div>
-
-      {canEdit && (
-        <div className="flex gap-4 justify-end pt-6 border-t mt-4">
-          <button type="button" onClick={() => setIsEditing(false)} className="px-6 py-2 border rounded-lg bg-white text-gray-700 hover:bg-gray-50 transition">
-            Batal
-          </button>
-          <button type="submit" disabled={saving} className="px-8 py-2 bg-indigo-600 text-white rounded-lg flex items-center gap-2 hover:bg-indigo-700 disabled:opacity-50 transition">
-            <Save size={18} />
-            {saving ? "Menyimpan..." : existingRencana ? "Perbarui Rencana" : "Simpan Rencana"}
-          </button>
-        </div>
-      )}
-    </form>
-  ));
-
   // ── Loading ──────────────────────────────────────────────────────────────
   if (loading) {
     return (
       <MainLayout>
-        <div className="p-6 flex items-center justify-center gap-3 text-gray-500">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600" />
-          Memuat data...
+        <div className="min-h-screen flex items-center justify-center bg-[#F7FAFB] font-sans">
+          <div className="text-[#185FA5] text-lg font-sans">Memuat Data...</div>
         </div>
       </MainLayout>
     );
@@ -1105,11 +1134,11 @@ export default function RencanaPersalinan() {
   if (!kehamilan) {
     return (
       <MainLayout>
-        <div className="p-6">
-          <div className="bg-red-50 border border-red-200 p-4 rounded-lg text-red-700 mb-4">
+        <div className="min-h-screen bg-[#F7FAFB] p-6 font-sans">
+          <div className="bg-[#A32D2D]/10 border border-[#A32D2D]/30 p-4 rounded-lg text-[#A32D2D] mb-4 font-sans">
             {errorMessage || "Data kehamilan tidak ditemukan."}
           </div>
-          <button onClick={() => navigate(`/data-ibu/${id}`)} className="px-4 py-2 bg-indigo-600 text-white rounded-lg">Kembali</button>
+          <button onClick={() => navigate(`/data-ibu/${id}`)} className="px-5 py-2.5 rounded-full bg-[#185FA5] text-white font-semibold text-base hover:opacity-90 transition font-sans">Kembali</button>
         </div>
       </MainLayout>
     );
@@ -1117,62 +1146,78 @@ export default function RencanaPersalinan() {
 
   return (
     <MainLayout>
-      <div className="p-6 max-w-5xl mx-auto">
-        {/* ── Header ── */}
-        <div className="flex items-center gap-4 mb-6">
-          <button
-            onClick={() => navigate(`/data-ibu/${id}`)}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#185FA5] text-[#185FA5] text-sm font-semibold hover:bg-[#185FA5]/5 transition"
-          >
-            <ArrowLeft size={16} />
-            Kembali
-          </button>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Rencana Persalinan</h1>
-            {autoNamaIbu && (
-              <p className="text-gray-400 text-sm">untuk <span className="font-semibold text-gray-600">{autoNamaIbu}</span></p>
-            )}
+      <div className="min-h-screen bg-[#F7FAFB] font-sans">
+        <div className="max-w-5xl mx-auto p-5 space-y-6">
+          {/* ── Header ── */}
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => navigate(`/data-ibu/${id}`)}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#185FA5] text-[#185FA5] text-sm font-semibold hover:bg-[#185FA5]/5 transition font-sans"
+            >
+              <ArrowLeft size={16} />
+              Kembali
+            </button>
+            <div>
+              <h1 className="text-lg sm:text-2xl md:text-[28px] font-bold text-gray-900 font-sans">Rencana Persalinan</h1>
+              <p className="text-sm text-gray-600 mt-1 font-sans">
+                Catat rencana persalinan ibu hamil meliputi tenaga kesehatan, kendaraan, donasi darah, dan metode kontrasepsi pasca persalinan
+              </p>
+            </div>
           </div>
+
+          {/* ── Mode Baca (Dokter) ── */}
+          {!canEdit && (
+            <div className="bg-[#185FA5]/10 border border-[#185FA5]/20 p-3 rounded-lg text-[#185FA5] text-base flex items-center gap-2 font-sans">
+              <Eye size={16} /> Anda dalam mode baca (Dokter). Data hanya dapat dilihat, tidak dapat diubah.
+            </div>
+          )}
+
+          {successMessage && (
+            <div className="p-4 bg-[#3B6D11]/10 border border-[#3B6D11]/30 rounded-lg flex items-center gap-2 text-[#3B6D11] font-sans">
+              <CheckCircle size={20} /> <span>{successMessage}</span>
+            </div>
+          )}
+          {errorMessage && !loading && (
+            <div className="p-4 bg-[#A32D2D]/10 border border-[#A32D2D]/30 rounded-lg flex items-center gap-2 text-[#A32D2D] font-sans">
+              <AlertCircle size={20} /> <span>{errorMessage}</span>
+            </div>
+          )}
+
+          {/* ── Informasi T3 tidak lengkap (di luar form) ── */}
+          {!t3Complete && !isEditing && (
+            <div className="bg-[#BA7517]/10 border border-[#BA7517]/30 p-4 rounded-lg flex items-start gap-3 font-sans">
+              <AlertCircle size={20} className="text-[#BA7517] mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="font-semibold text-[#BA7517] text-sm">Data Trimester 3 Belum Lengkap</p>
+                <p className="text-[#BA7517]/80 text-sm mt-0.5">
+                  Rencana Persalinan hanya dapat diisi setelah data pemeriksaan Trimester 3 lengkap. Silakan lengkapi data Trimester 3 terlebih dahulu.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {isEditing ? (
+            <FormView 
+              key="rencana-form"
+              form={form}
+              handleChange={handleChange}
+              canEdit={canEdit}
+              autoNamaIbu={autoNamaIbu}
+              autoAlamat={autoAlamat}
+              autoNamaSuami={autoNamaSuami}
+              autoGolDarah={autoGolDarah}
+              availableMonths={availableMonths}
+              availableYears={availableYears}
+              t3Tanggal={t3Tanggal}
+              handleSubmit={handleSubmit}
+              saving={saving}
+              existingRencana={existingRencana}
+              setIsEditing={setIsEditing}
+            />
+          ) : (
+            <EvaluationView />
+          )}
         </div>
-
-        {/* ── Mode Baca (Dokter) ── */}
-        {!canEdit && (
-          <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg text-blue-700 text-base flex items-center gap-2">
-            <Eye size={16} /> Anda dalam mode baca (Dokter). Data hanya dapat dilihat, tidak dapat diubah.
-          </div>
-        )}
-
-        {successMessage && (
-          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2 text-green-700">
-            <CheckCircle size={20} /> <span>{successMessage}</span>
-          </div>
-        )}
-        {errorMessage && !loading && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-700">
-            <AlertCircle size={20} /> <span>{errorMessage}</span>
-          </div>
-        )}
-
-        {isEditing ? (
-          <FormView 
-            form={form}
-            handleChange={handleChange}
-            canEdit={canEdit}
-            autoNamaIbu={autoNamaIbu}
-            autoAlamat={autoAlamat}
-            autoNamaSuami={autoNamaSuami}
-            autoGolDarah={autoGolDarah}
-            availableMonths={availableMonths}
-            availableYears={availableYears}
-            t3Tanggal={t3Tanggal}
-            handleSubmit={handleSubmit}
-            saving={saving}
-            existingRencana={existingRencana}
-            setIsEditing={setIsEditing}
-          />
-        ) : (
-          <EvaluationView />
-        )}
       </div>
     </MainLayout>
   );

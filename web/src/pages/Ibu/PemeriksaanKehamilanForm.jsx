@@ -403,7 +403,8 @@ export default function PemeriksaanKehamilanForm() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleNext = () => {
+  const handleNext = (e) => {
+    e?.preventDefault();
     const valid = step === 1 ? validateStep1() : step === 2 ? validateStep2() : validateStep3();
     if (valid) {
       setStep(step + 1);
@@ -431,7 +432,8 @@ export default function PemeriksaanKehamilanForm() {
     }
   };
 
-  const handlePrev = () => {
+  const handlePrev = (e) => {
+    e?.preventDefault();
     setStep(step - 1);
     setErrors({});
   };
@@ -440,6 +442,13 @@ export default function PemeriksaanKehamilanForm() {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
+  };
+
+  const handleKeyDown = (e) => {
+    // Mencegah submit form dengan tombol Enter kecuali pada step 3
+    if (e.key === 'Enter' && step !== 3) {
+      e.preventDefault();
+    }
   };
 
   const buildPayload = () => ({
@@ -472,6 +481,19 @@ export default function PemeriksaanKehamilanForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Pastikan hanya bisa submit dari step 3
+    if (step !== 3) {
+      e.preventDefault();
+      Swal.fire({
+        icon: "warning",
+        title: "Lengkapi Semua Tahapan",
+        text: "Silakan lengkapi semua tahapan formulir sebelum menyimpan data.",
+        confirmButtonColor: "#185FA5",
+      });
+      return;
+    }
+    
     if (!kehamilanId && !form.kehamilan_id) {
       Swal.fire("Error", "Kehamilan ID tidak ditemukan", "error");
       return;
@@ -858,6 +880,7 @@ export default function PemeriksaanKehamilanForm() {
                       name="tanggal_periksa"
                       value={form.tanggal_periksa}
                       onChange={handleChange}
+                      onKeyDown={handleKeyDown}
                       disabled={isReadOnly}
                       className={`mt-1 w-full border rounded-lg p-2 ${errors.tanggal_periksa ? "border-red-500" : "border-gray-300"} ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
                     />
@@ -872,6 +895,7 @@ export default function PemeriksaanKehamilanForm() {
                       name="tempat_periksa"
                       value={form.tempat_periksa}
                       onChange={handleChange}
+                      onKeyDown={handleKeyDown}
                       placeholder="Puskesmas / Klinik / RS"
                       disabled={isReadOnly}
                       className={`mt-1 w-full border rounded-lg p-2 border-gray-300 ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
@@ -930,6 +954,7 @@ export default function PemeriksaanKehamilanForm() {
                         type="number"
                         value={form.minggu_kehamilan}
                         onChange={handleChange}
+                        onKeyDown={handleKeyDown}
                         placeholder="Contoh: 12"
                         disabled={isReadOnly || autoCalculate}
                         className={`mt-1 flex-1 border rounded-lg p-2 ${errors.minggu_kehamilan ? "border-red-500" : "border-gray-300"} ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
@@ -969,6 +994,7 @@ export default function PemeriksaanKehamilanForm() {
                       step="0.1"
                       value={form.berat_badan}
                       onChange={handleChange}
+                      onKeyDown={handleKeyDown}
                       placeholder="58"
                       disabled={isReadOnly}
                       className={`mt-1 w-full border rounded-lg p-2 ${errors.berat_badan ? "border-red-500" : "border-gray-300"} ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
@@ -986,6 +1012,7 @@ export default function PemeriksaanKehamilanForm() {
                       step="0.1"
                       value={form.tinggi_badan}
                       onChange={handleChange}
+                      onKeyDown={handleKeyDown}
                       placeholder="150"
                       disabled={isReadOnly}
                       className={`mt-1 w-full border rounded-lg p-2 ${errors.tinggi_badan ? "border-red-500" : "border-gray-300"} ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
@@ -1003,6 +1030,7 @@ export default function PemeriksaanKehamilanForm() {
                       step="0.1"
                       value={form.lingkar_lengan_atas}
                       onChange={handleChange}
+                      onKeyDown={handleKeyDown}
                       placeholder="23"
                       disabled={isReadOnly}
                       className={`mt-1 w-full border rounded-lg p-2 ${errors.lingkar_lengan_atas ? "border-red-500" : "border-gray-300"} ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
@@ -1020,6 +1048,7 @@ export default function PemeriksaanKehamilanForm() {
                       type="number"
                       value={form.sistole}
                       onChange={handleChange}
+                      onKeyDown={handleKeyDown}
                       placeholder="120"
                       disabled={isReadOnly}
                       className={`mt-1 w-full border rounded-lg p-2 ${errors.sistole ? "border-red-500" : "border-gray-300"} ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
@@ -1036,6 +1065,7 @@ export default function PemeriksaanKehamilanForm() {
                       type="number"
                       value={form.diastole}
                       onChange={handleChange}
+                      onKeyDown={handleKeyDown}
                       placeholder="80"
                       disabled={isReadOnly}
                       className={`mt-1 w-full border rounded-lg p-2 ${errors.diastole ? "border-red-500" : "border-gray-300"} ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
@@ -1053,6 +1083,7 @@ export default function PemeriksaanKehamilanForm() {
                       step="0.1"
                       value={form.tinggi_rahim}
                       onChange={handleChange}
+                      onKeyDown={handleKeyDown}
                       placeholder="20"
                       disabled={isReadOnly}
                       className={`mt-1 w-full border rounded-lg p-2 ${errors.tinggi_rahim ? "border-red-500" : "border-gray-300"} ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
@@ -1069,6 +1100,7 @@ export default function PemeriksaanKehamilanForm() {
                       type="number"
                       value={form.denyut_jantung_janin}
                       onChange={handleChange}
+                      onKeyDown={handleKeyDown}
                       placeholder="140"
                       disabled={isReadOnly}
                       className={`mt-1 w-full border rounded-lg p-2 ${errors.denyut_jantung_janin ? "border-red-500" : "border-gray-300"} ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
@@ -1084,6 +1116,7 @@ export default function PemeriksaanKehamilanForm() {
                       name="letak_denyut_jantung_bayi"
                       value={form.letak_denyut_jantung_bayi}
                       onChange={handleChange}
+                      onKeyDown={handleKeyDown}
                       placeholder="Kepala / Sungsang / Melintang"
                       disabled={isReadOnly}
                       className={`mt-1 w-full border rounded-lg p-2 border-gray-300 ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
@@ -1110,6 +1143,7 @@ export default function PemeriksaanKehamilanForm() {
                       step="0.1"
                       value={form.tes_lab_hb}
                       onChange={handleChange}
+                      onKeyDown={handleKeyDown}
                       placeholder="11.5"
                       disabled={isReadOnly}
                       className={`mt-1 w-full border rounded-lg p-2 ${errors.tes_lab_hb ? "border-red-500" : "border-gray-300"} ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
@@ -1131,6 +1165,7 @@ export default function PemeriksaanKehamilanForm() {
                       type="number"
                       value={form.tes_lab_gula_darah}
                       onChange={handleChange}
+                      onKeyDown={handleKeyDown}
                       placeholder="90"
                       disabled={isReadOnly}
                       className={`mt-1 w-full border rounded-lg p-2 ${errors.tes_lab_gula_darah ? "border-red-500" : "border-gray-300"} ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
@@ -1201,6 +1236,7 @@ export default function PemeriksaanKehamilanForm() {
                       name="usg"
                       value={form.usg}
                       onChange={handleChange}
+                      onKeyDown={handleKeyDown}
                       placeholder="Normal / Plasenta letak rendah dll"
                       disabled={isReadOnly}
                       className={`mt-1 w-full border rounded-lg p-2 border-gray-300 ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
@@ -1216,6 +1252,7 @@ export default function PemeriksaanKehamilanForm() {
                       type="number"
                       value={form.tablet_tambah_darah}
                       onChange={handleChange}
+                      onKeyDown={handleKeyDown}
                       placeholder="90"
                       disabled={isReadOnly}
                       className={`mt-1 w-full border rounded-lg p-2 ${errors.tablet_tambah_darah ? "border-red-500" : "border-gray-300"} ${isReadOnly ? "bg-gray-100 cursor-not-allowed" : ""}`}
@@ -1265,6 +1302,7 @@ export default function PemeriksaanKehamilanForm() {
                       name="skrining_dokter"
                       value={form.skrining_dokter}
                       onChange={handleChange}
+                      onKeyDown={handleKeyDown}
                       rows={2}
                       placeholder="Hasil skrining preeklampsia, diabetes, dll"
                       disabled={isReadOnly}
@@ -1279,6 +1317,7 @@ export default function PemeriksaanKehamilanForm() {
                       name="konseling"
                       value={form.konseling}
                       onChange={handleChange}
+                      onKeyDown={handleKeyDown}
                       rows={2}
                       placeholder="Edukasi tanda bahaya, gizi, imunisasi, KB pasca persalinan"
                       disabled={isReadOnly}
@@ -1293,6 +1332,7 @@ export default function PemeriksaanKehamilanForm() {
                       name="tata_laksana_kasus"
                       value={form.tata_laksana_kasus}
                       onChange={handleChange}
+                      onKeyDown={handleKeyDown}
                       rows={2}
                       placeholder="Obat, rujukan, jadwal kontrol berikutnya"
                       disabled={isReadOnly}

@@ -32,8 +32,8 @@ import { getCurrentUser, isBidanUser, isDokterUser } from "../../services/auth";
 
 const DetailItem = ({ label, value }) => (
   <div className="flex flex-col">
-    <span className="text-xs text-gray-500 font-medium uppercase tracking-wide">{label}</span>
-    <span className="text-sm text-gray-800 font-semibold mt-0.5 break-all">{value ?? "-"}</span>
+    <span className="text-xs text-gray-500 font-medium uppercase tracking-wide font-sans">{label}</span>
+    <span className="text-sm text-gray-800 font-semibold mt-0.5 break-all font-sans">{value ?? "-"}</span>
   </div>
 );
 
@@ -185,20 +185,20 @@ function KelahiranCard({ index, ringkasan, anakList, kehamilanId, ibuId, onEdit,
   ].filter(Boolean);
 
   return (
-    <div className="border border-indigo-100 rounded-2xl overflow-hidden shadow-sm">
+    <div className="border border-[#185FA5]/20 rounded-2xl overflow-hidden shadow-sm font-sans">
       <div
-        className="flex items-center justify-between px-5 py-4 bg-gradient-to-r from-indigo-50 to-white cursor-pointer select-none"
+        className="flex items-center justify-between px-5 py-4 bg-[#EBF3FC] cursor-pointer select-none"
         onClick={() => setExpanded((v) => !v)}
       >
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-sm font-bold flex-shrink-0">
+          <div className="w-8 h-8 rounded-full bg-[#185FA5] text-white flex items-center justify-center text-sm font-bold flex-shrink-0">
             {index + 1}
           </div>
           <div>
-            <p className="font-bold text-gray-800 text-sm md:text-base">
+            <p className="font-bold text-gray-800 text-sm md:text-base font-sans">
               Kelahiran ke-{index + 1}
             </p>
-            <p className="text-xs text-gray-500 break-all">
+            <p className="text-xs text-gray-500 break-all font-sans">
   {ringkasan.tanggal_melahirkan || "-"} &bull; {ringkasan.cara_melahirkan || "-"} &bull; {anakList.length} anak
 </p>
           </div>
@@ -207,15 +207,15 @@ function KelahiranCard({ index, ringkasan, anakList, kehamilanId, ibuId, onEdit,
           {canEdit && onEdit && (
             <button
               onClick={(e) => { e.stopPropagation(); onEdit(ringkasan); }}
-              className="text-xs text-indigo-600 border border-indigo-300 px-3 py-1.5 rounded-lg hover:bg-indigo-50 flex items-center gap-1"
+              className="text-xs bg-[#BA7517] text-white px-3 py-1.5 rounded-full hover:opacity-90 flex items-center gap-1 font-semibold font-sans"
             >
-              <Edit2 size={12} /> Edit
+              <Edit2 size={12} /> Ubah
             </button>
           )}
           {canEdit && onDelete && (
             <button
               onClick={(e) => { e.stopPropagation(); onDelete(ringkasan.id_ringkasan || ringkasan.id || 0); }}
-              className="text-xs text-red-600 border border-red-300 px-3 py-1.5 rounded-lg hover:bg-red-50 flex items-center gap-1"
+              className="text-xs bg-[#A32D2D] text-white px-3 py-1.5 rounded-full hover:opacity-90 flex items-center gap-1 font-semibold font-sans"
             >
               <Trash2 size={12} /> Hapus
             </button>
@@ -227,8 +227,8 @@ function KelahiranCard({ index, ringkasan, anakList, kehamilanId, ibuId, onEdit,
       {expanded && (
         <div className="p-5 space-y-5 bg-white">
           <div>
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Ringkasan Persalinan</p>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 bg-gray-50 rounded-xl p-4">
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 font-sans">Ringkasan Persalinan</p>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 bg-[#F7FAFB] rounded-xl p-4">
               <DetailItem label="Tanggal Melahirkan" value={ringkasan.tanggal_melahirkan} />
               <DetailItem label="Umur Kehamilan" value={ringkasan.umur_kehamilan_minggu ? `${ringkasan.umur_kehamilan_minggu} mgg` : "-"} />
               <DetailItem label="Penolong" value={ringkasan.penolong_proses_melahirkan} />
@@ -241,21 +241,21 @@ function KelahiranCard({ index, ringkasan, anakList, kehamilanId, ibuId, onEdit,
           {(kondisiList.length > 0 || asuhanList.length > 0) && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {kondisiList.length > 0 && (
-                <div className="bg-amber-50 rounded-xl p-4">
-                  <p className="text-xs font-bold text-amber-700 uppercase tracking-widest mb-2">Kondisi Bayi Saat Lahir</p>
+                <div className="bg-[#FEF3CD] rounded-xl p-4">
+                  <p className="text-xs font-bold text-[#BA7517] uppercase tracking-widest mb-2 font-sans">Kondisi Bayi Saat Lahir</p>
                   <div className="flex flex-wrap gap-1.5">
                     {kondisiList.map((k, i) => (
-                      <span key={i} className="text-xs bg-amber-100 text-amber-800 px-2.5 py-1 rounded-full font-medium">{k}</span>
+                      <span key={i} className="text-xs bg-[#BA7517]/20 text-[#BA7517] px-2.5 py-1 rounded-full font-medium font-sans">{k}</span>
                     ))}
                   </div>
                 </div>
               )}
               {asuhanList.length > 0 && (
-                <div className="bg-green-50 rounded-xl p-4">
-                  <p className="text-xs font-bold text-green-700 uppercase tracking-widest mb-2">Asuhan Bayi Baru Lahir</p>
+                <div className="bg-[#E1F5EE] rounded-xl p-4">
+                  <p className="text-xs font-bold text-[#0F6E56] uppercase tracking-widest mb-2 font-sans">Asuhan Bayi Baru Lahir</p>
                   <div className="flex flex-wrap gap-1.5">
                     {asuhanList.map((a, i) => (
-                      <span key={i} className="text-xs bg-green-100 text-green-800 px-2.5 py-1 rounded-full font-medium">✓ {a}</span>
+                      <span key={i} className="text-xs bg-[#0F6E56]/20 text-[#0F6E56] px-2.5 py-1 rounded-full font-medium font-sans">✓ {a}</span>
                     ))}
                   </div>
                 </div>
@@ -264,34 +264,34 @@ function KelahiranCard({ index, ringkasan, anakList, kehamilanId, ibuId, onEdit,
           )}
 
           <div>
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2 font-sans">
               <Baby size={14} /> Anak yang Lahir ({anakList.length})
             </p>
             {anakList.length === 0 ? (
-              <p className="text-sm text-gray-400 italic">Belum ada data anak untuk kelahiran ini.</p>
+              <p className="text-sm text-gray-400 italic font-sans">Belum ada data anak untuk kelahiran ini.</p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {anakList.map((anak) => (
-                  <div key={anak.id} className="rounded-xl border border-indigo-100 bg-indigo-50/40 p-4">
+                  <div key={anak.id} className="rounded-xl border border-[#185FA5]/20 bg-[#EBF3FC]/40 p-4">
                     <div className="flex flex-col gap-1">
-  <p className="font-bold text-gray-800">{anak.nama || "Tanpa Nama"}</p>
-  <p className="text-xs text-gray-500">
+  <p className="font-bold text-gray-800 font-sans">{anak.nama || "Tanpa Nama"}</p>
+  <p className="text-xs text-gray-500 font-sans">
     Anak ke-{anak.anak_ke ?? "-"} &bull; {anak.jenis_kelamin || "-"}
   </p>
-  <p className="text-xs text-gray-400">Lahir: {anak.tanggal_lahir || "-"}</p>
+  <p className="text-xs text-gray-400 font-sans">Lahir: {anak.tanggal_lahir || "-"}</p>
 </div>
                     <div className="mt-3 grid grid-cols-3 gap-2 text-xs text-gray-600">
                       <div className="rounded-lg bg-white px-2 py-1.5 border text-center">
-                        <p className="text-gray-400 text-[10px]">BB</p>
-                        <p className="font-bold">{anak.berat_lahir_kg ?? "-"} kg</p>
+                        <p className="text-gray-400 text-[10px] font-sans">BB</p>
+                        <p className="font-bold font-sans">{anak.berat_lahir_kg ?? "-"} kg</p>
                       </div>
                       <div className="rounded-lg bg-white px-2 py-1.5 border text-center">
-                        <p className="text-gray-400 text-[10px]">PB</p>
-                        <p className="font-bold">{anak.tinggi_lahir_cm ?? "-"} cm</p>
+                        <p className="text-gray-400 text-[10px] font-sans">PB</p>
+                        <p className="font-bold font-sans">{anak.tinggi_lahir_cm ?? "-"} cm</p>
                       </div>
                       <div className="rounded-lg bg-white px-2 py-1.5 border text-center">
-                        <p className="text-gray-400 text-[10px]">LK</p>
-                        <p className="font-bold">{anak.lingkar_kepala_cm ?? "-"} cm</p>
+                        <p className="text-gray-400 text-[10px] font-sans">LK</p>
+                        <p className="font-bold font-sans">{anak.lingkar_kepala_cm ?? "-"} cm</p>
                       </div>
                     </div>
                   </div>
@@ -359,9 +359,9 @@ function RingkasanForm({ initial, onSubmit, onCancel, saving, title }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-5">
+    <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-5 font-sans">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold text-[#185FA5]">{title}</h2>
+        <h2 className="text-lg font-bold text-[#185FA5] font-sans">{title}</h2>
         {onCancel && (
           <button type="button" onClick={onCancel} className="p-2 rounded-full hover:bg-gray-100">
             <X size={18} className="text-gray-500" />
@@ -371,48 +371,47 @@ function RingkasanForm({ initial, onSubmit, onCancel, saving, title }) {
 
       {/* Info Persalinan */}
       <div>
-        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Info Persalinan</p>
+        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 font-sans">Info Persalinan</p>
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3">
-          <div><label className="block text-xs font-medium mb-1">Tanggal Melahirkan <span className="text-red-500">*</span></label>
-            <input type="date" name="tanggal_melahirkan" value={form.tanggal_melahirkan} max={todayStr} onChange={handleChange} className={`w-full border rounded-lg px-2 py-1.5 text-sm ${errors.tanggal_melahirkan ? "border-red-500 bg-red-50" : ""}`} />
-            {errors.tanggal_melahirkan && <p className="text-red-500 text-xs mt-1">{errors.tanggal_melahirkan}</p>}
+          <div><label className="block text-xs font-medium mb-1 font-sans">Tanggal Melahirkan <span className="text-[#A32D2D]">*</span></label>
+            <input type="date" name="tanggal_melahirkan" value={form.tanggal_melahirkan} max={todayStr} onChange={handleChange} className={`w-full border rounded-lg px-2 py-1.5 text-sm font-sans focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] ${errors.tanggal_melahirkan ? "border-[#A32D2D] bg-red-50" : "border-gray-300"}`} />
+            {errors.tanggal_melahirkan && <p className="text-[#A32D2D] text-xs mt-1 font-sans">{errors.tanggal_melahirkan}</p>}
           </div>
-          <div><label className="block text-xs font-medium mb-1">Umur Kehamilan (Mgg)</label>
-            <input type="number" name="umur_kehamilan_minggu" value={form.umur_kehamilan_minggu} onChange={handleChange} className="w-full border rounded-lg px-2 py-1.5 text-sm" /></div>
-          <div><label className="block text-xs font-medium mb-1">Penolong <span className="text-red-500">*</span></label>
-            <input name="penolong_proses_melahirkan" value={form.penolong_proses_melahirkan} onChange={handleChange} className={`w-full border rounded-lg px-2 py-1.5 text-sm ${errors.penolong_proses_melahirkan ? "border-red-500 bg-red-50" : ""}`} />
-            {errors.penolong_proses_melahirkan && <p className="text-red-500 text-xs mt-1">{errors.penolong_proses_melahirkan}</p>}
+          <div><label className="block text-xs font-medium mb-1 font-sans">Umur Kehamilan (Mgg)</label>
+            <input type="number" name="umur_kehamilan_minggu" value={form.umur_kehamilan_minggu} onChange={handleChange} className="w-full border rounded-lg px-2 py-1.5 text-sm font-sans border-gray-300 focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5]" /></div>
+          <div><label className="block text-xs font-medium mb-1 font-sans">Penolong <span className="text-[#A32D2D]">*</span></label>
+            <input name="penolong_proses_melahirkan" value={form.penolong_proses_melahirkan} onChange={handleChange} className={`w-full border rounded-lg px-2 py-1.5 text-sm font-sans focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] ${errors.penolong_proses_melahirkan ? "border-[#A32D2D] bg-red-50" : "border-gray-300"}`} />
+            {errors.penolong_proses_melahirkan && <p className="text-[#A32D2D] text-xs mt-1 font-sans">{errors.penolong_proses_melahirkan}</p>}
           </div>
-          <div><label className="block text-xs font-medium mb-1">Cara Melahirkan <span className="text-red-500">*</span></label>
-            <select name="cara_melahirkan" value={form.cara_melahirkan} onChange={handleChange} className={`w-full border rounded-lg px-2 py-1.5 text-sm ${errors.cara_melahirkan ? "border-red-500 bg-red-50" : ""}`}>
+          <div><label className="block text-xs font-medium mb-1 font-sans">Cara Melahirkan <span className="text-[#A32D2D]">*</span></label>
+            <select name="cara_melahirkan" value={form.cara_melahirkan} onChange={handleChange} className={`w-full border rounded-lg px-2 py-1.5 text-sm font-sans focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] ${errors.cara_melahirkan ? "border-[#A32D2D] bg-red-50" : "border-gray-300"}`}>
               <option value="">-- Pilih --</option>
               <option>Spontan/Normal</option><option>SC</option><option>Vakum</option>
             </select>
-            {errors.cara_melahirkan && <p className="text-red-500 text-xs mt-1">{errors.cara_melahirkan}</p>}
+            {errors.cara_melahirkan && <p className="text-[#A32D2D] text-xs mt-1 font-sans">{errors.cara_melahirkan}</p>}
           </div>
-          <div><label className="block text-xs font-medium mb-1">Keadaan Ibu <span className="text-red-500">*</span></label>
-            <input name="keadaan_ibu" value={form.keadaan_ibu} onChange={handleChange} className={`w-full border rounded-lg px-2 py-1.5 text-sm ${errors.keadaan_ibu ? "border-red-500 bg-red-50" : ""}`} />
-            {errors.keadaan_ibu && <p className="text-red-500 text-xs mt-1">{errors.keadaan_ibu}</p>}
+          <div><label className="block text-xs font-medium mb-1 font-sans">Keadaan Ibu <span className="text-[#A32D2D]">*</span></label>
+            <input name="keadaan_ibu" value={form.keadaan_ibu} onChange={handleChange} className={`w-full border rounded-lg px-2 py-1.5 text-sm font-sans focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] ${errors.keadaan_ibu ? "border-[#A32D2D] bg-red-50" : "border-gray-300"}`} />
+            {errors.keadaan_ibu && <p className="text-[#A32D2D] text-xs mt-1 font-sans">{errors.keadaan_ibu}</p>}
           </div>
-          <div><label className="block text-xs font-medium mb-1">KB Pasca Salin</label>
-            <input name="kb_pasca_melahirkan" value={form.kb_pasca_melahirkan} onChange={handleChange} className="w-full border rounded-lg px-2 py-1.5 text-sm" /></div>
+          <div><label className="block text-xs font-medium mb-1 font-sans">KB Pasca Salin</label>
+            <input name="kb_pasca_melahirkan" value={form.kb_pasca_melahirkan} onChange={handleChange} className="w-full border rounded-lg px-2 py-1.5 text-sm font-sans border-gray-300 focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5]" /></div>
         </div>
       </div>
 
       {/* Gravida, Paritas, Abortus (dari ibu / diubah) */}
       <div className="grid grid-cols-3 gap-3">
-        <div><label className="block text-xs font-medium mb-1">Gravida (G)</label>
-          <input type="number" name="gravida" value={form.gravida} onChange={handleChange} className="w-full border rounded-lg px-2 py-1.5 text-sm" /></div>
-        <div><label className="block text-xs font-medium mb-1">Paritas (P)</label>
-          <input type="number" name="paritas" value={form.paritas} onChange={handleChange} className="w-full border rounded-lg px-2 py-1.5 text-sm" /></div>
-        <div><label className="block text-xs font-medium mb-1">Abortus (A)</label>
-          <input type="number" name="abortus" value={form.abortus} onChange={handleChange} className="w-full border rounded-lg px-2 py-1.5 text-sm" /></div>
+        <div><label className="block text-xs font-medium mb-1 font-sans">Gravida (G)</label>
+          <input type="number" name="gravida" value={form.gravida} onChange={handleChange} className="w-full border rounded-lg px-2 py-1.5 text-sm font-sans border-gray-300 focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5]" /></div>
+        <div><label className="block text-xs font-medium mb-1 font-sans">Paritas (P)</label>
+          <input type="number" name="paritas" value={form.paritas} onChange={handleChange} className="w-full border rounded-lg px-2 py-1.5 text-sm font-sans border-gray-300 focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5]" /></div>
+        <div><label className="block text-xs font-medium mb-1 font-sans">Abortus (A)</label>
+          <input type="number" name="abortus" value={form.abortus} onChange={handleChange} className="w-full border rounded-lg px-2 py-1.5 text-sm font-sans border-gray-300 focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5]" /></div>
       </div>
 
       {/* Data Bayi & Anak (digabung) */}
-      {/* Data Bayi & Anak (digabung) */}
       <div>
-        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Data Bayi / Anak Lahir</p>
+        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 font-sans">Data Bayi / Anak Lahir</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div><label className="block text-xs font-medium mb-1">Nama Anak</label>
             <input name="nama_anak" value={form.nama_anak} onChange={handleChange} className="w-full border rounded-lg px-2 py-1.5 text-sm" /></div>
@@ -428,21 +427,21 @@ function RingkasanForm({ initial, onSubmit, onCancel, saving, title }) {
               <option value="Laki-laki">Laki-laki</option>
               <option value="Perempuan">Perempuan</option>
             </select></div>
-          <div><label className="block text-xs font-medium mb-1">Anak Ke</label>
-            <input type="number" name="bayi_anak_ke" value={form.bayi_anak_ke} onChange={handleChange} className="w-full border rounded-lg px-2 py-1.5 text-sm" /></div>
-          <div><label className="block text-xs font-medium mb-1">Berat (kg)</label>
-            <input type="number" step="0.01" name="bayi_berat_lahir_kg" value={form.bayi_berat_lahir_kg} onChange={handleChange} className="w-full border rounded-lg px-2 py-1.5 text-sm" /></div>
-          <div><label className="block text-xs font-medium mb-1">Panjang (cm)</label>
-            <input type="number" name="bayi_panjang_badan_cm" value={form.bayi_panjang_badan_cm} onChange={handleChange} className="w-full border rounded-lg px-2 py-1.5 text-sm" /></div>
-          <div><label className="block text-xs font-medium mb-1">Lingkar Kepala (cm)</label>
-            <input type="number" name="bayi_lingkar_kepala_cm" value={form.bayi_lingkar_kepala_cm} onChange={handleChange} className="w-full border rounded-lg px-2 py-1.5 text-sm" /></div>
+          <div><label className="block text-xs font-medium mb-1 font-sans">Anak Ke</label>
+            <input type="number" name="bayi_anak_ke" value={form.bayi_anak_ke} onChange={handleChange} className="w-full border rounded-lg px-2 py-1.5 text-sm font-sans border-gray-300 focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5]" /></div>
+          <div><label className="block text-xs font-medium mb-1 font-sans">Berat (kg)</label>
+            <input type="number" step="0.01" name="bayi_berat_lahir_kg" value={form.bayi_berat_lahir_kg} onChange={handleChange} className="w-full border rounded-lg px-2 py-1.5 text-sm font-sans border-gray-300 focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5]" /></div>
+          <div><label className="block text-xs font-medium mb-1 font-sans">Panjang (cm)</label>
+            <input type="number" name="bayi_panjang_badan_cm" value={form.bayi_panjang_badan_cm} onChange={handleChange} className="w-full border rounded-lg px-2 py-1.5 text-sm font-sans border-gray-300 focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5]" /></div>
+          <div><label className="block text-xs font-medium mb-1 font-sans">Lingkar Kepala (cm)</label>
+            <input type="number" name="bayi_lingkar_kepala_cm" value={form.bayi_lingkar_kepala_cm} onChange={handleChange} className="w-full border rounded-lg px-2 py-1.5 text-sm font-sans border-gray-300 focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5]" /></div>
         </div>
       </div>	
 
       {/* Kondisi Bayi */}
-      <div className="bg-gray-50 rounded-xl p-4 space-y-3">
-        <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Kondisi Bayi Saat Lahir</p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+      <div className="bg-[#F7FAFB] rounded-xl p-4 space-y-3">
+        <p className="text-xs font-bold text-gray-500 uppercase tracking-widest font-sans">Kondisi Bayi Saat Lahir</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm font-sans">
           {[
             ["kondisi_bayi_segera_menangis", "Segera menangis"],
             ["kondisi_bayi_menangis_beberapa_saat", "Menangis beberapa saat"],
@@ -454,21 +453,21 @@ function RingkasanForm({ initial, onSubmit, onCancel, saving, title }) {
             ["kondisi_bayi_meninggal", "Meninggal"],
           ].map(([name, label]) => (
             <label key={name} className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" name={name} checked={form[name]} onChange={handleChange} className="w-4 h-4 accent-indigo-600" />
-              {label}
+              <input type="checkbox" name={name} checked={form[name]} onChange={handleChange} className="w-4 h-4 text-[#185FA5] rounded focus:ring-[#185FA5]" />
+              <span className="font-sans">{label}</span>
             </label>
           ))}
         </div>
         {form.kondisi_bayi_kelainan_bawaan && (
-          <div><label className="block text-xs font-medium mb-1">Detail Kelainan Bawaan</label>
-            <input name="kondisi_bayi_kelainan_bawaan_detail" value={form.kondisi_bayi_kelainan_bawaan_detail} onChange={handleChange} className="w-full border rounded-lg px-2 py-1.5 text-sm" /></div>
+          <div><label className="block text-xs font-medium mb-1 font-sans">Detail Kelainan Bawaan</label>
+            <input name="kondisi_bayi_kelainan_bawaan_detail" value={form.kondisi_bayi_kelainan_bawaan_detail} onChange={handleChange} className="w-full border rounded-lg px-2 py-1.5 text-sm font-sans border-gray-300 focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5]" /></div>
         )}
       </div>
 
       {/* Asuhan Bayi */}
-      <div className="bg-gray-50 rounded-xl p-4 space-y-3">
-        <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Asuhan Bayi Baru Lahir</p>
-        <div className="grid grid-cols-1 gap-2 text-sm">
+      <div className="bg-[#F7FAFB] rounded-xl p-4 space-y-3">
+        <p className="text-xs font-bold text-gray-500 uppercase tracking-widest font-sans">Asuhan Bayi Baru Lahir</p>
+        <div className="grid grid-cols-1 gap-2 text-sm font-sans">
           {[
             ["asuhan_imd_1_jam_pertama", "Inisiasi Menyusu Dini (IMD) dalam 1 jam pertama"],
             ["asuhan_suntikan_vitamin_k1", "Suntikan Vitamin K1"],
@@ -476,23 +475,23 @@ function RingkasanForm({ initial, onSubmit, onCancel, saving, title }) {
             ["asuhan_imunisasi_hb0", "Imunisasi HB0"],
           ].map(([name, label]) => (
             <label key={name} className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" name={name} checked={form[name]} onChange={handleChange} className="w-4 h-4 accent-indigo-600" />
-              {label}
+              <input type="checkbox" name={name} checked={form[name]} onChange={handleChange} className="w-4 h-4 text-[#185FA5] rounded focus:ring-[#185FA5]" />
+              <span className="font-sans">{label}</span>
             </label>
           ))}
         </div>
-        <div><label className="block text-xs font-medium mb-1">Keterangan Tambahan Bayi</label>
-          <textarea name="keterangan_tambahan_bayi" value={form.keterangan_tambahan_bayi} onChange={handleChange} rows={2} className="w-full border rounded-lg px-2 py-1.5 text-sm" /></div>
+        <div><label className="block text-xs font-medium mb-1 font-sans">Keterangan Tambahan Bayi</label>
+          <textarea name="keterangan_tambahan_bayi" value={form.keterangan_tambahan_bayi} onChange={handleChange} rows={2} className="w-full border rounded-lg px-2 py-1.5 text-sm font-sans border-gray-300 focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5]" /></div>
       </div>
 
       <div className="flex gap-2 pt-2">
         <button type="submit" disabled={saving}
-          className="bg-indigo-600 text-white px-6 py-2.5 rounded-xl flex items-center gap-2 hover:bg-indigo-700 font-semibold text-sm">
+          className="bg-[#3B6D11] text-white px-6 py-2.5 rounded-full flex items-center gap-2 hover:opacity-90 font-semibold text-sm font-sans">
           <Save size={16} /> {saving ? "Menyimpan..." : "Simpan"}
         </button>
         {onCancel && (
           <button type="button" onClick={onCancel}
-            className="px-6 py-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm">
+            className="px-6 py-2.5 rounded-full border border-[#185FA5] text-[#185FA5] hover:bg-[#185FA5]/5 text-sm font-semibold font-sans">
             Batal
           </button>
         )}
@@ -994,23 +993,23 @@ export default function PelayananPersalinan() {
 
     // Validation
     if (!formRiwayat.g_gravida) {
-      Swal.fire({ icon: "warning", title: "Perhatian", text: "Gravida (G) wajib diisi.", confirmButtonColor: "#4f46e5" });
+      Swal.fire({ icon: "warning", title: "Perhatian", text: "Gravida (G) wajib diisi.", confirmButtonColor: "#185FA5" });
       return;
     }
     if (!formRiwayat.p_partus) {
-      Swal.fire({ icon: "warning", title: "Perhatian", text: "Partus (P) wajib diisi.", confirmButtonColor: "#4f46e5" });
+      Swal.fire({ icon: "warning", title: "Perhatian", text: "Partus (P) wajib diisi.", confirmButtonColor: "#185FA5" });
       return;
     }
     if (!formRiwayat.a_abortus) {
-      Swal.fire({ icon: "warning", title: "Perhatian", text: "Abortus (A) wajib diisi.", confirmButtonColor: "#4f46e5" });
+      Swal.fire({ icon: "warning", title: "Perhatian", text: "Abortus (A) wajib diisi.", confirmButtonColor: "#185FA5" });
       return;
     }
     if (!formRiwayat.tanggal_melahirkan) {
-      Swal.fire({ icon: "warning", title: "Perhatian", text: "Tanggal melahirkan wajib diisi.", confirmButtonColor: "#4f46e5" });
+      Swal.fire({ icon: "warning", title: "Perhatian", text: "Tanggal melahirkan wajib diisi.", confirmButtonColor: "#185FA5" });
       return;
     }
     if (!formRiwayat.fasyankes_tempat_melahirkan || !formRiwayat.fasyankes_tempat_melahirkan.trim()) {
-      Swal.fire({ icon: "warning", title: "Perhatian", text: "Fasyankes tempat melahirkan wajib diisi.", confirmButtonColor: "#4f46e5" });
+      Swal.fire({ icon: "warning", title: "Perhatian", text: "Fasyankes tempat melahirkan wajib diisi.", confirmButtonColor: "#185FA5" });
       return;
     }
 
@@ -1044,7 +1043,7 @@ export default function PelayananPersalinan() {
 
     // Validation
     if (!formKeterangan.nomor_surat || !formKeterangan.nomor_surat.trim()) {
-      Swal.fire({ icon: "warning", title: "Perhatian", text: "Nomor surat wajib diisi.", confirmButtonColor: "#4f46e5" });
+      Swal.fire({ icon: "warning", title: "Perhatian", text: "Nomor surat wajib diisi.", confirmButtonColor: "#185FA5" });
       return;
     }
     if (!validateNomorSuratFormat(formKeterangan.nomor_surat)) {
@@ -1052,37 +1051,37 @@ export default function PelayananPersalinan() {
         icon: "warning",
         title: "Format Nomor Surat Salah",
         text: "Format nomor surat harus: 09.[nomor_urut]/[nama_lembaga]/[bulan_romawi]/[tahun]\nContoh: 09.004/PUSKESMAS/V/2024",
-        confirmButtonColor: "#4f46e5"
+        confirmButtonColor: "#185FA5"
       });
       return;
     }
     if (!formKeterangan.hari_lahir || !formKeterangan.hari_lahir.trim()) {
-      Swal.fire({ icon: "warning", title: "Perhatian", text: "Hari lahir wajib diisi.", confirmButtonColor: "#4f46e5" });
+      Swal.fire({ icon: "warning", title: "Perhatian", text: "Hari lahir wajib diisi.", confirmButtonColor: "#185FA5" });
       return;
     }
     if (!formKeterangan.tanggal_lahir) {
-      Swal.fire({ icon: "warning", title: "Perhatian", text: "Tanggal lahir wajib diisi.", confirmButtonColor: "#4f46e5" });
+      Swal.fire({ icon: "warning", title: "Perhatian", text: "Tanggal lahir wajib diisi.", confirmButtonColor: "#185FA5" });
       return;
     }
     if (!formKeterangan.jenis_kelamin) {
-      Swal.fire({ icon: "warning", title: "Perhatian", text: "Jenis kelamin wajib dipilih.", confirmButtonColor: "#4f46e5" });
+      Swal.fire({ icon: "warning", title: "Perhatian", text: "Jenis kelamin wajib dipilih.", confirmButtonColor: "#185FA5" });
       return;
     }
     if (!formKeterangan.nama_bayi_diberi_nama || !formKeterangan.nama_bayi_diberi_nama.trim()) {
-      Swal.fire({ icon: "warning", title: "Perhatian", text: "Nama bayi wajib diisi.", confirmButtonColor: "#4f46e5" });
+      Swal.fire({ icon: "warning", title: "Perhatian", text: "Nama bayi wajib diisi.", confirmButtonColor: "#185FA5" });
       return;
     }
     if (!formKeterangan.nama_ibu || !formKeterangan.nama_ibu.trim()) {
-      Swal.fire({ icon: "warning", title: "Perhatian", text: "Nama ibu wajib diisi.", confirmButtonColor: "#4f46e5" });
+      Swal.fire({ icon: "warning", title: "Perhatian", text: "Nama ibu wajib diisi.", confirmButtonColor: "#185FA5" });
       return;
     }
     if (!formKeterangan.nik_ibu || !formKeterangan.nik_ibu.trim()) {
-      Swal.fire({ icon: "warning", title: "Perhatian", text: "NIK ibu wajib diisi.", confirmButtonColor: "#4f46e5" });
+      Swal.fire({ icon: "warning", title: "Perhatian", text: "NIK ibu wajib diisi.", confirmButtonColor: "#185FA5" });
       return;
     }
     // Nama ayah diisi otomatis dari data ibu, tidak perlu validasi manual
     if (!formKeterangan.nama_penolong_kelahiran || !formKeterangan.nama_penolong_kelahiran.trim()) {
-      Swal.fire({ icon: "warning", title: "Perhatian", text: "Nama penolong kelahiran wajib diisi.", confirmButtonColor: "#4f46e5" });
+      Swal.fire({ icon: "warning", title: "Perhatian", text: "Nama penolong kelahiran wajib diisi.", confirmButtonColor: "#185FA5" });
       return;
     }
 
@@ -1174,8 +1173,8 @@ export default function PelayananPersalinan() {
       text: 'Data kelahiran ini akan dihapus secara permanen! Ini juga akan menghapus data anak yang terkait dengan kelahiran ini.',
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#dc2626',
-      cancelButtonColor: '#6b7280',
+      confirmButtonColor: '#A32D2D',
+      cancelButtonColor: '#6B7280',
       confirmButtonText: 'Ya, Hapus!',
       cancelButtonText: 'Batal'
     });
@@ -1197,14 +1196,12 @@ export default function PelayananPersalinan() {
 
   const TabButton = ({ tabId, label }) => (
     <button onClick={() => setActiveTab(tabId)}
-      className={`py-2.5 px-4 md:px-5 text-xs md:text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === tabId ? "border-indigo-600 text-indigo-600 bg-indigo-50" : "border-transparent text-gray-500 hover:text-gray-700"}`}>
+      className={`py-2.5 px-4 md:px-5 text-xs md:text-sm font-medium border-b-2 transition-colors whitespace-nowrap font-sans ${activeTab === tabId ? "border-[#185FA5] text-[#185FA5] bg-[#EBF3FC]" : "border-transparent text-gray-500 hover:text-gray-700"}`}>
       {label}
     </button>
   );
 
-  if (loading) return <MainLayout><div className="p-6 text-gray-400">Memuat...</div></MainLayout>;
-
-  return (
+  if (loading) return (
     <MainLayout>
       <div className="p-4 md:p-6 max-w-5xl w-full mx-auto">
         <div className="flex items-center gap-3 mb-5">
@@ -1546,6 +1543,353 @@ export default function PelayananPersalinan() {
             )}
           </>
         )}
+      </div>
+    </MainLayout>
+  );
+
+  return (
+    <MainLayout>
+      <div className="min-h-screen bg-[#F7FAFB] font-sans">
+        <div className="max-w-5xl mx-auto p-5 space-y-6">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => navigate(-1)}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#185FA5] text-[#185FA5] text-sm font-semibold hover:bg-[#185FA5]/5 transition font-sans"
+            >
+              <ArrowLeft size={16} />
+              Kembali
+            </button>
+            <div>
+              <h1 className="text-lg sm:text-2xl md:text-[28px] font-bold text-gray-900 font-sans">Proses & Riwayat Melahirkan</h1>
+              <p className="text-sm text-gray-600 mt-1 font-sans">Pencatatan proses persalinan hingga bayi lahir.</p>
+            </div>
+          </div>
+
+          {/* VALIDASI: Banner untuk date-based locking */}
+          {!canAccessPersalinan && lockMessage && (
+            <div className="bg-[#BA7517]/10 border border-[#BA7517]/30 p-4 rounded-lg flex items-start gap-3 font-sans">
+              <Lock size={20} className="text-[#BA7517] mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="font-semibold text-[#BA7517] text-sm font-sans">Form Terkunci</p>
+                <p className="text-[#BA7517]/80 text-sm mt-1 font-sans">{lockMessage}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Mode baca alert untuk Dokter */}
+          {isDokter && (
+            <div className="bg-[#185FA5]/10 border border-[#185FA5]/20 p-3 rounded-lg text-[#185FA5] text-base flex items-center gap-2 font-sans">
+              <Eye size={16} /> Anda dalam mode baca (Dokter). Data hanya dapat dilihat, tidak dapat diubah.
+            </div>
+          )}
+
+          <div className="w-full border-b border-gray-200 flex overflow-x-auto">
+            <TabButton tabId="ringkasan" label="Ringkasan Melahirkan" />
+            <TabButton tabId="riwayat" label="Riwayat Melahirkan" />
+            <TabButton tabId="keterangan" label="Surat Keterangan Lahir" />
+          </div>
+
+          {activeTab === "ringkasan" && (
+            <div className="space-y-4">
+              {editTarget && (
+                <div className="max-w-5xl mx-auto">
+                  <RingkasanForm
+                    key={editTarget.id}
+                    initial={{
+                      ...editTarget,
+                      // Field tanggal harus diformat YYYY-MM-DD agar terbaca oleh <input type="date">
+                      tanggal_melahirkan: editTarget.tanggal_melahirkan ? String(editTarget.tanggal_melahirkan).split("T")[0] : "",
+                      umur_kehamilan_minggu: editTarget.umur_kehamilan_minggu ?? "",
+                      penolong_proses_melahirkan: editTarget.penolong_proses_melahirkan ?? "",
+                      cara_melahirkan: editTarget.cara_melahirkan ?? "",
+                      keadaan_ibu: editTarget.keadaan_ibu ?? "",
+                      keadaan_ibu_detail_sakit: editTarget.keadaan_ibu_detail_sakit ?? "",
+                      keterangan_tambahan_ibu: editTarget.keterangan_tambahan_ibu ?? "",
+                      kb_pasca_melahirkan: editTarget.kb_pasca_melahirkan ?? "",
+                      gravida: editTarget.gravida ?? "",
+                      paritas: editTarget.paritas ?? "",
+                      abortus: editTarget.abortus ?? "",
+                      bayi_anak_ke: editTarget.bayi_anak_ke ?? "",
+                      bayi_berat_lahir_kg: editTarget.bayi_berat_lahir_gram ? (parseFloat(editTarget.bayi_berat_lahir_gram) / 1000) : "",
+                      bayi_panjang_badan_cm: editTarget.bayi_panjang_badan_cm ?? "",
+                      bayi_lingkar_kepala_cm: editTarget.bayi_lingkar_kepala_cm ?? "",
+                      nama_anak: "", anak_tanggal_lahir: "", anak_jenis_kelamin: "",
+                      anak_nama_ibu: ibuData?.kependudukan?.nama_lengkap || editTarget.anak_nama_ibu || "",
+                      anak_nama_ayah: ibuData?.suami?.nama_lengkap || editTarget.anak_nama_ayah || "",
+                    }}
+                    title={`Edit Kelahiran`}
+                    onSubmit={handleSubmitEdit}
+                    onCancel={() => setEditTarget(null)}
+                    saving={saving}
+                  />
+                </div>
+              )}
+
+              {!editTarget && kelahiranList.length === 0 && !showNewForm && (
+                <div className="bg-white rounded-2xl border border-dashed border-gray-200 p-10 text-center">
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="w-12 h-12 rounded-full" style={{ backgroundColor: "#EBF3FC" }}>
+                      <Plus size={24} style={{ color: "#185FA5" }} className="m-auto" />
+                    </div>
+                    <p className="font-semibold text-gray-700 font-sans">Belum Ada Data Persalinan</p>
+                    <p className="text-sm text-gray-400 font-sans">Tambahkan ringkasan persalinan pertama.</p>
+                    {canEditRingkasan && canAccessPersalinan && (
+                      <button onClick={() => setShowNewForm(true)}
+                        className="bg-[#185FA5] text-white px-5 py-2 rounded-full text-sm font-semibold hover:opacity-90 flex items-center gap-2 mt-1 font-sans">
+                        <Plus size={16} /> Tambah Kelahiran
+                      </button>
+                    )}
+                    {canEditRingkasan && !canAccessPersalinan && (
+                      <button
+                        disabled
+                        className="bg-gray-300 text-gray-500 px-5 py-2 rounded-full text-sm font-semibold cursor-not-allowed flex items-center gap-2 mt-1 font-sans"
+                        title={lockMessage}
+                      >
+                        <Lock size={16} /> Tambah Kelahiran (Terkunci)
+                      </button>
+                    )}
+                    {!canEditRingkasan && (
+                      <p className="text-xs text-gray-400 mt-2 font-sans">Hanya Bidan yang dapat menambahkan data persalinan.</p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {!editTarget && kelahiranList.map(({ ringkasan, anakList }, i) => (
+                <KelahiranCard
+                  key={ringkasan.id || i}
+                  index={i}
+                  ringkasan={ringkasan}
+                  anakList={anakList}
+                  kehamilanId={kehamilan?.id}
+                  ibuId={id}
+                  onEdit={canEditRingkasan ? (r) => { setEditTarget(r); setShowNewForm(false); } : undefined}
+                  onAnakAdded={() => fetchKelahiran(kehamilan?.id, id)}
+                  onDelete={canEditRingkasan ? handleDeleteRingkasan : undefined}
+                  canEdit={canEditRingkasan}
+                />
+              ))}
+
+              {!editTarget && showNewForm && (
+                <div className="max-w-5xl mx-auto">
+                  <RingkasanForm
+                    initial={emptyRingkasan(ibuData)}
+                    title={`Tambah Kelahiran ke-${kelahiranList.length + 1}`}
+                    onSubmit={handleSubmitNew}
+                    onCancel={() => setShowNewForm(false)}
+                    saving={saving}
+                  />
+                </div>
+              )}
+
+              {!editTarget && !showNewForm && kelahiranList.length > 0 && canEditRingkasan && canAccessPersalinan && (
+                <button onClick={() => setShowNewForm(true)}
+                  className="w-full py-3 border-2 border-dashed border-[#185FA5]/30 rounded-2xl text-[#185FA5] font-semibold text-sm hover:border-[#185FA5] hover:bg-[#EBF3FC] transition flex items-center justify-center gap-2 font-sans">
+                  <Plus size={18} /> Tambah Kelahiran Baru
+                </button>
+              )}
+              {!editTarget && !showNewForm && kelahiranList.length > 0 && canEditRingkasan && !canAccessPersalinan && (
+                <button
+                  disabled
+                  className="w-full py-3 border-2 border-dashed border-gray-300 rounded-2xl text-gray-400 font-semibold text-sm cursor-not-allowed flex items-center justify-center gap-2 font-sans"
+                  title={lockMessage}
+                >
+                  <Lock size={18} /> Tambah Kelahiran Baru (Terkunci)
+                </button>
+              )}
+            </div>
+          )}
+
+          {activeTab === "riwayat" && (
+            <>
+              <div className="bg-[#EBF3FC] border border-[#185FA5]/20 rounded-xl p-4 flex gap-3 font-sans">
+                <Info size={20} className="text-[#185FA5] shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-semibold text-[#185FA5] font-sans">Sinkronisasi Otomatis</p>
+                  <p className="text-xs text-[#185FA5]/80 mt-1 font-sans">
+                    Data Riwayat Melahirkan otomatis terisi dan diperbarui dari <strong>Ringkasan Melahirkan</strong>. Data bersifat read-only dan tidak dapat diubah secara manual.
+                  </p>
+                </div>
+              </div>
+
+              {kelahiranList.length > 0 && (
+                <div className="mb-6 space-y-3">
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest font-sans">Riwayat dari Ringkasan</p>
+                  {kelahiranList.map((k, i) => (
+                    <div key={k.ringkasan.id || i} className="bg-white rounded-xl border border-gray-100 p-4 flex items-center justify-between shadow-sm">
+                      <div>
+                        <p className="font-semibold text-sm text-gray-800 font-sans">Kelahiran ke-{i + 1} ({k.ringkasan.tanggal_melahirkan || "-"})</p>
+                        <p className="text-xs text-gray-500 mt-0.5 font-sans">Cara: {k.ringkasan.cara_melahirkan || "-"} &bull; Penolong: {k.ringkasan.penolong_proses_melahirkan || "-"}</p>
+                      </div>
+                      <span className="bg-[#3B6D11]/10 text-[#3B6D11] text-[10px] px-2 py-1 rounded-md font-medium flex items-center gap-1 font-sans">
+                        <Link2 size={12} /> Tersinkron
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {modeRiwayat === "detail" && (
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+                  <div className="flex items-center gap-2 mb-4 text-[#3B6D11]">
+                    <CheckCircle size={18} />
+                    <h2 className="text-base font-semibold text-gray-800 font-sans">Riwayat Proses Melahirkan</h2>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 bg-[#F7FAFB] rounded-xl p-4">
+                    <DetailItem label="Gravida (G)" value={formRiwayat.g_gravida} />
+                    <DetailItem label="Partus (P)" value={formRiwayat.p_partus} />
+                    <DetailItem label="Abortus (A)" value={formRiwayat.a_abortus} />
+                    <DetailItem label="Tanggal Melahirkan" value={formRiwayat.tanggal_melahirkan} />
+                    <DetailItem label="Faskes" value={formRiwayat.fasyankes_tempat_melahirkan} />
+                    <DetailItem label="Cara Melahirkan" value={formRiwayat.cara_melahirkan_spontan ? "Spontan/Normal" : formRiwayat.tindakan_sc ? "Operasi Caesar" : "-"} />
+                  </div>
+                </div>
+              )}
+              {modeRiwayat === "empty" && (
+                <div className="bg-white rounded-2xl border border-dashed border-gray-200 p-10 text-center">
+                  <p className="font-semibold text-gray-700 mb-1 font-sans">Belum Ada Riwayat Melahirkan</p>
+                  <p className="text-sm text-gray-400 font-sans">Data Riwayat Melahirkan akan otomatis terisi setelah Anda menambahkan data di <strong>Ringkasan Melahirkan</strong>.</p>
+                </div>
+              )}
+            </>
+          )}
+
+          {activeTab === "keterangan" && (
+            <>
+              {modeKeterangan === "detail" && (
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    {canEditKeterangan && (
+                      <button onClick={() => setModeKeterangan("form")} className="text-sm bg-[#BA7517] text-white px-3 py-1.5 rounded-full hover:opacity-90 flex items-center gap-1 font-semibold font-sans"><Edit2 size={13} /> Ubah</button>
+                    )}
+                    <button onClick={handlePrint} className="text-sm bg-[#0F6E56] text-white px-4 py-2 rounded-full hover:opacity-90 flex items-center gap-2 font-semibold font-sans"><Printer size={16} /> Cetak</button>
+                  </div>
+                  <SuratKeteranganLahir data={formKeterangan} />
+                </div>
+              )}
+              {modeKeterangan === "empty" && (
+                <div className="bg-white rounded-2xl border border-dashed border-gray-200 p-10 text-center">
+                  {kelahiranList.length === 0 ? (
+                    <>
+                      <p className="font-semibold text-gray-700 mb-1 font-sans">Belum Ada Data Persalinan</p>
+                      <p className="text-sm text-gray-400 mb-4 font-sans">Silakan isi <strong>Ringkasan Melahirkan</strong> terlebih dahulu untuk dapat membuat Surat Keterangan Lahir yang terhubung otomatis.</p>
+                      <button onClick={() => setActiveTab("ringkasan")} className="bg-[#185FA5] text-white px-5 py-2 rounded-full text-sm font-semibold hover:opacity-90 flex items-center gap-2 mx-auto font-sans">Ke Ringkasan Melahirkan</button>
+                    </>
+                  ) : (
+                    <>
+                      <p className="font-semibold text-gray-700 mb-1 font-sans">Belum Ada Surat Keterangan Lahir</p>
+                      <p className="text-sm text-gray-400 mb-4 font-sans">Silakan pilih kelahiran untuk membuat Surat Keterangan Lahir.</p>
+                      {canEditKeterangan && (
+                        <button onClick={() => setModeKeterangan("form")} className="bg-[#185FA5] text-white px-5 py-2 rounded-full text-sm font-semibold hover:opacity-90 flex items-center gap-2 mx-auto font-sans"><Plus size={16} /> Tambah Data</button>
+                      )}
+                      {!canEditKeterangan && (
+                        <p className="text-xs text-gray-400 mt-2 font-sans">Hanya Bidan yang dapat mengelola Surat Keterangan Lahir.</p>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+              {modeKeterangan === "form" && (
+                <form onSubmit={submitKeterangan} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 font-sans">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-lg font-bold text-[#185FA5] font-sans">Surat Keterangan Lahir</h2>
+                    {keterangan && <button type="button" onClick={() => setModeKeterangan("detail")} className="p-2 rounded-full hover:bg-gray-100"><X size={18} className="text-gray-500" /></button>}
+                  </div>
+
+                  <div className="mb-5 bg-[#EBF3FC] border border-[#185FA5]/20 p-4 rounded-xl flex gap-3">
+                    <Info size={20} className="text-[#185FA5] shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-semibold text-[#185FA5] font-sans">Pengisian Otomatis</p>
+                      <p className="text-xs text-[#185FA5]/80 mt-1 font-sans">Data orang tua telah disinkronkan. Pilih data kelahiran di bawah ini untuk mengisi detail bayi otomatis dari <strong>Ringkasan Melahirkan</strong>.</p>
+                    </div>
+                  </div>
+
+                  {/* Pilih Ringkasan untuk prefill */}
+                  <div className="mb-4">
+                    <label className="block text-xs font-medium mb-1 font-sans">Pilih Data Kelahiran</label>
+                    <select
+                      value={selectedRingkasanId}
+                      onChange={(e) => handlePilihRingkasan(e.target.value)}
+                      className="w-full border-2 border-[#185FA5]/30 rounded-lg px-2 py-2 text-sm focus:ring-2 focus:ring-[#185FA5]/20 font-sans"
+                    >
+                      <option value="">-- Pilih Kelahiran --</option>
+                      {kelahiranList.map((item, idx) => (
+                        <option key={item.ringkasan.id} value={item.ringkasan.id}>
+                          Kelahiran {idx + 1} ({item.ringkasan.tanggal_melahirkan || "tanpa tgl"})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    {[
+                      { label: "Nomor Surat", name: "nomor_surat", type: "text", placeholder: "09.001/PUSKESMAS/V/2024", readOnly: true },
+                      { label: "Nama Bayi", name: "nama_bayi_diberi_nama", type: "text" },
+                      { label: "Tanggal Lahir", name: "tanggal_lahir", type: "date" },
+                      { label: "Hari Lahir", name: "hari_lahir", type: "text", placeholder: "Senin" },
+                      { label: "Pukul Lahir", name: "pukul_lahir", type: "time-select" },
+                      { label: "Anak Ke", name: "anak_ke", type: "number" },
+                      { label: "Usia Gestasi (Mgg)", name: "usia_gestasi_minggu", type: "number" },
+                      { label: "Berat Lahir (gram)", name: "berat_lahir_gram", type: "number" },
+                      { label: "Panjang Badan (cm)", name: "panjang_badan_cm", type: "number" },
+                      { label: "Lingkar Kepala (cm)", name: "lingkar_kepala_cm", type: "number" },
+                      { label: "Nama Ibu", name: "nama_ibu", type: "text" },
+                      { label: "NIK Ibu", name: "nik_ibu", type: "text" },
+                      { label: "Nama Ayah", name: "nama_ayah", type: "text" },
+                      { label: "Pekerjaan", name: "pekerjaan_orang_tua", type: "text" },
+                      { label: "Alamat", name: "alamat_orang_tua", type: "text" },
+                      { label: "Penolong Kelahiran", name: "nama_penolong_kelahiran", type: "text" },
+                      { label: "Lokasi Persalinan", name: "lokasi_persalinan", type: "text" },
+                    ].map(({ label, name, type, placeholder, readOnly }) => {
+                      const isAuto = autoFilledFields.includes(name);
+                      const isLocked = ["nama_ibu", "nik_ibu", "nama_ayah", "pekerjaan_orang_tua", "alamat_orang_tua"].includes(name);
+                      const isReadOnly = readOnly === true;
+                      return (
+                        <div key={name}>
+                          <label className="block text-xs font-medium mb-1 font-sans">{label}</label>
+                          {type === "time-select" ? (
+                            <select name={name} value={formKeterangan[name] || ""}
+                              onChange={(e) => setFormKeterangan((p) => ({ ...p, [name]: e.target.value }))}
+                              disabled={isLocked || isReadOnly}
+                              className={`w-full rounded-lg px-2 py-1.5 text-sm font-sans ${isLocked || isReadOnly ? "bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed" : isAuto ? "border-[#3B6D11] bg-green-50/30 focus:ring-[#3B6D11]/20" : "border focus:ring-[#185FA5]/20"} focus:ring-2 outline-none transition-all`}>
+                              <option value="">-- Pilih --</option>
+                              {Array.from({ length: 24 }, (_, i) => {
+                                const hour = i.toString().padStart(2, '0');
+                                return (
+                                  <option key={hour} value={`${hour}:00`}>{hour}:00</option>
+                                );
+                              })}
+                            </select>
+                          ) : (
+                            <input type={type} name={name} value={formKeterangan[name] || ""} placeholder={placeholder}
+                              onChange={(e) => setFormKeterangan((p) => ({ ...p, [name]: e.target.value }))}
+                              disabled={isLocked || isReadOnly}
+                              readOnly={isReadOnly}
+                              className={`w-full rounded-lg px-2 py-1.5 text-sm font-sans ${isLocked || isReadOnly ? "bg-gray-100 border-gray-200 text-gray-500 cursor-not-allowed" : isAuto ? "border-[#3B6D11] bg-green-50/30 focus:ring-[#3B6D11]/20" : "border focus:ring-[#185FA5]/20"} focus:ring-2 outline-none transition-all`} />
+                          )}
+                        </div>
+                      )
+                    })}
+                    <div>
+                      <label className="block text-xs font-medium mb-1 font-sans">Jenis Kelamin</label>
+                      <select name="jenis_kelamin" value={formKeterangan.jenis_kelamin} onChange={(e) => setFormKeterangan((p) => ({ ...p, jenis_kelamin: e.target.value }))} className={`w-full rounded-lg px-2 py-1.5 text-sm font-sans ${autoFilledFields.includes("jenis_kelamin") ? "border-[#3B6D11] bg-green-50/30 focus:ring-[#3B6D11]/20" : "border focus:ring-[#185FA5]/20"} focus:ring-2 outline-none transition-all`}>
+                        <option value="">-- Pilih --</option><option>Laki-laki</option><option>Perempuan</option>
+                      </select>
+                    </div>
+                    <div><label className="block text-xs font-medium mb-1 font-sans">Jenis Kelahiran</label>
+                      <select name="jenis_kelahiran" value={formKeterangan.jenis_kelahiran} onChange={(e) => setFormKeterangan((p) => ({ ...p, jenis_kelahiran: e.target.value }))} className="w-full border rounded-lg px-2 py-1.5 text-sm focus:ring-2 focus:ring-[#185FA5]/20 outline-none transition-all font-sans">
+                        <option value="">-- Pilih --</option><option>Tunggal</option><option>Kembar 2</option><option>Kembar 3</option><option>Lainnya</option>
+                      </select></div>
+                  </div>
+                  <div className="flex gap-2 pt-4">
+                    <button type="submit" disabled={saving} className="bg-[#3B6D11] text-white px-6 py-2.5 rounded-full font-semibold text-sm flex items-center gap-2 hover:opacity-90 font-sans">
+                      <Save size={16} /> {saving ? "Menyimpan..." : "Simpan"}
+                    </button>
+                  </div>
+                </form>
+              )}
+            </>
+          )}
+        </div>
       </div>
     </MainLayout>
   );
