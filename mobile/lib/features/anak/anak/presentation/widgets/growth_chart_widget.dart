@@ -63,14 +63,7 @@ class _GrowthChartWidgetState extends State<GrowthChartWidget> {
     return list;
   }
 
-  List<FlSpot> _getLine(double Function(MasterStandarModel) selector) {
-    double limitX = widget.selectedTab == 'BB/TB' ? 120.0 : 60.0;
-    final childData = _getChildDataLine();
-    if (childData.isNotEmpty) {
-      double paddingX = widget.selectedTab == 'BB/TB' ? 3.0 : 4.0;
-      limitX = childData.last.x + paddingX;
-    }
-
+  List<FlSpot> _getLine(double Function(MasterStandarModel) selector, double limitX) {
     return widget.masterStandar
         .where((m) => m.nilaiSumbuX <= limitX)
         .map((m) {
@@ -78,8 +71,8 @@ class _GrowthChartWidgetState extends State<GrowthChartWidget> {
     }).toList();
   }
 
-  List<FlSpot> _getChildDataLine() {
-    return _sortedRiwayat.map((r) {
+  List<FlSpot> _getChildDataLine(List<PertumbuhanModel> sortedRiwayat) {
+    return sortedRiwayat.map((r) {
       double x = (widget.selectedTab == 'BB/TB' || widget.selectedTab == 'BB/PB') ? r.tinggiBadan : r.usiaUkurBulan.toDouble();
       double y;
       switch (widget.selectedTab) {
@@ -105,9 +98,7 @@ class _GrowthChartWidgetState extends State<GrowthChartWidget> {
     }).toList();
   }
 
-  Map<String, double> _getAxisRanges() {
-    final childData = _getChildDataLine();
-    final xStep = _xGridInterval;
+  Map<String, double> _getAxisRanges(List<FlSpot> childData, double limitX) {
     final yStep = _yGridInterval;
 
     double minX = double.infinity;
@@ -123,15 +114,15 @@ class _GrowthChartWidgetState extends State<GrowthChartWidget> {
     }
 
     if (_showSd3 && widget.masterStandar.isNotEmpty) {
-      _getLine((m) => m.sd3Neg).forEach(processSpot);
-      _getLine((m) => m.sd3Pos).forEach(processSpot);
+      _getLine((m) => m.sd3Neg, limitX).forEach(processSpot);
+      _getLine((m) => m.sd3Pos, limitX).forEach(processSpot);
     }
     if (_showSd2 && widget.masterStandar.isNotEmpty) {
-      _getLine((m) => m.sd2Neg).forEach(processSpot);
-      _getLine((m) => m.sd2Pos).forEach(processSpot);
+      _getLine((m) => m.sd2Neg, limitX).forEach(processSpot);
+      _getLine((m) => m.sd2Pos, limitX).forEach(processSpot);
     }
     if (_showMedian && widget.masterStandar.isNotEmpty) {
-      _getLine((m) => m.median).forEach(processSpot);
+      _getLine((m) => m.median, limitX).forEach(processSpot);
     }
     if (_showDataAnak && childData.isNotEmpty) {
       childData.forEach(processSpot);
@@ -158,23 +149,30 @@ class _GrowthChartWidgetState extends State<GrowthChartWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final childData = _getChildDataLine();
     final sortedRiwayat = _sortedRiwayat;
-    final ranges = _getAxisRanges();
+    final childData = _getChildDataLine(sortedRiwayat);
+
+    double limitX = widget.selectedTab == 'BB/TB' ? 120.0 : 60.0;
+    if (childData.isNotEmpty) {
+      double paddingX = widget.selectedTab == 'BB/TB' ? 3.0 : 4.0;
+      limitX = childData.last.x + paddingX;
+    }
+
+    final ranges = _getAxisRanges(childData, limitX);
 
     final barData = <LineChartBarData>[];
     int? childIdx;
 
     if (_showSd3) {
       barData.add(LineChartBarData(
-          spots: _getLine((m) => m.sd3Neg),
+          spots: _getLine((m) => m.sd3Neg, limitX),
           color: Colors.black54,
           barWidth: 1.5,
           isCurved: true,
           dashArray: [5, 5],
           dotData: const FlDotData(show: false)));
       barData.add(LineChartBarData(
-          spots: _getLine((m) => m.sd3Pos),
+          spots: _getLine((m) => m.sd3Pos, limitX),
           color: Colors.black54,
           barWidth: 1.5,
           isCurved: true,
@@ -184,14 +182,14 @@ class _GrowthChartWidgetState extends State<GrowthChartWidget> {
 
     if (_showSd2) {
       barData.add(LineChartBarData(
-          spots: _getLine((m) => m.sd2Neg),
+          spots: _getLine((m) => m.sd2Neg, limitX),
           color: Colors.red.withOpacity(0.6),
           barWidth: 1.5,
           isCurved: true,
           dashArray: [4, 4],
           dotData: const FlDotData(show: false)));
       barData.add(LineChartBarData(
-          spots: _getLine((m) => m.sd2Pos),
+          spots: _getLine((m) => m.sd2Pos, limitX),
           color: Colors.red.withOpacity(0.6),
           barWidth: 1.5,
           isCurved: true,
@@ -201,7 +199,7 @@ class _GrowthChartWidgetState extends State<GrowthChartWidget> {
 
     if (_showMedian) {
       barData.add(LineChartBarData(
-          spots: _getLine((m) => m.median),
+          spots: _getLine((m) => m.median, limitX),
           color: const Color(0xFF0F6E56),
           barWidth: 2,
           isCurved: true,
