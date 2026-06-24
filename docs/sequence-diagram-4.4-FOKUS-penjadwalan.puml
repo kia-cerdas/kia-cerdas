@@ -1,0 +1,249 @@
+@startuml Penjadwalan Imunisasi Otomatis Berbasis Rule
+!theme plain
+skinparam responseMessageBelowArrow true
+skinparam backgroundColor #FFFFFF
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 5
+skinparam maxmessagesize 300
+skinparam shadowing true
+
+' Style seperti Visual Paradigm dengan shadow
+skinparam participant {
+    BackgroundColor #E3F2FD
+    BorderColor #1565C0
+    BorderThickness 2
+    FontSize 11
+    FontStyle bold
+    Padding 15
+    shadowing true
+}
+
+skinparam actor {
+    BackgroundColor #E8F5E9
+    BorderColor #2E7D32
+    BorderThickness 2
+    FontStyle bold
+    shadowing true
+}
+
+skinparam database {
+    BackgroundColor #FFF3E0
+    BorderColor #E65100
+    BorderThickness 2
+    FontStyle bold
+    shadowing true
+}
+
+skinparam sequence {
+    ArrowColor #424242
+    ArrowThickness 2
+    LifeLineBorderColor #1565C0
+    LifeLineBorderThickness 2
+    LifeLineBackgroundColor #E3F2FD
+}
+
+skinparam note {
+    BackgroundColor #FFFDE7
+    BorderColor #F57F17
+    BorderThickness 2
+    FontSize 9
+    shadowing true
+}
+
+title **Sequence Diagram 4.4**\nPenjadwalan Imunisasi Otomatis Berbasis Rule (13 Vaksin IDL)
+
+participant "AnakUsecase\n(anak.go)" as AnakUsecase
+participant "ImunisasiUsecase\n(imunisasi_usecase.go)" as ImunisasiUsecase
+participant "ImunisasiRepository\n(imunisasi_repository.go)" as ImunisasiRepo
+participant "AnakRepository\n(anak_repository.go)" as AnakRepo
+participant "Database\n(PostgreSQL)" as DB
+
+note over AnakUsecase
+  **Callback didaftarkan di init.go (line 199):**
+  m.Anak.SetOnAnakCreated(func(anakID int32) {
+    m.GenerateJadwalImunisasiByAnakID(anakID)
+  })
+  
+  **Dipanggil dari:** anak.go line 249
+  Function: CreateAnakDenganPenduduk()
+  Code: go u.onAnakCreated(anakID)
+end note
+
+== 1. Trigger Auto-Generate Jadwal Imunisasi ==
+
+AnakUsecase -> ImunisasiUsecase: go u.onAnakCreated(anakID)\n**[Goroutine - Background Process]**
+activate AnakUsecase
+activate ImunisasiUsecase
+
+note right of AnakUsecase
+  **File:** anak.go
+  **Line:** 249
+  **Code:** go u.onAnakCreated(anakID)
+end note
+
+ImunisasiUsecase -> ImunisasiUsecase: GenerateJadwalImunisasiByAnakID(anakID)
+
+note right of ImunisasiUsecase
+  **File:** imunisasi_usecase.go
+  **Line:** 170
+  **Function:** GenerateJadwalImunisasiByAnakID
+end note
+
+== 2. Ambil Data Anak & Tanggal Lahir ==
+
+ImunisasiUsecase -> AnakRepo: GetAnakByID(anakID)
+activate AnakRepo
+
+note right of AnakRepo
+  **File:** anak_repository.go
+  **Line:** ~70
+  **Function:** GetAnakByID
+end note
+
+AnakRepo -> DB: SELECT * FROM anak a\nJOIN penduduk p ON p.id = a.penduduk_id\nWHERE a.id = ?
+activate DB
+DB --> AnakRepo: anak (dengan tanggal_lahir)
+deactivate DB
+deactivate AnakRepo
+
+note right of ImunisasiUsecase
+  **Extract tanggal lahir:**
+  tanggalLahir := anak.Penduduk.TanggalLahir
+end note
+
+== 3. Ambil 13 Aturan Vaksin IDL ==
+
+ImunisasiUsecase -> ImunisasiRepo: GetAturanVaksinAnak()
+activate ImunisasiRepo
+
+note right of ImunisasiRepo
+  **File:** imunisasi_repository.go
+  **Line:** ~45
+  **Function:** GetAturanVaksinAnak
+end note
+
+ImunisasiRepo -> DB: SELECT * FROM aturan_vaksin_anak\nWHERE deleted_at IS NULL\nORDER BY id ASC
+activate DB
+DB --> ImunisasiRepo: []AturanVaksinAnak (13 rules)
+deactivate DB
+deactivate ImunisasiRepo
+
+note right of ImunisasiUsecase
+  **13 Vaksin IDL:**
+  1. HB-0 (min_usia_hari: 0)
+  2. BCG (min_usia_hari: 30)
+  3. Polio 1 (min_usia_hari: 30)
+  4. DPT-HB-Hib 1 (min_usia_hari: 60)
+  5. Polio 2 (min_usia_hari: 60)
+  6. DPT-HB-Hib 2 (min_usia_hari: 90)
+  7. Polio 3 (min_usia_hari: 90)
+  8. DPT-HB-Hib 3 (min_usia_hari: 120)
+  9. Polio 4 (min_usia_hari: 120)
+  10. IPV (min_usia_hari: 120)
+  11. Campak (min_usia_hari: 270)
+  12. MR 1 (min_usia_hari: 270)
+  13. MR 2 (min_usia_hari: 540)
+end note
+
+== 4. Loop: Generate Jadwal untuk Setiap Vaksin ==
+
+loop Untuk setiap rule dalam aturanList (13 kali iterasi)
+    
+    ImunisasiUsecase -> ImunisasiRepo: IsJadwalExist(anakID, dosisVaksinID)
+    activate ImunisasiRepo
+    
+    note right of ImunisasiRepo
+      **File:** imunisasi_repository.go
+      **Line:** ~65
+      **Function:** IsJadwalExist
+    end note
+    
+    ImunisasiRepo -> DB: SELECT COUNT(*) FROM jadwal_imunisasi_anak\nWHERE id_anak = ? AND id_dosis_vaksin = ?
+    activate DB
+    DB --> ImunisasiRepo: 0 (belum ada)
+    deactivate DB
+    deactivate ImunisasiRepo
+    
+    note right of ImunisasiUsecase
+      **Hitung Tanggal Estimasi:**
+      tanggalEstimasi = tanggalLahir.AddDate(
+        0, 0, rule.MinUsiaHari
+      )
+      
+      **Contoh:**
+      - Anak lahir: 2026-06-24
+      - HB-0: 2026-06-24 + 0 hari = 2026-06-24
+      - BCG: 2026-06-24 + 30 hari = 2026-07-24
+      - Polio 1: 2026-06-24 + 30 hari = 2026-07-24
+      - DPT-HB-Hib 1: 2026-06-24 + 60 hari = 2026-08-23
+    end note
+    
+    note right of ImunisasiUsecase
+      **Hitung Status Jadwal:**
+      diff = DATEDIFF(tanggalEstimasi, tanggalLahir)
+      
+      **Status:**
+      - diff >= 1 → Status 1 (Belum)
+      - diff == 0 → Status 2 (Hari Ini)
+      - -6 <= diff < 0 → Status 3 (Terlambat <7 hari)
+      - -14 <= diff < -6 → Status 4 (Terlambat 7-14 hari)
+      - diff < -14 → Status 5 (Terlewat)
+    end note
+    
+    ImunisasiUsecase -> ImunisasiRepo: CreateJadwalImunisasiAnak(jadwal)
+    activate ImunisasiRepo
+    
+    note right of ImunisasiRepo
+      **File:** imunisasi_repository.go
+      **Line:** ~115
+      **Function:** CreateJadwalImunisasiAnak
+    end note
+    
+    ImunisasiRepo -> DB: INSERT INTO jadwal_imunisasi_anak\n(id_anak, id_dosis_vaksin,\ntanggal_estimasi, id_status_jadwal)\nVALUES (?, ?, ?, ?)
+    activate DB
+    DB --> ImunisasiRepo: ID jadwal baru
+    deactivate DB
+    deactivate ImunisasiRepo
+    
+end
+
+== 5. Update Status Jadwal ==
+
+ImunisasiUsecase -> ImunisasiRepo: UpdateJadwalStatus()
+activate ImunisasiRepo
+
+note right of ImunisasiRepo
+  **File:** imunisasi_repository.go
+  **Line:** ~122
+  **Function:** UpdateJadwalStatus
+end note
+
+ImunisasiRepo -> DB: SELECT jia.id, jia.tanggal_estimasi,\np.tanggal_lahir, jia.id_status_jadwal\nFROM jadwal_imunisasi_anak jia\nJOIN anak a ON a.id = jia.anak_id\nJOIN penduduk p ON p.id = a.penduduk_id
+activate DB
+DB --> ImunisasiRepo: List jadwal dengan tanggal lahir
+deactivate DB
+
+note right of ImunisasiRepo
+  **Loop setiap jadwal:**
+  Hitung diff = tanggalEstimasi - tanggalLahir
+  Update status berdasarkan diff
+end note
+
+ImunisasiRepo -> DB: UPDATE jadwal_imunisasi_anak\nSET id_status_jadwal = [calculated]\nWHERE id = ?
+activate DB
+DB --> ImunisasiRepo: Updated (13 records)
+deactivate DB
+deactivate ImunisasiRepo
+
+ImunisasiUsecase --> AnakUsecase: Generation Complete
+deactivate ImunisasiUsecase
+deactivate AnakUsecase
+
+note right of DB
+  **Result:**
+  - 13 record baru di tabel jadwal_imunisasi_anak
+  - Auto-generate berjalan di background
+    (goroutine, tidak memblokir proses utama)
+end note
+
+@enduml

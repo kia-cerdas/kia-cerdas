@@ -103,6 +103,14 @@ const headerByPath = (pathname) => {
     };
   }
 
+  if (pathname.startsWith("/data-anak/pelayanan-Imunisasi")) {
+    return {
+      title: "Pencatatan Imunisasi Anak",
+      subtitle: "1. Lihat tabel imunisasi anak untuk mengetahui status vaksin yang sudah dan belum diberikan.\n2. Klik tombol 'Paraf Imunisasi' untuk mencatat vaksin yang baru saja diberikan.\n3. Pilih vaksin yang telah diberikan, isi tanggal pemberian, nomor batch, dan catatan jika diperlukan.\n4. Simpan data untuk menyelesaikan pencatatan. Data akan tercatat dalam sistem dan dapat dilihat di kartu imunisasi anak.",
+      variant: "hero",
+    };
+  }
+
   if (pathname.startsWith("/daftar-anak") || pathname.startsWith("/data-anak")) {
     return {
       title: "Data Anak",
