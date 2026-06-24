@@ -381,7 +381,19 @@ func (m *Main) Login(req *models.LoginRequest) (*models.LoginResponse, error) {
 	// ========== AMBIL DESA ==========
 	var desaID *int32
 	var desaNama string
-	if user.PendudukID != nil {
+	
+	// Untuk bidan, ambil desa dari posyandu tempat bertugas
+	if normalizeRoleName(user.Role.Name) == "Bidan" && posyanduID != nil {
+		posyandu, err := m.repository.Posyandu.FindByID(*posyanduID)
+		if err == nil && posyandu != nil && posyandu.DesaID != nil {
+			desaID = posyandu.DesaID
+			desa, err := m.repository.Desa.FindByID(*posyandu.DesaID)
+			if err == nil && desa != nil {
+				desaNama = desa.NamaDesa
+			}
+		}
+	} else if user.PendudukID != nil {
+		// Untuk role lain, ambil desa dari tempat tinggal penduduk
 		penduduk, err := m.repository.Kependudukan.FindByID(int32(*user.PendudukID))
 		if err == nil && penduduk != nil && penduduk.DesaID != nil {
 			desaID = penduduk.DesaID

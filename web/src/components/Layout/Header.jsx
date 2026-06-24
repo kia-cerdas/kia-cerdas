@@ -459,7 +459,7 @@ const Header = ({ onToggleSidebar, isSidebarOpen }) => {
                   {user?.name || "Pengguna"}
                 </p>
                 <p className="text-[10px] text-white/65 mt-0.5">
-                  {formatRole(user?.role)}
+                  {user?.desa_nama || user?.desa_name || formatRole(user?.role)}
                 </p>
               </div>
               <ChevronDown
