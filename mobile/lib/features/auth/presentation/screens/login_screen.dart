@@ -57,39 +57,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
       final role = AuthSession.role?.toLowerCase();
 
-      // Popup login berhasil
-      await showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: Row(
-            children: [
-              Icon(Icons.check_circle, color: Colors.green, size: 28),
-              const SizedBox(width: 8),
-              const Text(
-                'Login Berhasil!',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
-          content: Text(
-            'Selamat datang, ${AuthSession.userName ?? "User"}!',
-            style: const TextStyle(fontSize: 14, color: Colors.black87),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('OK'),
-            ),
-          ],
-        ),
-      );
+      // Tampilkan popup sukses dan tunggu sampai selesai
+      await _showSuccessPopup();
 
       if (!mounted) return;
 
+      // Setelah popup selesai, lanjut ke dashboard
       Widget destination;
       if (role == 'kader') {
         destination = const DashboardKaderScreen();
@@ -115,6 +88,7 @@ class _LoginScreenState extends State<LoginScreen> {
       // Popup login gagal
       showDialog(
         context: context,
+        barrierDismissible: false, // Tidak bisa ditutup dengan sentuhan di luar
         builder: (context) => AlertDialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -150,6 +124,45 @@ class _LoginScreenState extends State<LoginScreen> {
           _loading = false;
         });
       }
+    }
+  }
+
+  Future<void> _showSuccessPopup() async {
+    // Tampilkan dialog tanpa tombol OK dan tidak bisa ditutup dengan sentuhan
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Tidak bisa ditutup dengan sentuhan di luar
+      builder: (context) => WillPopScope(
+        onWillPop: () async => false, // Tidak bisa ditutup dengan tombol back
+        child: AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.check_circle, color: Colors.green, size: 28),
+              const SizedBox(width: 8),
+              const Text(
+                'Login Berhasil!',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          content: Text(
+            'Selamat datang, ${AuthSession.userName ?? "User"}!',
+            style: const TextStyle(fontSize: 14, color: Colors.black87),
+          ),
+          // Tidak ada actions (tanpa tombol OK)
+        ),
+      ),
+    );
+
+    // Tunggu selama 2 detik
+    await Future.delayed(const Duration(seconds: 2));
+
+    // Tutup popup setelah durasi selesai
+    if (Navigator.of(context, rootNavigator: true).canPop()) {
+      Navigator.of(context, rootNavigator: true).pop();
     }
   }
 
