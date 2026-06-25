@@ -415,10 +415,18 @@ func (m *Main) AddCatatanPertumbuhan(req *models.CreatePertumbuhanRequest) (*mod
 		fmt.Println("Warning: Gagal melakukan prediksi otomatis (ML service offline/error):", errPred)
 		
 		// Fallback: Tentukan status stunting berdasarkan Z-score TB/U (Standar Antropometri WHO)
-		// Jika Z-Score TB/U < -2.0, dikategorikan Stunting. Jika >= -2.0, dikategorikan Normal.
+		// 4 kelas: Normal, Risiko Stunting Ringan, Risiko Stunting Sedang, Stunting
 		fallbackStatus := "Normal"
-		if catatan.ZScoreTBU < -2.0 {
+		fallbackClass := "NORMAL"
+		if catatan.ZScoreTBU < -3.0 {
 			fallbackStatus = "Stunting"
+			fallbackClass = "STUNTING"
+		} else if catatan.ZScoreTBU < -2.0 {
+			fallbackStatus = "Risiko Stunting Sedang"
+			fallbackClass = "AT_RISK_HIGH"
+		} else if catatan.ZScoreTBU < -1.5 {
+			fallbackStatus = "Risiko Stunting Ringan"
+			fallbackClass = "AT_RISK"
 		}
 
 		// Buat objek mock prediksi stunting agar frontend tetap mendapatkan feedback
@@ -430,7 +438,7 @@ func (m *Main) AddCatatanPertumbuhan(req *models.CreatePertumbuhanRequest) (*mod
 			HasilLila:      catatan.HasilLila,
 			UsiaUkurBulan:  catatan.UsiaUkurBulan,
 			StatusPrediksi: fallbackStatus,
-			Classification: fallbackStatus,
+			Classification: fallbackClass,
 			ZScoreTBU:      catatan.ZScoreTBU,
 			StatusTBU:      catatan.StatusTBU,
 			Rekomendasi:    "Prediksi otomatis dialihkan menggunakan perhitungan Z-Score TB/U (Standar Antropometri WHO) karena ML Service offline.",
@@ -556,8 +564,16 @@ func (m *Main) CreateInitialGrowthRecord(anakID int32) error {
 		
 		// Fallback: Tentukan status stunting berdasarkan Z-score TB/U (Standar Antropometri WHO)
 		fallbackStatus := "Normal"
-		if catatan.ZScoreTBU < -2.0 {
+		fallbackClass := "NORMAL"
+		if catatan.ZScoreTBU < -3.0 {
 			fallbackStatus = "Stunting"
+			fallbackClass = "STUNTING"
+		} else if catatan.ZScoreTBU < -2.0 {
+			fallbackStatus = "Risiko Stunting Sedang"
+			fallbackClass = "AT_RISK_HIGH"
+		} else if catatan.ZScoreTBU < -1.5 {
+			fallbackStatus = "Risiko Stunting Ringan"
+			fallbackClass = "AT_RISK"
 		}
 
 		mockPrediksi := &models.PrediksiStunting{
@@ -568,7 +584,7 @@ func (m *Main) CreateInitialGrowthRecord(anakID int32) error {
 			HasilLila:      hasilLila,
 			UsiaUkurBulan:  0,
 			StatusPrediksi: fallbackStatus,
-			Classification: fallbackStatus,
+			Classification: fallbackClass,
 			ZScoreTBU:      catatan.ZScoreTBU,
 			StatusTBU:      catatan.StatusTBU,
 			Rekomendasi:    "Prediksi otomatis dialihkan menggunakan perhitungan Z-Score TB/U (Standar Antropometri WHO) karena ML Service offline.",
@@ -985,8 +1001,11 @@ func (m *Main) EnsurePrediksiForAnak(anakID int32) error {
 			fallbackStatus = "Stunting"
 			classification = "STUNTING"
 		} else if zScoreTBU < -2.0 {
-			fallbackStatus = "Stunting"
-			classification = "STUNTING"
+			fallbackStatus = "Risiko Stunting Sedang"
+			classification = "AT_RISK_HIGH"
+		} else if zScoreTBU < -1.5 {
+			fallbackStatus = "Risiko Stunting Ringan"
+			classification = "AT_RISK"
 		}
 		return &models.PrediksiStunting{
 			AnakID:         anakID,

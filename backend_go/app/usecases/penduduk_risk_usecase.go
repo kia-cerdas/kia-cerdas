@@ -55,8 +55,10 @@ func (u *pendudukRiskUsecase) GetPendudukByRisk(kelompok, risiko string, posyand
 				switch a.StatusPrediksi {
 				case "Stunting":
 					ris = "Tinggi"
-				case "Risiko Stunting":
+				case "Risiko Stunting Sedang":
 					ris = "Sedang"
+				case "Risiko Stunting Ringan":
+					ris = "Rendah"
 				default:
 					ris = "Normal"
 				}

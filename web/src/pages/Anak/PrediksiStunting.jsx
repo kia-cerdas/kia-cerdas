@@ -22,10 +22,16 @@ function StatusBadge({ status }) {
         🟢 Normal
       </span>
     );
-  if (status === "Risiko Stunting")
+  if (status === "Risiko Stunting Ringan")
     return (
-      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700 border border-amber-200">
-        🟡 Risiko Stunting
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-700 border border-yellow-200">
+        🟡 Risiko Stunting Ringan
+      </span>
+    );
+  if (status === "Risiko Stunting Sedang")
+    return (
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-orange-100 text-orange-700 border border-orange-200">
+        🟠 Risiko Stunting Sedang
       </span>
     );
   return (
@@ -47,32 +53,46 @@ function ResultCard({ status }) {
       desc: "Tumbuh kembang anak berada dalam kondisi baik.",
       badge: "bg-emerald-500",
     },
-    "Risiko Stunting": {
-      bg: "from-amber-50 to-amber-100/50",
-      border: "border-amber-200",
-      icon: <AlertTriangle size={56} className="text-amber-500" />,
-      label: "Risiko Stunting",
-      desc: "Anak berisiko mengalami stunting. Segera lakukan intervensi gizi.",
-      badge: "bg-amber-500",
+    "Risiko Stunting Ringan": {
+      bg: "from-yellow-50 to-yellow-100/50",
+      border: "border-yellow-200",
+      icon: <AlertTriangle size={56} className="text-yellow-500" />,
+      label: "Risiko Stunting Ringan",
+      desc: "Terdapat indikasi awal perlambatan pertumbuhan. Perlu evaluasi asupan gizi.",
+      badge: "bg-yellow-500",
+    },
+    "Risiko Stunting Sedang": {
+      bg: "from-orange-50 to-orange-100/50",
+      border: "border-orange-200",
+      icon: <AlertTriangle size={56} className="text-orange-500" />,
+      label: "Risiko Stunting Sedang",
+      desc: "Risiko stunting sedang. Konsultasikan dengan ahli gizi untuk intervensi PMT.",
+      badge: "bg-orange-500",
     },
     Stunting: {
       bg: "from-red-50 to-red-100/50",
       border: "border-red-200",
       icon: <XCircle size={56} className="text-red-500" />,
       label: "Stunting",
-      desc: "Anak terdeteksi stunting. Diperlukan penanganan segera.",
+      desc: "Risiko stunting tinggi terdeteksi. Diperlukan penanganan segera oleh tenaga medis.",
       badge: "bg-red-500",
     },
   };
 
   const c = config[status] || config["Normal"];
+  const emojiMap = {
+    Normal: "🟢",
+    "Risiko Stunting Ringan": "🟡",
+    "Risiko Stunting Sedang": "🟠",
+    Stunting: "🔴",
+  };
 
   return (
     <div className={`bg-gradient-to-br ${c.bg} border ${c.border} rounded-2xl p-6 flex flex-col items-center gap-3 text-center`}>
       {c.icon}
       <h3 className="text-xl font-black text-gray-800">Hasil Prediksi</h3>
       <span className={`px-4 py-2 rounded-full text-white font-bold text-base ${c.badge}`}>
-        {c.label === "Normal" ? "🟢" : c.label === "Risiko Stunting" ? "🟡" : "🔴"} {c.label}
+        {emojiMap[c.label] || "🟢"} {c.label}
       </span>
       <p className="text-sm text-gray-600 max-w-xs">{c.desc}</p>
     </div>

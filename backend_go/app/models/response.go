@@ -56,6 +56,9 @@ type AnakResponse struct {
 
 	StatusPrediksi string `json:"status_prediksi"` // selalu dikirim, kosong jika belum ada prediksi
 
+	// Jumlah catatan pertumbuhan (antropometri) yang dimiliki anak
+	JumlahPengukuran int `json:"jumlah_pengukuran"` // jumlah catatan pertumbuhan
+
 	// TAMBAHKAN INI
 	Kehamilan *KehamilanSimple `json:"kehamilan,omitempty"`
 }
