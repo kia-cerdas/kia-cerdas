@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState, useCallback } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import Swal from "sweetalert2";
 import ImageUploader from "../../components/ImageUploader";
 import MainLayout from "../../components/Layout/MainLayout";
@@ -716,24 +716,6 @@ export default function EdukasiDigitalCrudPage({
             )}
             <div className="flex flex-col sm:flex-row sm:items-center gap-3">
               <h1 className="text-[24px] font-bold text-slate-800">{title}</h1>
-              {view !== "form" && ["edukasi-mpasi", "edukasi-mpasi-aturan-porsi", "edukasi-mpasi-jadwal-harian", "edukasi-mpasi-resep"].includes(resourcePath) && (
-                <select
-                  value={resourcePath}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (val === "edukasi-mpasi") navigate("/edukasi-digital/mpasi");
-                    else if (val === "edukasi-mpasi-aturan-porsi") navigate("/edukasi-digital/mpasi-aturan-porsi");
-                    else if (val === "edukasi-mpasi-jadwal-harian") navigate("/edukasi-digital/mpasi-jadwal-harian");
-                    else if (val === "edukasi-mpasi-resep") navigate("/edukasi-digital/mpasi-resep");
-                  }}
-                  className="px-3 py-1.5 border border-slate-200 rounded-xl bg-white text-slate-700 text-[14px] font-semibold focus:outline-none focus:border-[#185FA5] focus:ring-1 focus:ring-[#185FA5] transition-colors shadow-sm cursor-pointer"
-                >
-                  <option value="edukasi-mpasi">Menu: Materi MPASI</option>
-                  <option value="edukasi-mpasi-aturan-porsi">Menu: Aturan Porsi</option>
-                  <option value="edukasi-mpasi-jadwal-harian">Menu: Jadwal Harian</option>
-                  <option value="edukasi-mpasi-resep">Menu: Resep MPASI</option>
-                </select>
-              )}
             </div>
           </div>
           {view !== "form" && (

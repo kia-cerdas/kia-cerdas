@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+﻿import React, { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Activity,
@@ -331,7 +331,7 @@ export default function LandingPage() {
               {/* Text Content */}
               <div className="lg:col-span-6 flex flex-col items-start text-left">
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary-50 border border-primary-100 text-primary-600 text-xs font-semibold uppercase tracking-wider mb-6">
-                  <Sparkles size={14} className="animate-pulse" />
+                  <Sparkles size={14} />
                   Sistem Informasi KIA Terintegrasi
                 </div>
 
@@ -349,11 +349,11 @@ export default function LandingPage() {
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto mb-10">
                   <button
                     onClick={handleDownload}
-                    className="px-8 py-4 bg-primary hover:bg-primary-600 text-white font-bold rounded-2xl shadow-lg shadow-primary/25 hover:shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-2.5 group text-base"
+                    className="px-8 py-4 bg-primary hover:bg-primary-600 text-white font-bold rounded-2xl shadow-lg shadow-primary/25 flex items-center justify-center gap-2.5 group text-base"
                   >
                     <Download size={20} />
                     Unduh Gratis
-                    <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                    <ArrowRight size={16} className="group-hover:translate-x-1" />
                   </button>
                 </div>
 
@@ -369,7 +369,7 @@ export default function LandingPage() {
               {/* Phone Mockups */}
               <div className="lg:col-span-6 flex justify-center relative select-none min-h-[500px] sm:min-h-[560px]">
                 {/* Background glow */}
-                <div className="absolute top-[15%] left-[15%] w-[70%] h-[70%] bg-gradient-to-tr from-primary-200/40 to-blue-200/30 rounded-[40%_60%_55%_45%_/_55%_45%_55%_45%] filter blur-3xl z-0 animate-pulse" style={{ animationDuration: "6s" }} />
+                <div className="absolute top-[15%] left-[15%] w-[70%] h-[70%] bg-gradient-to-tr from-primary-200/40 to-blue-200/30 rounded-[40%_60%_55%_45%_/_55%_45%_55%_45%] filter blur-3xl z-0" />
 
                 {/* Main Phone - App Beranda */}
                 <div className="relative z-20">
@@ -556,7 +556,7 @@ export default function LandingPage() {
                 </div>
 
                 {/* Floating badges */}
-                <div className="absolute top-4 left-0 z-30 hidden lg:block animate-bounce" style={{ animationDuration: "3s" }}>
+                <div className="absolute top-4 left-0 z-30 hidden lg:block">
                   <div className="bg-white rounded-2xl shadow-xl border border-slate-100 px-4 py-3 flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
                       <CheckCircle size={20} className="text-emerald-500" />
@@ -568,7 +568,7 @@ export default function LandingPage() {
                   </div>
                 </div>
 
-                <div className="absolute bottom-8 left-4 z-30 hidden lg:block animate-bounce" style={{ animationDuration: "4s", animationDelay: "1s" }}>
+                <div className="absolute bottom-8 left-4 z-30 hidden lg:block">
                   <div className="bg-white rounded-2xl shadow-xl border border-slate-100 px-4 py-3 flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
                       <Bell size={20} className="text-amber-500" />
@@ -577,196 +577,6 @@ export default function LandingPage() {
                       <p className="text-xs font-bold text-slate-800">Imunisasi BCG</p>
                       <p className="text-[10px] text-amber-500 font-medium">Jadwal: 15 Juni 2026</p>
                     </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ═══════════════════════════════════════════════════ */}
-        {/* APP FEATURES SHOWCASE */}
-        {/* ═══════════════════════════════════════════════════ */}
-        <section className="py-20 md:py-28 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center max-w-3xl mx-auto mb-16">
-              <p className="text-sm font-bold text-primary uppercase tracking-widest mb-3">Fitur Unggulan Sistem</p>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-800 tracking-tight mb-4">
-                Solusi Kesehatan Ibu dan Anak Terintegrasi
-              </h2>
-              <p className="text-slate-500 text-base leading-relaxed">
-                Dari pemantauan kehamilan (ANC), pencatatan posyandu digital oleh kader, hingga deteksi stunting berbasis AI — dirancang khusus untuk memfasilitasi peran orang tua, bidan, dan kader posyandu.
-              </p>
-            </div>
-
-            {/* Interactive Feature Tabs */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-              {/* Feature List */}
-              <div className="lg:col-span-5 flex flex-col gap-3">
-                {appFeatures.map((f, idx) => {
-                  const isActive = activeFeature === idx;
-                  const Icon = f.icon;
-                  const colorMap = {
-                    primary: { bg: "bg-primary-50", icon: "text-primary", border: "border-primary-200", activeBg: "bg-primary-50/80" },
-                    rose: { bg: "bg-rose-50", icon: "text-rose-500", border: "border-rose-200", activeBg: "bg-rose-50/80" },
-                    amber: { bg: "bg-amber-50", icon: "text-amber-500", border: "border-amber-200", activeBg: "bg-amber-50/80" },
-                    violet: { bg: "bg-violet-50", icon: "text-violet-500", border: "border-violet-200", activeBg: "bg-violet-50/80" },
-                  };
-                  const c = colorMap[f.color];
-
-                  return (
-                    <button
-                      key={idx}
-                      onClick={() => setActiveFeature(idx)}
-                      className={`w-full text-left p-5 rounded-2xl border-2 transition-all duration-300 group ${isActive
-                        ? `${c.activeBg} ${c.border} shadow-md`
-                        : "bg-white border-slate-100 hover:border-slate-200 hover:shadow-sm"
-                        }`}
-                    >
-                      <div className="flex items-start gap-4">
-                        <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${isActive ? c.bg : 'bg-slate-50'}`}>
-                          <Icon size={22} className={isActive ? c.icon : 'text-slate-400'} />
-                        </div>
-                        <div>
-                          <h3 className={`font-bold text-base mb-1 transition-colors ${isActive ? 'text-slate-800' : 'text-slate-600'}`}>
-                            {f.title}
-                          </h3>
-                          <p className={`text-sm leading-relaxed transition-colors ${isActive ? 'text-slate-600' : 'text-slate-400'}`}>
-                            {f.desc}
-                          </p>
-                        </div>
-                      </div>
-                      {isActive && (
-                        <div className={`mt-3 ml-15 h-1 rounded-full ${c.bg}`}>
-                          <div className={`h-full rounded-full bg-gradient-to-r from-primary to-primary-400 animate-[grow_4s_linear]`} style={{ width: '100%' }} />
-                        </div>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Feature Preview */}
-              <div className="lg:col-span-7 flex justify-center">
-                <div className="relative">
-                  {/* Decorative rings */}
-                  <div className="absolute -inset-16 rounded-full border-2 border-dashed border-primary-100/50 z-0" />
-                  <div className="absolute -inset-8 rounded-full border border-primary-100/30 z-0" />
-
-                  {/* Feature content cards */}
-                  <div className="relative z-10 bg-gradient-to-br from-primary-50 to-blue-50 rounded-3xl p-8 sm:p-12 border border-primary-100/50 shadow-lg shadow-primary-100/20">
-                    {activeFeature === 0 && (
-                      <div className="text-center animate-in fade-in duration-500">
-                        <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-primary-100/80 mb-6">
-                          <Activity size={36} className="text-primary" />
-                        </div>
-                        <h3 className="text-xl font-bold text-slate-800 mb-3">Grafik Pertumbuhan WHO</h3>
-                        <p className="text-sm text-slate-500 mb-6 max-w-sm mx-auto">Pantau BB/U, PB/U, LK/U, BB/PB, dan IMT/U dengan kurva standar WHO dan perhitungan z-score otomatis.</p>
-                        <div className="grid grid-cols-5 gap-2 max-w-xs mx-auto">
-                          {["BB/U", "BB/PB", "PB/U", "LK/U", "IMT/U"].map((t, i) => (
-                            <div key={i} className={`py-2 rounded-xl text-xs font-bold text-center ${i === 0 ? 'bg-primary text-white' : 'bg-white text-slate-500 border border-slate-200'}`}>
-                              {t}
-                            </div>
-                          ))}
-                        </div>
-                        {/* Mini chart preview */}
-                        <div className="mt-6 bg-white rounded-2xl p-4 border border-slate-100 shadow-sm">
-                          <svg viewBox="0 0 280 80" className="w-full">
-                            <path d="M10 70 Q70 55 140 40 T270 15" stroke="#22C55E" strokeWidth="2" fill="none" />
-                            <path d="M10 60 Q70 48 140 35 T270 8" stroke="#EF4444" strokeWidth="1" strokeDasharray="4 3" fill="none" />
-                            <path d="M10 75 Q70 65 140 50 T270 30" stroke="#EF4444" strokeWidth="1" strokeDasharray="4 3" fill="none" />
-                            <circle cx="50" cy="65" r="3" fill="#185FA5" />
-                            <circle cx="90" cy="58" r="3" fill="#185FA5" />
-                            <circle cx="130" cy="48" r="3" fill="#185FA5" />
-                            <circle cx="170" cy="38" r="3" fill="#22C55E" />
-                            <circle cx="210" cy="30" r="3" fill="#22C55E" />
-                            <polyline points="50,65 90,58 130,48 170,38 210,30" stroke="#185FA5" strokeWidth="1.5" fill="none" />
-                          </svg>
-                          <div className="flex items-center justify-center gap-4 mt-2">
-                            <span className="flex items-center gap-1 text-[10px] text-slate-500"><span className="w-3 h-0.5 bg-emerald-500 rounded" /> Median</span>
-                            <span className="flex items-center gap-1 text-[10px] text-slate-500"><span className="w-3 h-0.5 bg-primary rounded" /> Data Anak</span>
-                            <span className="flex items-center gap-1 text-[10px] text-slate-500"><span className="w-3 h-0.5 bg-red-400 rounded border-dashed" /> ±2 SD</span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                    {activeFeature === 1 && (
-                      <div className="text-center animate-in fade-in duration-500">
-                        <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-rose-100/80 mb-6">
-                          <Heart size={36} className="text-rose-500" />
-                        </div>
-                        <h3 className="text-xl font-bold text-slate-800 mb-3">Pemeriksaan Kehamilan</h3>
-                        <p className="text-sm text-slate-500 mb-6 max-w-sm mx-auto">Rekam data ANC lengkap: tekanan darah, berat badan, tinggi fundus, detak jantung janin, dan laboratorium.</p>
-                        <div className="grid grid-cols-2 gap-3 max-w-xs mx-auto">
-                          {[
-                            { label: "Tekanan Darah", value: "120/80", icon: Heart },
-                            { label: "Berat Badan", value: "68 kg", icon: TrendingUp },
-                            { label: "DJJ Janin", value: "142 bpm", icon: Activity },
-                            { label: "Usia Kandungan", value: "28 Minggu", icon: Calendar }
-                          ].map((item, i) => (
-                            <div key={i} className="bg-white rounded-xl p-3 border border-slate-100 text-center">
-                              <item.icon size={18} className="text-rose-400 mx-auto mb-1" />
-                              <p className="text-lg font-bold text-slate-800">{item.value}</p>
-                              <p className="text-[10px] text-slate-400 font-medium">{item.label}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    {activeFeature === 2 && (
-                      <div className="text-center animate-in fade-in duration-500">
-                        <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-amber-100/80 mb-6">
-                          <Utensils size={36} className="text-amber-500" />
-                        </div>
-                        <h3 className="text-xl font-bold text-slate-800 mb-3">Menu MPASI Bergizi</h3>
-                        <p className="text-sm text-slate-500 mb-6 max-w-sm mx-auto">Resep MPASI sesuai usia bayi lengkap dengan kalori, porsi, dan waktu persiapan yang praktis.</p>
-                        <div className="flex flex-col gap-3 max-w-sm mx-auto">
-                          {[
-                            { name: "Bubur Nasi Ayam Wortel", age: "6-8 bln", kcal: "120 kkal", time: "15 mnt" },
-                            { name: "Pure Kentang Brokoli", age: "6-8 bln", kcal: "95 kkal", time: "10 mnt" },
-                            { name: "Nasi Tim Ikan Salmon", age: "9-12 bln", kcal: "180 kkal", time: "20 mnt" }
-                          ].map((r, i) => (
-                            <div key={i} className="bg-white rounded-xl p-3 border border-slate-100 flex items-center gap-3 text-left">
-                              <div className="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center text-xl flex-shrink-0">🥣</div>
-                              <div className="flex-grow min-w-0">
-                                <p className="text-xs font-bold text-slate-700 truncate">{r.name}</p>
-                                <p className="text-[10px] text-slate-400">{r.age} · {r.kcal} · {r.time}</p>
-                              </div>
-                              <ChevronRight size={14} className="text-slate-300 flex-shrink-0" />
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    {activeFeature === 3 && (
-                      <div className="text-center animate-in fade-in duration-500">
-                        <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-violet-100/80 mb-6">
-                          <Brain size={36} className="text-violet-500" />
-                        </div>
-                        <h3 className="text-xl font-bold text-slate-800 mb-3">Deteksi Stunting AI</h3>
-                        <p className="text-sm text-slate-500 mb-6 max-w-sm mx-auto">Algoritma Machine Learning menganalisis data antropometri dan memberikan peringatan dini risiko stunting.</p>
-                        <div className="bg-white rounded-2xl p-5 border border-slate-100 max-w-xs mx-auto">
-                          <div className="flex items-center justify-between mb-4">
-                            <span className="text-xs font-bold text-slate-500">Hasil Analisis AI</span>
-                            <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[10px] font-bold rounded-full">Akurasi 94.2%</span>
-                          </div>
-                          <div className="space-y-3">
-                            {[
-                              { label: "Berat Badan", status: "Normal", color: "emerald" },
-                              { label: "Tinggi Badan", status: "Normal", color: "emerald" },
-                              { label: "Risiko Stunting", status: "Rendah", color: "emerald" },
-                            ].map((r, i) => (
-                              <div key={i} className="flex items-center justify-between">
-                                <span className="text-xs text-slate-600">{r.label}</span>
-                                <span className={`px-2 py-0.5 bg-${r.color}-50 text-${r.color}-600 text-[10px] font-bold rounded-full flex items-center gap-1`}>
-                                  <CheckCircle size={10} /> {r.status}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>
@@ -876,27 +686,27 @@ export default function LandingPage() {
                     key={idx}
                     className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm flex flex-col"
                   >
-                    <div className="h-48 bg-slate-100 flex items-center justify-center relative animate-pulse" />
+                    <div className="h-48 bg-slate-100 flex items-center justify-center relative" />
                     <div className="p-6 flex-grow flex flex-col justify-between">
                       <div className="space-y-3">
-                        <div className="h-5 w-3/4 rounded-lg bg-slate-200 animate-pulse" />
-                        <div className="h-4 w-full rounded-lg bg-slate-200 animate-pulse" />
-                        <div className="h-4 w-5/6 rounded-lg bg-slate-200 animate-pulse" />
+                        <div className="h-5 w-3/4 rounded-lg bg-slate-200" />
+                        <div className="h-4 w-full rounded-lg bg-slate-200" />
+                        <div className="h-4 w-5/6 rounded-lg bg-slate-200" />
                       </div>
-                      <div className="h-4 w-32 rounded-lg bg-slate-200 animate-pulse mt-6" />
+                      <div className="h-4 w-32 rounded-lg bg-slate-200 mt-6" />
                     </div>
                   </article>
                 ))
                 : (featuredEdukasi.length > 0 ? featuredEdukasi : FALLBACK_ARTIKEL).map((artikel) => (
                   <article
                     key={artikel.key + "-" + (artikel.id || "fallback")}
-                    className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-left flex flex-col group"
+                    className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm text-left flex flex-col group"
                   >
                     <div className="h-48 relative overflow-hidden bg-slate-100">
                       <img
                         src={artikel.image || artikel.fallbackImage}
                         alt={artikel.title}
-                        className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-full object-contain"
                         onError={(e) => {
                           e.target.src = artikel.fallbackImage || "https://images.unsplash.com/photo-1596464716127-f2a82984de30?w=600&auto=format&fit=crop";
                         }}
@@ -909,7 +719,7 @@ export default function LandingPage() {
                     </div>
                     <div className="p-6 flex-grow flex flex-col justify-between">
                       <div>
-                        <h3 className="text-lg font-bold text-slate-800 mb-3 group-hover:text-primary transition-colors">
+                        <h3 className="text-lg font-bold text-slate-800 mb-3 group-hover:text-primary">
                           <Link to={artikel.id ? `/edukasi-publik/${artikel.key}/${artikel.id}` : `/edukasi-publik/${artikel.key}`}>
                             {artikel.title}
                           </Link>
@@ -918,7 +728,7 @@ export default function LandingPage() {
                       </div>
                       <Link
                         to={artikel.id ? `/edukasi-publik/${artikel.key}/${artikel.id}` : `/edukasi-publik/${artikel.key}`}
-                        className="inline-flex items-center gap-1 text-sm font-bold text-primary hover:text-primary-600 mt-auto group-hover:gap-2 transition-all"
+                        className="inline-flex items-center gap-1 text-sm font-bold text-primary hover:text-primary-600 mt-auto group-hover:gap-2"
                       >
                         Baca Selengkapnya
                         <ArrowRight size={14} />
@@ -956,11 +766,11 @@ export default function LandingPage() {
                   <div className="flex flex-col sm:flex-row items-center gap-4 justify-center md:justify-start">
                     <button
                       onClick={handleDownload}
-                      className="w-full sm:w-auto px-8 py-4 bg-white hover:bg-slate-50 text-primary-900 font-bold rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2.5 group active:scale-[0.98]"
+                      className="w-full sm:w-auto px-8 py-4 bg-white hover:bg-slate-50 text-primary-900 font-bold rounded-2xl shadow-lg flex items-center justify-center gap-2.5 group"
                     >
                       <Download size={20} className="text-primary" />
                       Unduh APK
-                      <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                      <ArrowRight size={16} className="group-hover:translate-x-1" />
                     </button>
                     <div className="text-center sm:text-left">
                       <p className="text-[10px] text-primary-400">Ukuran ≈ 25 MB</p>
@@ -972,7 +782,7 @@ export default function LandingPage() {
                   <div className="relative">
                     <div className="w-44 h-44 md:w-56 md:h-56 bg-primary-700/40 rounded-full flex items-center justify-center border-4 border-primary-400/20 relative">
                       <Smartphone size={72} className="text-white/90" />
-                      <div className="absolute -top-3 -right-3 bg-emerald-500 text-white font-bold text-xs px-3 py-1.5 rounded-full animate-bounce shadow-lg flex items-center gap-1">
+                      <div className="absolute -top-3 -right-3 bg-emerald-500 text-white font-bold text-xs px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1">
                         <Star size={10} /> Gratis!
                       </div>
                       <div className="absolute -bottom-2 -left-2 bg-amber-500 text-white font-bold text-[10px] px-2.5 py-1 rounded-full shadow-lg flex items-center gap-1">
@@ -980,10 +790,10 @@ export default function LandingPage() {
                       </div>
                     </div>
                     {/* Orbiting dots */}
-                    <div className="absolute inset-0 animate-spin" style={{ animationDuration: "20s" }}>
+                    <div className="absolute inset-0">
                       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3 h-3 bg-primary-400 rounded-full" />
                     </div>
-                    <div className="absolute inset-0 animate-spin" style={{ animationDuration: "15s", animationDirection: "reverse" }}>
+                    <div className="absolute inset-0">
                       <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-2 h-2 bg-blue-400 rounded-full" />
                     </div>
                   </div>

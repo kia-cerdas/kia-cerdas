@@ -84,10 +84,10 @@ const Breadcrumb = () => {
     "pola-asuh": "Pola Asuh",
     "kesehatan-mental": "Kesehatan Mental",
     "perawatan-anak": "Perawatan Anak",
-    mpasi: "MPASI",
-    "mpasi-aturan-porsi": "MPASI",
-    "mpasi-jadwal-harian": "MPASI",
-    "mpasi-resep": "MPASI",
+    mpasi: "Materi MPASI",
+    "mpasi-aturan-porsi": "Aturan Porsi MPASI",
+    "mpasi-jadwal-harian": "Jadwal Harian MPASI",
+    "mpasi-resep": "Resep MPASI",
 
     // Admin
     "kelola-desa": "Kelola Desa",
