@@ -1,0 +1,96 @@
+@startuml
+participant "Cron Job" as Cron
+participant "NotifikasiUsecase" as NotifUsecase
+participant "NotifikasiRepository" as NotifRepo
+participant "Database" as DB
+participant "FCM" as FCM
+participant "Mobile App" as Mobile
+
+Cron -> NotifUsecase: ProcessReminder()
+activate Cron
+activate NotifUsecase
+
+NotifUsecase -> NotifRepo: GetJadwalForReminder()
+activate NotifRepo
+
+NotifRepo -> DB: SELECT jia.id, jia.tanggal_estimasi,\njia.id_status_jadwal, jia.is_sent_h7,\njia.is_sent_h3, jia.is_sent_h,\na.id as anak_id, p.nama_anggota_keluarga,\ndv.nama_dosis\nFROM jadwal_imunisasi_anak jia\nJOIN anak a ON a.id = jia.anak_id\nJOIN penduduk p ON p.id = a.penduduk_id\nJOIN dosis_vaksin dv ON dv.id = jia.id_dosis_vaksin\nWHERE jia.tanggal_estimasi IS NOT NULL\nAND jia.id_status_jadwal IN (1, 2)
+activate DB
+DB --> NotifRepo: []JadwalImunisasiJoin
+deactivate DB
+deactivate NotifRepo
+
+loop Untuk setiap jadwal
+
+    alt diff == 7 (H-7) AND status == 1 AND NOT is_sent_h7
+        
+        NotifUsecase -> NotifRepo: MarkSent(jadwalID, "h7")
+        activate NotifRepo
+        NotifRepo -> DB: UPDATE jadwal_imunisasi_anak\nSET is_sent_h7 = true\nWHERE id = ?
+        activate DB
+        DB --> NotifRepo: Updated
+        deactivate DB
+        deactivate NotifRepo
+        
+    else diff == 3 (H-3) AND status == 1 AND NOT is_sent_h3
+        
+        NotifUsecase -> NotifRepo: MarkSent(jadwalID, "h3")
+        activate NotifRepo
+        NotifRepo -> DB: UPDATE jadwal_imunisasi_anak\nSET is_sent_h3 = true\nWHERE id = ?
+        activate DB
+        DB --> NotifRepo: Updated
+        deactivate DB
+        deactivate NotifRepo
+        
+    else diff == 0 (H-0) AND status == 2 AND NOT is_sent_h
+        
+        NotifUsecase -> NotifRepo: MarkSent(jadwalID, "h")
+        activate NotifRepo
+        NotifRepo -> DB: UPDATE jadwal_imunisasi_anak\nSET is_sent_h = true\nWHERE id = ?
+        activate DB
+        DB --> NotifRepo: Updated
+        deactivate DB
+        deactivate NotifRepo
+        
+    end
+    
+    NotifUsecase -> NotifRepo: GetFCMTokensByAnakID(anakID)
+    activate NotifRepo
+    
+    NotifRepo -> DB: SELECT fcm_token FROM pengguna p\nJOIN ibu i ON i.penduduk_id = p.penduduk_id\nJOIN kehamilan k ON k.ibu_id = i.id\nJOIN anak a ON a.kehamilan_id = k.id\nWHERE a.id = ? AND fcm_token IS NOT NULL
+    activate DB
+    DB --> NotifRepo: []FCMToken
+    deactivate DB
+    deactivate NotifRepo
+    
+    loop Untuk setiap FCM Token
+        
+        NotifUsecase -> FCM: sendFCMWithData(token, title, body, data)
+        activate FCM
+        
+        FCM -> Mobile: Push Notification
+        activate Mobile
+        
+        Mobile --> FCM: Notification Delivered
+        deactivate Mobile
+        
+        FCM --> NotifUsecase: MessageID
+        deactivate FCM
+        
+    end
+    
+    NotifUsecase -> NotifRepo: InsertNotifikasi(anakID, title, body)
+    activate NotifRepo
+    
+    NotifRepo -> DB: INSERT INTO notifikasi\n(anak_id, title, body, created_at)\nVALUES (?, ?, ?, NOW())
+    activate DB
+    DB --> NotifRepo: ID notifikasi baru
+    deactivate DB
+    deactivate NotifRepo
+    
+end
+
+NotifUsecase --> Cron: Process Complete
+deactivate NotifUsecase
+deactivate Cron
+
+@enduml

@@ -49,6 +49,7 @@ const emptyEditForm = {
   password: "",
   no_str: "",
   no_sipb: "",
+  posyandu_id: "",
 };
 
 const ASSIGN_ROLE_OPTIONS = [
@@ -273,7 +274,7 @@ const UserManagement = () => {
     try {
       setSubmitting(true);
       if (assignForm.role === "bidan") {
-        await createBidanUser({ penduduk_id: pendudukId, name, email, password: assignForm.password.trim(), no_str: assignForm.no_str.trim(), no_sipb: assignForm.no_sipb.trim() });
+        await createBidanUser({ penduduk_id: pendudukId, name, email, password: assignForm.password.trim(), no_str: assignForm.no_str.trim(), no_sipb: assignForm.no_sipb.trim(), posyandu_id: assignForm.posyandu_id ? Number(assignForm.posyandu_id) : undefined });
       } else if (assignForm.role === "admin") {
         await createAdminDesaUser({ penduduk_id: pendudukId, name, email, password: assignForm.password.trim() });
       } else if (assignForm.role === "kader") {
@@ -300,6 +301,7 @@ const UserManagement = () => {
       password: "",
       no_str: user.no_str || "",
       no_sipb: user.no_sipb || "",
+      posyandu_id: user.posyandu_id ? String(user.posyandu_id) : "",
     });
     setShowEditModal(true);
   };
@@ -330,6 +332,7 @@ const UserManagement = () => {
       }
       if (editForm.no_str.trim()) payload.no_str = editForm.no_str.trim();
       if (editForm.no_sipb.trim()) payload.no_sipb = editForm.no_sipb.trim();
+      if (editForm.posyandu_id) payload.posyandu_id = Number(editForm.posyandu_id);
       await updateSuperadminUser(editUser.id, payload);
       setShowEditModal(false);
       setEditUser(null);
@@ -687,8 +690,8 @@ const UserManagement = () => {
                     </select>
                   </div>
 
-                  {/* Kader: Posyandu */}
-                  {assignForm.role === "kader" && (
+                  {/* Posyandu — shown for both Kader and Bidan */}
+                  {(assignForm.role === "kader" || assignForm.role === "bidan") && (
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-1">Posyandu</label>
                       <select
@@ -851,6 +854,19 @@ const UserManagement = () => {
                         placeholder="Nomor Surat Izin Praktik Bidan"
                         className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                       />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Posyandu</label>
+                      <select
+                        value={editForm.posyandu_id}
+                        onChange={(e) => setEditForm((prev) => ({ ...prev, posyandu_id: e.target.value }))}
+                        className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      >
+                        <option value="">{loadingPosyandu ? "Memuat..." : "-- Pilih Posyandu (opsional) --"}</option>
+                        {posyanduOptions.map((pos) => (
+                          <option key={pos.id} value={pos.id}>{pos.nama}{pos.alamat ? ` — ${pos.alamat}` : ""}</option>
+                        ))}
+                      </select>
                     </div>
                   </div>
                 </div>

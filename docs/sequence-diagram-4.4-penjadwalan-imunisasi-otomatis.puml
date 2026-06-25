@@ -1,0 +1,181 @@
+@startuml Penjadwalan Imunisasi Otomatis Berbasis Rule
+!theme plain
+skinparam responseMessageBelowArrow true
+skinparam backgroundColor #FFFFFF
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam maxmessagesize 300
+
+title Sequence Diagram 4.4: Penjadwalan Imunisasi Otomatis Berbasis Rule (13 Vaksin IDL)
+
+actor "Bidan" as Bidan
+participant "View\n(AkunKeluargaCreate.jsx)" as View
+participant "Routes\n(routes.go)" as Routes
+participant "AnakController\n(anak.go)" as AnakController
+participant "AnakUseCase\n(anak.go)" as AnakUsecase
+participant "AnakRepository\n(anak_repository.go)" as AnakRepo
+participant "ImunisasiUsecase\n(imunisasi_usecase.go)" as ImunisasiUsecase
+participant "ImunisasiRepository\n(imunisasi_repository.go)" as ImunisasiRepo
+participant "Database\n(PostgreSQL)" as DB
+
+== 1. Bidan Menambahkan Data Anak Baru ==
+
+Bidan -> View: Isi form tambah anak\n(nama, tanggal_lahir, ibu_id, dll)
+activate Bidan
+activate View
+
+View -> Routes: POST /tenaga-kesehatan/anak/dengan-penduduk\nBody: CreateAnakDenganPendudukRequest
+activate Routes
+
+Routes -> AnakController: CreateDenganPenduduk(c)
+activate AnakController
+
+AnakController -> AnakUsecase: CreateAnakDenganPenduduk(req)
+activate AnakUsecase
+
+AnakUsecase -> AnakRepo: Create(anak)
+activate AnakRepo
+
+AnakRepo -> DB: INSERT INTO anak\n(kehamilan_id, penduduk_id, berat_lahir_kg,\ntinggi_lahir_cm, anak_ke, ibu_id)
+activate DB
+DB --> AnakRepo: anak.ID
+deactivate DB
+deactivate AnakRepo
+
+== 2. Trigger Auto-Generate Jadwal Imunisasi ==
+
+AnakUsecase -> ImunisasiUsecase: go onAnakCreated(anakID)\n**[Goroutine - Background Process]**
+activate ImunisasiUsecase
+
+note right of ImunisasiUsecase
+  Callback ini didaftarkan di init.go
+  m.Anak.SetOnAnakCreated(func(anakID int32) {
+    m.GenerateJadwalImunisasiByAnakID(anakID)
+  })
+end note
+
+ImunisasiUsecase -> ImunisasiUsecase: GenerateJadwalImunisasiByAnakID(anakID)
+
+== 3. Ambil Data Anak & Aturan Vaksin ==
+
+ImunisasiUsecase -> ImunisasiRepo: GetAnakByID(anakID)
+activate ImunisasiRepo
+
+ImunisasiRepo -> DB: SELECT * FROM anak\nJOIN kependudukan ON anak.penduduk_id = kependudukan.id_kependudukan\nWHERE anak.id = ?
+activate DB
+DB --> ImunisasiRepo: anak (dengan tanggal_lahir)
+deactivate DB
+deactivate ImunisasiRepo
+
+ImunisasiUsecase -> ImunisasiRepo: GetAturanVaksinAnak()
+activate ImunisasiRepo
+
+ImunisasiRepo -> DB: SELECT * FROM aturan_vaksin_anak\nORDER BY urutan
+activate DB
+DB --> ImunisasiRepo: []AturanVaksinAnak (13 rules)
+deactivate DB
+deactivate ImunisasiRepo
+
+note right of ImunisasiUsecase
+  **13 Vaksin IDL:**
+  1. HB-0 (min_usia_hari: 0)
+  2. BCG (min_usia_hari: 30)
+  3. Polio 1 (min_usia_hari: 30)
+  4. DPT-HB-Hib 1 (min_usia_hari: 60)
+  5. Polio 2 (min_usia_hari: 60)
+  6. DPT-HB-Hib 2 (min_usia_hari: 90)
+  7. Polio 3 (min_usia_hari: 90)
+  8. DPT-HB-Hib 3 (min_usia_hari: 120)
+  9. Polio 4 (min_usia_hari: 120)
+  10. IPV (min_usia_hari: 120)
+  11. Campak (min_usia_hari: 270)
+  12. MR 1 (min_usia_hari: 270)
+  13. MR 2 (min_usia_hari: 540)
+end note
+
+== 4. Loop: Generate Jadwal untuk Setiap Vaksin ==
+
+loop Untuk setiap rule dalam aturanList (13 kali iterasi)
+    
+    ImunisasiUsecase -> ImunisasiRepo: IsJadwalExist(anakID, dosisVaksinID)
+    activate ImunisasiRepo
+    
+    ImunisasiRepo -> DB: SELECT COUNT(*) FROM jadwal_imunisasi_anak\nWHERE anak_id = ? AND dosis_vaksin_id = ?
+    activate DB
+    DB --> ImunisasiRepo: 0 (belum ada)
+    deactivate DB
+    deactivate ImunisasiRepo
+    
+    note right of ImunisasiUsecase
+      **Hitung Tanggal Estimasi:**
+      tanggalEstimasi = tanggalLahir.AddDate(0, 0, rule.MinUsiaHari)
+      
+      **Contoh:**
+      - Anak lahir: 2026-06-24
+      - HB-0: 2026-06-24 + 0 hari = 2026-06-24
+      - BCG: 2026-06-24 + 30 hari = 2026-07-24
+      - Polio 1: 2026-06-24 + 30 hari = 2026-07-24
+    end note
+    
+    ImunisasiUsecase -> ImunisasiUsecase: calculateStatusID(tanggalEstimasi)
+    
+    note right of ImunisasiUsecase
+      **Hitung Status Jadwal:**
+      diff = DATEDIFF(tanggalEstimasi, today)
+      
+      - diff >= 1 → Status 1 (Belum)
+      - diff == 0 → Status 2 (Hari Ini)
+      - -6 <= diff < 0 → Status 3 (Terlambat <7 hari)
+      - -14 <= diff < -7 → Status 4 (Terlambat 7-14 hari)
+      - diff < -14 → Status 5 (Terlewat)
+    end note
+    
+    ImunisasiUsecase -> ImunisasiRepo: CreateJadwalImunisasiAnak(jadwal)
+    activate ImunisasiRepo
+    
+    ImunisasiRepo -> DB: INSERT INTO jadwal_imunisasi_anak\n(anak_id, dosis_vaksin_id,\ntanggal_estimasi, status_jadwal_id)\nVALUES (?, ?, ?, ?)
+    activate DB
+    DB --> ImunisasiRepo: ID jadwal baru
+    deactivate DB
+    deactivate ImunisasiRepo
+    
+end
+
+== 5. Update Status Jadwal ==
+
+ImunisasiUsecase -> ImunisasiRepo: UpdateJadwalStatus()
+activate ImunisasiRepo
+
+ImunisasiRepo -> DB: UPDATE jadwal_imunisasi_anak\nSET status_jadwal_id = \nCASE \n  WHEN DATEDIFF(tanggal_estimasi, NOW()) >= 1 THEN 1\n  WHEN DATEDIFF(tanggal_estimasi, NOW()) = 0 THEN 2\n  WHEN DATEDIFF(tanggal_estimasi, NOW()) >= -6 THEN 3\n  WHEN DATEDIFF(tanggal_estimasi, NOW()) >= -14 THEN 4\n  ELSE 5\nEND
+activate DB
+DB --> ImunisasiRepo: Updated (13 records)
+deactivate DB
+deactivate ImunisasiRepo
+
+ImunisasiUsecase --> AnakUsecase: Generation Complete
+deactivate ImunisasiUsecase
+
+== 6. Response ke View ==
+
+AnakUsecase --> AnakController: AnakResponse\n(data anak berhasil dibuat)
+deactivate AnakUsecase
+
+AnakController --> Routes: HTTP 201 Created\nJSON: {"message": "success", "data": {...}}
+deactivate AnakController
+
+Routes --> View: HTTP 201 Created\nJSON: {"message": "success", "data": {...}}
+deactivate Routes
+
+View --> Bidan: Tampilkan notifikasi:\n"✅ Data anak berhasil ditambahkan"
+deactivate View
+deactivate Bidan
+
+note right of DB
+  **Result:**
+  - 1 record baru di tabel anak
+  - 13 record baru di tabel jadwal_imunisasi_anak
+  - Auto-generate berjalan di background
+    (tidak memblokir response HTTP)
+end note
+
+@enduml

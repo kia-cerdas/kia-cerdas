@@ -64,11 +64,12 @@ type SuperadminResetPasswordRequest struct {
 }
 
 type SuperadminUpdateUserRequest struct {
-	Name     string `json:"name"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	NoSTR    string `json:"no_str"`
-	NoSIPB   string `json:"no_sipb"`
+	Name       string `json:"name"`
+	Email      string `json:"email"`
+	Password   string `json:"password"`
+	NoSTR      string `json:"no_str"`
+	NoSIPB     string `json:"no_sipb"`
+	PosyanduID *int32 `json:"posyandu_id"`
 }
 
 type SuperadminUserUsecase struct {
@@ -1035,6 +1036,10 @@ func (u *SuperadminUserUsecase) UpdateUser(id int32, req *SuperadminUpdateUserRe
 			}
 			if noSIPB != "" {
 				bidanUpdates["no_sipb"] = noSIPB
+			}
+			// Always update posyandu_id if provided (allow explicit null to clear assignment)
+			if req.PosyanduID != nil {
+				bidanUpdates["posyandu_id"] = *req.PosyanduID
 			}
 			if len(bidanUpdates) > 1 {
 				if err := tx.Model(&models.Bidan{}).Where("penduduk_id = ? AND deleted_at IS NULL", *user.PendudukID).Updates(bidanUpdates).Error; err != nil {

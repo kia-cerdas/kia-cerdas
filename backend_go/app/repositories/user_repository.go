@@ -20,6 +20,7 @@ type UserListItem struct {
 	PendudukID  *int64    `gorm:"column:penduduk_id" json:"penduduk_id,omitempty"`
 	NoSTR       string    `gorm:"column:no_str" json:"no_str,omitempty"`
 	NoSIPB      string    `gorm:"column:no_sipb" json:"no_sipb,omitempty"`
+	PosyanduID  *int32    `gorm:"column:posyandu_id" json:"posyandu_id,omitempty"`
 	CreatedAt   time.Time `gorm:"column:created_at" json:"created_at"`
 	UpdatedAt   time.Time `gorm:"column:updated_at" json:"updated_at"`
 }
@@ -121,7 +122,7 @@ func (r *UserRepository) List(search, role, desa string) ([]UserListItem, error)
 	var rows []UserListItem
 
 	q := r.db.Table("pengguna u").
-		Select("u.id, u.nama AS name, u.email, p.telepon AS phone_number, p.desa_id AS desa_id, COALESCE(d.nama_desa, '') AS desa_name, r.name AS role, u.is_active, u.penduduk_id, COALESCE(b.no_str, '') AS no_str, COALESCE(b.no_sipb, '') AS no_sipb, u.created_at, u.updated_at").
+		Select("u.id, u.nama AS name, u.email, p.telepon AS phone_number, p.desa_id AS desa_id, COALESCE(d.nama_desa, '') AS desa_name, r.name AS role, u.is_active, u.penduduk_id, COALESCE(b.no_str, '') AS no_str, COALESCE(b.no_sipb, '') AS no_sipb, b.posyandu_id AS posyandu_id, u.created_at, u.updated_at").
 		Joins("JOIN roles r ON r.id = u.role_id").
 		Joins("LEFT JOIN penduduk p ON p.id = u.penduduk_id AND p.deleted_at IS NULL").
 		Joins("LEFT JOIN desa d ON d.id = p.desa_id AND d.deleted_at IS NULL").

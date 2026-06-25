@@ -244,11 +244,10 @@ const PelayananImunisasi = () => {
   };
 
   // Get cell color based on aturan min/max usia hari
-  // Sesuai dengan pedoman Kemenkes:
-  // PUTIH = Usia Tepat Pemberian Imunisasi (ideal window)
-  // ORANGE = Usia yang masih diperbolehkan untuk melengkapi Imunisasi
-  // PINK = Usia Pemberian Imunisasi yang belum lengkap (Imunisasi Kejar)
-  // ABU-ABU = Usia yang tidak diperbolehkan untuk pemberian Imunisasi
+  // Sesuai dengan pedoman yang disederhanakan:
+  // PUTIH = Usia Tepat Pemberian Imunisasi (dari min_usia_hari sampai max_usia_hari)
+  // ABU-ABU = Usia yang tidak diperbolehkan untuk pemberian Imunisasi (belum waktunya atau sudah lewat)
+  // HIJAU = Imunisasi telah diberikan
   const getCellColor = (dosisVaksinId, monthValue, doneBulan) => {
     const monthStart = getMonthStart(monthValue);
     const monthEnd = (typeof monthValue === 'string' && monthValue.includes('-'))
@@ -278,57 +277,22 @@ const PelayananImunisasi = () => {
       return monthStartDays <= endDay && monthEndDays >= startDay;
     };
 
-    // 1. ABU-ABU: Sudah lewat max usia (tidak boleh lagi) — inline style for JIT safety
+    // 1. ABU-ABU: Belum waktunya (sebelum min usia) — inline style untuk konsistensi warna
+    if (monthEndDays < minHari) {
+      return { className: '', style: { backgroundColor: '#D3D3D3', borderColor: '#A9A9A9' } };
+    }
+
+    // 2. ABU-ABU: Sudah lewat max usia (tidak boleh lagi) — inline style for JIT safety
     if (monthStartDays > maxHari) {
       return { className: '', style: { backgroundColor: '#D3D3D3', borderColor: '#A9A9A9' } };
     }
 
-    // 2. Belum waktunya (sebelum min usia)
-    if (monthEndDays < minHari) {
-      return { className: 'bg-gray-100 border-gray-200', style: null };
-    }
-
-    // 3. PUTIH: Usia Tepat - bulan pertama sejak min_usia_hari (standard Tailwind)
-    const tePATEnd = minHari + 30; // 1 bulan sejak bisa diberikan
-    if (overlaps(minHari, tePATEnd)) {
+    // 3. PUTIH: Usia Tepat - dari min_usia_hari sampai max_usia_hari (standard Tailwind)
+    if (overlaps(minHari, maxHari)) {
       return { className: 'bg-white border-gray-400', style: null };
     }
 
-    // 4. Hitung sisa window setelah periode tepat
-    const sisaWindow = maxHari - tePATEnd;
-
-    // Jika sisa window > 4 bulan (120 hari)
-    if (sisaWindow > 120) {
-      // ORANGE: 70% awal dari sisa window — inline style
-      const orangeEnd = tePATEnd + (sisaWindow * 0.7);
-      if (overlaps(tePATEnd + 1, orangeEnd)) {
-        return { className: '', style: { backgroundColor: '#FFA500', borderColor: '#FF8C00' } };
-      }
-
-      // PINK: 30% akhir dari sisa window (periode kejar) — inline style
-      if (overlaps(orangeEnd + 1, maxHari)) {
-        return { className: '', style: { backgroundColor: '#FFB6C1', borderColor: '#FF69B4' } };
-      }
-    } else {
-      // Window kecil (≤ 4 bulan)
-      // Bagi dua: setengah awal orange, setengah akhir pink
-      const midPoint = tePATEnd + (sisaWindow / 2);
-
-      if (overlaps(tePATEnd + 1, midPoint)) {
-        return { className: '', style: { backgroundColor: '#FFA500', borderColor: '#FF8C00' } };
-      }
-
-      if (overlaps(midPoint + 1, maxHari)) {
-        return { className: '', style: { backgroundColor: '#FFB6C1', borderColor: '#FF69B4' } };
-      }
-    }
-
-    // Fallback: masih dalam window yang diperbolehkan → orange
-    if (monthEndDays <= maxHari) {
-      return { className: '', style: { backgroundColor: '#FFA500', borderColor: '#FF8C00' } };
-    }
-
-    // Fallback final: abu-abu
+    // Fallback: abu-abu
     return { className: '', style: { backgroundColor: '#D3D3D3', borderColor: '#A9A9A9' } };
   };
 
@@ -669,9 +633,6 @@ const PelayananImunisasi = () => {
             </div>
           </div>
 
-          {/* Title - Centered */}
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800 text-center mb-3">Pelayanan Imunisasi</h1>
-
           {/* Hint scroll — hanya tampil di mobile */}
           <p className="hidden max-[640px]:flex text-xs text-gray-400 text-center mb-2 items-center justify-center gap-1">
             <span>←</span> Geser untuk melihat semua kolom <span>→</span>
@@ -800,24 +761,10 @@ const PelayananImunisasi = () => {
               <span className="w-1 h-4 bg-blue-600 rounded"></span>
               Keterangan Warna Usia Pemberian Imunisasi
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-6 bg-white border-2 border-gray-400 rounded flex-shrink-0 shadow-sm" />
                 <span className="text-gray-700 font-medium">Usia Tepat Pemberian Imunisasi</span>
-              </div>
-              
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-6 rounded flex-shrink-0 border-2 shadow-sm" style={{ backgroundColor: '#FFA500', borderColor: '#FF8C00' }} />
-                <span className="text-gray-700 font-medium">
-                  Usia yang masih diperbolehkan untuk melengkapi Imunisasi
-                </span>
-              </div>
-
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-6 rounded flex-shrink-0 border-2 shadow-sm" style={{ backgroundColor: '#FFB6C1', borderColor: '#FF69B4' }} />
-                <span className="text-gray-700 font-medium">
-                  Usia Pemberian Imunisasi yang belum lengkap (Imunisasi Kejar)
-                </span>
               </div>
               
               <div className="flex items-center gap-2.5">
@@ -826,14 +773,12 @@ const PelayananImunisasi = () => {
                   Usia yang tidak diperbolehkan untuk pemberian Imunisasi
                 </span>
               </div>
-            </div>
-            
-            <div className="mt-3 pt-3 border-t border-gray-200">
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 bg-green-100 border-2 border-green-300 rounded flex items-center justify-center flex-shrink-0 shadow-sm">
+              
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-6 bg-green-100 border-2 border-green-300 rounded flex items-center justify-center flex-shrink-0 shadow-sm">
                   <span className="text-green-700 font-bold text-xs">✓</span>
                 </div>
-                <span className="text-gray-600 text-xs">= Imunisasi telah diberikan</span>
+                <span className="text-gray-700 font-medium">Imunisasi telah diberikan</span>
               </div>
             </div>
           </div>
