@@ -37,18 +37,15 @@ class DashboardBottomNav extends StatelessWidget {
           label: 'Edukasi',
         ),
 
-        // Pure UI: hanya render berdasarkan overdueCount
         BottomNavigationBarItem(
           icon: Stack(
             clipBehavior: Clip.none,
             children: [
-              // Icon berubah warna jika ada imunisasi terlewat
               Icon(
                 Icons.vaccines,
                 color: overdueCount > 0 ? Colors.red : null,
               ),
 
-              // Badge notifikasi
               if (overdueCount > 0)
                 Positioned(
                   right: -8,

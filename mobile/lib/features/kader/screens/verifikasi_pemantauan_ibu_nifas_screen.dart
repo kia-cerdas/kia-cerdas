@@ -100,9 +100,15 @@ class _VerifikasiPemantauanIbuNifasScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Pemantauan Ibu Nifas'),
-        backgroundColor: _primaryColor,
-        foregroundColor: Colors.white,
+        title: const Text(
+          'Pemantauan Ibu Nifas',
+          style: TextStyle(
+            color: Colors.black87,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black87,
         elevation: 0,
       ),
       body: _isLoading

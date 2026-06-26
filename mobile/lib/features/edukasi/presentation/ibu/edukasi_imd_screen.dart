@@ -5,10 +5,6 @@ import '../../data/repositories/edukasi_imd_repository.dart';
 import '../../data/services/edukasi_imd_service.dart';
 import 'edukasi_imd_detail_screen.dart';
 
-/// Halaman DAFTAR edukasi IMD (Inisiasi Menyusu Dini).
-///
-/// Menampilkan SEMUA materi sebagai kartu. Saat satu kartu diketuk,
-/// ibu dibawa ke halaman detail. Pola sama dengan edukasi lainnya.
 class EdukasiIMDScreen extends StatefulWidget {
   const EdukasiIMDScreen({super.key});
 
@@ -68,19 +64,16 @@ class _EdukasiIMDScreenState extends State<EdukasiIMDScreen> {
       body: FutureBuilder<List<EdukasiIMDModel>>(
         future: futureData,
         builder: (context, snapshot) {
-          // 1) Loading
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          // 2) Error
           if (snapshot.hasError) {
             return Center(child: Text(snapshot.error.toString()));
           }
 
           final data = snapshot.data ?? [];
 
-          // 3) Kosong
           if (data.isEmpty) {
             return const Center(
               child: Text(
@@ -90,7 +83,6 @@ class _EdukasiIMDScreenState extends State<EdukasiIMDScreen> {
             );
           }
 
-          // 4) Tampilkan SEMUA materi sebagai daftar kartu.
           return ListView.builder(
             padding: const EdgeInsets.all(20),
             itemCount: data.length,
@@ -105,7 +97,6 @@ class _EdukasiIMDScreenState extends State<EdukasiIMDScreen> {
   }
 }
 
-/// Kartu satu materi di halaman daftar.
 class _ImdCard extends StatelessWidget {
   final EdukasiIMDModel item;
 
@@ -136,7 +127,6 @@ class _ImdCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Gambar atas (atau placeholder kalau kosong)
             if (item.gambarUrl.trim().isNotEmpty)
               ClipRRect(
                 borderRadius:
@@ -157,7 +147,6 @@ class _ImdCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Badge
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,

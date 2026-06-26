@@ -83,7 +83,6 @@ class DashboardMenuCard extends StatelessWidget {
   }
 }
 
-/// Widget kartu info generic (progress kehamilan, buah, dll)
 class DashboardInfoCard extends StatelessWidget {
   final Widget child;
 

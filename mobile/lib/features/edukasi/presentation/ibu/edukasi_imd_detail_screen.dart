@@ -2,13 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../data/models/edukasi_imd_model.dart';
 
-/// Halaman DETAIL satu materi edukasi IMD (Inisiasi Menyusu Dini).
-///
-/// Dibuka saat ibu mengetuk salah satu kartu di halaman daftar.
-/// Desain disamakan dengan detail edukasi Anak (DetailKontenEdukasiAnakScreen):
-/// AppBar putih simpel, ilustrasi dalam kotak rounded, badge pil abu-abu,
-/// judul, lalu setiap bagian (Tentang Edukasi, Manfaat, Langkah-langkah)
-/// dibungkus _SectionCard putih bertajuk dengan daftar bernomor.
 class EdukasiImdDetailScreen extends StatelessWidget {
   final EdukasiIMDModel item;
 
@@ -16,7 +9,6 @@ class EdukasiImdDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Pecah teks panjang "manfaat" & "langkah" menjadi daftar baris bersih.
     final manfaatList = _splitToList(item.manfaat);
     final langkahList = _splitToList(item.langkah);
 
@@ -46,7 +38,6 @@ class EdukasiImdDetailScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // ===== Thumbnail / Illustration Section =====
           Container(
             height: 180,
             width: double.infinity,
@@ -71,7 +62,6 @@ class EdukasiImdDetailScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
 
-          // ===== Badges Row =====
           const Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -83,7 +73,6 @@ class EdukasiImdDetailScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
 
-          // ===== Title =====
           Text(
             item.judul,
             style: const TextStyle(
@@ -94,7 +83,6 @@ class EdukasiImdDetailScreen extends StatelessWidget {
             ),
           ),
 
-          // ===== Bagian 1: Tentang Edukasi =====
           if (item.isi.trim().isNotEmpty) ...[
             const SizedBox(height: 16),
             _SectionCard(
@@ -110,7 +98,6 @@ class EdukasiImdDetailScreen extends StatelessWidget {
             ),
           ],
 
-          // ===== Bagian 2: Manfaat IMD =====
           if (manfaatList.isNotEmpty) ...[
             const SizedBox(height: 16),
             _SectionCard(
@@ -119,7 +106,6 @@ class EdukasiImdDetailScreen extends StatelessWidget {
             ),
           ],
 
-          // ===== Bagian 3: Langkah-langkah IMD =====
           if (langkahList.isNotEmpty) ...[
             const SizedBox(height: 16),
             _SectionCard(
@@ -218,8 +204,6 @@ class _SectionCard extends StatelessWidget {
   }
 }
 
-/// Daftar bernomor dengan lingkaran nomor biru, mengikuti gaya
-/// "Tutorial Edukasi" pada halaman detail edukasi Anak.
 class _NumberedList extends StatelessWidget {
   final List<String> items;
 

@@ -2,29 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:ta_pa2_pa3_project/core/themes/app_theme.dart';
 import 'package:ta_pa2_pa3_project/features/dashboard/data/dashboard_menu_data.dart';
 
-/// Widget pemilih fase di dashboard ibu.
-///
-/// [enabledPhases] — set label fase yang boleh diklik.
-/// Jika null, SEMUA tab bisa diklik (perilaku bebas / loading).
-/// Tab yang tidak ada di dalam set ditampilkan dimmed dan tidak bisa ditekan.
-///
-/// Aturan bisnis fase ibu (dikontrol dari _DashboardScreenState):
-///   - Status HAMIL  → enabledPhases = {'Hamil', 'Menyusui', 'Tumbuh'}
-///   - Status NIFAS  → enabledPhases = {'Nifas', 'Menyusui', 'Tumbuh'}
-///   - Belum diketahui (loading) → enabledPhases = null (semua bebas)
+
+/// [enabledPhases] 
 class DashboardPhaseSelector extends StatelessWidget {
   final String selectedPhase;
   final ValueChanged<String> onPhaseSelected;
 
-  /// Set fase yang boleh diklik. null = semua fase bebas.
-  // [SCOPE: modul-ibu] Hanya memengaruhi tab pada dashboard ibu.
   final Set<String>? enabledPhases;
 
-  // --- backward-compat shim ---
-  // Parameter lama [lockedPhase] (String?) masih diterima agar tidak
-  // merusak pemanggil lain yang belum diperbarui.
-  // Jika lockedPhase diisi, enabledPhases diisi dengan {lockedPhase} saja.
-  // Prioritas: enabledPhases > lockedPhase.
   final String? lockedPhase;
 
   const DashboardPhaseSelector({
@@ -38,11 +23,6 @@ class DashboardPhaseSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Resolusi enabledPhases efektif:
-    //   1. Pakai enabledPhases jika diisi.
-    //   2. Fallback ke {lockedPhase} jika lockedPhase diisi.
-    //   3. null = semua tab bebas.
-    // [SCOPE: modul-ibu] Logika ini tidak memengaruhi modul lain.
     final Set<String>? effective =
         enabledPhases ?? (lockedPhase != null ? {lockedPhase!} : null);
 
@@ -64,8 +44,6 @@ class DashboardPhaseSelector extends StatelessWidget {
             final label = p['label'] as String;
             final bool isActive = selectedPhase == label;
 
-            // Tab aktif jika tidak ada kunci, atau label ada di set yang diizinkan.
-            // [SCOPE: modul-ibu] isEnabled hanya mengontrol interaktivitas tab ini.
             final bool isEnabled =
                 effective == null || effective.contains(label);
 

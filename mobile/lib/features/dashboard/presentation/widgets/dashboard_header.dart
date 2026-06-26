@@ -9,12 +9,10 @@ class DashboardHeader extends StatelessWidget {
   final VoidCallback onOpenImunisasi;
   final int overdueCount;
 
-  // ── Kontrol pemeriksaan ──
   final bool hasKontrolAlert;
   final String kontrolAlertMessage;
   final VoidCallback? onOpenKontrol;
 
-  // ── TTD / MMS ──
   final bool hasTTDAlert;
   final String ttdAlertMessage;
   final VoidCallback? onOpenTTD;
@@ -27,7 +25,6 @@ class DashboardHeader extends StatelessWidget {
     this.hasKontrolAlert = false,
     this.kontrolAlertMessage = '',
     this.onOpenKontrol,
-    // ── TTD default optional ──
     this.hasTTDAlert = false,
     this.ttdAlertMessage = '',
     this.onOpenTTD,
@@ -65,7 +62,6 @@ class DashboardHeader extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
 
-          // ── Teks kiri ──
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -100,7 +96,6 @@ class DashboardHeader extends StatelessWidget {
           ),
           const SizedBox(width: 12),
 
-          // ── Bell notifikasi ──
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
@@ -151,7 +146,6 @@ class DashboardHeader extends StatelessWidget {
               itemBuilder: (context) {
                 final List<PopupMenuEntry<String>> items = [];
 
-                // ── Item imunisasi ──
                 if (overdueCount > 0) {
                   items.add(PopupMenuItem(
                     value: 'imunisasi',
@@ -194,7 +188,6 @@ class DashboardHeader extends StatelessWidget {
                   ));
                 }
 
-                // ── Item kontrol pemeriksaan ──
                 if (hasKontrolAlert) {
                   if (items.isNotEmpty) items.add(const PopupMenuDivider());
                   items.add(PopupMenuItem(
@@ -246,7 +239,6 @@ class DashboardHeader extends StatelessWidget {
                   ));
                 }
 
-                // ── Item TTD / MMS ──
                 if (hasTTDAlert) {
                   if (items.isNotEmpty) items.add(const PopupMenuDivider());
                   items.add(PopupMenuItem(
@@ -298,7 +290,6 @@ class DashboardHeader extends StatelessWidget {
                   ));
                 }
 
-                // ── Kosong ──
                 if (items.isEmpty) {
                   items.add(const PopupMenuItem(
                     value: 'kosong',
