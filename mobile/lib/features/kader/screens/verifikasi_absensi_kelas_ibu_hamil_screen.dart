@@ -159,9 +159,15 @@ class _VerifikasiAbsensiKelasIbuHamilScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Verifikasi Kelas Ibu Hamil'),
-        backgroundColor: Colors.pink.shade600,
-        foregroundColor: Colors.white,
+        title: const Text(
+          'Verifikasi Kelas Ibu Hamil',
+          style: TextStyle(
+            color: Colors.black87,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black87,
         elevation: 0,
       ),
       body: _isLoading
