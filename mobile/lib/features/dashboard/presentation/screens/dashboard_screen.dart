@@ -71,14 +71,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   String _selectedPhase = 'Hamil';
   int _selectedNavIndex = 0;
 
-  // [SCOPE: modul-ibu] Set fase yang boleh diklik di tab selector.
-  // Aturan bisnis:
-  //   - Status HAMIL  → {'Hamil', 'Menyusui', 'Tumbuh'}   (hanya Nifas dinonaktifkan)
-  //   - Status NIFAS  → {'Nifas', 'Menyusui', 'Tumbuh'}   (hanya Hamil dinonaktifkan)
-  //   - null          → loading / belum diketahui → semua tab bebas
-  // Catatan: 'Menyusui' bisa diakses di KEDUA status (hamil & nifas) karena
-  // edukasinya relevan untuk keduanya.
-  // Variabel ini TIDAK memengaruhi logika modul anak atau modul lainnya.
   Set<String>? _enabledIbuPhases;
 
   final _kehamilanService = KehamilanApiService();

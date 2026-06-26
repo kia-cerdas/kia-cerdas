@@ -2,13 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../data/models/edukasi_asi_model.dart';
 
-/// Halaman DETAIL satu materi edukasi menyusui / ASI Eksklusif.
-///
-/// Dibuka saat ibu mengetuk salah satu kartu di halaman daftar.
-/// Desain disamakan dengan detail edukasi Anak (DetailKontenEdukasiAnakScreen):
-/// AppBar putih simpel, ilustrasi dalam kotak rounded, badge pil abu-abu,
-/// judul, lalu setiap bagian (Tentang Edukasi, Manfaat, Cara, Masalah, Solusi)
-/// dibungkus _SectionCard putih bertajuk dengan daftar bernomor.
 class EdukasiAsiDetailScreen extends StatelessWidget {
   final EdukasiASIModel item;
 
@@ -16,8 +9,6 @@ class EdukasiAsiDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Pecah tiap teks panjang menjadi daftar baris yang sudah bersih
-    // (nomor di awal seperti "1. " ikut dibuang agar tidak dobel).
     final manfaatList = _splitToList(item.manfaatASI);
     final caraList = _splitToList(item.cara);
     final masalahList = _splitToList(item.masalah);
@@ -49,7 +40,6 @@ class EdukasiAsiDetailScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // ===== Thumbnail / Illustration Section =====
           Container(
             height: 180,
             width: double.infinity,
@@ -74,7 +64,6 @@ class EdukasiAsiDetailScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
 
-          // ===== Badges Row =====
           const Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -86,7 +75,6 @@ class EdukasiAsiDetailScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
 
-          // ===== Title =====
           Text(
             item.judul,
             style: const TextStyle(
@@ -97,7 +85,6 @@ class EdukasiAsiDetailScreen extends StatelessWidget {
             ),
           ),
 
-          // ===== Bagian 1: Tentang Edukasi =====
           if (item.isi.trim().isNotEmpty) ...[
             const SizedBox(height: 16),
             _SectionCard(
@@ -113,7 +100,6 @@ class EdukasiAsiDetailScreen extends StatelessWidget {
             ),
           ],
 
-          // ===== Bagian 2: Manfaat ASI =====
           if (manfaatList.isNotEmpty) ...[
             const SizedBox(height: 16),
             _SectionCard(
@@ -122,7 +108,6 @@ class EdukasiAsiDetailScreen extends StatelessWidget {
             ),
           ],
 
-          // ===== Bagian 3: Cara Menyusui yang Benar =====
           if (caraList.isNotEmpty) ...[
             const SizedBox(height: 16),
             _SectionCard(
@@ -131,7 +116,6 @@ class EdukasiAsiDetailScreen extends StatelessWidget {
             ),
           ],
 
-          // ===== Bagian 4: Masalah yang Sering Terjadi =====
           if (masalahList.isNotEmpty) ...[
             const SizedBox(height: 16),
             _SectionCard(
@@ -140,7 +124,6 @@ class EdukasiAsiDetailScreen extends StatelessWidget {
             ),
           ],
 
-          // ===== Bagian 5: Solusi =====
           if (solusiList.isNotEmpty) ...[
             const SizedBox(height: 16),
             _SectionCard(
@@ -239,8 +222,6 @@ class _SectionCard extends StatelessWidget {
   }
 }
 
-/// Daftar bernomor dengan lingkaran nomor biru, mengikuti gaya
-/// "Tutorial Edukasi" pada halaman detail edukasi Anak.
 class _NumberedList extends StatelessWidget {
   final List<String> items;
 

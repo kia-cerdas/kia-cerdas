@@ -5,10 +5,6 @@ import '../../data/repositories/edukasi_asi_repository.dart';
 import '../../data/services/edukasi_asi_service.dart';
 import 'edukasi_asi_detail_screen.dart';
 
-/// Halaman DAFTAR edukasi menyusui / ASI Eksklusif.
-///
-/// Menampilkan SEMUA materi sebagai kartu. Saat satu kartu diketuk,
-/// ibu dibawa ke halaman detail. Pola sama dengan trimester/mental/nifas.
 class EdukasiASIScreen extends StatefulWidget {
   const EdukasiASIScreen({super.key});
 
@@ -68,19 +64,16 @@ class _EdukasiASIScreenState extends State<EdukasiASIScreen> {
       body: FutureBuilder<List<EdukasiASIModel>>(
         future: futureData,
         builder: (context, snapshot) {
-          // 1) Loading
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          // 2) Error
           if (snapshot.hasError) {
             return Center(child: Text(snapshot.error.toString()));
           }
 
           final data = snapshot.data ?? [];
 
-          // 3) Kosong
           if (data.isEmpty) {
             return const Center(
               child: Text(
@@ -90,7 +83,6 @@ class _EdukasiASIScreenState extends State<EdukasiASIScreen> {
             );
           }
 
-          // 4) Tampilkan SEMUA materi sebagai daftar kartu.
           return ListView.builder(
             padding: const EdgeInsets.all(20),
             itemCount: data.length,
@@ -105,7 +97,6 @@ class _EdukasiASIScreenState extends State<EdukasiASIScreen> {
   }
 }
 
-/// Kartu satu materi di halaman daftar.
 class _AsiCard extends StatelessWidget {
   final EdukasiASIModel item;
 
@@ -136,7 +127,6 @@ class _AsiCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Gambar atas (atau placeholder kalau kosong)
             if (item.gambarUrl.trim().isNotEmpty)
               ClipRRect(
                 borderRadius:
@@ -157,7 +147,6 @@ class _AsiCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Badge
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,
@@ -178,7 +167,6 @@ class _AsiCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
 
-                  // Judul
                   Text(
                     item.judul,
                     style: const TextStyle(
@@ -189,7 +177,6 @@ class _AsiCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
 
-                  // Cuplikan isi (maksimal 3 baris)
                   Text(
                     item.isi,
                     maxLines: 3,
@@ -202,7 +189,6 @@ class _AsiCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
 
-                  // "Baca selengkapnya ->"
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: const [
