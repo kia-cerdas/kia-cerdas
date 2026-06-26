@@ -122,8 +122,10 @@ func (u *riwayatCardUsecase) GetRiwayatCard(ctx context.Context, pendudukID int3
             if hasPred {
                 if latestPred.StatusPrediksi == "Stunting" {
                     ris = "Tinggi"
-                } else if latestPred.StatusPrediksi == "Risiko Stunting" {
+                } else if latestPred.StatusPrediksi == "Risiko Stunting Sedang" {
                     ris = "Sedang"
+                } else if latestPred.StatusPrediksi == "Risiko Stunting Ringan" {
+                    ris = "Rendah"
                 }
             }
 

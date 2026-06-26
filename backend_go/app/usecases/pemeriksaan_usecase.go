@@ -423,8 +423,10 @@ func (u *pemeriksaanUsecase) GetDetailPemeriksaan(ctx context.Context, id uint) 
 		if hasPred {
 			if latestPred.StatusPrediksi == "Stunting" {
 				ris = "Tinggi"
-			} else if latestPred.StatusPrediksi == "Risiko Stunting" {
+			} else if latestPred.StatusPrediksi == "Risiko Stunting Sedang" {
 				ris = "Sedang"
+			} else if latestPred.StatusPrediksi == "Risiko Stunting Ringan" {
+				ris = "Rendah"
 			}
 		}
 
