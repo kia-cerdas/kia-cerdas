@@ -14,10 +14,15 @@ import (
 )
 
 type MeFullResponse struct {
-	UserID int32  `json:"user_id"`
-	Name   string `json:"name"`
-	Email  string `json:"email"`
-	Role   string `json:"role"`
+	UserID    int32   `json:"user_id"`
+	Name      string  `json:"name"`
+	Email     string  `json:"email"`
+	Role      string  `json:"role"`
+	DesaName  *string `json:"desa_name,omitempty"`
+	BidanInfo *struct {
+		PosyanduName string `json:"posyandu_name"`
+		DesaName     string `json:"desa_name"`
+	} `json:"bidan_info,omitempty"`
 }
 
 // Me - GET /auth/me
@@ -36,12 +41,36 @@ func (m *Main) Me(c echo.Context) error {
 		}, nil)
 	}
 
-	return helpers.StandardResponse(c, http.StatusOK, []string{constants.SUCCESS_RESPONSE_MESSAGE}, MeFullResponse{
+	response := MeFullResponse{
 		UserID: user.ID,
 		Name:   user.Username,
 		Email:  user.Email,
 		Role:   claims.Role,
-	}, nil)
+	}
+
+	// Jika user adalah bidan, ambil informasi desa dari posyandu
+	if claims.Role == "bidan" {
+		var bidan models.Bidan
+		if err := m.db.
+			Preload("Posyandu.Desa").
+			Where("penduduk_id = ?", user.PendudukID).
+			First(&bidan).Error; err == nil {
+			if bidan.Posyandu != nil && bidan.Posyandu.Desa != nil {
+				response.BidanInfo = &struct {
+					PosyanduName string `json:"posyandu_name"`
+					DesaName     string `json:"desa_name"`
+				}{
+					PosyanduName: bidan.Posyandu.Nama,
+					DesaName:     bidan.Posyandu.Desa.NamaDesa,
+				}
+				// Set desa_name untuk backward compatibility
+				desaName := bidan.Posyandu.Desa.NamaDesa
+				response.DesaName = &desaName
+			}
+		}
+	}
+
+	return helpers.StandardResponse(c, http.StatusOK, []string{constants.SUCCESS_RESPONSE_MESSAGE}, response, nil)
 }
 
 // UpdateMe - PUT /auth/me

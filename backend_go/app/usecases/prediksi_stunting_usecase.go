@@ -72,14 +72,16 @@ func (u *prediksiStuntingUsecase) PredictStunting(ctx context.Context, req *mode
 		return nil, err
 	}
 
-	// Map classification to status_prediksi
+	// Map classification to status_prediksi (4 kelas ML → 4 status UI)
 	var statusPrediksi string
 	switch prediksi.Classification {
 	case "STUNTING":
 		statusPrediksi = "Stunting"
+	case "AT_RISK_HIGH":
+		statusPrediksi = "Risiko Stunting Sedang"
 	case "AT_RISK":
-		statusPrediksi = "Risiko Stunting"
-	default:
+		statusPrediksi = "Risiko Stunting Ringan"
+	default: // NORMAL
 		statusPrediksi = "Normal"
 	}
 

@@ -1,0 +1,59 @@
+{
+  "model_name": "LightGBM",
+  "feature_cols": [
+    "ZS BB/U",
+    "Tinggi",
+    "Berat",
+    "bmi",
+    "BB Lahir",
+    "ZS BB/TB",
+    "LiLA",
+    "velocity_berat",
+    "velocity_tinggi",
+    "usia_bulan",
+    "TB Lahir",
+    "jk_enc"
+  ],
+  "all_feature_cols": [
+    "usia_bulan",
+    "jk_enc",
+    "BB Lahir",
+    "TB Lahir",
+    "Berat",
+    "Tinggi",
+    "LiLA",
+    "ZS BB/U",
+    "ZS BB/TB",
+    "bmi",
+    "naik_bb_enc",
+    "cara_ukur_enc",
+    "velocity_berat",
+    "velocity_tinggi"
+  ],
+  "class_names": [
+    "Normal",
+    "Risiko Stunting Ringan",
+    "Risiko Stunting Sedang",
+    "Risiko Stunting Tinggi"
+  ],
+  "best_params": {
+    "n_estimators": "605",
+    "learning_rate": "0.03497031381233464",
+    "num_leaves": "54",
+    "max_depth": "10",
+    "min_child_samples": "36",
+    "subsample": "0.9284033502350001",
+    "colsample_bytree": "0.9942128018748264",
+    "reg_alpha": "0.0003669476486129187",
+    "reg_lambda": "0.0006597524455754468"
+  },
+  "metrics": {
+    "accuracy": 0.9777,
+    "balanced_accuracy": 0.8753,
+    "f1_macro": 0.9046,
+    "f1_weighted": 0.9774
+  },
+  "mi_threshold": 0.005,
+  "smote_target_n": 523,
+  "random_state": 42
+}

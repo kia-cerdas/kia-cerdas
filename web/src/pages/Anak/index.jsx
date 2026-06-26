@@ -92,10 +92,15 @@ export default function AnakListNakes() {
     return date.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
   };
 
+  // Konstanta: minimal catatan pertumbuhan untuk mendeteksi status stunting
+  const MIN_PENGUKURAN = 3;
+
   // Gunakan status_prediksi dari field anak (di-set backend setelah prediksi)
-  const normalCount = children.filter((c) => c.status_prediksi === "Normal").length;
-  const risikoCount = children.filter((c) => c.status_prediksi === "Risiko Stunting").length;
-  const stuntingCount = children.filter((c) => c.status_prediksi === "Stunting").length;
+  // Hanya hitung anak yang sudah punya >= 3 pengukuran
+  const belumTerdeteksiCount = children.filter((c) => (c.jumlah_pengukuran || 0) < MIN_PENGUKURAN).length;
+  const normalCount = children.filter((c) => (c.jumlah_pengukuran || 0) >= MIN_PENGUKURAN && c.status_prediksi === "Normal").length;
+  const risikoCount = children.filter((c) => (c.jumlah_pengukuran || 0) >= MIN_PENGUKURAN && (c.status_prediksi === "Risiko Stunting Ringan" || c.status_prediksi === "Risiko Stunting Sedang")).length;
+  const stuntingCount = children.filter((c) => (c.jumlah_pengukuran || 0) >= MIN_PENGUKURAN && c.status_prediksi === "Stunting").length;
 
   // --- LOGIC FILTER & PAGINATION ---
   const normalizedSearch = searchTerm.toLowerCase();
@@ -105,9 +110,11 @@ export default function AnakListNakes() {
   );
 
   const filteredChildren = searchFiltered.filter((c) => {
-    if (activeQuickFilter === "normal") return c.status_prediksi === "Normal";
-    if (activeQuickFilter === "risiko") return c.status_prediksi === "Risiko Stunting";
-    if (activeQuickFilter === "stunting") return c.status_prediksi === "Stunting";
+    const cukup = (c.jumlah_pengukuran || 0) >= MIN_PENGUKURAN;
+    if (activeQuickFilter === "belum") return !cukup;
+    if (activeQuickFilter === "normal") return cukup && c.status_prediksi === "Normal";
+    if (activeQuickFilter === "risiko") return cukup && (c.status_prediksi === "Risiko Stunting Ringan" || c.status_prediksi === "Risiko Stunting Sedang");
+    if (activeQuickFilter === "stunting") return cukup && c.status_prediksi === "Stunting";
     return true;
   });
 
@@ -129,7 +136,7 @@ export default function AnakListNakes() {
           </div>
 
           {/* Dashboard Cards */}
-          <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-5">
             {/* Total */}
             <DashCard
               label="Total Balita"
@@ -144,6 +151,21 @@ export default function AnakListNakes() {
               iconColorInactive="text-blue-600"
               labelColorActive="text-blue-100"
               onClick={() => handleQuickFilterChange("all")}
+            />
+            {/* Belum Terdeteksi */}
+            <DashCard
+              label="Belum Terdeteksi"
+              count={belumTerdeteksiCount}
+              icon={<Minus size={20} />}
+              active={activeQuickFilter === "belum"}
+              colorActive="bg-gray-500 border-gray-500 shadow-gray-100"
+              colorInactive="bg-white border-gray-200 hover:border-gray-300"
+              iconBgActive="bg-white/20"
+              iconBgInactive="bg-gray-50"
+              iconColorActive="text-white"
+              iconColorInactive="text-gray-400"
+              labelColorActive="text-gray-100"
+              onClick={() => handleQuickFilterChange("belum")}
             />
             {/* Normal */}
             <DashCard
@@ -252,7 +274,7 @@ export default function AnakListNakes() {
                     <td className="px-6 py-4 text-sm font-semibold text-gray-800">{child.nama}</td>
                     <td className="px-6 py-4 text-sm text-gray-600">{child.jenis_kelamin || "-"}</td>
                     <td className="px-6 py-4">
-                      <StatusBadge status={child.status_prediksi} />
+                      <StatusBadge status={child.status_prediksi} jumlahPengukuran={child.jumlah_pengukuran} />
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">{formatDate(child.tanggal_lahir)}</td>
                     <td className="px-6 py-4 text-sm text-gray-600">{child.usia_teks || "-"}</td>
@@ -306,7 +328,7 @@ export default function AnakListNakes() {
                       <p className="text-sm font-bold text-gray-800 truncate">{child.nama}</p>
                       <p className="text-xs text-gray-500 mt-0.5">Ibu: {child.kehamilan?.ibu?.nama_ibu || "-"}</p>
                     </div>
-                    <StatusBadge status={child.status_prediksi} />
+                    <StatusBadge status={child.status_prediksi} jumlahPengukuran={child.jumlah_pengukuran} />
                   </div>
                   <div className="grid grid-cols-3 gap-2 text-xs text-gray-500 mb-3">
                     <div>
@@ -414,7 +436,17 @@ function DashCard({ label, count, icon, active, colorActive, colorInactive, icon
   );
 }
 
-function StatusBadge({ status }) {
+function StatusBadge({ status, jumlahPengukuran }) {
+  const MIN_PENGUKURAN = 3;
+  const cukup = (jumlahPengukuran || 0) >= MIN_PENGUKURAN;
+
+  if (!cukup) {
+    return (
+      <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-500 border border-slate-200" title={`Perlu minimal ${MIN_PENGUKURAN} kali pengukuran antropometri`}>
+        <Minus size={10} /> Belum dapat dideteksi ({jumlahPengukuran || 0}/{MIN_PENGUKURAN})
+      </span>
+    );
+  }
   if (!status) {
     return (
       <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-gray-100 text-gray-400 border border-gray-200">
@@ -424,7 +456,9 @@ function StatusBadge({ status }) {
   }
   if (status === "Stunting")
     return <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-red-100 text-red-700 border border-red-200">🔴 Stunting</span>;
-  if (status === "Risiko Stunting")
-    return <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 border border-amber-200">🟡 Risiko Stunting</span>;
+  if (status === "Risiko Stunting Sedang")
+    return <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-orange-100 text-orange-700 border border-orange-200">🟠 Risiko Stunting Sedang</span>;
+  if (status === "Risiko Stunting Ringan")
+    return <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-yellow-100 text-yellow-700 border border-yellow-200">🟡 Risiko Stunting Ringan</span>;
   return <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-green-100 text-green-700 border border-green-200">🟢 Normal</span>;
 }

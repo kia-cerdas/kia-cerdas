@@ -452,11 +452,19 @@ func (u *AnakUseCase) AdminListAnak(kehamilanID int32) ([]models.AnakResponse, e
 		predMap, _ = u.prediksiStuntingRepo.GetLatestPredictionsByAnakIDs(ids)
 	}
 
+	// Hitung jumlah catatan pertumbuhan (antropometri) per anak
+	countMap, _ := u.prediksiStuntingRepo.GetMeasurementCountByAnakIDs(ids)
+
 	for _, k := range list {
 		resp := u.toAnakResponse(&k)
 		if predMap != nil {
 			if status, ok := predMap[k.ID]; ok {
 				resp.StatusPrediksi = status
+			}
+		}
+		if countMap != nil {
+			if cnt, ok := countMap[k.ID]; ok {
+				resp.JumlahPengukuran = cnt
 			}
 		}
 		result = append(result, resp)
@@ -515,11 +523,19 @@ func (u *AnakUseCase) ListAnakByDesa(desaID *int32, kehamilanID int32) ([]models
 		predMap, _ = u.prediksiStuntingRepo.GetLatestPredictionsByAnakIDs(ids)
 	}
 
+	// Hitung jumlah catatan pertumbuhan (antropometri) per anak
+	countMap, _ := u.prediksiStuntingRepo.GetMeasurementCountByAnakIDs(ids)
+
 	for _, k := range list {
 		resp := u.toAnakResponse(&k)
 		if predMap != nil {
 			if status, ok := predMap[k.ID]; ok {
 				resp.StatusPrediksi = status
+			}
+		}
+		if countMap != nil {
+			if cnt, ok := countMap[k.ID]; ok {
+				resp.JumlahPengukuran = cnt
 			}
 		}
 		result = append(result, resp)
@@ -719,11 +735,19 @@ func (u *AnakUseCase) ListAnakByPosyandu(posyanduID *int32, kehamilanID int32) (
 		predMap, _ = u.prediksiStuntingRepo.GetLatestPredictionsByAnakIDs(ids)
 	}
 
+	// Hitung jumlah catatan pertumbuhan (antropometri) per anak
+	countMap, _ := u.prediksiStuntingRepo.GetMeasurementCountByAnakIDs(ids)
+
 	for _, k := range list {
 		resp := u.toAnakResponse(&k)
 		if predMap != nil {
 			if status, ok := predMap[k.ID]; ok {
 				resp.StatusPrediksi = status
+			}
+		}
+		if countMap != nil {
+			if cnt, ok := countMap[k.ID]; ok {
+				resp.JumlahPengukuran = cnt
 			}
 		}
 		result = append(result, resp)

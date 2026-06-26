@@ -39,9 +39,9 @@ type PrediksiStunting struct {
 	
 	// Hasil prediksi
 	RiskPercentage    float64   `gorm:"type:decimal(5,2);not null" json:"risk_percentage"`
-	Classification    string    `gorm:"type:varchar(20);not null" json:"classification"`     // STUNTING, AT_RISK, NORMAL
+	Classification    string    `gorm:"type:varchar(20);not null" json:"classification"`     // NORMAL, AT_RISK, AT_RISK_HIGH, STUNTING
 	Confidence        float64   `gorm:"type:decimal(5,2)" json:"confidence"`
-	StatusPrediksi    string    `gorm:"column:status_prediksi;type:varchar(30)" json:"status_prediksi"`
+	StatusPrediksi    string    `gorm:"column:status_prediksi;type:varchar(50)" json:"status_prediksi"` // Normal, Risiko Stunting Ringan, Risiko Stunting Sedang, Stunting
 	
 	// Data tambahan dari WHO standards
 	ZScoreTBU         float64   `gorm:"type:decimal(5,2)" json:"z_score_tb_u"`

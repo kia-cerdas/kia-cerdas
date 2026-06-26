@@ -15,6 +15,7 @@ type PrediksiStuntingRepository interface {
 	GetLatestPredictionByAnakID(anakID int32) (*models.PrediksiStunting, error)
 	UpdateAnakStatusPrediksi(anakID int32, status string) error
 	GetLatestPredictionsByAnakIDs(anakIDs []int32) (map[int32]string, error)
+	GetMeasurementCountByAnakIDs(anakIDs []int32) (map[int32]int, error)
 }
 
 type prediksiStuntingRepository struct {
@@ -152,5 +153,35 @@ func (r *prediksiStuntingRepository) GetLatestPredictionsByAnakIDs(anakIDs []int
 	}
 
 	return predMap, nil
+}
+
+// GetMeasurementCountByAnakIDs menghitung jumlah catatan pertumbuhan untuk setiap anak.
+func (r *prediksiStuntingRepository) GetMeasurementCountByAnakIDs(anakIDs []int32) (map[int32]int, error) {
+	if len(anakIDs) == 0 {
+		return make(map[int32]int), nil
+	}
+
+	type CountResult struct {
+		AnakID int32 `gorm:"column:anak_id"`
+		Count  int   `gorm:"column:count"`
+	}
+	var counts []CountResult
+
+	err := r.db.Table("catatan_pertumbuhan").
+		Select("anak_id, COUNT(*) as count").
+		Where("anak_id IN ? AND deleted_at IS NULL", anakIDs).
+		Group("anak_id").
+		Scan(&counts).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	countMap := make(map[int32]int)
+	for _, c := range counts {
+		countMap[c.AnakID] = c.Count
+	}
+
+	return countMap, nil
 }
 

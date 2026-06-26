@@ -262,8 +262,10 @@ func (u *dashboardUsecase) GetKesehatanPerKelompok(posyanduID *int32, role strin
 					switch a.StatusPrediksi {
 					case "Stunting":
 						balitaRisk["Tinggi"]++
-					case "Risiko Stunting":
+					case "Risiko Stunting Sedang":
 						balitaRisk["Sedang"]++
+					case "Risiko Stunting Ringan":
+						balitaRisk["Rendah"]++
 					case "Normal":
 						balitaRisk["Rendah"]++
 					}

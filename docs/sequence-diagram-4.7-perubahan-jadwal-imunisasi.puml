@@ -1,0 +1,142 @@
+@startuml
+actor "Bidan Desa" as Bidan
+participant "Web UI" as Web
+participant "RequestPerubahanImunisasiController" as Controller
+participant "RequestPerubahanImunisasiUsecase" as Usecase
+participant "Repository" as Repo
+participant "Database" as DB
+
+Bidan -> Web: Buka Halaman\nPermintaan Perubahan Jadwal
+activate Bidan
+activate Web
+
+Web -> Controller: GET /bidan/request-perubahan-jadwal-imunisasi
+activate Controller
+
+Controller -> Usecase: GetAllRequestPerubahanJadwal(posyanduID)
+activate Usecase
+
+Usecase -> Repo: GetAllRequestPerubahanJadwal(posyanduID)
+activate Repo
+
+Repo -> DB: SELECT r.id, r.id_status_request,\nr.tanggal_sebelum, r.tanggal_baru,\nr.alasan, d.nama_dosis,\np.nama_anggota_keluarga\nFROM request_perubahan_imunisasi r\nJOIN jadwal_imunisasi_anak j\nON j.id = r.id_jadwal_imunisasi\nJOIN dosis_vaksin d ON d.id = j.id_dosis_vaksin\nJOIN anak a ON a.id = j.id_anak\nJOIN penduduk p ON p.id = a.penduduk_id\nWHERE posyandu_id = ?
+activate DB
+DB --> Repo: []RequestPerubahanJadwal
+deactivate DB
+
+Repo --> Usecase: data
+deactivate Repo
+
+Usecase --> Controller: response
+deactivate Usecase
+
+Controller --> Web: 200 OK + data
+deactivate Controller
+
+Web --> Bidan: Tampilkan Tabel Permintaan
+
+alt Bidan Menyetujui Permintaan
+
+    Bidan -> Web: Klik Tombol "Terima"
+    Web -> Bidan: Konfirmasi Approval
+    Bidan -> Web: Konfirmasi Ya
+    
+    Web -> Controller: PUT /bidan/request-perubahan-jadwal-imunisasi/:id/approve
+    activate Controller
+    
+    Controller -> Usecase: ApproveRequestPerubahanJadwal(requestID)
+    activate Usecase
+    
+    Usecase -> Repo: GetRequestPerubahanByID(requestID)
+    activate Repo
+    
+    Repo -> DB: SELECT * FROM request_perubahan_imunisasi\nWHERE id = ?
+    activate DB
+    DB --> Repo: requestData
+    deactivate DB
+    
+    Repo --> Usecase: requestData
+    deactivate Repo
+    
+    Usecase -> Usecase: Validasi status == 2 (Menunggu)
+    
+    Usecase -> Repo: UpdateStatusRequestPerubahan(requestID, 1)
+    activate Repo
+    
+    Repo -> DB: UPDATE request_perubahan_imunisasi\nSET id_status_request = 1\nWHERE id = ?
+    activate DB
+    DB --> Repo: success
+    deactivate DB
+    
+    Repo --> Usecase: success
+    deactivate Repo
+    
+    Usecase -> Repo: UpdateTanggalJadwalImunisasi(jadwalID, tanggalBaru)
+    activate Repo
+    
+    Repo -> DB: UPDATE jadwal_imunisasi_anak\nSET tanggal_estimasi = ?\nWHERE id = ?
+    activate DB
+    DB --> Repo: success
+    deactivate DB
+    
+    Repo --> Usecase: success
+    deactivate Repo
+    
+    Usecase --> Controller: success
+    deactivate Usecase
+    
+    Controller --> Web: 200 OK
+    deactivate Controller
+    
+    Web --> Bidan: Tampilkan Sukses:\n"Permintaan berhasil disetujui"
+    
+else Bidan Menolak Permintaan
+
+    Bidan -> Web: Klik Tombol "Tolak"
+    Web -> Bidan: Konfirmasi Rejection
+    Bidan -> Web: Konfirmasi Ya
+    
+    Web -> Controller: PUT /bidan/request-perubahan-jadwal-imunisasi/:id/reject
+    activate Controller
+    
+    Controller -> Usecase: RejectRequestPerubahanJadwal(requestID)
+    activate Usecase
+    
+    Usecase -> Repo: GetRequestPerubahanByID(requestID)
+    activate Repo
+    
+    Repo -> DB: SELECT * FROM request_perubahan_imunisasi\nWHERE id = ?
+    activate DB
+    DB --> Repo: requestData
+    deactivate DB
+    
+    Repo --> Usecase: requestData
+    deactivate Repo
+    
+    Usecase -> Usecase: Validasi status == 2 (Menunggu)
+    
+    Usecase -> Repo: UpdateStatusRequestPerubahan(requestID, 3)
+    activate Repo
+    
+    Repo -> DB: UPDATE request_perubahan_imunisasi\nSET id_status_request = 3\nWHERE id = ?
+    activate DB
+    DB --> Repo: success
+    deactivate DB
+    
+    Repo --> Usecase: success
+    deactivate Repo
+    
+    Usecase --> Controller: success
+    deactivate Usecase
+    
+    Controller --> Web: 200 OK
+    deactivate Controller
+    
+    Web --> Bidan: Tampilkan Sukses:\n"Permintaan berhasil ditolak"
+
+end
+
+deactivate Web
+deactivate Bidan
+
+@enduml

@@ -1,0 +1,84 @@
+@startuml
+actor "Bidan Desa" as Bidan
+participant "Web UI" as Web
+participant "PencatatanImunisasiController" as Controller
+participant "PencatatanImunisasiUsecase" as Usecase
+participant "PencatatanImunisasiRepository" as Repo
+participant "JadwalImunisasiBidanController" as JadwalCtrl
+participant "Database" as DB
+
+Bidan -> Web: Buka Halaman Pelayanan Imunisasi
+activate Bidan
+activate Web
+
+Web --> Bidan: Tampilkan Tabel Jadwal Imunisasi
+Bidan -> Web: Klik Tombol PARAF IMUNISASI
+Web --> Bidan: Tampilkan Modal Form
+Bidan -> Web: Pilih Vaksin & Submit
+
+loop Untuk setiap vaksin yang dipilih
+
+    Web -> Controller: POST /bidan/pencatatan-imunisasi
+    activate Controller
+    
+    Controller -> Usecase: Create(data)
+    activate Usecase
+    
+    Usecase -> Repo: Create(data)
+    activate Repo
+    
+    Repo -> DB: INSERT INTO pencatatan_imunisasi\n(id_jadwal_imunisasi_anak,\ntanggal_pemberian, nomor_batch,\ncatatan, is_selesai, id_bidan_petugas)\nVALUES (?, ?, ?, ?, false, ?)
+    activate DB
+    DB --> Repo: pencatatanID
+    deactivate DB
+    
+    Repo --> Usecase: success
+    deactivate Repo
+    
+    Usecase --> Controller: success
+    deactivate Usecase
+    
+    Controller --> Web: 201 Created
+    deactivate Controller
+    
+    Web -> Controller: PUT /bidan/pencatatan-imunisasi/:id/selesai
+    activate Controller
+    
+    Controller -> Usecase: SetSelesai(pencatatanID)
+    activate Usecase
+    
+    Usecase -> Repo: SetSelesai(pencatatanID)
+    activate Repo
+    
+    Repo -> DB: UPDATE pencatatan_imunisasi\nSET is_selesai = true\nWHERE id = ?
+    activate DB
+    DB --> Repo: success
+    deactivate DB
+    
+    Repo --> Usecase: success
+    deactivate Repo
+    
+    Usecase --> Controller: success
+    deactivate Usecase
+    
+    Controller --> Web: 200 OK
+    deactivate Controller
+    
+    Web -> JadwalCtrl: PUT /bidan/imunisasi/:jadwal_id/selesai
+    activate JadwalCtrl
+    
+    JadwalCtrl -> DB: UPDATE jadwal_imunisasi_anak\nSET id_status_jadwal = 6\nWHERE id = ?
+    activate DB
+    DB --> JadwalCtrl: success
+    deactivate DB
+    
+    JadwalCtrl --> Web: 200 OK
+    deactivate JadwalCtrl
+
+end
+
+Web --> Bidan: Tampilkan Sukses
+deactivate Web
+deactivate Bidan
+
+@enduml
