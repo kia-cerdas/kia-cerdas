@@ -934,6 +934,7 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	// Catatan: Ibu tidak memiliki akses UPDATE/DELETE/VERIFY untuk menjaga integritas rekam medis
 
 	// ==================== IMUNISASI ====================
+	ibu.GET("/imunisasi/sync", controller.GetImunisasiSync)
 	ibu.GET("/jadwal-imunisasi", controller.GetJadwalImunisasi)
 	ibu.GET("/jadwal-imunisasi/anak/:anak_id", controller.GetJadwalImunisasiByAnakID)
 	ibu.PUT("/jadwal-imunisasi/:id/tanggal-estimasi", controller.UpdateTanggalEstimasi)

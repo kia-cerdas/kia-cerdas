@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:ta_pa2_pa3_project/core/services/auth_session.dart';
+import 'package:ta_pa2_pa3_project/db/imunisasi_pull_service.dart';
 import 'package:ta_pa2_pa3_project/features/auth/data/datasources/auth_api_services.dart';
 import 'package:ta_pa2_pa3_project/features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:ta_pa2_pa3_project/features/kader/presentation/dashboard_screen.dart';
@@ -56,6 +57,11 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
 
       final role = AuthSession.role?.toLowerCase();
+
+      // Pull data imunisasi ke SQLite lokal jika login sebagai ibu
+      if (role != 'kader' && AuthSession.token != null) {
+        ImunisasiPullService().pull(AuthSession.token!);
+      }
 
       // Tampilkan popup sukses dan tunggu sampai selesai
       await _showSuccessPopup();

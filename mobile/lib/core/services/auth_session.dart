@@ -12,11 +12,13 @@ class AuthSession {
   static const String _redirectRouteKey = 'auth_redirect_route';
 
   static const String _reminderShownKey = 'auth_tumbuh_reminder_shown';
+  static const String _userIDKey = 'auth_user_id';
 
   static String? token;
   static String? userName;
   static String? role;
   static String? redirectRoute;
+  static int? userID;
 
   static bool isReminderShown = false;
 
@@ -45,11 +47,14 @@ class AuthSession {
           _reminderShownKey,
         ) ??
         false;
+
+    userID = prefs.getInt(_userIDKey);
   }
 
   static Future<void> save({
     required String accessToken,
     String? name,
+    int? id,
     String? userRole,
     String? redirect,
   }) async {
@@ -57,6 +62,7 @@ class AuthSession {
     userName = name;
     role = userRole;
     redirectRoute = redirect;
+    userID = id;
 
     final prefs = await SharedPreferences.getInstance();
 
@@ -67,10 +73,11 @@ class AuthSession {
 
     isReminderShown = false;
 
-    await prefs.setBool(
-      _reminderShownKey,
-      false,
-    );
+    await prefs.setBool(_reminderShownKey, false);
+
+    if (id != null) {
+      await prefs.setInt(_userIDKey, id);
+    }
 
     if (name != null) {
       await prefs.setString(

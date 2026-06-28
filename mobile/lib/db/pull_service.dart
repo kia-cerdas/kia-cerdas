@@ -7,8 +7,7 @@ import 'app_database.dart';
 class PullService {
   final AppDatabase _dbInstance = AppDatabase.instance;
   
-  // PERBAIKAN: Ditambahkan port :8080 sesuai dengan konfigurasi endpoint Echo Golang kamu
-  final String _baseUrl = 'http://10.77.214.125:8080/ibu';
+  final String _baseUrl = 'https://api.generasisehat.com/ibu';
 
   // Fungsi Utama untuk Menarik Seluruh Data Transaksional Terbaru dari Cloud Server
   Future<void> executeBulkPull(String tokenJwt) async {

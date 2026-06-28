@@ -173,38 +173,36 @@ class AppDatabase {
       )
     '''); // [cite: 2]
 
-    await db.execute('''
-      CREATE TABLE penduduk (
-        id TEXT PRIMARY KEY,
-        kartu_keluarga_id TEXT,
-        nik TEXT,
-        nama_lengkap TEXT NOT NULL,
-        jenis_kelamin TEXT,
-        tanggal_lahir TEXT,
-        tempat_lahir TEXT,
-        golongan_darah TEXT,
-        agama TEXT,
-        status_perkawinan TEXT,
-        pendidikan_terakhir TEXT,
-        pekerjaan TEXT,
-        baca_huruf TEXT,
-        kedudukan_keluarga TEXT,
-        dusun TEXT,
-        kecamatan TEXT,
-        desa_id TEXT,
-        tanggal_penambahan TEXT,
-        asal_penduduk TEXT,
-        tanggal_pengurangan TEXT,
-        tujuan_pindah TEXT,
-        tempat_meninggal TEXT,
-        keterangan TEXT,
-        is_non_ktp INTEGER DEFAULT 0,
-        created_at TEXT,
-        updated_at TEXT,
-        deleted_at TEXT,
-        telepon TEXT,
-        is_synced INTEGER DEFAULT 0
-      )
+await db.execute('''
+  CREATE TABLE penduduk (
+    id TEXT PRIMARY KEY,
+    rw TEXT,
+    rt TEXT,
+    dusun TEXT,
+    alamat TEXT,
+    kode_keluarga TEXT,
+    nama_kepala_keluarga TEXT,
+    nik TEXT,
+    nama_anggota_keluarga TEXT,
+    jenis_kelamin TEXT,
+    hubungan TEXT,
+    tempat_lahir TEXT,
+    tanggal_lahir TEXT,
+    status TEXT,
+    agama TEXT,
+    golongan_darah TEXT,
+    kewarganegaraan TEXT DEFAULT 'WNI',
+    etnis_suku TEXT,
+    pendidikan TEXT,
+    pekerjaan TEXT,
+    telepon TEXT,
+    desa_id INTEGER,
+    posyandu_id INTEGER,
+    created_at TEXT,
+    updated_at TEXT,
+    deleted_at TEXT,
+    is_synced INTEGER DEFAULT 0
+  )
     '''); // [cite: 2, 3]
 
     await db.execute('''

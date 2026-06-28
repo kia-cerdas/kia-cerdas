@@ -12,6 +12,23 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+// GetImunisasiSync mengembalikan seluruh data yang dibutuhkan halaman imunisasi ibu
+// dalam satu response — untuk disimpan ke SQLite lokal (offline-first).
+func (m *Main) GetImunisasiSync(c echo.Context) error {
+	claimsValue := c.Get("auth_claims")
+	claims, ok := claimsValue.(*models.AuthClaims)
+	if !ok {
+		return helpers.Response(c, http.StatusUnauthorized, []string{"user tidak valid"})
+	}
+
+	data, err := m.usecases.GetImunisasiSyncData(int32(claims.UserID))
+	if err != nil {
+		return helpers.Response(c, http.StatusInternalServerError, []string{err.Error()})
+	}
+
+	return helpers.StandardResponse(c, http.StatusOK, []string{"success"}, data, nil)
+}
+
 func (m *Main) GetJadwalImunisasi(
 	c echo.Context,
 ) error {
