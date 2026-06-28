@@ -3,9 +3,14 @@ package usecases
 import (
 	"fmt"
 	"monitoring-service/app/models"
+	"monitoring-service/app/repositories"
 	"sort"
 	"time"
 )
+
+func (m *Main) GetImunisasiSyncData(userID int32) (*repositories.ImunisasiSyncData, error) {
+	return m.repository.GetImunisasiSyncData(userID)
+}
 
 func (m *Main) GetJadwalImunisasi(
 	userID int32,

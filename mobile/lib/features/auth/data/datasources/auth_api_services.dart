@@ -73,6 +73,7 @@ class AuthApiService {
       name: data['name']?.toString(),
       userRole: data['role']?.toString(),
       redirect: data['redirect_route']?.toString(),
+      id: int.tryParse(data['user_id']?.toString() ?? ''),
     );
   }
 
