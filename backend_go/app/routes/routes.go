@@ -963,6 +963,7 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	kader.GET("/kunjungan-imunisasi/status/:status_id", controller.GetKunjunganImunisasiByStatus)
 	kader.GET("/status-kunjungan/count", controller.GetJumlahKunjunganByStatus)
 	kader.GET("/ringkasan-desa", controller.RingkasanDesa.GetRingkasanDesaKader)
+	kader.POST("/test-kunjungan-reminder", controller.TestKunjunganImunisasiReminder)
 
 	// Absensi Kelas Ibu Balita (Kader)
 	kader.GET("/absensi-kelas-ibu-balita", controller.AbsensiKelasIbuBalita.GetAll)

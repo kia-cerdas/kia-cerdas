@@ -53,60 +53,37 @@ func (u *Main) sendKunjunganReminderToKader(targetDate time.Time, label string) 
 		return nil
 	}
 
-	// Kelompokkan per kader agar satu notifikasi = ringkasan semua kunjungan kader itu
-	type kaderInfo struct {
-		namaAnak  []string
-		namaDosis []string
-	}
-
-	kaderMap := map[uint]*kaderInfo{}
-
+	// Kirim satu notifikasi per anak per kader
 	for _, row := range rows {
 		if row.KaderID == 0 {
 			continue
 		}
 
-		if _, ok := kaderMap[row.KaderID]; !ok {
-			kaderMap[row.KaderID] = &kaderInfo{}
-		}
-
-		kaderMap[row.KaderID].namaAnak = append(kaderMap[row.KaderID].namaAnak, row.NamaAnak)
-		kaderMap[row.KaderID].namaDosis = append(kaderMap[row.KaderID].namaDosis, row.NamaDosis)
-	}
-
-	tglStr := targetDate.Format("02 January 2006")
-
-	for kaderID, info := range kaderMap {
-
-		jumlah := len(info.namaAnak)
-
 		var title, body string
 
 		switch label {
 		case "hari-H":
-			title = "Kunjungan Pengingat Imunisasi Hari Ini"
-			body = "Ada " + itoa(jumlah) + " jadwal kunjungan pengingat imunisasi hari ini (" + tglStr + "). " +
-				"Kunjungi keluarga dan ingatkan mereka untuk segera membawa anak ke posyandu."
-
+			title = "Pengingat Kunjungan Imunisasi"
+			body = "Kunjungi anak " + row.NamaAnak + " hari ini, jadwal " + row.NamaDosis + " nya terlewat"
 		case "H-3":
-			title = "Pengingat: Jadwal Kunjungan 3 Hari Lagi"
-			body = "Ada " + itoa(jumlah) + " jadwal kunjungan pengingat imunisasi pada " + tglStr + ". " +
-				"Persiapkan daftar keluarga yang akan dikunjungi."
+			title = "Pengingat Kunjungan Imunisasi"
+			body = "Kunjungi anak " + row.NamaAnak + " minggu ini, jadwal " + row.NamaDosis + " nya terlewat"
 		}
 
-		tokens, err := u.repository.GetFCMTokensByKaderID(kaderID)
+		tokens, err := u.repository.GetFCMTokensByKaderID(row.KaderID)
 		if err != nil {
-			log.Printf("[KUNJUNGAN REMINDER %s] gagal ambil token kader_id=%d: %v", label, kaderID, err)
+			log.Printf("[KUNJUNGAN REMINDER %s] gagal ambil token kader_id=%d: %v", label, row.KaderID, err)
 			continue
 		}
 
 		if len(tokens) == 0 {
-			log.Printf("[KUNJUNGAN REMINDER %s] tidak ada token untuk kader_id=%d", label, kaderID)
+			log.Printf("[KUNJUNGAN REMINDER %s] tidak ada token untuk kader_id=%d", label, row.KaderID)
 			continue
 		}
 
 		fcmData := map[string]string{
-			"type": "kunjungan_imunisasi_reminder",
+			"type":         "kunjungan_imunisasi_reminder",
+			"kunjungan_id": itoa(int(row.KunjunganID)),
 		}
 
 		for _, token := range tokens {
@@ -115,12 +92,13 @@ func (u *Main) sendKunjunganReminderToKader(targetDate time.Time, label string) 
 			}
 
 			if err := u.sendFCMWithData(token, title, body, fcmData); err != nil {
-				log.Printf("[KUNJUNGAN REMINDER %s] FCM error kader_id=%d: %v", label, kaderID, err)
+				log.Printf("[KUNJUNGAN REMINDER %s] FCM error kader_id=%d kunjungan_id=%d: %v",
+					label, row.KaderID, row.KunjunganID, err)
 			}
 		}
 
-		log.Printf("[KUNJUNGAN REMINDER %s] notifikasi terkirim ke kader_id=%d (%d kunjungan)",
-			label, kaderID, jumlah)
+		log.Printf("[KUNJUNGAN REMINDER %s] notifikasi terkirim ke kader_id=%d kunjungan_id=%d anak=%s",
+			label, row.KaderID, row.KunjunganID, row.NamaAnak)
 	}
 
 	return nil

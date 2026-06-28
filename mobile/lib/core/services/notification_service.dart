@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -8,7 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:ta_pa2_pa3_project/features/ibu/imunisasi/presentation/screens/imunisasi_screen.dart';
 import 'package:ta_pa2_pa3_project/features/ibu/imunisasi/presentation/screens/ubah_jadwal.dart';
-import 'package:ta_pa2_pa3_project/features/kader/screens/daftar_kunjungan.dart' show KunjunganScreen;
+import 'package:ta_pa2_pa3_project/features/kader/kunjungan/services/kunjungan_service.dart';
+import 'package:ta_pa2_pa3_project/features/kader/screens/detail_kunjungan_imunisasi.dart' show AnakImunisasiDetailScreen;
 import '../../firebase_options.dart';
 import '../routes/navigator_key.dart' as nav;
 
@@ -21,6 +21,8 @@ const _androidChannel = AndroidNotificationChannel(
 
 const _actionLihat = 'lihat';
 const _actionUbahJadwal = 'ubah_jadwal';
+const _actionSudahDikunjungi = 'sudah_dikunjungi';
+const _actionJadwalkanUlang = 'jadwalkan_ulang';
 
 // Background message handler must be a top-level function
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -66,13 +68,20 @@ class NotificationService {
         DarwinNotificationCategory(
           'imunisasi_reminder',
           actions: [
+            DarwinNotificationAction.plain(_actionLihat, 'Lihat'),
+            DarwinNotificationAction.plain(_actionUbahJadwal, 'Ubah Jadwal'),
+          ],
+        ),
+        DarwinNotificationCategory(
+          'kunjungan_imunisasi_reminder',
+          actions: [
             DarwinNotificationAction.plain(
-              _actionLihat,
-              'Lihat',
+              _actionSudahDikunjungi,
+              'Sudah Dikunjungi',
             ),
             DarwinNotificationAction.plain(
-              _actionUbahJadwal,
-              'Ubah Jadwal',
+              _actionJadwalkanUlang,
+              'Jadwalkan Ulang',
             ),
           ],
         ),
@@ -120,6 +129,24 @@ class NotificationService {
     final body = notification?.body ?? '';
     final data = message.data;
     final isImunisasiReminder = data['type'] == 'reminder_imunisasi';
+    final isKunjunganReminder = data['type'] == 'kunjungan_imunisasi_reminder';
+
+    List<AndroidNotificationAction>? androidActions;
+    String iosCategory = '';
+
+    if (isImunisasiReminder) {
+      androidActions = const [
+        AndroidNotificationAction(_actionLihat, 'Lihat', showsUserInterface: true),
+        AndroidNotificationAction(_actionUbahJadwal, 'Ubah Jadwal', showsUserInterface: true),
+      ];
+      iosCategory = 'imunisasi_reminder';
+    } else if (isKunjunganReminder) {
+      androidActions = const [
+        AndroidNotificationAction(_actionSudahDikunjungi, 'Sudah Dikunjungi', showsUserInterface: true),
+        AndroidNotificationAction(_actionJadwalkanUlang, 'Jadwalkan Ulang', showsUserInterface: true),
+      ];
+      iosCategory = 'kunjungan_imunisasi_reminder';
+    }
 
     final AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
       'generasi_sehat_channel',
@@ -127,26 +154,13 @@ class NotificationService {
       channelDescription: _androidChannel.description,
       priority: Priority.high,
       playSound: true,
-      actions: isImunisasiReminder
-          ? const [
-              AndroidNotificationAction(
-                _actionLihat,
-                'Lihat',
-                showsUserInterface: true,
-              ),
-              AndroidNotificationAction(
-                _actionUbahJadwal,
-                'Ubah Jadwal',
-                showsUserInterface: true,
-              ),
-            ]
-          : null,
+      actions: androidActions,
     );
 
     final NotificationDetails platformDetails = NotificationDetails(
       android: androidDetails,
-      iOS: const DarwinNotificationDetails(
-        categoryIdentifier: 'imunisasi_reminder',
+      iOS: DarwinNotificationDetails(
+        categoryIdentifier: iosCategory.isEmpty ? null : iosCategory,
       ),
     );
 
@@ -166,7 +180,7 @@ class NotificationService {
     }
   }
 
-  static void _handleAction(String payload, String? actionId) {
+  static Future<void> _handleAction(String payload, String? actionId) async {
     if (payload.isEmpty) return;
 
     Map<String, dynamic> data = {};
@@ -201,11 +215,19 @@ class NotificationService {
     }
 
     if (type == 'kunjungan_imunisasi_reminder') {
-      nav.navigatorKey.currentState?.push(
-        MaterialPageRoute(
-          builder: (_) => const KunjunganScreen(),
-        ),
-      );
+      final kunjunganId = int.tryParse(data['kunjungan_id']?.toString() ?? '');
+
+      if (actionId == _actionSudahDikunjungi && kunjunganId != null) {
+        try {
+          await KunjunganImunisasiService().updateStatusKunjungan(kunjunganId, 3);
+        } catch (_) {}
+      } else if (kunjunganId != null) {
+        nav.navigatorKey.currentState?.push(
+          MaterialPageRoute(
+            builder: (_) => AnakImunisasiDetailScreen(kunjunganId: kunjunganId),
+          ),
+        );
+      }
     }
   }
 

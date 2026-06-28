@@ -131,6 +131,22 @@ func (u *Main) ProcessReminder() error {
 				needSend = true
 				u.repository.MarkSent(j.JadwalID, "h")
 			}
+
+		case -3:
+			if !j.IsSentAfter3 {
+				title = "Jadwal Imunisasi Terlewat 3 Hari"
+				body = "Halo Ibu, jadwal imunisasi " + j.NamaDosis + " anak " + j.NamaAnak + " sudah terlewat 3 hari. Segera lakukan imunisasi susulan di Posyandu atau Puskesmas terdekat."
+				needSend = true
+				u.repository.MarkSent(j.JadwalID, "after3")
+			}
+
+		case -7:
+			if !j.IsSentAfter7 {
+				title = "Jadwal Imunisasi Terlewat 7 Hari"
+				body = "Halo Ibu, jadwal imunisasi " + j.NamaDosis + " anak " + j.NamaAnak + " sudah terlewat 7 hari. Segera hubungi bidan atau ke Puskesmas untuk mendapatkan imunisasi susulan."
+				needSend = true
+				u.repository.MarkSent(j.JadwalID, "after7")
+			}
 		}
 
 		// ================= SEND NOTIFICATION =================
@@ -454,7 +470,7 @@ func (u *Main) ProcessPosyanduReminder() error {
 					PenggunaID:       uint(user.ID),
 					Judul:            title,
 					Pesan:            body,
-					TipeNotifikasiID: 4, // 4 = Reminder Posyandu (asumsi)
+					TipeNotifikasiID: 4, 
 				})
 			}
 		}

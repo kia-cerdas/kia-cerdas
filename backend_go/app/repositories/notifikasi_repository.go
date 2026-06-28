@@ -19,7 +19,12 @@ func (r *Main) GetJadwalForReminder() ([]models.JadwalImunisasiJoin, error) {
 			j.tanggal_estimasi,
 			j.id_status_jadwal as status_id,
 			s.nama_status,
-			dv.nama_dosis
+			dv.nama_dosis,
+			j.is_sent_h7,
+			j.is_sent_h3,
+			j.is_sent_h,
+			j.is_sent_afer3,
+			j.is_sent_after7
 		`).
 		Joins("JOIN anak a ON a.id = j.id_anak").
 		Joins("JOIN penduduk p ON p.id = a.penduduk_id").
@@ -98,6 +103,10 @@ func (r *Main) MarkSent(jadwalID uint, tipe string) error {
 		update["is_sent_h3"] = true
 	case "h":
 		update["is_sent_h"] = true
+	case "after3":
+		update["is_sent_afer3"] = true
+	case "after7":
+		update["is_sent_after7"] = true
 	}
 
 	return r.postgres.
