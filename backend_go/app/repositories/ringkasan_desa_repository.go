@@ -65,17 +65,16 @@ func (r *RingkasanDesaRepository) CountAnak(posyanduID *int32) (int64, error) {
 	return count, err
 }
 
-// CountPerluTindakLanjut menghitung jumlah kunjungan imunisasi dengan status "Perlu Tindak Lanjut"
-// untuk anak-anak di sebuah desa.
+// CountPerluTindakLanjut menghitung jumlah kunjungan imunisasi dengan id_status_kunjungan = 2
+// (terlewat / perlu tindak lanjut) untuk anak-anak di posyandu kader.
 func (r *RingkasanDesaRepository) CountPerluTindakLanjut(posyanduID *int32) (int64, error) {
 	var count int64
 
 	q := r.db.Table("kunjungan_imunisasi ki").
-		Joins("JOIN status_kunjungan sk ON sk.id = ki.id_status_kunjungan").
 		Joins("JOIN jadwal_imunisasi_anak jia ON jia.id = ki.id_jadwal_imunisasi").
 		Joins("JOIN anak a ON a.id = jia.id_anak AND a.deleted_at IS NULL").
 		Joins("JOIN penduduk p ON p.id = a.penduduk_id AND p.deleted_at IS NULL").
-		Where("LOWER(TRIM(sk.status_kunjungan)) = ?", "perlu tindak lanjut")
+		Where("ki.id_status_kunjungan = ?", 2)
 
 	if posyanduID != nil {
 		q = q.Where("p.posyandu_id = ?", *posyanduID)

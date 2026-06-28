@@ -49,8 +49,8 @@ func (m *Main) startCronJob() {
 	kehamilanUC := m.usecase.Kehamilan // atau m.usecase.KehUsecase, sesuaikan dengan field di usecases.Main
 
 	c := cron.New(cron.WithLocation(time.Local))
-	// Jadwalkan setiap hari jam 01:00
-	_, err := c.AddFunc("0 1 * * *", func() {
+	// Jadwalkan setiap hari jam 07:00
+	_, err := c.AddFunc("0 7 * * *", func() {
 
 		log.Println("[CRON] Start daily jobs...")
 
@@ -99,7 +99,7 @@ func (m *Main) startCronJob() {
 
 	c.Start()
 	m.cron = c
-	log.Println("[CRON] Scheduler berjalan (setiap hari pukul 01:00).")
+	log.Println("[CRON] Scheduler berjalan (setiap hari pukul 07:00).")
 }
 
 func (m *Main) Init() (err error) {

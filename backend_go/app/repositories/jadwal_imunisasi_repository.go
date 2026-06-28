@@ -413,7 +413,7 @@ func (m *Main) GetJadwalImunisasiTerlewatByKaderID(
         SELECT 1
         FROM kunjungan_imunisasi ki
         WHERE ki.id_jadwal_imunisasi = jia.id
-        AND ki.id_status_kunjungan = 4
+        AND ki.id_status_kunjungan IN (1, 2, 3)
     )
 `).
 		Order("jia.tanggal_estimasi ASC").

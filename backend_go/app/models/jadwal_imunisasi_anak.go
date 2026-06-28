@@ -22,6 +22,8 @@ type JadwalImunisasiAnak struct {
 	IsSentH7 bool `gorm:"column:is_sent_h7" json:"is_sent_h7"`
 	IsSentH3 bool `gorm:"column:is_sent_h3" json:"is_sent_h3"`
 	IsSentH  bool `gorm:"column:is_sent_h" json:"is_sent_h"`
+	IsSentAfter3 bool `gorm:"column:is_sent_afer3" json:"is_sent_after3"`
+	IsSentAfter7 bool `gorm:"column:is_sent_after7" json:"is_sent_after7"`
 }
 
 func (JadwalImunisasiAnak) TableName() string {
@@ -63,14 +65,16 @@ type JadwalImunisasiJoin struct {
 	NamaDosis       string
 	TanggalEstimasi *time.Time
 
-	StatusID uint `gorm:"column:status_id"`
+	StatusID uint `gorm:"column:id_stats"`
 	Status   string
 
 	Deskripsi   string
 	EfekSamping string
-	IsSentH7    bool
-	IsSentH3    bool
-	IsSentH     bool
+	IsSentH7     bool
+	IsSentH3     bool
+	IsSentH      bool
+	IsSentAfter3 bool `gorm:"column:is_sent_afer3"`
+	IsSentAfter7 bool `gorm:"column:is_sent_after7"`
 }
 
 type JadwalImunisasiTerlewatResponse struct {
