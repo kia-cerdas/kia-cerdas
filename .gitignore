@@ -75,6 +75,11 @@ tmp_build
 **/Flutter/Generated.xcconfig
 **/Flutter/flutter_export_environment.sh
 
+# Keystore & signing
+*.jks
+*.keystore
+**/android/key.properties
+
 # Environment files (should be managed separately)
 .env
 .env.local
