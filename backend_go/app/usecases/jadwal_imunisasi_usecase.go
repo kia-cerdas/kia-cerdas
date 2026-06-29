@@ -16,6 +16,9 @@ func (m *Main) GetJadwalImunisasi(
 	userID int32,
 ) ([]models.JadwalImunisasiResponse, error) {
 
+	// Update status jadwal langsung saat fetch, agar tidak bergantung cron job
+	_ = m.UpdateStatusJadwal()
+
 	rows, err :=
 		m.repository.
 			GetJadwalImunisasiByUserID(

@@ -181,7 +181,7 @@ class ImunisasiLocalDatasource {
     ''', [anakId]);
 
     return rows
-        .map((r) => JadwalImunisasiModel(
+        .map<JadwalImunisasiModel>((r) => JadwalImunisasiModel(
               jadwalId: _toInt(r['jadwal_id']),
               namaDosis: r['nama_dosis']?.toString() ?? '',
               tanggalEstimasi: _parseDate(r['tanggal_estimasi']),

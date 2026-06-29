@@ -15,7 +15,7 @@ func (r *Main) GetJadwalForReminder() ([]models.JadwalImunisasiJoin, error) {
 			j.id as jadwal_id,
 			j.id_anak,
 			a.id as anak_id,
-			p.nama_lengkap as nama_anak,
+			p.nama_anggota_keluarga as nama_anak,
 			j.tanggal_estimasi,
 			j.id_status_jadwal as status_id,
 			s.nama_status,
