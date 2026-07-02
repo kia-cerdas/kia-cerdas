@@ -23,7 +23,7 @@ func (m *Main) GetKunjunganForReminder(targetDate time.Time) ([]KunjunganReminde
 	err := m.postgres.
 		Table("kunjungan_imunisasi ki").
 		Select(`
-			ki.id              AS kunjungan_id,
+			ki.id AS kunjungan_id,
 			ki.tanggal_kunjungan,
 			p_anak.nama_anggota_keluarga AS nama_anak,
 			dv.nama_dosis,

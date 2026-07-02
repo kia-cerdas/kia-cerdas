@@ -82,8 +82,11 @@ func (u *Main) sendKunjunganReminderToKader(targetDate time.Time, label string) 
 		}
 
 		fcmData := map[string]string{
-			"type":         "kunjungan_imunisasi_reminder",
-			"kunjungan_id": itoa(int(row.KunjunganID)),
+			"type":          "kunjungan_imunisasi_reminder",
+			"kunjungan_id":  itoa(int(row.KunjunganID)),
+			"anak_nama":     row.NamaAnak,
+			"nama_dosis":    row.NamaDosis,
+			"reminder_type": label, // hari-H atau H-3
 		}
 
 		for _, token := range tokens {

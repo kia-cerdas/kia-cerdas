@@ -41,14 +41,22 @@ func (u *Main) sendFCMWithData(
 		)
 	}
 
-	msg := &messaging.Message{
-		Token: token,
-		Notification: &messaging.Notification{
-			Title: title,
-			Body:  message,
-		},
-		Data: data,
-	}
+	payload := map[string]string{
+    "title": title,
+    "body":  message,
+}
+
+for k, v := range data {
+    payload[k] = v
+}
+
+msg := &messaging.Message{
+    Token: token,
+    Data: payload,
+    Android: &messaging.AndroidConfig{
+        Priority: "high",
+    },
+}
 
 	response, err := u.fcmClient.Send(
 		context.Background(),
@@ -242,10 +250,10 @@ func (u *Main) send(
 
 		// simpan notifikasi ke DB
 		_ = u.repository.CreateNotifikasi(models.Notifikasi{
-			PenggunaID:            userID,
-			Judul:                 finalTitle,
-			Pesan:                 finalBody,
-			TipeNotifikasiID:      1,
+			PenggunaID:       userID,
+			Judul:            finalTitle,
+			Pesan:            finalBody,
+			TipeNotifikasiID: 1,
 		})
 	}
 
@@ -470,7 +478,7 @@ func (u *Main) ProcessPosyanduReminder() error {
 					PenggunaID:       uint(user.ID),
 					Judul:            title,
 					Pesan:            body,
-					TipeNotifikasiID: 4, 
+					TipeNotifikasiID: 4,
 				})
 			}
 		}

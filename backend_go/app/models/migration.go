@@ -1,170 +1,171 @@
 package models
 
-import "gorm.io/gorm"
 
-func AutoMigrate(db *gorm.DB) error {
-	// Semua model database dalam satu slice
-	models := []interface{}{
-		// ==================== MASTER DATA ====================
-		&Role{},
-		&Posyandu{},
-		&Kependudukan{},
-		&User{},
-		&Desa{},
-		&KartuKeluarga{},
-		&Bidan{},
-		&Kader{},
-		// &KaderPosyandu{},
+// import "gorm.io/gorm"
 
-		// ==================== ANAK & PERTUMBUHAN ====================
-		&Anak{},
-		&Pertumbuhan{},
-		&CatatanPertumbuhan{},
-		&RentangUsia{},
-		&KategoriUmur{},
-		&KategoriTandaBahaya{},
-		&KategoriTandaSakit{},
-		&SkriningPemantauan{},
+// func AutoMigrate(db *gorm.DB) error {
+// 	// Semua model database dalam satu slice
+// 	models := []interface{}{
+// 		// ==================== MASTER DATA ====================
+// 		&Role{},
+// 		&Posyandu{},
+// 		&Kependudukan{},
+// 		&User{},
+// 		&Desa{},
+// 		&KartuKeluarga{},
+// 		&Bidan{},
+// 		&Kader{},
+// 		// &KaderPosyandu{},
 
-		// ==================== PELAYANAN ANAK ====================
-		&JenisPelayanan{},
-		&JenisPelayananKategori{},
-		&AturanPelayanan{},
-		&KunjunganAnak{},
-		&CatatanPelayanan{},
+// 		// ==================== ANAK & PERTUMBUHAN ====================
+// 		&Anak{},
+// 		&Pertumbuhan{},
+// 		&CatatanPertumbuhan{},
+// 		&RentangUsia{},
+// 		&KategoriUmur{},
+// 		&KategoriTandaBahaya{},
+// 		&KategoriTandaSakit{},
+// 		&SkriningPemantauan{},
 
-		// ==================== PELAYANAN KESEHATAN SPESIFIK ANAK ====================
-		&Neonatus{},
-		&DetailPelayananNeonatus{},
-		&PeriodeKunjungan{},
-		&KunjunganGizi{},
-		&KunjunganVitamin{},
-		&DetailPelayananVitamin{},
-		&KunjunganImunisasi{},
-		&DetailPelayananImunisasi{},
-		&KehadiranImunisasi{},
-		&PeriksaGigi{},
-		&ASI{},
-		&MPASI{},
+// 		// ==================== PELAYANAN ANAK ====================
+// 		&JenisPelayanan{},
+// 		&JenisPelayananKategori{},
+// 		&AturanPelayanan{},
+// 		&KunjunganAnak{},
+// 		&CatatanPelayanan{},
 
-		// ==================== PEMANTAUAN & DETEKSI DINI ANAK ====================
-		&DeteksiDiniPenyimpangan{},
-		&PengukuranLila{},
-		&LembarPemantauan{},
-		&DetailPemantauan{},
-		&Pemeriksaan{},
-		&FormPertanyaan{},
-		&FormAturanRisiko{},
-		&PrediksiStunting{},
+// 		// ==================== PELAYANAN KESEHATAN SPESIFIK ANAK ====================
+// 		&Neonatus{},
+// 		&DetailPelayananNeonatus{},
+// 		&PeriodeKunjungan{},
+// 		&KunjunganGizi{},
+// 		&KunjunganVitamin{},
+// 		&DetailPelayananVitamin{},
+// 		&KunjunganImunisasi{},
+// 		&DetailPelayananImunisasi{},
+// 		&KehadiranImunisasi{},
+// 		&PeriksaGigi{},
+// 		&ASI{},
+// 		&MPASI{},
 
-		// ==================== PERAWATAN ANAK ====================
-		&KategoriCapaian{},
-		&Perawatan{},
-		&PemantauanIndikator{},
+// 		// ==================== PEMANTAUAN & DETEKSI DINI ANAK ====================
+// 		&DeteksiDiniPenyimpangan{},
+// 		&PengukuranLila{},
+// 		&LembarPemantauan{},
+// 		&DetailPemantauan{},
+// 		&Pemeriksaan{},
+// 		&FormPertanyaan{},
+// 		&FormAturanRisiko{},
+// 		&PrediksiStunting{},
 
-		// ==================== EDUKASI DIGITAL ====================
-		&InformasiUmum{},
-		&EdukasiInformasiUmum{},
-		&EdukasiTrimester{},
-		&EdukasiTandaMelahirkan{},
-		&EdukasiIMD{},
-		&EdukasiMenyusuiASI{},
-		&EdukasiSetelahMelahirkan{},
-		&EdukasiPolaAsuh{},
-		&EdukasiKesehatanMental{},
-		&EdukasiPerawatanAnak{},
-		&MateriMPASI{},
-		&AturanPorsiMPASI{},
-		&JadwalHarianMPASI{},
-		&ResepMPASI{},
+// 		// ==================== PERAWATAN ANAK ====================
+// 		&KategoriCapaian{},
+// 		&Perawatan{},
+// 		&PemantauanIndikator{},
 
-		// ==================== PEMERIKSAAN UMUM (LINTAS USIA) ====================
-		// &PemeriksaanAnak{},
-		// &PemeriksaanRemaja{},
-		// &PemeriksaanDewasa{},
-		// &PemeriksaanLansia{},
-		&Perangkat{},
+// 		// ==================== EDUKASI DIGITAL ====================
+// 		&InformasiUmum{},
+// 		&EdukasiInformasiUmum{},
+// 		&EdukasiTrimester{},
+// 		&EdukasiTandaMelahirkan{},
+// 		&EdukasiIMD{},
+// 		&EdukasiMenyusuiASI{},
+// 		&EdukasiSetelahMelahirkan{},
+// 		&EdukasiPolaAsuh{},
+// 		&EdukasiKesehatanMental{},
+// 		&EdukasiPerawatanAnak{},
+// 		&MateriMPASI{},
+// 		&AturanPorsiMPASI{},
+// 		&JadwalHarianMPASI{},
+// 		&ResepMPASI{},
 
-		// ==================== IBU & KEHAMILAN ====================
-		&Ibu{},
-		&Kehamilan{},
-		&PemeriksaanKehamilan{},
-		&EvaluasiKesehatanIbu{},
-		&PemeriksaanDokterTrimester1{},
-		&PemeriksaanDokterTrimester3{},
-		&PemeriksaanLaboratoriumJiwa{},
-		// &CatatanPelayananTrimester1{},
-		&CatatanPelayananTrimester2{},
-		// &CatatanPelayananTrimester3{},
+// 		// ==================== PEMERIKSAAN UMUM (LINTAS USIA) ====================
+// 		// &PemeriksaanAnak{},
+// 		// &PemeriksaanRemaja{},
+// 		// &PemeriksaanDewasa{},
+// 		// &PemeriksaanLansia{},
+// 		&Perangkat{},
 
-		// ==================== SKRINING IBU HAMIL ====================
-		&SkriningPreeklampsia{},
-		&SkriningDMGestasional{},
+// 		// ==================== IBU & KEHAMILAN ====================
+// 		&Ibu{},
+// 		&Kehamilan{},
+// 		&PemeriksaanKehamilan{},
+// 		&EvaluasiKesehatanIbu{},
+// 		&PemeriksaanDokterTrimester1{},
+// 		&PemeriksaanDokterTrimester3{},
+// 		&PemeriksaanLaboratoriumJiwa{},
+// 		// &CatatanPelayananTrimester1{},
+// 		&CatatanPelayananTrimester2{},
+// 		// &CatatanPelayananTrimester3{},
 
-		// ==================== GRAFIK EVALUASI KEHAMILAN ====================
-		&GrafikEvaluasiKehamilan{},
-		&GrafikPeningkatanBB{},
-		&PenjelasanHasilGrafik{},
+// 		// ==================== SKRINING IBU HAMIL ====================
+// 		&SkriningPreeklampsia{},
+// 		&SkriningDMGestasional{},
 
-		// ==================== RENCANA & PROSES PERSALINAN ====================
-		&RencanaPersalinan{},
-		&RingkasanPelayananPersalinan{},
-		&RiwayatProsesMelahirkan{},
-		&ProsesMelahirkan{},
-		&KeteranganLahir{},
+// 		// ==================== GRAFIK EVALUASI KEHAMILAN ====================
+// 		&GrafikEvaluasiKehamilan{},
+// 		&GrafikPeningkatanBB{},
+// 		&PenjelasanHasilGrafik{},
 
-		// ==================== PELAYANAN IBU NIFAS ====================
-		&PelayananIbuNifas{},
-		&CatatanPelayananNifas{},
-		&ChecklistPemantauanIbuNifas{},
-		&WarnaTinjaAnak{},
+// 		// ==================== RENCANA & PROSES PERSALINAN ====================
+// 		&RencanaPersalinan{},
+// 		&RingkasanPelayananPersalinan{},
+// 		&RiwayatProsesMelahirkan{},
+// 		&ProsesMelahirkan{},
+// 		&KeteranganLahir{},
 
-		// ==================== RIWAYAT KEHAMILAN & RUJUKAN ====================
-		&RiwayatKehamilanLalu{},
-		&Rujukan{},
+// 		// ==================== PELAYANAN IBU NIFAS ====================
+// 		&PelayananIbuNifas{},
+// 		&CatatanPelayananNifas{},
+// 		&ChecklistPemantauanIbuNifas{},
+// 		&WarnaTinjaAnak{},
 
-		// ==================== BBL (BAYI BARU LAHIR) ====================
-		&Bbl{},
-		&BblCheck{},
-		// ==================== MODUL IBU ====================
-		&LogTTDMMS{},
-		&PemantauanIbuHamil{},
-		&PersiapanMelahirkan{},
-		&AbsensiKelasIbuHamil{},
-		&AbsensiKelasIbuBalita{},
+// 		// ==================== RIWAYAT KEHAMILAN & RUJUKAN ====================
+// 		&RiwayatKehamilanLalu{},
+// 		&Rujukan{},
 
-		// ==================== PEMANTAUAN IBU ====================
-		&KategoriPemantauanIbu{},
-		&LembarPemantauanIbu{},
-		&DetailPemantauanIbu{},
+// 		// ==================== BBL (BAYI BARU LAHIR) ====================
+// 		&Bbl{},
+// 		&BblCheck{},
+// 		// ==================== MODUL IBU ====================
+// 		&LogTTDMMS{},
+// 		&PemantauanIbuHamil{},
+// 		&PersiapanMelahirkan{},
+// 		&AbsensiKelasIbuHamil{},
+// 		&AbsensiKelasIbuBalita{},
 
-		// ==================== IMUNISASI ====================
-		&Vaksin{},
-		&DosisVaksin{},
-		&AturanVaksinAnak{},
-		&JadwalImunisasiAnak{},
-		&MasterImunisasi{},
-		&RequestPerubahanImunisasi{},
-		&PencatatanImunisasi{},
+// 		// ==================== PEMANTAUAN IBU ====================
+// 		&KategoriPemantauanIbu{},
+// 		&LembarPemantauanIbu{},
+// 		&DetailPemantauanIbu{},
 
-		// ==================== JADWAL LAYANAN ====================
-		&JadwalLayanan{},
+// 		// ==================== IMUNISASI ====================
+// 		&Vaksin{},
+// 		&DosisVaksin{},
+// 		&AturanVaksinAnak{},
+// 		&JadwalImunisasiAnak{},
+// 		&MasterImunisasi{},
+// 		&RequestPerubahanImunisasi{},
+// 		&PencatatanImunisasi{},
 
-		// ==================== STANDAR ANTROPOMETRI ====================
-		&MasterStandarAntropometri{},
+// 		// ==================== JADWAL LAYANAN ====================
+// 		&JadwalLayanan{},
 
-		// ==================== AUDIT TRAIL ====================
-		&AuditTrail{},
+// 		// ==================== STANDAR ANTROPOMETRI ====================
+// 		&MasterStandarAntropometri{},
 
-		// ==================== GEJALA DARURAT ANAK ====================
-		&RiwayatDeteksi{},
-		&DetailDeteksi{},
-	}
+// 		// ==================== AUDIT TRAIL ====================
+// 		&AuditTrail{},
 
-	// Jalankan automigrate
-	if err := db.AutoMigrate(models...); err != nil {
-		return err
-	}
+// 		// ==================== GEJALA DARURAT ANAK ====================
+// 		&RiwayatDeteksi{},
+// 		&DetailDeteksi{},
+// 	}
 
-	return nil
-}
+// 	// Jalankan automigrate
+// 	if err := db.AutoMigrate(models...); err != nil {
+// 		return err
+// 	}
+
+// 	return nil
+// }
