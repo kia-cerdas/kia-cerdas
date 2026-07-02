@@ -116,8 +116,8 @@ class SyncService {
 
   // 3. Eksekusi Upload sinkronisasi global massal
   // Tambahan Port :8080 (sesuai setingan Echo Golang) pada IP WiFi Laptop kamu
-  final String _baseUrl = 'http://https://api.generasisehat.com/ibu'; 
-  // final String _baseUrl = 'http://10.77.214.125:8080/ibu'; 
+  // final String _baseUrl = 'http://https://api.generasisehat.com/ibu'; 
+  final String _baseUrl = 'http://10.77.214.125:8080/ibu'; 
 
   Future<void> executeBulkSync(String tokenjwt) async {
     try {

@@ -25,14 +25,26 @@ const _actionSudahDikunjungi = 'sudah_dikunjungi';
 const _actionJadwalkanUlang = 'jadwalkan_ulang';
 
 // Background message handler must be a top-level function
-Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  try {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-  } catch (_) {}
+@pragma('vm:entry-point')
+Future<void> firebaseMessagingBackgroundHandler(
+    RemoteMessage message,
+) async {
 
-  return;
+  debugPrint("======================");
+  debugPrint("BACKGROUND MESSAGE");
+  debugPrint(message.data.toString());
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  await NotificationService.showLocalNotificationFromRemote(message);
+}
+
+@pragma('vm:entry-point')
+void notificationTapBackground(
+    NotificationResponse response,
+) {
 }
 
 class NotificationService {
@@ -40,6 +52,7 @@ class NotificationService {
 
   static final FlutterLocalNotificationsPlugin _localNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
+
 
   static Future<void> initialize() async {
     // Skip notification setup on web
@@ -93,22 +106,35 @@ class NotificationService {
       iOS: initializationSettingsIOS,
     );
 
-    await _localNotificationsPlugin.initialize(
-      initializationSettings,
-      onDidReceiveNotificationResponse: (NotificationResponse response) async {
-        final payload = response.payload ?? '';
-        final actionId = response.actionId;
-        _handleAction(payload, actionId);
-      },
+await _localNotificationsPlugin.initialize(
+  initializationSettings,
+  onDidReceiveNotificationResponse: (NotificationResponse response) async {
+
+    final payload = response.payload ?? '';
+    final actionId = response.actionId;
+
+    await _handleAction(
+      payload,
+      actionId,
     );
+  },
+
+  onDidReceiveBackgroundNotificationResponse:
+      notificationTapBackground,
+);
 
     // Background handler
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
     // Foreground message handler
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      _showLocalNotificationFromRemote(message);
-    });
+FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+
+  debugPrint("======================");
+  debugPrint("ON MESSAGE");
+  debugPrint(message.data.toString());
+
+  showLocalNotificationFromRemote(message);
+});
 
     // When app opened from notification (terminated)
     FirebaseMessaging.instance.getInitialMessage().then((message) {
@@ -123,11 +149,10 @@ class NotificationService {
     });
   }
 
-  static Future<void> _showLocalNotificationFromRemote(RemoteMessage message) async {
-    final notification = message.notification;
-    final title = notification?.title ?? '';
-    final body = notification?.body ?? '';
+  static Future<void> showLocalNotificationFromRemote(RemoteMessage message) async {
     final data = message.data;
+    final title = data['title'] ?? '';
+    final body = data['body'] ?? '';
     final isImunisasiReminder = data['type'] == 'reminder_imunisasi';
     final isKunjunganReminder = data['type'] == 'kunjungan_imunisasi_reminder';
 
@@ -148,14 +173,25 @@ class NotificationService {
       iosCategory = 'kunjungan_imunisasi_reminder';
     }
 
-    final AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
-      'generasi_sehat_channel',
-      'Notifikasi Generasi Sehat',
-      channelDescription: _androidChannel.description,
-      priority: Priority.high,
-      playSound: true,
-      actions: androidActions,
-    );
+final AndroidNotificationDetails androidDetails =
+    AndroidNotificationDetails(
+  'generasi_sehat_channel',
+  'Notifikasi Generasi Sehat',
+
+  channelDescription: _androidChannel.description,
+
+  importance: Importance.max,
+
+  priority: Priority.high,
+
+  playSound: true,
+
+  category: AndroidNotificationCategory.reminder,
+
+  visibility: NotificationVisibility.public,
+
+  actions: androidActions,
+);
 
     final NotificationDetails platformDetails = NotificationDetails(
       android: androidDetails,
@@ -163,7 +199,7 @@ class NotificationService {
         categoryIdentifier: iosCategory.isEmpty ? null : iosCategory,
       ),
     );
-
+debugPrint("SHOW NOTIFICATION");
     await _localNotificationsPlugin.show(
       message.hashCode & 0x7FFFFFFF,
       title,
@@ -217,17 +253,35 @@ class NotificationService {
     if (type == 'kunjungan_imunisasi_reminder') {
       final kunjunganId = int.tryParse(data['kunjungan_id']?.toString() ?? '');
 
-      if (actionId == _actionSudahDikunjungi && kunjunganId != null) {
-        try {
-          await KunjunganImunisasiService().updateStatusKunjungan(kunjunganId, 3);
-        } catch (_) {}
-      } else if (kunjunganId != null) {
-        nav.navigatorKey.currentState?.push(
-          MaterialPageRoute(
-            builder: (_) => AnakImunisasiDetailScreen(kunjunganId: kunjunganId),
-          ),
-        );
-      }
+if (actionId == _actionSudahDikunjungi &&
+    kunjunganId != null) {
+
+    await KunjunganImunisasiService()
+        .updateStatusKunjungan(kunjunganId, 3);
+
+} else if (actionId == _actionJadwalkanUlang &&
+           kunjunganId != null) {
+
+    nav.navigatorKey.currentState?.push(
+      MaterialPageRoute(
+        builder: (_) => AnakImunisasiDetailScreen(
+          kunjunganId: kunjunganId,
+        ),
+      ),
+    );
+
+} else if (kunjunganId != null) {
+
+    nav.navigatorKey.currentState?.push(
+      MaterialPageRoute(
+        builder: (_) =>
+            AnakImunisasiDetailScreen(
+              kunjunganId: kunjunganId,
+            ),
+      ),
+    );
+
+}
     }
   }
 
