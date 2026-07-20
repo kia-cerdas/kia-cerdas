@@ -326,6 +326,7 @@ func (m *Main) GetJadwalImunisasiTerlewatByKaderID(
 	error,
 ) {
 
+	// RULE 1: Ambil semua jadwal imunisasi terlewat untuk anak-anak di bawah kader ini
 	rows, err :=
 		m.repository.
 			GetJadwalImunisasiTerlewatByKaderID(
@@ -339,7 +340,10 @@ func (m *Main) GetJadwalImunisasiTerlewatByKaderID(
 	response :=
 		[]models.JadwalImunisasiTerlewatResponse{}
 
+	// RULE 2: Iterasi tiap baris data untuk dibentuk menjadi response
 	for _, row := range rows {
+
+		// RULE 2A: Hitung jumlah hari keterlambatan dari tanggal jadwal sampai sekarang
 		jumlahHariTerlambat := 0
 
 		if row.JadwalImunisasi != nil {
@@ -349,6 +353,8 @@ func (m *Main) GetJadwalImunisasiTerlewatByKaderID(
 						Hours() / 24,
 				)
 		}
+
+		// RULE 2B: Bentuk item response, termasuk menentukan prioritas via getPrioritasImunisasi
 		response =
 			append(
 				response,
@@ -378,6 +384,8 @@ func (m *Main) GetJadwalImunisasiTerlewatByKaderID(
 				},
 			)
 	}
+
+	// RULE 3: Urutkan hasil berdasarkan tingkat prioritas (P1 paling darurat -> P4 paling rendah)
 	sort.Slice(
 		response,
 		func(i, j int) bool {
@@ -461,24 +469,30 @@ func getPrioritasImunisasi(
 	tanggal *time.Time,
 ) string {
 
+	// RULE A: Jika tidak ada tanggal jadwal, prioritas terendah (P4)
 	if tanggal == nil {
 		return "P4"
 	}
 
+	// RULE B: Hitung selisih hari (delta) dari tanggal jadwal sampai sekarang
 	delta :=
 		int(time.Since(*tanggal).Hours() / 24)
 
+	// RULE C: Tentukan level prioritas berdasarkan besar keterlambatan (delta)
 	switch {
-
+	// RULE C1: Terlambat lebih dari 14 hari -> prioritas tertinggi
 	case delta > 14:
 		return "P1"
 
+	// RULE C2: Terlambat 7-14 hari -> prioritas tinggi
 	case delta >= 7:
 		return "P2"
 
+	// RULE C3: Terlambat 1-6 hari -> prioritas sedang
 	case delta >= 1:
 		return "P3"
 
+	// RULE C4: Belum terlambat (delta < 1) -> prioritas rendah
 	default:
 		return "P4"
 	}

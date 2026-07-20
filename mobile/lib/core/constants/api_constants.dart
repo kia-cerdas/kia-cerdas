@@ -386,20 +386,20 @@ import 'package:flutter/foundation.dart';
 class ApiConstants {
   ApiConstants._();
 
-  static String get baseUrl {
-    if (kIsWeb) {
-      return 'http://localhost:8080';
-    }
+//   static String get baseUrl {
+//     if (kIsWeb) {
+//       return 'http://localhost:8080';
+//     }
 
-    switch (defaultTargetPlatform) {
-      case TargetPlatform.android:
-        return 'http://10.77.214.125:8080';
-      default:
-        return 'http://127.0.0.1:8080';
-    }
-  }
+//     switch (defaultTargetPlatform) {
+//       case TargetPlatform.android:
+//         return 'http://10.77.214.125:8080';
+//       default:
+//         return 'http://127.0.0.1:8080';
+//     }
+//   }
 
-  // static String baseUrl = 'https://api.generasisehat.com';
+  static String baseUrl = 'https://api.generasisehat.com';
 
   static const String authLogin = '/auth/login';
   static const String authMe = '/auth/me';
