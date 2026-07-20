@@ -494,7 +494,7 @@ function RingkasanCard({
         </span>
         <span
           style={{
-            color: "#f97316",
+            color: "#c2410c",
             fontWeight: 500,
             whiteSpace: "nowrap",
             overflow: "hidden",
@@ -1260,29 +1260,36 @@ export default function Dashboard() {
                   gap: 8,
                 }}
               >
-                <h2 style={{ fontSize: 14, fontWeight: 700 }}>
+                {/* <h2 style={{ fontSize: 14, fontWeight: 700 }}>
                   Status Risiko Kesehatan
-                </h2>
-<select
-  aria-labelledby="status-risiko-title"
-  value={selectedKategori}
-  onChange={(e) => {
-    setSelectedKategori(e.target.value);
-    setActiveRiskKelompok(null);
-    setDaftarKelompok([]);
-    setSelectedRiskFilter("Tinggi");
-    setSelectedRiskLabel("Risiko Tinggi");
-    setSelectedDusun(null);
-    setDusunIbuList([]);
-  }}
-  style={{
-    padding: "6px 12px",
-    borderRadius: 8,
-    border: "1px solid #cbd5e1",
-    background: "white",
-    fontSize: 13,
-  }}
->
+                </h2> */}
+                <label
+                  style={{ fontSize: 14, fontWeight: 700 }}
+                  htmlFor="status-risiko"
+                >
+                  Status Risiko Kesehatan
+                </label>
+                <select
+                  id="status-risiko"
+                  aria-labelledby="status-risiko-title"
+                  value={selectedKategori}
+                  onChange={(e) => {
+                    setSelectedKategori(e.target.value);
+                    setActiveRiskKelompok(null);
+                    setDaftarKelompok([]);
+                    setSelectedRiskFilter("Tinggi");
+                    setSelectedRiskLabel("Risiko Tinggi");
+                    setSelectedDusun(null);
+                    setDusunIbuList([]);
+                  }}
+                  style={{
+                    padding: "6px 12px",
+                    borderRadius: 8,
+                    border: "1px solid #cbd5e1",
+                    background: "white",
+                    fontSize: 13,
+                  }}
+                >
                   <option value="ibu-hamil">Ibu Hamil</option>
                   {kelompokList.map((k) => (
                     <option key={k.key} value={k.key}>
@@ -1484,7 +1491,7 @@ export default function Dashboard() {
                       style={{
                         fontSize: 11,
                         background: "#fef2f2",
-                        color: "#ef4444",
+                        color: "#b91c1c",
                         padding: "1px 10px",
                         borderRadius: 20,
                         fontWeight: 600,
