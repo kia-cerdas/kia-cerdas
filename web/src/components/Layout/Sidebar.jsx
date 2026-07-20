@@ -333,7 +333,7 @@ const Sidebar = ({ isOpen, onClose }) => {
 
         {/* Label menu */}
         <div className="px-4 pt-4">
-          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-3 ml-1">
+          <p className="text-[12px] font-bold text-slate-700 uppercase tracking-wider mb-3 ml-1">
             Menu utama
           </p>
         </div>

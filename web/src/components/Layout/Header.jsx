@@ -430,7 +430,7 @@ const Header = ({ onToggleSidebar, isSidebarOpen }) => {
             <h1 className="text-lg font-semibold leading-tight truncate">
               {pageHeader.title}
             </h1>
-            <p className="text-white/70 text-xs mt-0.5 leading-relaxed whitespace-pre-line">
+            <p className="text-white/90 text-xs mt-0.5 leading-relaxed whitespace-pre-line">
               {pageHeader.subtitle}
             </p>
             {pageHeader.note && (
@@ -458,7 +458,7 @@ const Header = ({ onToggleSidebar, isSidebarOpen }) => {
                 <p className="text-[11px] font-semibold text-white leading-none">
                   {user?.name || "Pengguna"}
                 </p>
-                <p className="text-[10px] text-white/65 mt-0.5">
+                <p className="text-xs text-white/90 mt-0.5">
                   {user?.desa_nama || user?.desa_name || formatRole(user?.role)}
                 </p>
               </div>

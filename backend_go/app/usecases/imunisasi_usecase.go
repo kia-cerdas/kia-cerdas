@@ -172,12 +172,14 @@ func (m *Main) GenerateJadwalImunisasiByAnakID(anakID int32) error {
 	fmt.Println("========== GENERATE BY ANAK ID ==========")
 	fmt.Println("ANAK ID:", anakID)
 
+	// RULE 1: Ambil data anak berdasarkan ID
 	anak, err := m.repository.GetAnakByID(uint(anakID))
 	if err != nil {
 		fmt.Println("ERROR GetAnakByID:", err)
 		return err
 	}
 
+	// RULE 2: Validasi data wajib — skip generate jika tanggal lahir/penduduk tidak tersedia
 	if anak.Penduduk == nil || anak.Penduduk.TanggalLahir.IsZero() {
 		fmt.Println("SKIP: TanggalLahir nil atau Penduduk tidak ditemukan")
 		return nil
@@ -185,6 +187,7 @@ func (m *Main) GenerateJadwalImunisasiByAnakID(anakID int32) error {
 
 	tanggalLahir := anak.Penduduk.TanggalLahir
 
+	// RULE 3: Ambil seluruh aturan vaksin (master rule) yang berlaku untuk anak
 	aturanList, err := m.repository.GetAturanVaksinAnak()
 	if err != nil {
 		fmt.Println("ERROR GetAturanVaksinAnak:", err)
@@ -193,6 +196,7 @@ func (m *Main) GenerateJadwalImunisasiByAnakID(anakID int32) error {
 
 	for _, rule := range aturanList {
 
+		// RULE 4: Cek duplikasi — skip jika jadwal untuk dosis vaksin ini sudah pernah dibuat
 		alreadyExist, err := m.repository.IsJadwalExist(
 			anak.ID,
 			int64(rule.DosisVaksinID),
@@ -211,15 +215,14 @@ func (m *Main) GenerateJadwalImunisasiByAnakID(anakID int32) error {
 			continue
 		}
 
-		// ==============================
-		// TANPA CEK DOSIS SEBELUMNYA
-		// ==============================
+		// RULE 5: Hitung tanggal estimasi imunisasi = tanggal lahir + minimal usia (hari) sesuai aturan
 		tanggalEstimasi := tanggalLahir.AddDate(
 			0,
 			0,
 			int(rule.MinUsiaHari),
 		)
 
+		// RULE 6: Tentukan status jadwal berdasarkan tanggal estimasi (mis. akan datang/terlewat)
 		statusID := calculateStatusID(
 			tanggalEstimasi,
 		)
@@ -232,6 +235,7 @@ func (m *Main) GenerateJadwalImunisasiByAnakID(anakID int32) error {
 			"Status:", statusID,
 		)
 
+		// RULE 7: Bentuk entitas jadwal imunisasi baru berdasarkan hasil rule 5 & 6
 		jadwal := &models.JadwalImunisasiAnak{
 			AnakID:          uint(anak.ID),
 			DosisVaksinID:   rule.DosisVaksinID,
@@ -239,6 +243,7 @@ func (m *Main) GenerateJadwalImunisasiByAnakID(anakID int32) error {
 			StatusJadwalID:  uint(statusID),
 		}
 
+		// RULE 8: Simpan jadwal baru ke database
 		if err := m.repository.CreateJadwalImunisasiAnak(jadwal); err != nil {
 			fmt.Println(
 				"ERROR INSERT:",
@@ -253,6 +258,7 @@ func (m *Main) GenerateJadwalImunisasiByAnakID(anakID int32) error {
 		)
 	}
 
+	// RULE 9: Setelah semua jadwal dibuat, refresh/update status seluruh jadwal (mis. jadwal yang jadi terlambat/selesai)
 	if err := m.repository.UpdateJadwalStatus(); err != nil {
 		fmt.Println(
 			"ERROR UpdateJadwalStatus:",
@@ -264,6 +270,7 @@ func (m *Main) GenerateJadwalImunisasiByAnakID(anakID int32) error {
 
 	return nil
 }
+
 func calculateStatusID(
 	tanggalEstimasi time.Time,
 ) int32 {
