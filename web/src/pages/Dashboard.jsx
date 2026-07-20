@@ -483,7 +483,7 @@ function RingkasanCard({
       >
         <span
           style={{
-            color: "#10b981",
+            color: "#047857",
             fontWeight: 500,
             whiteSpace: "nowrap",
             overflow: "hidden",
