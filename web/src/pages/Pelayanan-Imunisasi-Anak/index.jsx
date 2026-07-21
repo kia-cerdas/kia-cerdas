@@ -916,7 +916,12 @@ const PelayananImunisasi = () => {
               </div>
 
               {/* Desktop table */}
-              <div className="hidden sm:block overflow-x-auto">
+              <div
+                className="hidden sm:block overflow-x-auto"
+                tabIndex={0}
+                role="region"
+                aria-label="Tabel paraf imunisasi anak"
+              >
                 <table className="w-full">
                   <thead>
                     <tr className="bg-gray-100 border-b border-gray-300">
