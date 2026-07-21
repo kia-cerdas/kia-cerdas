@@ -300,7 +300,7 @@ export default function RequestPerubahanImunisasiPage() {
                         Permintaan Menunggu
                     </h2>
 
-                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto" tabIndex={0} role="region" aria-label="Tabel perubahan jadwal imunisasi">
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-gray-50 border-y border-gray-100 text-gray-500 uppercase text-[10px] tracking-widest font-black">
@@ -344,6 +344,7 @@ export default function RequestPerubahanImunisasiPage() {
                                     disabled={pendingPage === 1}
                                     onClick={() => setPendingPage((prev) => prev - 1)}
                                     className="p-2 border rounded-lg disabled:opacity-40 hover:bg-gray-100"
+                                    aria-label="Previous page"
                                 >
                                     <ChevronLeft size={16} />
                                 </button>
@@ -366,6 +367,7 @@ export default function RequestPerubahanImunisasiPage() {
                                     disabled={pendingPage === pendingTotalPages || pendingTotalPages === 0}
                                     onClick={() => setPendingPage((prev) => prev + 1)}
                                     className="p-2 border rounded-lg disabled:opacity-40 hover:bg-gray-100"
+                                    aria-label="Next page"
                                 >
                                     <ChevronRight size={16} />
                                 </button>
@@ -423,6 +425,7 @@ export default function RequestPerubahanImunisasiPage() {
                                     disabled={completedPage === 1}
                                     onClick={() => setCompletedPage((prev) => prev - 1)}
                                     className="p-2 border rounded-lg disabled:opacity-40 hover:bg-gray-100"
+                                    aria-label="Previous page"
                                 >
                                     <ChevronLeft size={16} />
                                 </button>
@@ -445,6 +448,7 @@ export default function RequestPerubahanImunisasiPage() {
                                     disabled={completedPage === completedTotalPages || completedTotalPages === 0}
                                     onClick={() => setCompletedPage((prev) => prev + 1)}
                                     className="p-2 border rounded-lg disabled:opacity-40 hover:bg-gray-100"
+                                    aria-label="Next page"
                                 >
                                     <ChevronRight size={16} />
                                 </button>
