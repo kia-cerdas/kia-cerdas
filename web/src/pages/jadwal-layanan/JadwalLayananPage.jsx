@@ -177,7 +177,7 @@ const TABS = [
       inactiveBg: "bg-amber-50/40",
       inactiveBorder: "border-amber-200",
       inactiveIcon: "text-amber-400",
-      inactiveLabel: "text-amber-600",
+      inactiveLabel: "text-amber-800",
       inactiveBadgeBg: "bg-amber-100",
       inactiveBadgeText: "text-amber-500",
     },
@@ -243,7 +243,7 @@ function TabButton({ tab, active, count, onClick }) {
           {count}
         </span>
       </div>
-      <span className={`text-[10px] sm:text-xs mt-0.5 sm:mt-1 pl-[22px] sm:pl-6 ${active ? "text-slate-500" : "text-slate-400"}`}>{sub}</span>
+      <span className={`text-[10px] sm:text-xs mt-0.5 sm:mt-1 pl-[22px] sm:pl-6 ${active ? "text-slate-700" : "text-slate-600"}`}>{sub}</span>
     </button>
   );
 }
@@ -314,9 +314,9 @@ function ScheduleRow({ r, onEdit, onDelete, deleting }) {
     <div className={`flex items-start sm:items-center gap-2 sm:gap-3 px-3 sm:px-5 py-3 sm:py-4 rounded-xl border ${cardBorder} ${cardBg} shadow-sm mb-3 last:mb-0 transition-all hover:shadow-md`}>
       {/* Date box */}
       <div className="min-w-[48px] sm:min-w-[60px] text-center bg-slate-50 rounded-xl py-1.5 sm:py-2 px-1 border border-slate-100 shrink-0">
-        <p className="text-[9px] sm:text-[10px] text-slate-400 capitalize">{day}</p>
+        <p className="text-[9px] sm:text-[10px] text-slate-600 capitalize">{day}</p>
         <p className="text-base sm:text-xl font-bold text-slate-800 leading-tight">{num}</p>
-        <p className="text-[9px] sm:text-[10px] text-slate-400 capitalize">{mon}</p>
+        <p className="text-[9px] sm:text-[10px] text-slate-600 capitalize">{mon}</p>
       </div>
 
       {/* Info */}
