@@ -1122,7 +1122,7 @@ const PelayananImunisasi = () => {
                 <Syringe size={18} className="text-blue-400" /> Paraf Imunisasi
               </span>
               <button
-                onClick={onClose}
+                onClick={() => setIsModalOpen(false)}
                 aria-label="Tutup dialog"
                 className="hover:rotate-90 transition-transform"
               >
@@ -1133,7 +1133,6 @@ const PelayananImunisasi = () => {
             {/* Tanggal Pemberian - Fixed at top */}
             <div className="px-5 pt-4 pb-3 bg-blue-50 border-b border-blue-100 flex-shrink-0">
               <label
-                for="tanggal-pemberian"
                 className="text-gray-600 mb-1.5 block text-xs font-bold uppercase tracking-wider"
               >
                 Tanggal Pemberian
@@ -1141,7 +1140,6 @@ const PelayananImunisasi = () => {
               <div className="flex items-center gap-2 bg-white border-2 border-blue-200 rounded-lg px-3 py-2 focus-within:border-blue-500 transition-colors">
                 <Calendar size={18} className="text-blue-500" />
                 <input
-                  id="tanggal-pemberian"
                   type="date"
                   aria-label="Tanggal Pemberian"
                   className="w-full outline-none font-bold text-sm bg-transparent text-black"
