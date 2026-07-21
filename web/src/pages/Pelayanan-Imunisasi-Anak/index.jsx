@@ -1122,22 +1122,28 @@ const PelayananImunisasi = () => {
                 <Syringe size={18} className="text-blue-400" /> Paraf Imunisasi
               </span>
               <button
-                onClick={() => setIsModalOpen(false)}
+                onClick={onClose}
                 className="hover:rotate-90 transition-transform"
+                aria-label="Tutup dialog"
               >
-                <X size={20} />
+                <X size={20} aria-hidden="true" />
               </button>
             </div>
 
             {/* Tanggal Pemberian - Fixed at top */}
             <div className="px-5 pt-4 pb-3 bg-blue-50 border-b border-blue-100 flex-shrink-0">
-              <label className="text-gray-600 mb-1.5 block text-xs font-bold uppercase tracking-wider">
+              <label
+                for="tanggal-pemberian"
+                className="text-gray-600 mb-1.5 block text-xs font-bold uppercase tracking-wider"
+              >
                 Tanggal Pemberian
               </label>
               <div className="flex items-center gap-2 bg-white border-2 border-blue-200 rounded-lg px-3 py-2 focus-within:border-blue-500 transition-colors">
                 <Calendar size={18} className="text-blue-500" />
                 <input
+                  id="tanggal-pemberian"
                   type="date"
+                  aria-label="Tanggal Pemberian"
                   className="w-full outline-none font-bold text-sm bg-transparent text-black"
                   style={{ colorScheme: "light" }}
                   value={formData.tanggal}
@@ -1186,7 +1192,12 @@ const PelayananImunisasi = () => {
                     </div>
                   )}
 
-                  <div className="space-y-2 max-h-60 sm:max-h-52 overflow-y-auto pr-1.5">
+                  <div
+                    tabindex="0"
+                    role="region"
+                    aria-label="Daftar Imunisasi"
+                    class="space-y-2 max-h-60 sm:max-h-52 overflow-y-auto pr-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+                  >
                     {allAvailableJadwal.map((jadwal) => {
                       const isSelected = formData.selectedJadwalIds.includes(
                         jadwal.jadwal_id,
