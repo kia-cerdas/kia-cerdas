@@ -1123,8 +1123,8 @@ const PelayananImunisasi = () => {
               </span>
               <button
                 onClick={onClose}
-                className="hover:rotate-90 transition-transform"
                 aria-label="Tutup dialog"
+                className="hover:rotate-90 transition-transform"
               >
                 <X size={20} aria-hidden="true" />
               </button>
