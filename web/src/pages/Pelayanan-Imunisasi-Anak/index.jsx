@@ -292,67 +292,221 @@ const PelayananImunisasi = () => {
     return { show: "empty" };
   };
 
-  // Get cell color based on aturan min/max usia hari
-  // Sesuai dengan pedoman yang disederhanakan:
-  // PUTIH = Usia Tepat Pemberian Imunisasi (dari min_usia_hari sampai max_usia_hari)
-  // ABU-ABU = Usia yang tidak diperbolehkan untuk pemberian Imunisasi (belum waktunya atau sudah lewat)
-  // HIJAU = Imunisasi telah diberikan
-  const getCellColor = (dosisVaksinId, monthValue, doneBulan) => {
-    const monthStart = getMonthStart(monthValue);
-    const monthEnd =
-      typeof monthValue === "string" && monthValue.includes("-")
-        ? parseInt(monthValue.split("-")[1])
-        : monthStart;
-
-    // Completed dose → green (standard Tailwind classes, always generated)
-    if (doneBulan !== null && doneBulan >= monthStart && doneBulan <= monthEnd)
-      return { className: "bg-green-100 border-green-300", style: null };
-
-    const aturan = findAturanByDosisId(dosisVaksinId);
-
-    // Jika tidak ada aturan, return neutral
-    if (!aturan || aturan.min_usia_hari == null) {
-      return { className: "bg-gray-100 border-gray-200", style: null };
-    }
-
-    const minHari = aturan.min_usia_hari;
-    const maxHari = aturan.max_usia_hari || minHari + 730; // default 2 tahun jika tidak ada max
-
-    // Convert month column to days range
-    const monthStartDays = monthStart * 30;
-    const monthEndDays = (monthEnd + 1) * 30 - 1;
-
-    // Helper: cek apakah bulan ini overlap dengan range hari tertentu
-    const overlaps = (startDay, endDay) => {
-      return monthStartDays <= endDay && monthEndDays >= startDay;
-    };
-
-    // 1. ABU-ABU: Belum waktunya (sebelum min usia) — inline style untuk konsistensi warna
-    if (monthEndDays < minHari) {
+  // Pola warna untuk setiap vaksin sesuai Buku KIA 2024
+  // Berdasarkan gambar DETAIL yang diberikan user - PERSIS seperti buku KIA
+  const getVaccineColorPattern = (namaDosis) => {
+    // Normalisasi nama vaksin
+    const vaksinName = namaDosis?.toLowerCase() || "";
+    
+    // Format: { bulan: warna } dimana warna: 'gray' | 'white' | 'orange' | 'pink'
+    
+    // ========== VAKSIN 1: Hepatitis B (<24 Jam) / HB-0 ==========
+    // Gambar 1: Putih di 0, abu-abu sisanya
+    if (vaksinName.includes("hb") && (vaksinName.includes("0") || vaksinName.includes("24"))) {
       return {
-        className: "",
-        style: { backgroundColor: "#D3D3D3", borderColor: "#A9A9A9" },
+        0: "white",
+        1: "gray", 2: "gray", 3: "gray", 4: "gray", 5: "gray", 
+        6: "gray", 7: "gray", 8: "gray", 9: "gray", 10: "gray",
+        11: "gray", 12: "gray", 18: "gray", 23: "gray", "23-59": "gray"
       };
     }
-
-    // 2. ABU-ABU: Sudah lewat max usia (tidak boleh lagi) — inline style for JIT safety
-    if (monthStartDays > maxHari) {
+    
+    // ========== VAKSIN 2: BCG ==========
+    // Abu 0, putih 1, orange 2-11, abu 12+
+    if (vaksinName.includes("bcg")) {
       return {
-        className: "",
-        style: { backgroundColor: "#D3D3D3", borderColor: "#A9A9A9" },
+        0: "gray",
+        1: "white",
+        2: "orange", 3: "orange", 4: "orange", 5: "orange", 6: "orange",
+        7: "orange", 8: "orange", 9: "orange", 10: "orange", 11: "orange",
+        12: "gray", 18: "gray", 23: "gray", "23-59": "gray"
       };
     }
-
-    // 3. PUTIH: Usia Tepat - dari min_usia_hari sampai max_usia_hari (standard Tailwind)
-    if (overlaps(minHari, maxHari)) {
-      return { className: "bg-white border-gray-400", style: null };
+    
+    // ========== VAKSIN 3: Polio tetes OPV-1 ==========
+    // Abu 0, putih 1, orange 2-11, pink 12+
+    if ((vaksinName.includes("polio") || vaksinName.includes("opv")) && vaksinName.includes("1")) {
+      return {
+        0: "gray",
+        1: "white",
+        2: "orange", 3: "orange", 4: "orange", 5: "orange", 6: "orange",
+        7: "orange", 8: "orange", 9: "orange", 10: "orange", 11: "orange",
+        12: "pink", 18: "pink", 23: "pink", "23-59": "pink"
+      };
     }
-
-    // Fallback: abu-abu
+    
+    // ========== VAKSIN 4: DPT-HB-Hib-1 ==========
+    // Abu 0-1, putih 2, orange 3-11, pink 12+
+    if (vaksinName.includes("dpt") && vaksinName.includes("hib") && vaksinName.includes("1")) {
+      return {
+        0: "gray", 1: "gray",
+        2: "white",
+        3: "orange", 4: "orange", 5: "orange", 6: "orange", 7: "orange",
+        8: "orange", 9: "orange", 10: "orange", 11: "orange",
+        12: "pink", 18: "pink", 23: "pink", "23-59": "pink"
+      };
+    }
+    
+    // ========== VAKSIN 5: Polio Tetes OPV-2 ==========
+    // Sama seperti DPT-HB-Hib-1
+    if ((vaksinName.includes("polio") || vaksinName.includes("opv")) && vaksinName.includes("2")) {
+      return {
+        0: "gray", 1: "gray",
+        2: "white",
+        3: "orange", 4: "orange", 5: "orange", 6: "orange", 7: "orange",
+        8: "orange", 9: "orange", 10: "orange", 11: "orange",
+        12: "pink", 18: "pink", 23: "pink", "23-59": "pink"
+      };
+    }
+    
+    // ========== VAKSIN 6: DPT-HB-Hib-2 ==========
+    // Abu 0-2, putih 3, orange 4-11, pink 12+
+    if (vaksinName.includes("dpt") && vaksinName.includes("hib") && vaksinName.includes("2")) {
+      return {
+        0: "gray", 1: "gray", 2: "gray",
+        3: "white",
+        4: "orange", 5: "orange", 6: "orange", 7: "orange", 8: "orange",
+        9: "orange", 10: "orange", 11: "orange",
+        12: "pink", 18: "pink", 23: "pink", "23-59": "pink"
+      };
+    }
+    
+    // ========== VAKSIN 7: Polio Tetes OPV-3 ==========
+    // Sama seperti DPT-HB-Hib-2
+    if ((vaksinName.includes("polio") || vaksinName.includes("opv")) && vaksinName.includes("3")) {
+      return {
+        0: "gray", 1: "gray", 2: "gray",
+        3: "white",
+        4: "orange", 5: "orange", 6: "orange", 7: "orange", 8: "orange",
+        9: "orange", 10: "orange", 11: "orange",
+        12: "pink", 18: "pink", 23: "pink", "23-59": "pink"
+      };
+    }
+    
+    // ========== VAKSIN 8: DPT-HB-Hib-3 ==========
+    // Abu 0-3, putih 4, orange 5-11, pink 12+
+    if (vaksinName.includes("dpt") && vaksinName.includes("hib") && vaksinName.includes("3")) {
+      return {
+        0: "gray", 1: "gray", 2: "gray", 3: "gray",
+        4: "white",
+        5: "orange", 6: "orange", 7: "orange", 8: "orange", 9: "orange",
+        10: "orange", 11: "orange",
+        12: "pink", 18: "pink", 23: "pink", "23-59": "pink"
+      };
+    }
+    
+    // ========== VAKSIN 9: Polio Tetes OPV-4 ==========
+    // Sama seperti DPT-HB-Hib-3
+    if ((vaksinName.includes("polio") || vaksinName.includes("opv")) && vaksinName.includes("4")) {
+      return {
+        0: "gray", 1: "gray", 2: "gray", 3: "gray",
+        4: "white",
+        5: "orange", 6: "orange", 7: "orange", 8: "orange", 9: "orange",
+        10: "orange", 11: "orange",
+        12: "pink", 18: "pink", 23: "pink", "23-59": "pink"
+      };
+    }
+    
+    // ========== VAKSIN 10: Polio Suntik (IPV) ==========
+    // Abu 0-3, putih 4, orange 5-11, pink 12+
+    if (vaksinName.includes("ipv") || (vaksinName.includes("polio") && vaksinName.includes("suntik"))) {
+      return {
+        0: "gray", 1: "gray", 2: "gray", 3: "gray",
+        4: "white",
+        5: "orange", 6: "orange", 7: "orange", 8: "orange", 9: "orange",
+        10: "orange", 11: "orange",
+        12: "pink", 18: "pink", 23: "pink", "23-59": "pink"
+      };
+    }
+    
+    // ========== VAKSIN 11: MR / Campak-Rubella ==========
+    // Abu 0-8, putih 9, orange 10-11, pink 12+
+    if ((vaksinName.includes("mr") || vaksinName.includes("campak") || vaksinName.includes("rubella")) 
+        && !vaksinName.includes("booster") && !vaksinName.includes("lanjutan")) {
+      return {
+        0: "gray", 1: "gray", 2: "gray", 3: "gray", 4: "gray", 5: "gray",
+        6: "gray", 7: "gray", 8: "gray",
+        9: "white",
+        10: "orange", 11: "orange",
+        12: "pink", 18: "pink", 23: "pink", "23-59": "pink"
+      };
+    }
+    
+    // ========== VAKSIN 12: DPT-HB-Hib Booster / Lanjutan ==========
+    // Gambar 8: Abu 0-17, putih 18, orange 23, pink 23-59
+    if ((vaksinName.includes("booster") || vaksinName.includes("lanjutan")) 
+        && (vaksinName.includes("dpt") || vaksinName.includes("hib"))) {
+      return {
+        0: "gray", 1: "gray", 2: "gray", 3: "gray", 4: "gray", 5: "gray",
+        6: "gray", 7: "gray", 8: "gray", 9: "gray", 10: "gray", 11: "gray",
+        12: "gray",
+        18: "white",
+        23: "orange", "23-59": "pink"
+      };
+    }
+    
+    // ========== VAKSIN 13: Campak-Rubella (MR) Booster / Lanjutan ==========
+    // Gambar 8: Abu 0-17, putih 18, orange 23, pink 23-59
+    if ((vaksinName.includes("booster") || vaksinName.includes("lanjutan")) 
+        && (vaksinName.includes("mr") || vaksinName.includes("campak") || vaksinName.includes("rubella"))) {
+      return {
+        0: "gray", 1: "gray", 2: "gray", 3: "gray", 4: "gray", 5: "gray",
+        6: "gray", 7: "gray", 8: "gray", 9: "gray", 10: "gray", 11: "gray",
+        12: "gray",
+        18: "white",
+        23: "orange", "23-59": "pink"
+      };
+    }
+    
+    // Default: semua abu-abu (jika vaksin tidak dikenali)
     return {
-      className: "",
-      style: { backgroundColor: "#D3D3D3", borderColor: "#A9A9A9" },
+      0: "gray", 1: "gray", 2: "gray", 3: "gray", 4: "gray", 5: "gray",
+      6: "gray", 7: "gray", 8: "gray", 9: "gray", 10: "gray", 11: "gray",
+      12: "gray", 18: "gray", 23: "gray", "23-59": "gray"
     };
+  };
+
+  // Get cell color based on vaccine pattern from KIA 2024
+  const getCellColor = (namaDosis, monthValue, doneBulan) => {
+    // Completed dose → green
+    if (doneBulan !== null) {
+      const monthStart = getMonthStart(monthValue);
+      const monthEnd =
+        typeof monthValue === "string" && monthValue.includes("-")
+          ? parseInt(monthValue.split("-")[1])
+          : monthStart;
+      
+      if (doneBulan >= monthStart && doneBulan <= monthEnd) {
+        return { className: "bg-green-100 border-green-300", style: null };
+      }
+    }
+
+    // Get color pattern for this vaccine
+    const pattern = getVaccineColorPattern(namaDosis);
+    const monthKey = String(monthValue);
+    const colorType = pattern[monthKey] || "gray";
+
+    // Return appropriate color
+    switch (colorType) {
+      case "white":
+        return { className: "bg-white border-gray-400", style: null };
+      case "orange":
+        return {
+          className: "",
+          style: { backgroundColor: "#FED7AA", borderColor: "#FB923C" },
+        };
+      case "pink":
+        return {
+          className: "",
+          style: { backgroundColor: "#FBCFE8", borderColor: "#EC4899" },
+        };
+      case "gray":
+      default:
+        return {
+          className: "",
+          style: { backgroundColor: "#D3D3D3", borderColor: "#A9A9A9" },
+        };
+    }
   };
 
   const formatTanggal = (dateString) => {
@@ -816,29 +970,8 @@ const PelayananImunisasi = () => {
                           {MONTHS.map((m, mIdx) => {
                             const monthValue = m;
                             const { className: colorClass, style: colorStyle } =
-                              getCellColor(
-                                dosisVaksinId,
-                                monthValue,
-                                doneBulan,
-                              );
+                              getCellColor(namaDosis, monthValue, doneBulan);
                             const cell = getCellContent(group, monthValue);
-
-                            // Debug log untuk baris pertama
-                            if (vIdx === 0 && mIdx === 0) {
-                              const aturan = findAturanByDosisId(dosisVaksinId);
-                              console.log(
-                                `[DEBUG COLOR] Vaksin: ${namaDosis}, Bulan ${m}:`,
-                                {
-                                  dosisVaksinId,
-                                  aturan: aturan
-                                    ? `min=${aturan.min_usia_hari}, max=${aturan.max_usia_hari}`
-                                    : "NOT FOUND",
-                                  colorClass,
-                                  colorStyle,
-                                  doneBulan,
-                                },
-                              );
-                            }
 
                             return (
                               <td
@@ -873,11 +1006,31 @@ const PelayananImunisasi = () => {
               <span className="w-1 h-4 bg-blue-600 rounded"></span>
               Keterangan Warna Usia Pemberian Imunisasi
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 text-xs">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-6 bg-white border-2 border-gray-400 rounded flex-shrink-0 shadow-sm" />
                 <span className="text-gray-700 font-medium">
                   Usia Tepat Pemberian Imunisasi
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2.5">
+                <div
+                  className="w-8 h-6 rounded flex-shrink-0 border-2 shadow-sm"
+                  style={{ backgroundColor: "#FED7AA", borderColor: "#FB923C" }}
+                />
+                <span className="text-gray-700 font-medium">
+                  Usia yang masih diperbolehkan untuk melengkapi Imunisasi Bayi dan Baduta (Bawah Dua Tahun)
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2.5">
+                <div
+                  className="w-8 h-6 rounded flex-shrink-0 border-2 shadow-sm"
+                  style={{ backgroundColor: "#FBCFE8", borderColor: "#EC4899" }}
+                />
+                <span className="text-gray-700 font-medium">
+                  Usia Pemberian Imunisasi bayi dan baduta yang belum lengkap (Imunisasi Kejar)
                 </span>
               </div>
 
