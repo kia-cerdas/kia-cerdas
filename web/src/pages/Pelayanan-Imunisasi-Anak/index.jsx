@@ -659,12 +659,183 @@ const PelayananImunisasi = () => {
   };
 
   // ─── MODAL HANDLERS ────────────────────────────
-  const handleToggleJadwal = (jadwalId) => {
+  
+  // Validate vaccine color based on current age - returns validation result
+  const validateVaccineByColor = (jadwal) => {
+    const umurHari = getUmurAnakHariIni();
+    if (umurHari === null) {
+      return { allowed: false, color: 'gray', message: 'Tidak dapat menentukan usia anak' };
+    }
+
+    // Calculate which month column child is currently in
+    const umurBulan = Math.floor(umurHari / 30);
+    
+    // Find the appropriate MONTHS column for current age
+    const monthCols = MONTHS.map(getMonthStart);
+    let currentMonthCol = monthCols[monthCols.length - 1]; // default to last
+    for (const col of monthCols) {
+      if (col <= umurBulan) currentMonthCol = col;
+    }
+    
+    // Map numeric month back to MONTHS format (handle range like "23-59")
+    let currentMonthValue = currentMonthCol;
+    for (const m of MONTHS) {
+      const start = getMonthStart(m);
+      if (typeof m === 'string' && m.includes('-')) {
+        const [, endStr] = m.split('-');
+        const end = parseInt(endStr);
+        if (umurBulan >= start && umurBulan <= end) {
+          currentMonthValue = m;
+          break;
+        }
+      } else if (start === umurBulan) {
+        currentMonthValue = m;
+        break;
+      }
+    }
+
+    // Get color pattern for this vaccine
+    const pattern = getVaccineColorPattern(jadwal.nama_dosis);
+    const colorType = pattern[String(currentMonthValue)] || 'gray';
+
+    const bulanText = umurBulan === 0 ? 'kurang dari 1 bulan' : `${umurBulan} bulan`;
+
+    switch (colorType) {
+      case 'white':
+        return {
+          allowed: true,
+          color: 'white',
+          message: `Usia ${bulanText} - Tepat waktu untuk pemberian imunisasi ini.`,
+          warningLevel: 'none'
+        };
+      
+      case 'orange':
+        return {
+          allowed: true,
+          color: 'orange',
+          message: `Usia ${bulanText} - Terlambat dari jadwal ideal, namun masih diperbolehkan untuk melengkapi Imunisasi Bayi dan Baduta.`,
+          warningLevel: 'soft'
+        };
+      
+      case 'pink':
+        return {
+          allowed: true,
+          color: 'pink',
+          message: `Usia ${bulanText} - Sudah sangat terlambat. Ini adalah IMUNISASI KEJAR untuk melengkapi imunisasi yang belum lengkap.`,
+          warningLevel: 'strong'
+        };
+      
+      case 'gray':
+      default:
+        return {
+          allowed: false,
+          color: 'gray',
+          message: `Usia ${bulanText} - Tidak diperbolehkan untuk pemberian imunisasi ini.`,
+          warningLevel: 'error'
+        };
+    }
+  };
+
+  // Handle jadwal toggle with color validation
+  const handleToggleJadwal = async (jadwal) => {
+    const jadwalId = jadwal.jadwal_id;
+    const isCurrentlySelected = formData.selectedJadwalIds.includes(jadwalId);
+
+    // If unchecking, just remove from selection
+    if (isCurrentlySelected) {
+      setFormData((prev) => ({
+        ...prev,
+        selectedJadwalIds: prev.selectedJadwalIds.filter((x) => x !== jadwalId),
+      }));
+      return;
+    }
+
+    // If checking, validate color first
+    const validation = validateVaccineByColor(jadwal);
+
+    // GRAY - Not allowed
+    if (!validation.allowed) {
+      await Swal.fire({
+        icon: 'error',
+        title: '❌ Tidak Dapat Diparaf',
+        html: `
+          <div class="text-left space-y-3">
+            <p class="font-semibold text-gray-800">${jadwal.nama_dosis}</p>
+            <div class="bg-red-50 border-l-4 border-red-500 p-3 rounded">
+              <p class="text-sm text-red-800">${validation.message}</p>
+            </div>
+            <p class="text-xs text-gray-600">
+              <strong>Catatan:</strong> Vaksin ini tidak dapat diberikan pada usia anak saat ini sesuai pedoman KIA 2024.
+            </p>
+          </div>
+        `,
+        confirmButtonText: 'Mengerti',
+        confirmButtonColor: '#ef4444',
+      });
+      return;
+    }
+
+    // ORANGE - Soft warning
+    if (validation.color === 'orange') {
+      const result = await Swal.fire({
+        icon: 'warning',
+        title: '⚠️ Peringatan: Imunisasi Terlambat',
+        html: `
+          <div class="text-left space-y-3">
+            <p class="font-semibold text-gray-800">${jadwal.nama_dosis}</p>
+            <div class="bg-orange-50 border-l-4 border-orange-500 p-3 rounded">
+              <p class="text-sm text-orange-800">${validation.message}</p>
+            </div>
+            <p class="text-xs text-gray-600">
+              <strong>Catatan:</strong> Vaksin masih dapat diberikan untuk melengkapi imunisasi.
+            </p>
+          </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: '✓ Ya, Lanjutkan Paraf',
+        cancelButtonText: '✕ Batal',
+        confirmButtonColor: '#fb923c',
+        cancelButtonColor: '#6b7280',
+        reverseButtons: true,
+      });
+
+      if (!result.isConfirmed) return;
+    }
+
+    // PINK - Strong warning
+    if (validation.color === 'pink') {
+      const result = await Swal.fire({
+        icon: 'warning',
+        title: '⚠️⚠️ Peringatan: Imunisasi Kejar',
+        html: `
+          <div class="text-left space-y-3">
+            <p class="font-semibold text-gray-800">${jadwal.nama_dosis}</p>
+            <div class="bg-pink-50 border-l-4 border-pink-500 p-3 rounded">
+              <p class="text-sm text-pink-800">${validation.message}</p>
+            </div>
+            <div class="bg-blue-50 border border-blue-200 p-2.5 rounded">
+              <p class="text-xs text-blue-800">
+                💉 <strong>Imunisasi Kejar (Catch-Up Immunization)</strong><br/>
+                Anak ini memerlukan imunisasi kejar untuk melengkapi imunisasi yang terlewat.
+              </p>
+            </div>
+          </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: '✓ Ya, Lanjutkan Paraf',
+        cancelButtonText: '✕ Batal',
+        confirmButtonColor: '#ec4899',
+        cancelButtonColor: '#6b7280',
+        reverseButtons: true,
+      });
+
+      if (!result.isConfirmed) return;
+    }
+
+    // WHITE or confirmed ORANGE/PINK - Add to selection
     setFormData((prev) => ({
       ...prev,
-      selectedJadwalIds: prev.selectedJadwalIds.includes(jadwalId)
-        ? prev.selectedJadwalIds.filter((x) => x !== jadwalId)
-        : [...prev.selectedJadwalIds, jadwalId],
+      selectedJadwalIds: [...prev.selectedJadwalIds, jadwalId],
     }));
   };
 
@@ -1416,7 +1587,7 @@ const PelayananImunisasi = () => {
                                 }
                                 return;
                               }
-                              handleToggleJadwal(jadwal.jadwal_id);
+                              handleToggleJadwal(jadwal);
                             }}
                             className={`flex items-center justify-between gap-3 p-2.5 rounded-lg border-2 transition-all cursor-pointer ${
                               !canBeSelected
