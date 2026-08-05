@@ -5,6 +5,7 @@ import 'package:ta_pa2_pa3_project/db/imunisasi_pull_service.dart';
 import 'package:ta_pa2_pa3_project/features/auth/data/datasources/auth_api_services.dart';
 import 'package:ta_pa2_pa3_project/features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:ta_pa2_pa3_project/features/kader/presentation/dashboard_screen.dart';
+import 'forgot_password_screen.dart'; 
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -282,7 +283,31 @@ class _LoginScreenState extends State<LoginScreen> {
                         },
                       ),
                       ),
-                      const SizedBox(height: 16),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const ForgotPasswordScreen(),
+                              ),
+                            );
+                          },
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            minimumSize: const Size(50, 30),
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: const Text(
+                            'Lupa Password?',
+                            style: TextStyle(
+                              color: Color(0xFF185FA5),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24), // Sesuaikan jaraknya
                       Semantics(
                         identifier: 'login_button',
                         child: SizedBox(

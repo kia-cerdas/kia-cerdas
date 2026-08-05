@@ -77,6 +77,79 @@ class AuthApiService {
     );
   }
 
+Future<void> requestForgotPassword(String email) async {
+    final uri = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.forgotPassword}');
+    debugPrint('[auth] POST $uri');
+
+    try {
+      final response = await _client.post(
+        uri,
+        headers: const {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email}),
+      ).timeout(const Duration(seconds: 30));
+
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        final body = jsonDecode(response.body);
+        final message = body['message'] != null && body['message'].isNotEmpty
+            ? body['message'][0]
+            : 'Gagal mengirim permintaan reset password';
+        throw Exception(message);
+      }
+    } on TimeoutException {
+      throw Exception('Timeout. Pastikan koneksi internet stabil.');
+    }
+  }
+
+  Future<void> verifyOtp(String email, String otp) async {
+    final uri = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.verifyOtp}');
+    debugPrint('[auth] POST $uri');
+
+    try {
+      final response = await _client.post(
+        uri,
+        headers: const {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email, 'otp': otp}),
+      ).timeout(const Duration(seconds: 30));
+
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+         final body = jsonDecode(response.body);
+         final message = body['message'] != null && body['message'].isNotEmpty
+            ? body['message'][0]
+            : 'OTP tidak valid atau sudah kadaluarsa';
+        throw Exception(message);
+      }
+    } on TimeoutException {
+      throw Exception('Timeout. Pastikan koneksi internet stabil.');
+    }
+  }
+
+  Future<void> resetPassword(String email, String otp, String newPassword, String confirmPassword) async {
+    final uri = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.resetPassword}');
+    debugPrint('[auth] POST $uri');
+
+    try {
+      final response = await _client.post(
+        uri,
+        headers: const {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': email,
+          'otp': otp,
+          'new_password': newPassword,
+          'confirm_password': confirmPassword,
+        }),
+      ).timeout(const Duration(seconds: 30));
+
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        final body = jsonDecode(response.body);
+        final message = body['message'] != null && body['message'].isNotEmpty
+            ? body['message'][0]
+            : 'Gagal mereset password';
+        throw Exception(message);
+      }
+    } on TimeoutException {
+      throw Exception('Timeout. Pastikan koneksi internet stabil.');
+    }
+  }
   Future<void> logout() async {
     await AuthSession.clear();
   }

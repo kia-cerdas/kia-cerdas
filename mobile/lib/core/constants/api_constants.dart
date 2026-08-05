@@ -386,23 +386,26 @@ import 'package:flutter/foundation.dart';
 class ApiConstants {
   ApiConstants._();
 
-//   static String get baseUrl {
-//     if (kIsWeb) {
-//       return 'http://localhost:8080';
-//     }
+  // static String get baseUrl {
+  //   if (kIsWeb) {
+  //     return 'http://localhost:8080';
+  //   }
 
-//     switch (defaultTargetPlatform) {
-//       case TargetPlatform.android:
-//         return 'http://10.77.214.125:8080';
-//       default:
-//         return 'http://127.0.0.1:8080';
-//     }
-//   }
-
-  static String baseUrl = 'https://api.generasisehat.com';
+  //   switch (defaultTargetPlatform) {
+  //     case TargetPlatform.android:
+  //       return 'http://192.168.112.1:8080';
+  //     default:
+  //       return 'http://192.168.112.1:8080';
+  //   }
+  // }
+  static String baseUrl = 'http://10.246.19.125:8080';
+  // static String baseUrl = 'https://api.generasisehat.com';
 
   static const String authLogin = '/auth/login';
   static const String authMe = '/auth/me';
+  static const String forgotPassword = '/auth/forgot-password';
+  static const String verifyOtp = '/auth/verify-otp';
+  static const String resetPassword = '/auth/reset-password';
 
   // MODUL IBU  ==================================================
   static const String kehamilanAktif = '/modul-ibu/kehamilan-aktif';

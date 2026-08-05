@@ -84,6 +84,53 @@ func (m *Main) Login(c echo.Context) error {
 	return helpers.StandardResponse(c, http.StatusOK, []string{constants.SUCCESS_RESPONSE_MESSAGE}, data, nil)
 }
 
+func (m *Main) ForgotPassword(c echo.Context) error {
+	var req models.ForgotPasswordRequest
+	if err := c.Bind(&req); err != nil {
+		return helpers.Response(c, http.StatusBadRequest, []string{"format request tidak valid"})
+	}
+
+	err := m.usecases.RequestForgotPassword(&req)
+	if err != nil {
+		statusCode := customerror.GetStatusCode(err)
+		return helpers.Response(c, statusCode, []string{err.Error()})
+	}
+
+	return helpers.StandardResponse(c, http.StatusOK, []string{"Jika email terdaftar, OTP akan dikirim ke email tersebut"}, nil, nil)
+}
+
+func (m *Main) VerifyOTP(c echo.Context) error {
+	var req models.VerifyOTPRequest
+	if err := c.Bind(&req); err != nil {
+		return helpers.Response(c, http.StatusBadRequest, []string{"format request tidak valid"})
+	}
+
+	err := m.usecases.VerifyOTP(&req)
+	if err != nil {
+		statusCode := customerror.GetStatusCode(err)
+		return helpers.Response(c, statusCode, []string{err.Error()})
+	}
+
+	return helpers.StandardResponse(c, http.StatusOK, []string{"OTP valid"}, nil, nil)
+}
+
+func (m *Main) ResetPasswordSMTP(c echo.Context) error {
+	var req models.ResetPasswordRequest
+	if err := c.Bind(&req); err != nil {
+		return helpers.Response(c, http.StatusBadRequest, []string{"format request tidak valid"})
+	}
+
+	err := m.usecases.ResetPassword(&req)
+	if err != nil {
+		statusCode := customerror.GetStatusCode(err)
+		return helpers.Response(c, statusCode, []string{err.Error()})
+	}
+
+	// Opsional: Tambahkan m.recordAuthAudit di sini jika ingin mencatat log sukses reset password
+
+	return helpers.StandardResponse(c, http.StatusOK, []string{"Password berhasil diubah"}, nil, nil)
+}
+
 func (m *Main) Logout(c echo.Context) error {
 	return helpers.StandardResponse(c, http.StatusOK, []string{constants.SUCCESS_RESPONSE_MESSAGE}, map[string]string{"message": "logout berhasil"}, nil)
 }

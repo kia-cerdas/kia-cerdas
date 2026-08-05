@@ -122,3 +122,25 @@ func (m *Main) GetKaderByPosyanduID(posyanduID int32) ([]models.Kader, error) {
     }
     return kaders, nil
 }
+
+func (m *Main) SavePasswordReset(data *models.PasswordReset) error {
+	return m.postgres.Create(data).Error
+}
+
+func (m *Main) GetValidOTP(email, otp string) (*models.PasswordReset, error) {
+	var resetData models.PasswordReset
+	// Cari OTP yang cocok, belum kadaluarsa, dan belum digunakan
+	err := m.postgres.Where("email = ? AND otp = ? AND is_used = ? AND expired_at > NOW()", email, otp, false).First(&resetData).Error
+	if err != nil {
+		return nil, customerror.NewNotFoundError("OTP tidak valid atau sudah kadaluarsa")
+	}
+	return &resetData, nil
+}
+
+func (m *Main) MarkOTPAsUsed(id uint) error {
+	return m.postgres.Model(&models.PasswordReset{}).Where("id = ?", id).Update("is_used", true).Error
+}
+
+func (m *Main) UpdateUserPassword(email, hashedPassword string) error {
+	return m.postgres.Model(&models.User{}).Where("email = ?", email).Update("kata_sandi", hashedPassword).Error
+}

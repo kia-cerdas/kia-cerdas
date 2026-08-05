@@ -43,6 +43,9 @@ func ConfigureRouter(e *echo.Echo, controller *controllers.Main) {
 	auth := e.Group("/auth")
 	auth.POST("/register", controller.Register)
 	auth.POST("/login", controller.Login)
+	auth.POST("/forgot-password", controller.ForgotPassword)
+	auth.POST("/verify-otp", controller.VerifyOTP)
+	auth.POST("/reset-password", controller.ResetPasswordSMTP)
 	// auth.POST("/register/ortu", controller.RegisterOrangTua) // registrasi khusus orang tua
 	secured := auth.Group("")
 	secured.Use(middlewares.JWTAuth(controller.JWTSecret()))

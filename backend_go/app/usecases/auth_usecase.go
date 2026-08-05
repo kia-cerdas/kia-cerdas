@@ -1,12 +1,14 @@
 package usecases
 
 import (
+	"crypto/rand"
 	"fmt"
 	"net/mail"
 	"regexp"
 	"strings"
 	"time"
 
+	"monitoring-service/app/helpers"
 	"monitoring-service/app/models"
 	"monitoring-service/pkg/customerror"
 
@@ -381,7 +383,7 @@ func (m *Main) Login(req *models.LoginRequest) (*models.LoginResponse, error) {
 	// ========== AMBIL DESA ==========
 	var desaID *int32
 	var desaNama string
-	
+
 	// Untuk bidan, ambil desa dari posyandu tempat bertugas
 	if normalizeRoleName(user.Role.Name) == "Bidan" && posyanduID != nil {
 		posyandu, err := m.repository.Kependudukan.FindPosyanduByID(*posyanduID)
@@ -432,6 +434,89 @@ func (m *Main) Login(req *models.LoginRequest) (*models.LoginResponse, error) {
 	}
 
 	return res, nil
+}
+
+func generateOTP() string {
+	b := make([]byte, 4)
+	_, _ = rand.Read(b)
+	val := (int(b[0])<<24 | int(b[1])<<16 | int(b[2])<<8 | int(b[3])) & 0x7fffffff
+	return fmt.Sprintf("%06d", val%1000000)
+}
+
+func (m *Main) RequestForgotPassword(req *models.ForgotPasswordRequest) error {
+	email := strings.ToLower(strings.TrimSpace(req.Email))
+	if email == "" {
+		return customerror.NewBadRequestError("email tidak boleh kosong")
+	}
+
+	// 1. Cek apakah user ada
+	_, err := m.repository.GetUserByEmail(email)
+	if err != nil {
+		// Mengembalikan nil jika user tidak ada adalah praktik keamanan yang bagus 
+		// (mencegah hacker mengetahui email mana saja yang terdaftar)
+		return nil
+	}
+
+	// 2. Generate OTP & Set Expired (misal 5 menit)
+	otp := generateOTP()
+	resetData := &models.PasswordReset{
+		Email:     email,
+		OTP:       otp,
+		ExpiredAt: time.Now().Add(5 * time.Minute),
+	}
+
+	// 3. Simpan OTP ke DB
+	if err := m.repository.SavePasswordReset(resetData); err != nil {
+		return customerror.NewInternalServiceError("gagal memproses request reset password")
+	}
+
+	// 4. Kirim Email
+	// Gunakan variabel 'email' dan 'otp' yang ada di atas
+	errEmail := helpers.SendOTPEmail(email, otp)
+	if errEmail != nil {
+		// Return error menggunakan format customerror project kamu
+		return customerror.NewInternalServiceError("gagal mengirim email OTP: " + errEmail.Error())
+	}
+
+	return nil
+}
+func (m *Main) VerifyOTP(req *models.VerifyOTPRequest) error {
+	email := strings.ToLower(strings.TrimSpace(req.Email))
+	_, err := m.repository.GetValidOTP(email, req.OTP)
+	if err != nil {
+		return customerror.NewBadRequestError("OTP tidak valid atau kadaluarsa")
+	}
+	return nil
+}
+
+func (m *Main) ResetPassword(req *models.ResetPasswordRequest) error {
+	if req.NewPassword != req.ConfirmPassword {
+		return customerror.NewBadRequestError("password dan konfirmasi password tidak cocok")
+	}
+
+	email := strings.ToLower(strings.TrimSpace(req.Email))
+
+	// 1. Cek lagi validitas OTP
+	otpData, err := m.repository.GetValidOTP(email, req.OTP)
+	if err != nil {
+		return customerror.NewBadRequestError("OTP tidak valid atau kadaluarsa")
+	}
+
+	// 2. Hash password baru
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return customerror.NewInternalServiceError("gagal mengenkripsi password")
+	}
+
+	// 3. Update password user
+	if err := m.repository.UpdateUserPassword(email, string(hashedPassword)); err != nil {
+		return customerror.NewInternalServiceError("gagal mereset password")
+	}
+
+	// 4. Tandai OTP sudah digunakan (agar tidak bisa dipakai 2x)
+	_ = m.repository.MarkOTPAsUsed(otpData.ID)
+
+	return nil
 }
 
 // func (m *Main) Login(req *models.LoginRequest) (*models.LoginResponse, error) {
