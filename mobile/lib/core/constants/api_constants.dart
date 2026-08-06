@@ -398,8 +398,8 @@ class ApiConstants {
   //       return 'http://192.168.112.1:8080';
   //   }
   // }
-  static String baseUrl = 'http://10.246.19.125:8080';
-  // static String baseUrl = 'https://api.generasisehat.com';
+  // static String baseUrl = 'http://10.246.19.125:8080';
+  static String baseUrl = 'https://api.generasisehat.com';
 
   static const String authLogin = '/auth/login';
   static const String authMe = '/auth/me';

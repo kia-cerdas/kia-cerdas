@@ -9,6 +9,7 @@ import 'package:ta_pa2_pa3_project/features/ibu/profil/presentation/screens/prof
     as profil_ibu;
 import 'package:ta_pa2_pa3_project/features/ibu/profil/presentation/screens/detail_riwayat_kehamilan_screen.dart';
 import 'package:ta_pa2_pa3_project/features/ibu/profil/presentation/screens/profil_keluarga_screen.dart';
+import 'package:ta_pa2_pa3_project/features/tentang/tentang_aplikasi_screen.dart';
 
 class ProfilScreen extends StatefulWidget {
   const ProfilScreen({super.key});
@@ -207,6 +208,19 @@ class _ProfilScreenState extends State<ProfilScreen>
                           builder: (_) => _RiwayatKehamilanListScreen(
                             list: profil.riwayatKehamilan,
                           ),
+                        ),
+                      ),
+                    ),
+
+                    _buildDivider(), // Divider baru sebelum Tentang Aplikasi
+                    // ── MENU TENTANG APLIKASI ───────────────────
+                    _buildMenuTile(
+                      icon: Icons.info_outline,
+                      label: 'Tentang Aplikasi',
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const TentangAplikasiScreen(),
                         ),
                       ),
                     ),
