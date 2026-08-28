@@ -84,3 +84,20 @@ func (r *PencatatanImunisasiRepository) GetByID(id uint) (*models.PencatatanImun
 
 	return &record, nil
 }
+
+// GetJadwalByID retrieves jadwal imunisasi anak with complete nested data
+func (r *PencatatanImunisasiRepository) GetJadwalByID(jadwalID uint) (*models.JadwalImunisasiAnak, error) {
+	var jadwal models.JadwalImunisasiAnak
+
+	err := r.postgres.
+		Preload("Anak").
+		Preload("Anak.Penduduk").
+		Preload("DosisVaksin").
+		First(&jadwal, jadwalID).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &jadwal, nil
+}

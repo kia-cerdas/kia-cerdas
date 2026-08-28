@@ -37,3 +37,8 @@ func (u *PencatatanImunisasiUsecase) GetByID(id uint) (*models.PencatatanImunisa
 func (u *PencatatanImunisasiUsecase) CancelByJadwalID(jadwalID uint) error {
 	return u.repo.CancelByJadwalID(jadwalID)
 }
+
+// GetByJadwalID retrieves jadwal imunisasi anak with complete data for calculating kategori
+func (u *PencatatanImunisasiUsecase) GetByJadwalID(jadwalID uint) (*models.JadwalImunisasiAnak, error) {
+	return u.repo.GetJadwalByID(jadwalID)
+}

@@ -12,6 +12,7 @@ type PencatatanImunisasi struct {
 	TanggalPemberian      *time.Time            `gorm:"column:tanggal_pemberian;type:date" json:"tanggal_pemberian"`
 	NomorBatch            string                `gorm:"column:nomor_batch;type:varchar(255)" json:"nomor_batch"`
 	Catatan               string                `gorm:"column:catatan;type:text" json:"catatan"`
+	KategoriPemberian     string                `gorm:"column:kategori_pemberian;type:varchar(50);default:'white'" json:"kategori_pemberian"` // white, orange, pink
 	IsSelesai             bool                  `gorm:"column:is_selesai;default:false" json:"is_selesai"`
 	IdBidanPetugas        *int32                `gorm:"column:id_bidan_petugas" json:"id_bidan_petugas"`
 	JadwalImunisasiAnak   *JadwalImunisasiAnak  `json:"jadwal_imunisasi_anak,omitempty" gorm:"foreignKey:IdJadwalImunisasiAnak;constraint:OnDelete:CASCADE"`

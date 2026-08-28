@@ -250,6 +250,56 @@ const PelayananImunisasi = () => {
     return closest;
   };
 
+  // ✅ NEW: Calculate actual month column based on child's age at vaccination date
+  // This is used for displaying completed vaccines in the correct column
+  const getActualBulanPemberian = (tanggalPemberian) => {
+    if (!dataAnak?.tanggal_lahir || !tanggalPemberian) {
+      console.warn('[getActualBulanPemberian] Missing data:', { 
+        tanggal_lahir: dataAnak?.tanggal_lahir, 
+        tanggalPemberian 
+      });
+      return null;
+    }
+    
+    const lahir = new Date(dataAnak.tanggal_lahir);
+    const pemberian = new Date(tanggalPemberian);
+    
+    if (isNaN(lahir.getTime()) || isNaN(pemberian.getTime())) {
+      console.warn('[getActualBulanPemberian] Invalid dates:', { lahir, pemberian });
+      return null;
+    }
+    
+    // Calculate age in months at vaccination date
+    const ageInMonths =
+      (pemberian.getFullYear() - lahir.getFullYear()) * 12 +
+      (pemberian.getMonth() - lahir.getMonth());
+    
+    console.log('[getActualBulanPemberian] Calculated age:', {
+      tanggal_lahir: lahir.toISOString().split('T')[0],
+      tanggal_pemberian: pemberian.toISOString().split('T')[0],
+      ageInMonths
+    });
+    
+    // Map to MONTHS column based on actual age
+    // MONTHS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 18, 23, "23-59"]
+    
+    if (ageInMonths >= 24 && ageInMonths <= 59) {
+      return 999; // Special marker for range column "23-59"
+    } else if (ageInMonths >= 23) {
+      return 23;
+    } else if (ageInMonths >= 18) {
+      return 18;
+    } else if (ageInMonths >= 12) {
+      return 12;
+    } else if (ageInMonths >= 0 && ageInMonths <= 11) {
+      return ageInMonths;
+    }
+    
+    // For negative ages or ages > 59 months
+    console.warn('[getActualBulanPemberian] Age out of range:', ageInMonths);
+    return 999;
+  };
+
   // Find pencatatan record by jadwal_imunisasi_anak ID
   const findPencatatanByJadwalId = (jadwalId) => {
     if (!jadwalId || !pencatatanList.length) return null;
@@ -265,28 +315,38 @@ const PelayananImunisasi = () => {
   const getCellContent = (group, monthValue) => {
     const doneItem = group.done;
     if (doneItem) {
-      const doneBulan = getJadwalBulan(
-        doneItem.tanggal_estimasi,
-        group.dosisVaksinId,
-      );
-      const monthStart = getMonthStart(monthValue);
-
       // Look up pencatatan_imunisasi for the actual tanggal_pemberian
       const pencatatan = findPencatatanByJadwalId(doneItem.jadwal_id);
       const displayDate =
         pencatatan?.tanggal_pemberian || doneItem.tanggal_estimasi;
 
-      // Range column like '23-59'
-      if (typeof monthValue === "string" && monthValue.includes("-")) {
-        const [, endStr] = monthValue.split("-");
-        const monthEnd = parseInt(endStr);
-        if (doneBulan >= monthStart && doneBulan <= monthEnd) {
-          return { show: "done", date: formatTanggal(displayDate) };
-        }
-      } else {
-        if (doneBulan === monthStart) {
-          return { show: "done", date: formatTanggal(displayDate) };
-        }
+      // ✅ Get kategori_pemberian from pencatatan (backend calculated)
+      const kategoriPemberian = pencatatan?.kategori_pemberian || null;
+
+      // ✅ Calculate which column to display based on ACTUAL child's age at vaccination
+      const actualDate = pencatatan?.tanggal_pemberian 
+        ? pencatatan.tanggal_pemberian 
+        : doneItem.tanggal_estimasi;
+      
+      const doneBulan = getActualBulanPemberian(actualDate);
+      
+      // Check if this month column should display the checkmark
+      // Handle special marker 999 for range column "23-59"
+      if (doneBulan === 999 && monthValue === "23-59") {
+        return { 
+          show: "done", 
+          date: formatTanggal(displayDate),
+          kategori: kategoriPemberian
+        };
+      }
+      
+      // For regular numeric columns
+      if (doneBulan === monthValue) {
+        return { 
+          show: "done", 
+          date: formatTanggal(displayDate),
+          kategori: kategoriPemberian
+        };
       }
     }
     return { show: "empty" };
@@ -467,26 +527,56 @@ const PelayananImunisasi = () => {
   };
 
   // Get cell color based on vaccine pattern from KIA 2024
-  const getCellColor = (namaDosis, monthValue, doneBulan) => {
-    // Completed dose → green
-    if (doneBulan !== null) {
+  const getCellColor = (namaDosis, monthValue, doneBulan, kategoriPemberian = null) => {
+    // ✅ If vaccine is completed AND has kategori from database, use that for color
+    if (doneBulan !== null && kategoriPemberian) {
       const monthStart = getMonthStart(monthValue);
       const monthEnd =
         typeof monthValue === "string" && monthValue.includes("-")
           ? parseInt(monthValue.split("-")[1])
           : monthStart;
       
-      if (doneBulan >= monthStart && doneBulan <= monthEnd) {
-        return { className: "bg-green-100 border-green-300", style: null };
+      // Check if doneBulan matches this column (for range check)
+      const isThisColumn = (doneBulan === 999 && monthValue === "23-59") || 
+                          (doneBulan === monthValue);
+      
+      if (isThisColumn) {
+        // Map backend kategori to appropriate color
+        switch (kategoriPemberian) {
+          case "white":
+            // Tepat waktu - green background with checkmark
+            return { className: "bg-green-100 border-green-300", style: null };
+          case "orange":
+            // Terlambat - orange background with checkmark
+            return { 
+              className: "",
+              style: { backgroundColor: "#FED7AA", borderColor: "#FB923C" }
+            };
+          case "pink":
+            // Imunisasi kejar - pink background with checkmark
+            return {
+              className: "",
+              style: { backgroundColor: "#FBCFE8", borderColor: "#EC4899" }
+            };
+          case "gray":
+            // Should not happen, but handle gracefully
+            return {
+              className: "",
+              style: { backgroundColor: "#D3D3D3", borderColor: "#A9A9A9" }
+            };
+          default:
+            // Fallback to green
+            return { className: "bg-green-100 border-green-300", style: null };
+        }
       }
     }
 
-    // Get color pattern for this vaccine
+    // For empty cells (vaccine not yet given), show pattern from KIA 2024
     const pattern = getVaccineColorPattern(namaDosis);
     const monthKey = String(monthValue);
     const colorType = pattern[monthKey] || "gray";
 
-    // Return appropriate color
+    // Return appropriate color for empty cells
     switch (colorType) {
       case "white":
         return { className: "bg-white border-gray-400", style: null };
@@ -806,18 +896,12 @@ const PelayananImunisasi = () => {
     if (validation.color === 'pink') {
       const result = await Swal.fire({
         icon: 'warning',
-        title: '⚠️⚠️ Peringatan: Imunisasi Kejar',
+        title: 'Peringatan: Imunisasi Kejar',
         html: `
           <div class="text-left space-y-3">
             <p class="font-semibold text-gray-800">${jadwal.nama_dosis}</p>
             <div class="bg-pink-50 border-l-4 border-pink-500 p-3 rounded">
               <p class="text-sm text-pink-800">${validation.message}</p>
-            </div>
-            <div class="bg-blue-50 border border-blue-200 p-2.5 rounded">
-              <p class="text-xs text-blue-800">
-                💉 <strong>Imunisasi Kejar (Catch-Up Immunization)</strong><br/>
-                Anak ini memerlukan imunisasi kejar untuk melengkapi imunisasi yang terlewat.
-              </p>
             </div>
           </div>
         `,
@@ -1114,12 +1198,16 @@ const PelayananImunisasi = () => {
                     .map(([namaDosis, group], vIdx) => {
                       const doneItem = group.done;
                       const dosisVaksinId = group.dosisVaksinId;
-                      const doneBulan = doneItem
-                        ? getJadwalBulan(
-                            doneItem.tanggal_estimasi,
-                            dosisVaksinId,
-                          )
-                        : null;
+                      
+                      // ✅ Calculate doneBulan based on ACTUAL child's age at vaccination
+                      let doneBulan = null;
+                      if (doneItem) {
+                        const pencatatan = findPencatatanByJadwalId(doneItem.jadwal_id);
+                        const actualDate = pencatatan?.tanggal_pemberian 
+                          ? pencatatan.tanggal_pemberian 
+                          : doneItem.tanggal_estimasi;
+                        doneBulan = getActualBulanPemberian(actualDate);
+                      }
 
                       return (
                         <tr
@@ -1140,9 +1228,11 @@ const PelayananImunisasi = () => {
                           {/* Month Cells */}
                           {MONTHS.map((m, mIdx) => {
                             const monthValue = m;
-                            const { className: colorClass, style: colorStyle } =
-                              getCellColor(namaDosis, monthValue, doneBulan);
                             const cell = getCellContent(group, monthValue);
+                            
+                            // ✅ Pass kategori from cell (from database) to getCellColor
+                            const { className: colorClass, style: colorStyle } =
+                              getCellColor(namaDosis, monthValue, doneBulan, cell.kategori);
 
                             return (
                               <td
@@ -1152,10 +1242,18 @@ const PelayananImunisasi = () => {
                               >
                                 {cell.show === "done" ? (
                                   <div className="flex flex-col items-center justify-center py-0.5 px-0.5 w-full">
-                                    <span className="text-green-700 font-bold text-xs leading-none">
+                                    <span className={`font-bold text-xs leading-none ${
+                                      cell.kategori === 'pink' ? 'text-pink-700' :
+                                      cell.kategori === 'orange' ? 'text-orange-700' :
+                                      'text-green-700'
+                                    }`}>
                                       ✓
                                     </span>
-                                    <span className="text-green-600 font-medium text-[7px] leading-none mt-0.5 truncate w-full text-center">
+                                    <span className={`font-medium text-[7px] leading-none mt-0.5 truncate w-full text-center ${
+                                      cell.kategori === 'pink' ? 'text-pink-600' :
+                                      cell.kategori === 'orange' ? 'text-orange-600' :
+                                      'text-green-600'
+                                    }`}>
                                       {cell.date}
                                     </span>
                                   </div>

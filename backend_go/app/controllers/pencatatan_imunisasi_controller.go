@@ -65,11 +65,32 @@ func (c *PencatatanImunisasiController) Create(ctx echo.Context) error {
 		}
 	}
 
+	// 🎨 CALCULATE KATEGORI PEMBERIAN (white/orange/pink/gray)
+	// Get jadwal imunisasi data to extract anak info and vaccine name
+	jadwalData, err := c.usecase.GetByJadwalID(req.IdJadwalImunisasiAnak)
+	if err != nil {
+		return helpers.Response(ctx, http.StatusInternalServerError, []string{"gagal mengambil data jadwal imunisasi"})
+	}
+
+	kategoriPemberian := "white" // default
+	if jadwalData != nil && jadwalData.Anak != nil && jadwalData.Anak.Penduduk != nil && tanggalPemberian != nil {
+		tanggalLahir := jadwalData.Anak.Penduduk.TanggalLahir
+		// TanggalLahir is time.Time (not pointer), check if it's zero value
+		if !tanggalLahir.IsZero() && jadwalData.DosisVaksin != nil {
+			namaDosis := jadwalData.DosisVaksin.NamaDosis
+			var minUsiaHari uint = 0
+			
+			// Calculate kategori based on age and vaccine pattern
+			kategoriPemberian = helpers.CalculateKategoriPemberian(tanggalLahir, *tanggalPemberian, namaDosis, minUsiaHari)
+		}
+	}
+
 	data := &models.PencatatanImunisasi{
 		IdJadwalImunisasiAnak: req.IdJadwalImunisasiAnak,
 		TanggalPemberian:      tanggalPemberian,
 		NomorBatch:            req.NomorBatch,
 		Catatan:               req.Catatan,
+		KategoriPemberian:     kategoriPemberian, // ✅ AUTO-CALCULATED
 		IsSelesai:             false,
 		IdBidanPetugas:        idBidanPetugas,
 	}
