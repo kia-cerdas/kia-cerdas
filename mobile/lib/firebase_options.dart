@@ -57,17 +57,17 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyBCeOhopv-A6duK1UZSQ0befOdvGDFVaSg',
-    appId: '1:120006854123:android:38eb68d88a1bb8df4805ae',
+    appId: '1:120006854123:android:f7abf1ec55ec78404805ae',
     messagingSenderId: '120006854123',
     projectId: 'generasi-sehat',
     storageBucket: 'generasi-sehat.firebasestorage.app',
   );
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyDUFw0kt9B3cei_wGHZqaAXmBs7KmPVr9M',
-    appId: '1:120006854123:ios:daba2f6082f994d94805ae',
+    appId: '1:120006854123:ios:5214fcac0b350bb34805ae',
     messagingSenderId: '120006854123',
     projectId: 'generasi-sehat',
     storageBucket: 'generasi-sehat.firebasestorage.app',
-    iosBundleId: 'com.example.taPa2Pa3Project',
+    iosBundleId: 'com.generasisehat.app',
   );
 }

@@ -1,4 +1,4 @@
-package com.example.ta_pa2_pa3_project
+package com.generasisehat.app
 
 import io.flutter.embedding.android.FlutterActivity
 

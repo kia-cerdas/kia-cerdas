@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:120006854123:android:38eb68d88a1bb8df4805ae",
+        "mobilesdk_app_id": "1:120006854123:android:f7abf1ec55ec78404805ae",
         "android_client_info": {
-          "package_name": "com.example.ta_pa2_pa3_project"
+          "package_name": "com.generasisehat.app"
         }
       },
       "oauth_client": [],
